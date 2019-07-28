@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Optional, Any, Tuple
+from typing import Optional, Any, Tuple, List
 import math
 import socket
 import select
@@ -10,57 +10,109 @@ import time
 from _datetime import datetime, timedelta
 
 
-HELLO_INTERVAL = 0.033
-# PING_INTERVAL = 0.05
-PING_INTERVAL = 1.00
+PKT_ID = b"COZ\x03RE\x01"
+
+ROBOT_ADDR = ("172.31.1.1", 5551)
+
+PING_INTERVAL = 0.05
 TICK = 0.0066
 RUN_INTERVAL = 0.05
 
 
 def hex_dump(data: bytes) -> str:
-    res = ":".join("{:02x}".format(b) for b in data[7:])
+    res = ":".join("{:02x}".format(b) for b in data)
     return res
 
 
 class Packet(object):
 
-    PKT_ID = b"COZ\x03RE\x01"
+    OOB_IDS = (5, 0x0a, 0x0b)
 
     def __init__(self, type_id: Optional[int] = None, data: bytes = b'') -> None:
         self.type = type_id
-        self.last_ack = 0
         self.seq = 0
         self.ack = 0
         self.data = data
 
     def to_bytes(self) -> bytes:
-        frame = \
-            Packet.PKT_ID + \
+        raw_data = \
             self.type.to_bytes(1, 'little') + \
-            self.last_ack.to_bytes(2, 'little') + \
-            self.seq.to_bytes(2, 'little') + \
-            self.ack.to_bytes(2, 'little') + \
+            len(self.data).to_bytes(2, 'little') + \
             self.data
-        return frame
+        return raw_data
 
-    def from_bytes(self, frame: bytes) -> None:
-        if len(frame) < 7+1+2+2+2:
-            raise ValueError("Invalid packet.")
-        if frame[:7] != Packet.PKT_ID:
+    def from_bytes(self, raw_data: bytes, offset: int = 0) -> int:
+        i = offset
+        self.type = int(raw_data[i])
+        i += 1
+        pkt_len = int.from_bytes(raw_data[i:i+2], 'little')
+        i += 2
+        self.data = raw_data[i:i+pkt_len]
+        i += pkt_len
+        res = i - offset
+        return res
+
+    def is_oob(self) -> bool:
+        res = self.type in Packet.OOB_IDS
+        return res
+
+
+class Frame(object):
+
+    def __init__(self, type_id: Optional[int] = None, pkts: Optional[List[Packet]] = None) -> None:
+        self.type = type_id
+        self.first_seq = 0
+        self.seq = 0
+        self.ack = 0
+        self.pkts = pkts or []
+
+    def to_bytes(self) -> bytes:
+        raw_frame = \
+            PKT_ID + \
+            self.type.to_bytes(1, 'little') + \
+            self.first_seq.to_bytes(2, 'little') + \
+            self.seq.to_bytes(2, 'little') + \
+            self.ack.to_bytes(2, 'little')
+        for pkt in self.pkts:
+            raw_pkt = pkt.to_bytes()
+            raw_frame += raw_pkt
+        return raw_frame
+
+    def from_bytes(self, raw_frame: bytes) -> None:
+
+        if len(raw_frame) < 7+1+2+2+2:
+            raise ValueError("Invalid frame.")
+
+        if raw_frame[:7] != PKT_ID:
             raise ValueError("Invalid packet ID.")
-        self.type = int(frame[7])
-        self.last_ack = int.from_bytes(frame[8:10], 'little')
-        self.seq = int.from_bytes(frame[10:12], 'little')
-        self.ack = int.from_bytes(frame[12:14], 'little')
-        self.data = frame[14:]
 
-    def is_oob_request(self) -> bool:
-        res = self.type == 0x0b and self.last_ack == 0 and self.seq == 0
-        return res
+        self.type = int(raw_frame[7])
+        self.first_seq = int.from_bytes(raw_frame[8:10], 'little')
+        self.seq = int.from_bytes(raw_frame[10:12], 'little')
+        self.ack = int.from_bytes(raw_frame[12:14], 'little')
 
-    def is_oob_response(self) -> bool:
-        res = self.type == 0x09 and self.last_ack == 0 and self.seq == 0
-        return res
+        if self.type == 7 or self.type == 9:
+            i = 14
+            seq = self.first_seq
+            while i < len(raw_frame):
+                pkt = Packet()
+                i += pkt.from_bytes(raw_frame, i)
+                assert pkt.type in (2, 4, 5, 0x0a, 0x0b)
+                pkt.ack = self.ack
+                if pkt.type in (2, 4):
+                    pkt.seq = seq
+                    seq += 1
+                else:
+                    pkt.seq = 0
+                    pkt.ack = 0
+                self.pkts.append(pkt)
+            assert i == len(raw_frame)
+            assert not self.seq or self.seq + 1 == seq
+        else:
+            pkt = Packet(self.type, raw_frame[14:])
+            pkt.seq = self.seq
+            pkt.ack = self.ack
+            self.pkts.append(pkt)
 
 
 class BaseWindow(object):
@@ -153,48 +205,39 @@ class ReceiveThread(Thread):
                 continue
 
             try:
-                frame, address = self.sock.recvfrom(self.buffer_size)
+                raw_frame, address = self.sock.recvfrom(self.buffer_size)
             except InterruptedError:
                 continue
             if self.sender_address and self.sender_address != address:
                 continue
 
-            print("Got  {}".format(hex_dump(frame)))
+            frame = Frame()
+            frame.from_bytes(raw_frame)
 
-            if self.is_hello_ack(frame):
-                self.reset()
-                self.window.expected_seq = 9
-                self.window.last_seq = 8
-                continue
+            if frame.seq:
+                print("Got  {}".format(hex_dump(raw_frame[7:])))
 
-            pkt = Packet()
-            pkt.from_bytes(frame)
+            self.handle_frame(frame)
 
-            self.handle_pkt(pkt.seq, pkt)
+    def handle_frame(self, frame: Frame) -> None:
+        for pkt in frame.pkts:
+            self.handle_pkt(pkt)
 
-    @staticmethod
-    def is_hello_ack(frame):
-        res = frame == b'COZ\x03RE\x01\t\x01\x00\x01\x00\x01\x00\x02\x00\x00'
-        return res
-
-    def handle_pkt(self, seq: int, pkt: Packet) -> None:
-        if not self.window.is_valid_seq(seq):
-            return
-
-        if pkt.is_oob_response():
+    def handle_pkt(self, pkt: Packet) -> None:
+        if pkt.is_oob():
             self.deliver(pkt)
             return
 
-        if self.window.is_out_of_order(seq):
+        if self.window.is_out_of_order(pkt.seq):
             return
 
-        if self.window.exists(seq):
+        if self.window.exists(pkt.seq):
             # Duplicate
             return
 
-        self.window.put(seq, pkt)
+        self.window.put(pkt.seq, pkt)
 
-        if self.window.is_expected(seq):
+        if self.window.is_expected(pkt.seq):
             self.deliver_sequence()
 
     def deliver_sequence(self) -> None:
@@ -310,7 +353,7 @@ class SendThread(Thread):
             #     except InterruptedError:
             #         continue
             #     self.last_send_timestamp = datetime.now()
-            #     print("Rsnt {}".format(hex_dump(frame)))
+            #     print("Rsnt {}".format(hex_dump(frame[7:])))
             #     continue
 
             # if self.window.is_full():
@@ -323,32 +366,32 @@ class SendThread(Thread):
             except Empty:
                 continue
 
-            if pkt.is_oob_request():
-                pkt.ack = self.last_ack
+            # Construct frame
+            if pkt.is_oob():
+                frame = Frame(pkt.type, [pkt])
             else:
                 seq = self.window.put(pkt)
-                pkt.last_ack = self.window.expected_seq
                 pkt.seq = seq
-                pkt.ack = self.last_ack
-
-            # Construct frame
-            frame = pkt.to_bytes()
+                frame = Frame(7, [pkt])
+                frame.first_seq = seq
+                frame.seq = seq
+            pkt.ack = self.last_ack
+            frame.ack = self.last_ack
+            raw_frame = frame.to_bytes()
 
             try:
-                self.sock.sendto(frame, self.receiver_address)
+                self.sock.sendto(raw_frame, self.receiver_address)
             except InterruptedError:
                 continue
 
             self.last_send_timestamp = datetime.now()
-            print("Sent {}".format(hex_dump(frame)))
+            if frame.type != 0x0b:
+                print("Sent {}".format(hex_dump(raw_frame[7:])))
 
     def send(self, data: Any) -> None:
         self.queue.put(data)
 
     def ack(self, seq: int) -> None:
-        if not self.window.is_valid_seq(seq):
-            return
-
         if self.window.is_out_of_order(seq):
             return
 
@@ -367,15 +410,13 @@ class SendThread(Thread):
 
 class Client(Thread):
 
-    ROBOT_ADDR = ("172.31.1.1", 5551)
-
     IDLE = 1
     CONNECTING = 2
     CONNECTED = 3
 
     def __init__(self, robot_addr: Optional[Tuple[str, int]] = None) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
-        self.robot_addr = robot_addr or Client.ROBOT_ADDR
+        self.robot_addr = robot_addr or ROBOT_ADDR
         self.state = self.IDLE
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setblocking(False)
@@ -402,7 +443,7 @@ class Client(Thread):
                 pkt = self.recv_thread.queue.get(timeout=RUN_INTERVAL)
                 self.recv_thread.queue.task_done()
                 self.send_thread.ack(pkt.ack)
-                if not (pkt.type == 9 and pkt.last_ack == 0 and pkt.seq == 0):
+                if not pkt.is_oob():
                     self.send_thread.set_last_ack(pkt.seq)
             except Empty:
                 pkt = None
@@ -411,26 +452,17 @@ class Client(Thread):
             if self.state == Client.IDLE:
                 pass
             elif self.state == Client.CONNECTING:
-                if self.is_ver(pkt):
+                if pkt and pkt.type == 2:
                     print("Connected!")
-                    self.send_ver_ack()
                     self.state = Client.CONNECTED
             elif self.state == Client.CONNECTED:
-                if self.is_ver_ack_resp(pkt):
-                    # print("Got ver ACK resp.")
-                    continue
-                elif self.is_ping_resp(pkt):
-                    # print("Got ping resp.")
-                    continue
-                else:
-                    if now - self.send_last > timedelta(seconds=PING_INTERVAL):
-                        # print("Sending ping.")
-                        self.send_ping()
+                if now - self.send_last > timedelta(seconds=PING_INTERVAL):
+                    # print("Sending ping.")
+                    self.send_ping()
             else:
                 assert False
 
-            if pkt:
-                # print(".")
+            if pkt and pkt.type not in (5, 0x0b):
                 print("Got  {} - {}".format(pkt.type, hex_dump(pkt.data)))
 
     def connect(self) -> None:
@@ -444,53 +476,46 @@ class Client(Thread):
         self.send_thread.send(pkt)
 
     def send_hello(self) -> None:
-        pkt = Packet(0x01)
-        self.send(pkt)
+        frame = Frame(1)
+        frame.first_seq = 1
+        frame.seq = 1
 
-    @staticmethod
-    def is_ver(pkt):
-        res = pkt and \
-              pkt.type == 0x09 and \
-              b'{"version": 2381, "git-rev": "408d28a7f6e68cbb5b29c1dcd8c8db2b38f9c8ce", ' in pkt.data
-        return res
+        raw_frame = frame.to_bytes()
 
-    def send_ver_ack(self) -> None:
-        data = b"\x1b\x2f\xdd\x4c\x80\xa7\x6c\x41\x02\x00\x00\x00\x00\x00\x00\x00\x00"
-        pkt = Packet(0x0b, data)
-        self.send(pkt)
-
-    @staticmethod
-    def is_ver_ack_resp(pkt):
-        res = pkt and \
-              pkt.type == 0x09 and \
-              pkt.data == b'\x0b\x11\x00\x1b/\xddL\x80\xa7lA\x02\x00\x00\x00\x00\x00\x00\x00\x00'
-        return res
+        try:
+            self.sock.sendto(raw_frame, self.robot_addr)
+        except InterruptedError:
+            pass
 
     def send_ping(self) -> None:
         data = b"\x8d\x97\x6e\x12\x7d\x66\xf8\x40\x01\x00\x00\x00\x00\x00\x00\x00\x00"
         pkt = Packet(0x0b, data)
         self.send(pkt)
 
-    @staticmethod
-    def is_ping_resp(pkt):
-        res = pkt and \
-              pkt.type == 0x09 and \
-              pkt.data == b'\x0b\x11\x00\x8d\x97n\x12}f\xf8@\x01\x00\x00\x00\x00\x00\x00\x00\x00'
-        return res
-
     def send_enable(self) -> None:
         # TODO: What is this?
         print("Sending enable...")
+
         # pkt = Packet(0x04, b"%")
         # self.send(pkt)
-        data = b"\x04\t\x00K\xc4\xb69\x00\x00\x00\xa0\xc1\x04\x01\x00\x9f"
-        pkt = Packet(0x07, data)
+
+        data = b"K\xc4\xb69\x00\x00\x00\xa0\xc1"
+        pkt = Packet(0x04, data)
         self.send(pkt)
 
+        # data = b"\x9f"
+        # pkt = Packet(0x04, data)
+        # self.send(pkt)
+
     def send_led(self) -> None:
-        print("Sending red LED...")
-        data = b'\x04\x01\x00\x8f\x04"\x00\x97\x1f\x00\x13\xa4\xb5@\xa0\xbd@\x9c\xc5\\\xa0\xbd@\xa4\xb5\x06\xa8\xadA\xa4\xb5\x9c\xa0\xbd]\xa4\xb5@\xa8\xad\x19\x04\x01\x00\x8f\x04"\x00\x97\x1f\x00\x13\xa4\xb5@\xa0\xbd@\x9c\xc5\\\xa0\xbd@\xa4\xb5\x06\xa8\xadA\xa4\xb5\x9c\xa0\xbd]\xa4\xb5@\xa8\xad\x19\x04 \x00\x03\x00\xfc\x00\xfc\t\x00\x00\x00\x00\x00\x00\xfc\x00\xfc\t\x00\x00\x00\x00\x00\x00\xfc\x00\xfc\t\x00\x00\x00\x00\x00\x00\x04\x16\x00\x11\x00\xfc\x00\xfc\t\x00\x00\x00\x00\x00\x00\xfc\x00\xfc\t\x00\x00\x00\x00\x00\x00'
-        pkt = Packet(0x07, data)
+        print("Sending LED...")
+
+        data = b'\x03\xc8\x90\x86\x88\t\x00\x00\x00\x00\x00\x0a\x99\x86\x88\t\x00\x00\x00\x00\x00\x4c\xa1\x86\x88\t\x00\x00\x00\x00\x00\x00'
+        pkt = Packet(0x04, data)
+        self.send(pkt)
+
+        data = b'\x11\x86\x88\x86\x88\t\x00\x00\x00\x00\x00\x8e\xa9\x86\x88\t\x00\x00\x00\x00\x00\x00'
+        pkt = Packet(0x04, data)
         self.send(pkt)
 
 
