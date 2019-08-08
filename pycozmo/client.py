@@ -1,182 +1,20 @@
-#!/usr/bin/env python3
 
-from typing import Optional, Any, Tuple, List
-import math
-import socket
 import select
-from threading import Thread
+import socket
+from datetime import datetime, timedelta
 from queue import Queue, Empty
-import time
-from _datetime import datetime, timedelta
+from threading import Thread
+from typing import Optional, Tuple, Any
 
+from pycozmo.frame import Frame
+from pycozmo.packet import Packet
+from pycozmo.util import hex_dump
+from pycozmo.window import ReceiveWindow, SendWindow
 
-PKT_ID = b"COZ\x03RE\x01"
 
 ROBOT_ADDR = ("172.31.1.1", 5551)
-
 PING_INTERVAL = 0.05
-TICK = 0.0066
 RUN_INTERVAL = 0.05
-
-
-def hex_dump(data: bytes) -> str:
-    res = ":".join("{:02x}".format(b) for b in data)
-    return res
-
-
-class Packet(object):
-
-    OOB_IDS = (5, 0x0a, 0x0b)
-
-    def __init__(self, type_id: Optional[int] = None, data: bytes = b'') -> None:
-        self.type = type_id
-        self.seq = 0
-        self.ack = 0
-        self.data = data
-
-    def to_bytes(self) -> bytes:
-        raw_data = \
-            self.type.to_bytes(1, 'little') + \
-            len(self.data).to_bytes(2, 'little') + \
-            self.data
-        return raw_data
-
-    def from_bytes(self, raw_data: bytes, offset: int = 0) -> int:
-        i = offset
-        self.type = int(raw_data[i])
-        i += 1
-        pkt_len = int.from_bytes(raw_data[i:i+2], 'little')
-        i += 2
-        self.data = raw_data[i:i+pkt_len]
-        i += pkt_len
-        res = i - offset
-        return res
-
-    def from_str(self, s: str) -> None:
-        self.data = bytearray.fromhex(s.replace(":", ""))
-
-    def is_oob(self) -> bool:
-        res = self.type in Packet.OOB_IDS
-        return res
-
-
-class Frame(object):
-
-    def __init__(self, type_id: Optional[int] = None, pkts: Optional[List[Packet]] = None) -> None:
-        self.type = type_id
-        self.first_seq = 0
-        self.seq = 0
-        self.ack = 0
-        self.pkts = pkts or []
-
-    def to_bytes(self) -> bytes:
-        raw_frame = \
-            PKT_ID + \
-            self.type.to_bytes(1, 'little') + \
-            self.first_seq.to_bytes(2, 'little') + \
-            self.seq.to_bytes(2, 'little') + \
-            self.ack.to_bytes(2, 'little')
-        for pkt in self.pkts:
-            raw_pkt = pkt.to_bytes()
-            raw_frame += raw_pkt
-        return raw_frame
-
-    def from_bytes(self, raw_frame: bytes) -> None:
-
-        if len(raw_frame) < 7+1+2+2+2:
-            raise ValueError("Invalid frame.")
-
-        if raw_frame[:7] != PKT_ID:
-            raise ValueError("Invalid packet ID.")
-
-        self.type = int(raw_frame[7])
-        self.first_seq = int.from_bytes(raw_frame[8:10], 'little')
-        self.seq = int.from_bytes(raw_frame[10:12], 'little')
-        self.ack = int.from_bytes(raw_frame[12:14], 'little')
-
-        if self.type == 7 or self.type == 9:
-            i = 14
-            seq = self.first_seq
-            while i < len(raw_frame):
-                pkt = Packet()
-                i += pkt.from_bytes(raw_frame, i)
-                assert pkt.type in (2, 3, 4, 5, 0x0a, 0x0b)
-                pkt.ack = self.ack
-                if pkt.type in (2, 3, 4):
-                    pkt.seq = seq
-                    seq += 1
-                else:
-                    pkt.seq = 0
-                    pkt.ack = 0
-                self.pkts.append(pkt)
-            assert i == len(raw_frame)
-            assert not self.seq or self.seq + 1 == seq
-        else:
-            pkt = Packet(self.type, raw_frame[14:])
-            pkt.seq = self.seq
-            pkt.ack = self.ack
-            self.pkts.append(pkt)
-
-
-class BaseWindow(object):
-
-    def __init__(self, seq_bits: int, size: Optional[int] = None) -> None:
-        if size is None:
-            self.size = int(math.pow(2, seq_bits - 1))
-        elif size < 0 or size > int(math.pow(2, seq_bits - 1)):
-            raise ValueError("Invalid window size.")
-        else:
-            self.size = size
-        self.expected_seq = 1
-        self.last_seq = 0
-        self.max_seq = int(math.pow(2, seq_bits))
-
-    def is_valid_seq(self, seq: int) -> bool:
-        res = 0 <= seq < self.max_seq
-        return res
-
-    def reset(self) -> None:
-        self.expected_seq = 1
-        self.last_seq = 0
-
-
-class ReceiveWindow(BaseWindow):
-
-    def __init__(self, seq_bits: int, size: Optional[int] = None) -> None:
-        super().__init__(seq_bits, size)
-        self.window = [None for _ in range(self.size)]
-
-    def is_out_of_order(self, seq: int) -> bool:
-        if self.expected_seq > self.last_seq:
-            res = self.expected_seq > seq > self.last_seq
-        else:
-            res = seq < self.expected_seq or seq > self.last_seq
-        return res
-
-    def exists(self, seq: int) -> bool:
-        res = self.window[seq % self.size] is not None
-        return res
-
-    def put(self, seq: int, data: Any) -> None:
-        self.window[seq % self.size] = data
-
-    def is_expected(self, seq: int) -> bool:
-        res = seq == self.expected_seq
-        return res
-
-    def get(self) -> Any:
-        seq = self.expected_seq
-        data = self.window[seq % self.size]
-        if data is not None:
-            self.window[seq % self.size] = None
-            self.expected_seq = (seq + 1) % self.max_seq
-            self.last_seq = (self.expected_seq + self.size - 1) % self.max_seq
-        return data
-
-    def reset(self) -> None:
-        super().reset()
-        for i in range(self.size):
-            self.window[i] = None
 
 
 class ReceiveThread(Thread):
@@ -252,70 +90,6 @@ class ReceiveThread(Thread):
 
     def reset(self):
         self.window.reset()
-
-
-class SendWindowSlot(object):
-
-    def __init__(self):
-        self.seq: Optional[int] = None
-        self.data: Any = None
-
-    def set(self, seq: int, data: Any):
-        self.seq = seq
-        self.data = data
-
-    def reset(self):
-        self.seq = None
-        self.data = None
-
-
-class SendWindow(BaseWindow):
-
-    def __init__(self, seq_bits: int, size: Optional[int] = None) -> None:
-        super().__init__(seq_bits, size)
-        self.next_seq = 1
-        self.window = [SendWindowSlot() for _ in range(self.size)]
-
-    def is_out_of_order(self, seq: int) -> bool:
-        if self.is_empty():
-            res = True
-        elif self.expected_seq > self.next_seq:
-            res = self.expected_seq > seq >= self.next_seq
-        else:
-            res = seq < self.expected_seq or seq >= self.next_seq
-        return res
-
-    def is_empty(self) -> bool:
-        res = self.expected_seq == self.next_seq
-        return res
-
-    def is_full(self) -> bool:
-        if self.expected_seq > self.next_seq:
-            res = (self.next_seq + self.max_seq - self.expected_seq) >= self.size
-        else:
-            res = (self.next_seq - self.expected_seq) >= self.size
-        return res
-
-    def put(self, data: Any) -> int:
-        seq = self.next_seq
-        self.next_seq = (self.next_seq + 1) % self.max_seq
-        self.window[seq % self.size].set(seq, data)
-        return seq
-
-    def pop(self) -> None:
-        self.window[self.expected_seq % self.size].reset()
-        self.expected_seq = (self.expected_seq + 1) % self.max_seq
-        self.last_seq = (self.last_seq + 1) % self.max_seq
-
-    def get_oldest(self) -> Any:
-        res = self.window[self.expected_seq % self.size].data
-        return res
-
-    def reset(self):
-        super().reset()
-        self.next_seq = 1
-        for slot in self.window:
-            slot.reset()
 
 
 class SendThread(Thread):
@@ -579,34 +353,3 @@ class Client(Thread):
         self.send(pkt)
         pkt = Packet(4, b"\x8f")
         self.send(pkt)
-
-
-def run():
-    cli = Client()
-    cli.start()
-    cli.connect()
-
-    while cli.state != Client.CONNECTED:
-        time.sleep(0.2)
-
-    while True:
-        cmd = input()
-        if cmd == "q":
-            break
-        elif cmd == "e":
-            cli.send_enable()
-        elif cmd == "o":
-            cli.send_led()
-
-    cli.send_disconnect()
-
-
-def main():
-    try:
-        run()
-    except KeyboardInterrupt:
-        print("\nInterrupted...")
-
-
-if __name__ == '__main__':
-    main()
