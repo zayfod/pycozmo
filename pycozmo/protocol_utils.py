@@ -43,6 +43,10 @@ class BinaryReader(object):
         self._buffer = buffer
         self._index = 0
 
+    @property
+    def buffer(self):
+        return self._buffer
+
     def __len__(self):
         return len(self._buffer)
 
@@ -159,11 +163,3 @@ class BinaryWriter(object):
         self.write(len(value), length_format)
         for element in value:
             element.to_writer(self)
-
-
-class TextReader(BinaryReader):
-    """ Used to read in a stream of binary data from a hex string, keeping track of the current position. """
-
-    def __init__(self, buffer: str):
-        bin_buffer = bytearray.fromhex(buffer.replace(":", ""))
-        super().__init__(bin_buffer)

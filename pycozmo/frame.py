@@ -5,6 +5,7 @@ from .packet import Packet
 
 
 FRAME_ID = b"COZ\x03RE\x01"
+MIN_FRAME_SIZE = len(FRAME_ID) + 1 + 2 + 2 + 2
 
 
 class Frame(object):
@@ -30,7 +31,7 @@ class Frame(object):
 
     def from_bytes(self, raw_frame: bytes) -> None:
 
-        if len(raw_frame) < 7+1+2+2+2:
+        if len(raw_frame) < MIN_FRAME_SIZE:
             raise ValueError("Invalid frame.")
 
         if raw_frame[:7] != FRAME_ID:
