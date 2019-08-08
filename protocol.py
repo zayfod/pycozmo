@@ -52,6 +52,9 @@ class Packet(object):
         res = i - offset
         return res
 
+    def from_str(self, s: str) -> None:
+        self.data = bytearray.fromhex(s.replace(":", ""))
+
     def is_oob(self) -> bool:
         res = self.type in Packet.OOB_IDS
         return res
@@ -97,9 +100,9 @@ class Frame(object):
             while i < len(raw_frame):
                 pkt = Packet()
                 i += pkt.from_bytes(raw_frame, i)
-                assert pkt.type in (2, 4, 5, 0x0a, 0x0b)
+                assert pkt.type in (2, 3, 4, 5, 0x0a, 0x0b)
                 pkt.ack = self.ack
-                if pkt.type in (2, 4):
+                if pkt.type in (2, 3, 4):
                     pkt.seq = seq
                     seq += 1
                 else:
@@ -213,9 +216,6 @@ class ReceiveThread(Thread):
 
             frame = Frame()
             frame.from_bytes(raw_frame)
-
-            if frame.seq:
-                print("Got  {}".format(hex_dump(raw_frame[7:])))
 
             self.handle_frame(frame)
 
@@ -399,7 +399,6 @@ class SendThread(Thread):
             self.window.pop()
 
     def set_last_ack(self, last_ack: int) -> None:
-        print("Acknowledging: {}".format(last_ack))
         self.last_ack = last_ack
 
     def reset(self) -> None:
@@ -487,6 +486,10 @@ class Client(Thread):
         except InterruptedError:
             pass
 
+    def send_disconnect(self) -> None:
+        pkt = Packet(3)
+        self.send(pkt)
+
     def send_ping(self) -> None:
         data = b"\x8d\x97\x6e\x12\x7d\x66\xf8\x40\x01\x00\x00\x00\x00\x00\x00\x00\x00"
         pkt = Packet(0x0b, data)
@@ -496,16 +499,61 @@ class Client(Thread):
         # TODO: What is this?
         print("Sending enable...")
 
-        # pkt = Packet(0x04, b"%")
-        # self.send(pkt)
+        pkt = Packet(0x04, b"\x25")
+        self.send(pkt)
 
         data = b"K\xc4\xb69\x00\x00\x00\xa0\xc1"
         pkt = Packet(0x04, data)
         self.send(pkt)
 
-        # data = b"\x9f"
-        # pkt = Packet(0x04, data)
-        # self.send(pkt)
+        pkt = Packet(0x04, b"\x9f")
+        self.send(pkt)
+
+    def send_init_oled_face(self) -> None:
+        pkt = Packet(4, b"\x8f")
+        self.send(pkt)
+
+        pkt = Packet(4)
+        pkt.from_str("97:0d:00:1e:f8:81:f8:83:52:17:f8:81:f8:83:51:1f")
+        self.send(pkt)
+        pkt = Packet(4, b"\x8f")
+        self.send(pkt)
+
+        pkt = Packet(4)
+        pkt.from_str("97:0d:00:1e:f8:81:f8:83:53:15:f8:81:f8:83:53:1e")
+        self.send(pkt)
+        pkt = Packet(4, b"\x8f")
+        self.send(pkt)
+
+        pkt = Packet(4)
+        pkt.from_str("97:0d:00:1d:f8:81:f8:83:54:15:f8:81:f8:83:54:1d")
+        self.send(pkt)
+        pkt = Packet(4, b"\x8f")
+        self.send(pkt)
+
+        pkt = Packet(4)
+        pkt.from_str("97:0d:00:1c:f8:81:f8:83:56:13:f8:81:f8:83:56:1c")
+        self.send(pkt)
+        pkt = Packet(4, b"\x8f")
+        self.send(pkt)
+
+        pkt = Packet(4)
+        pkt.from_str("97:14:00:1a:f4:81:40:f4:85:f4:81:83:57:f4:81:40:0f:f8:81:f8:83:57:1c")
+        self.send(pkt)
+        pkt = Packet(4, b"\x8f")
+        self.send(pkt)
+
+        pkt = Packet(4)
+        pkt.from_str("97:14:00:19:f4:81:40:f4:85:f4:81:83:58:f4:81:41:0e:f8:81:f8:83:58:1b")
+        self.send(pkt)
+        pkt = Packet(4, b"\x8f")
+        self.send(pkt)
+
+        pkt = Packet(4)
+        pkt.from_str("97:14:00:18:f4:81:40:f4:85:f4:81:83:5a:f4:81:41:0c:f8:81:f8:83:5a:1a")
+        self.send(pkt)
+        pkt = Packet(4, b"\x8f")
+        self.send(pkt)
 
     def send_led(self) -> None:
         print("Sending LED...")
@@ -516,6 +564,20 @@ class Client(Thread):
 
         data = b'\x11\x86\x88\x86\x88\t\x00\x00\x00\x00\x00\x8e\xa9\x86\x88\t\x00\x00\x00\x00\x00\x00'
         pkt = Packet(0x04, data)
+        self.send(pkt)
+
+    def send_big_eyes(self) -> None:
+        pkt = Packet(4)
+        pkt.from_str("97:24:00:16:a0:b6:41:9c:be:40:98:c6:5b:9c:be:9c:a0:b6:40:06:a4:ae:a4:a0:b6:40:9c:be:40:98:c6:5b:9c:be:40:a0:b6:40:16")
+        self.send(pkt)
+        pkt = Packet(4, b"\x8f")
+        self.send(pkt)
+
+    def send_sleepy_eyes(self) -> None:
+        pkt = Packet(4)
+        pkt.from_str("97:1d:00:17:f4:81:41:f4:85:f4:81:83:5b:f4:81:40:09:f4:81:40:f4:85:f4:81:83:4c:f8:83:4d:f8:81:19")
+        self.send(pkt)
+        pkt = Packet(4, b"\x8f")
         self.send(pkt)
 
 
@@ -536,7 +598,7 @@ def run():
         elif cmd == "o":
             cli.send_led()
 
-    cli.stop()
+    cli.send_disconnect()
 
 
 def main():

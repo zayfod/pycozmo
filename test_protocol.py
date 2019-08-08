@@ -2,7 +2,7 @@
 import unittest
 import random
 
-from protocol import Frame, BaseWindow, ReceiveWindow, ReceiveThread, SendWindow
+from protocol import Frame, Packet, BaseWindow, ReceiveWindow, ReceiveThread, SendWindow
 
 
 class TestFrame(unittest.TestCase):
@@ -64,9 +64,9 @@ class TestReceiveWindow(unittest.TestCase):
         self.w = ReceiveWindow(4)
 
     def test_is_out_of_order(self):
-        self.assertTrue(self.w.is_out_of_order(0))
+        self.assertFalse(self.w.is_out_of_order(0))
         self.assertFalse(self.w.is_out_of_order(1))
-        self.assertTrue(self.w.is_out_of_order(10))
+        self.assertFalse(self.w.is_out_of_order(10))
 
     def test_exists(self):
         self.assertFalse(self.w.exists(0))
@@ -88,72 +88,6 @@ class TestReceiveWindow(unittest.TestCase):
         self.assertIsNone(self.w.get())
 
 
-class TestReceiveThread(unittest.TestCase):
-
-    def setUp(self):
-        # noinspection PyTypeChecker
-        self.p = ReceiveThread(None, None, seq_bits=4, window_size=2)
-        self.p.deliver = lambda data: self.output.append(data)
-        self.output = []
-
-    def test_handle_pkt(self):
-        self.p.handle_pkt(1, "1")
-        self.p.handle_pkt(2, "2")
-        self.p.handle_pkt(3, "3")
-        self.assertEqual(self.output, ["1", "2", "3"])
-
-    def test_handle_pkt_duplicates(self):
-        self.p.handle_pkt(1, "1")
-        self.p.handle_pkt(1, "1")
-        self.p.handle_pkt(2, "2")
-        self.p.handle_pkt(2, "2")
-        self.p.handle_pkt(3, "3")
-        self.p.handle_pkt(3, "3")
-        self.p.handle_pkt(4, "4")
-        self.p.handle_pkt(4, "4")
-        self.p.handle_pkt(5, "5")
-        self.p.handle_pkt(5, "5")
-        self.p.handle_pkt(5, "5")
-        self.p.handle_pkt(6, "6")
-        self.p.handle_pkt(6, "6")
-        self.p.handle_pkt(6, "6")
-        self.assertEqual(self.output, ["1", "2", "3", "4", "5", "6"])
-
-    def test_handle_pkt_order(self):
-        self.p.handle_pkt(2, "2")
-        self.p.handle_pkt(1, "1")
-        self.p.handle_pkt(3, "3")
-        self.p.handle_pkt(4, "4")
-        self.p.handle_pkt(6, "6")
-        self.p.handle_pkt(5, "5")
-        self.assertEqual(self.output, ["1", "2", "3", "4", "5", "6"])
-
-
-class TestReceiveThreadLong(unittest.TestCase):
-
-    def setUp(self):
-        # noinspection PyTypeChecker
-        self.p = ReceiveThread(None, None, seq_bits=4, window_size=None)
-        self.p.deliver = lambda data: self.output.append(data)
-        self.output = []
-
-    def test_handle_pkt_long(self):
-        num_pkts = 16 * 1024
-        for i in range(1, num_pkts + 1):
-            self.p.handle_pkt(i % 16, i)
-        self.assertEqual(self.output, list(range(1, num_pkts + 1)))
-
-    def test_handle_pkt_long_order(self):
-        num_pkts = 16 * 1024
-        for i in range(1, num_pkts + 1, 16):
-            for j in range(i, i + 16, 8):
-                sequence = list(range(j, j + 8))
-                random.shuffle(sequence)
-                for k in sequence:
-                    self.p.handle_pkt(k % 16, k)
-        self.assertEqual(self.output, list(range(1, num_pkts + 1)))
-
-
 class TestTransmitWindow(unittest.TestCase):
 
     def setUp(self):
@@ -166,7 +100,7 @@ class TestTransmitWindow(unittest.TestCase):
         self.assertTrue(self.w.is_out_of_order(16))
 
     def test_is_out_of_order_one(self):
-        self.w.put(0.0, "1")
+        self.w.put("1")
         self.assertTrue(self.w.is_out_of_order(0))
         self.assertFalse(self.w.is_out_of_order(1))
         self.assertTrue(self.w.is_out_of_order(2))
@@ -174,7 +108,7 @@ class TestTransmitWindow(unittest.TestCase):
 
     def test_is_empty(self):
         self.assertTrue(self.w.is_empty())
-        self.w.put(0.0, "0")
+        self.w.put("0")
         self.assertFalse(self.w.is_empty())
         self.w.pop()
         self.assertTrue(self.w.is_empty())
@@ -182,7 +116,7 @@ class TestTransmitWindow(unittest.TestCase):
     def test_is_full(self):
         for i in range(8):
             self.assertFalse(self.w.is_full())
-            self.w.put(0.0, str(i))
+            self.w.put(str(i))
         self.assertTrue(self.w.is_full())
         for _ in range(8):
             self.w.pop()
