@@ -2,15 +2,15 @@
 
 import time
 
-from pycozmo.client import Client
+import pycozmo
 
 
 def run():
-    cli = Client()
+    cli = pycozmo.Client()
     cli.start()
     cli.connect()
 
-    while cli.state != Client.CONNECTED:
+    while cli.state != pycozmo.Client.CONNECTED:
         time.sleep(0.2)
 
     while True:

@@ -6,10 +6,10 @@ from queue import Queue, Empty
 from threading import Thread
 from typing import Optional, Tuple, Any
 
-from pycozmo.frame import Frame
-from pycozmo.packet import Packet
-from pycozmo.util import hex_dump
-from pycozmo.window import ReceiveWindow, SendWindow
+from .frame import Frame
+from .packet import Packet
+from .util import hex_dump
+from .window import ReceiveWindow, SendWindow
 
 
 ROBOT_ADDR = ("172.31.1.1", 5551)

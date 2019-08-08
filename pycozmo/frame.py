@@ -1,10 +1,10 @@
 
 from typing import Optional, List
 
-from pycozmo.packet import Packet
+from .packet import Packet
 
 
-PKT_ID = b"COZ\x03RE\x01"
+FRAME_ID = b"COZ\x03RE\x01"
 
 
 class Frame(object):
@@ -18,7 +18,7 @@ class Frame(object):
 
     def to_bytes(self) -> bytes:
         raw_frame = \
-            PKT_ID + \
+            FRAME_ID + \
             self.type.to_bytes(1, 'little') + \
             self.first_seq.to_bytes(2, 'little') + \
             self.seq.to_bytes(2, 'little') + \
@@ -33,7 +33,7 @@ class Frame(object):
         if len(raw_frame) < 7+1+2+2+2:
             raise ValueError("Invalid frame.")
 
-        if raw_frame[:7] != PKT_ID:
+        if raw_frame[:7] != FRAME_ID:
             raise ValueError("Invalid packet ID.")
 
         self.type = int(raw_frame[7])
