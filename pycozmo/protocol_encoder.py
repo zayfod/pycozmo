@@ -8,10 +8,11 @@ Do not modify.
 
 """
 
+from .protocol_base import Packet
 from .protocol_utils import validate_float, validate_bool, get_size, BinaryReader, BinaryWriter
 
     
-class Connect(object):
+class Connect(Packet):
 
     PACKET_ID = 2
 
@@ -38,8 +39,8 @@ class Connect(object):
     @classmethod
     def from_bytes(cls, buffer):
         reader = BinaryReader(buffer)
-        value = cls.from_reader(reader)
-        return value
+        obj = cls.from_reader(reader)
+        return obj
         
     @classmethod
     def from_reader(cls, reader):
@@ -48,7 +49,7 @@ class Connect(object):
             )
 
     
-class Disconnect(object):
+class Disconnect(Packet):
 
     PACKET_ID = 3
 
@@ -75,8 +76,8 @@ class Disconnect(object):
     @classmethod
     def from_bytes(cls, buffer):
         reader = BinaryReader(buffer)
-        value = cls.from_reader(reader)
-        return value
+        obj = cls.from_reader(reader)
+        return obj
         
     @classmethod
     def from_reader(cls, reader):
@@ -85,7 +86,7 @@ class Disconnect(object):
             )
 
     
-class DriveWheels(object):
+class DriveWheels(Packet):
 
     PACKET_ID = 4
     ID = 0x32
@@ -172,8 +173,8 @@ class DriveWheels(object):
     @classmethod
     def from_bytes(cls, buffer):
         reader = BinaryReader(buffer)
-        value = cls.from_reader(reader)
-        return value
+        obj = cls.from_reader(reader)
+        return obj
         
     @classmethod
     def from_reader(cls, reader):
@@ -188,7 +189,7 @@ class DriveWheels(object):
             rwheel_accel_mmps2=rwheel_accel_mmps2)
 
     
-class StopAllMotors(object):
+class StopAllMotors(Packet):
 
     PACKET_ID = 4
     ID = 0x3b
@@ -216,8 +217,8 @@ class StopAllMotors(object):
     @classmethod
     def from_bytes(cls, buffer):
         reader = BinaryReader(buffer)
-        value = cls.from_reader(reader)
-        return value
+        obj = cls.from_reader(reader)
+        return obj
         
     @classmethod
     def from_reader(cls, reader):
@@ -226,7 +227,7 @@ class StopAllMotors(object):
             )
 
     
-class SetHeadLight(object):
+class SetHeadLight(Packet):
 
     PACKET_ID = 4
     ID = 0x0b
@@ -268,8 +269,8 @@ class SetHeadLight(object):
     @classmethod
     def from_bytes(cls, buffer):
         reader = BinaryReader(buffer)
-        value = cls.from_reader(reader)
-        return value
+        obj = cls.from_reader(reader)
+        return obj
         
     @classmethod
     def from_reader(cls, reader):

@@ -110,8 +110,8 @@ class ProtocolGenerator(object):
     @classmethod
     def from_bytes(cls, buffer):
         reader = BinaryReader(buffer)
-        value = cls.from_reader(reader)
-        return value
+        obj = cls.from_reader(reader)
+        return obj
         
     @classmethod
     def from_reader(cls, reader):
@@ -137,7 +137,7 @@ class ProtocolGenerator(object):
     def generate_packet(self, packet):
         self.f.write(r"""
     
-class {name}(object):
+class {name}(Packet):
 
     PACKET_ID = {packet_id}
 """.format(name=to_pascal_case(packet.name), packet_id=packet.packet_id))
@@ -166,6 +166,7 @@ Do not modify.
 
 """
 
+from .protocol_base import Packet
 from .protocol_utils import validate_float, validate_bool, get_size, BinaryReader, BinaryWriter
 '''.format(declaration=os.path.basename(protocol_declaration.__file__), generator=os.path.basename(__file__))
         self.f.write(header)
