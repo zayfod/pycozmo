@@ -10,6 +10,9 @@ class Packet(ABC):
 
     # TODO: Rename to "PACKET_TYPE".
     PACKET_ID = None
+    # TODO: Remove.
+    seq = 0
+    ack = 0
 
     @abstractmethod
     def __len__(self):
@@ -103,7 +106,7 @@ class UnknownCommand(UnknownPacket):
         "_data",
     )
 
-    def __init__(self, cmd_id: int, data: bytes):
+    def __init__(self, cmd_id: int, data: bytes = b""):
         super().__init__(PacketType.ACTION, data)
         self.ID = cmd_id
 
@@ -138,7 +141,7 @@ class UnknownEvent(UnknownPacket):
         "_data",
     )
 
-    def __init__(self, cmd_id: int, data: bytes):
+    def __init__(self, cmd_id: int, data: bytes = b""):
         super().__init__(PacketType.EVENT, data)
         self.ID = cmd_id
 

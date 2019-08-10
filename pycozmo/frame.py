@@ -127,6 +127,8 @@ class Frame(object):
                 pkt_type = PacketType(reader.read("B"))
                 pkt_len = reader.read("H")
                 pkt = cls._decode_packet(pkt_type, pkt_len, reader)
+                pkt.seq = pkt_seq
+                pkt.ack = ack
                 if not pkt.is_oob():
                     pkt_seq += 1
                 pkts.append(pkt)
