@@ -89,6 +89,30 @@ class UInt32Argument(Argument):
         self.default = int(default)
 
 
+class Int8Argument(Argument):
+    """ 8-bit signed integer. """
+
+    def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
+        super().__init__(name, description)
+        self.default = int(default)
+
+
+class Int16Argument(Argument):
+    """ 16-bit signed integer. """
+
+    def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
+        super().__init__(name, description)
+        self.default = int(default)
+
+
+class Int32Argument(Argument):
+    """ 32-bit signed integer. """
+
+    def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
+        super().__init__(name, description)
+        self.default = int(default)
+
+
 class Packet(ABC):
     """ Base class for packets. """
 
@@ -165,14 +189,46 @@ PROTOCOL = Protocol(packets=[
     Ping(),
     Unknown0A(),
 
+    Command(0x0b, "set_head_light", arguments=[
+        BoolArgument("enable")
+    ]),
     Command(0x32, "drive_wheels", arguments=[
         FloatArgument("lwheel_speed_mmps"),
         FloatArgument("rwheel_speed_mmps"),
         FloatArgument("lwheel_accel_mmps2"),
         FloatArgument("rwheel_accel_mmps2"),
     ]),
+    Command(0x33, "turn_in_place", arguments=[
+        FloatArgument("wheel_speed_mmps"),
+        FloatArgument("wheel_accel_mmps2"),
+        Int16Argument("direction"),
+    ]),
+    Command(0x34, "drive_lift", arguments=[
+        FloatArgument("speed"),
+    ]),
+    Command(0x35, "drive_head", arguments=[
+        FloatArgument("speed"),
+    ]),
+    Command(0x36, "set_lift_height", arguments=[
+        FloatArgument("height_mm"),
+        FloatArgument("max_speed_rad_per_sec", default=3.0),
+        FloatArgument("accel_rad_per_sec2", default=20.0),
+        FloatArgument("duration_sec"),
+        UInt8Argument("id"),
+    ]),
+    Command(0x37, "set_head_angle", arguments=[
+        FloatArgument("angle_rad"),
+        FloatArgument("max_speed_rad_per_sec", default=15.0),
+        FloatArgument("accel_rad_per_sec2", default=20.0),
+        FloatArgument("duration_sec"),
+        UInt8Argument("id"),
+    ]),
     Command(0x3b, "stop_all_motors"),
-    Command(0x0b, "set_head_light", arguments=[
-        BoolArgument("enable")
-    ])
+
+    Command(0xc4, "acknowledge_command", arguments=[
+        UInt8Argument("id"),
+    ]),
+
+    Command(0xc2, "robot_delocalized"),
+    Command(0xc3, "robot_poked"),
 ])

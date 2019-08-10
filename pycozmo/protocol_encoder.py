@@ -226,6 +226,58 @@ class Unknown0A(Packet):
             )
 
     
+class SetHeadLight(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x0b
+
+    __slots__ = (
+        "_enable",
+    )
+
+    def __init__(self,
+                 enable=False):
+        self.enable = enable
+
+    @property
+    def enable(self):
+        return self._enable
+
+    @enable.setter
+    def enable(self, value):
+        self._enable = validate_bool("enable", value)
+
+    def __len__(self):
+        return \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "enable={enable})".format(
+                type=type(self).__name__,
+                enable=self._enable)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(int(self._enable), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        enable = bool(reader.read("b"))
+        return cls(
+            enable=enable)
+
+    
 class DriveWheels(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -329,6 +381,436 @@ class DriveWheels(Packet):
             rwheel_accel_mmps2=rwheel_accel_mmps2)
 
     
+class TurnInPlace(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x33
+
+    __slots__ = (
+        "_wheel_speed_mmps",
+        "_wheel_accel_mmps2",
+        "_direction",
+    )
+
+    def __init__(self,
+                 wheel_speed_mmps=0.0,
+                 wheel_accel_mmps2=0.0,
+                 direction=0):
+        self.wheel_speed_mmps = wheel_speed_mmps
+        self.wheel_accel_mmps2 = wheel_accel_mmps2
+        self.direction = direction
+
+    @property
+    def wheel_speed_mmps(self):
+        return self._wheel_speed_mmps
+
+    @wheel_speed_mmps.setter
+    def wheel_speed_mmps(self, value):
+        self._wheel_speed_mmps = validate_float("wheel_speed_mmps", value)
+
+    @property
+    def wheel_accel_mmps2(self):
+        return self._wheel_accel_mmps2
+
+    @wheel_accel_mmps2.setter
+    def wheel_accel_mmps2(self, value):
+        self._wheel_accel_mmps2 = validate_float("wheel_accel_mmps2", value)
+
+    @property
+    def direction(self):
+        return self._direction
+
+    @direction.setter
+    def direction(self, value):
+        self._direction = validate_integer("direction", value, -32768, 32767)
+
+    def __len__(self):
+        return \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('h')
+
+    def __repr__(self):
+        return "{type}(" \
+               "wheel_speed_mmps={wheel_speed_mmps}, " \
+               "wheel_accel_mmps2={wheel_accel_mmps2}, " \
+               "direction={direction})".format(
+                type=type(self).__name__,
+                wheel_speed_mmps=self._wheel_speed_mmps,
+                wheel_accel_mmps2=self._wheel_accel_mmps2,
+                direction=self._direction)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._wheel_speed_mmps, "f")
+        writer.write(self._wheel_accel_mmps2, "f")
+        writer.write(self._direction, "h")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        wheel_speed_mmps = reader.read("f")
+        wheel_accel_mmps2 = reader.read("f")
+        direction = reader.read("h")
+        return cls(
+            wheel_speed_mmps=wheel_speed_mmps,
+            wheel_accel_mmps2=wheel_accel_mmps2,
+            direction=direction)
+
+    
+class DriveLift(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x34
+
+    __slots__ = (
+        "_speed",
+    )
+
+    def __init__(self,
+                 speed=0.0):
+        self.speed = speed
+
+    @property
+    def speed(self):
+        return self._speed
+
+    @speed.setter
+    def speed(self, value):
+        self._speed = validate_float("speed", value)
+
+    def __len__(self):
+        return \
+            get_size('f')
+
+    def __repr__(self):
+        return "{type}(" \
+               "speed={speed})".format(
+                type=type(self).__name__,
+                speed=self._speed)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._speed, "f")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        speed = reader.read("f")
+        return cls(
+            speed=speed)
+
+    
+class DriveHead(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x35
+
+    __slots__ = (
+        "_speed",
+    )
+
+    def __init__(self,
+                 speed=0.0):
+        self.speed = speed
+
+    @property
+    def speed(self):
+        return self._speed
+
+    @speed.setter
+    def speed(self, value):
+        self._speed = validate_float("speed", value)
+
+    def __len__(self):
+        return \
+            get_size('f')
+
+    def __repr__(self):
+        return "{type}(" \
+               "speed={speed})".format(
+                type=type(self).__name__,
+                speed=self._speed)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._speed, "f")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        speed = reader.read("f")
+        return cls(
+            speed=speed)
+
+    
+class SetLiftHeight(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x36
+
+    __slots__ = (
+        "_height_mm",
+        "_max_speed_rad_per_sec",
+        "_accel_rad_per_sec2",
+        "_duration_sec",
+        "_id",
+    )
+
+    def __init__(self,
+                 height_mm=0.0,
+                 max_speed_rad_per_sec=3.0,
+                 accel_rad_per_sec2=20.0,
+                 duration_sec=0.0,
+                 id=0):
+        self.height_mm = height_mm
+        self.max_speed_rad_per_sec = max_speed_rad_per_sec
+        self.accel_rad_per_sec2 = accel_rad_per_sec2
+        self.duration_sec = duration_sec
+        self.id = id
+
+    @property
+    def height_mm(self):
+        return self._height_mm
+
+    @height_mm.setter
+    def height_mm(self, value):
+        self._height_mm = validate_float("height_mm", value)
+
+    @property
+    def max_speed_rad_per_sec(self):
+        return self._max_speed_rad_per_sec
+
+    @max_speed_rad_per_sec.setter
+    def max_speed_rad_per_sec(self, value):
+        self._max_speed_rad_per_sec = validate_float("max_speed_rad_per_sec", value)
+
+    @property
+    def accel_rad_per_sec2(self):
+        return self._accel_rad_per_sec2
+
+    @accel_rad_per_sec2.setter
+    def accel_rad_per_sec2(self, value):
+        self._accel_rad_per_sec2 = validate_float("accel_rad_per_sec2", value)
+
+    @property
+    def duration_sec(self):
+        return self._duration_sec
+
+    @duration_sec.setter
+    def duration_sec(self, value):
+        self._duration_sec = validate_float("duration_sec", value)
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        self._id = validate_integer("id", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "height_mm={height_mm}, " \
+               "max_speed_rad_per_sec={max_speed_rad_per_sec}, " \
+               "accel_rad_per_sec2={accel_rad_per_sec2}, " \
+               "duration_sec={duration_sec}, " \
+               "id={id})".format(
+                type=type(self).__name__,
+                height_mm=self._height_mm,
+                max_speed_rad_per_sec=self._max_speed_rad_per_sec,
+                accel_rad_per_sec2=self._accel_rad_per_sec2,
+                duration_sec=self._duration_sec,
+                id=self._id)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._height_mm, "f")
+        writer.write(self._max_speed_rad_per_sec, "f")
+        writer.write(self._accel_rad_per_sec2, "f")
+        writer.write(self._duration_sec, "f")
+        writer.write(self._id, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        height_mm = reader.read("f")
+        max_speed_rad_per_sec = reader.read("f")
+        accel_rad_per_sec2 = reader.read("f")
+        duration_sec = reader.read("f")
+        id = reader.read("B")
+        return cls(
+            height_mm=height_mm,
+            max_speed_rad_per_sec=max_speed_rad_per_sec,
+            accel_rad_per_sec2=accel_rad_per_sec2,
+            duration_sec=duration_sec,
+            id=id)
+
+    
+class SetHeadAngle(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x37
+
+    __slots__ = (
+        "_angle_rad",
+        "_max_speed_rad_per_sec",
+        "_accel_rad_per_sec2",
+        "_duration_sec",
+        "_id",
+    )
+
+    def __init__(self,
+                 angle_rad=0.0,
+                 max_speed_rad_per_sec=15.0,
+                 accel_rad_per_sec2=20.0,
+                 duration_sec=0.0,
+                 id=0):
+        self.angle_rad = angle_rad
+        self.max_speed_rad_per_sec = max_speed_rad_per_sec
+        self.accel_rad_per_sec2 = accel_rad_per_sec2
+        self.duration_sec = duration_sec
+        self.id = id
+
+    @property
+    def angle_rad(self):
+        return self._angle_rad
+
+    @angle_rad.setter
+    def angle_rad(self, value):
+        self._angle_rad = validate_float("angle_rad", value)
+
+    @property
+    def max_speed_rad_per_sec(self):
+        return self._max_speed_rad_per_sec
+
+    @max_speed_rad_per_sec.setter
+    def max_speed_rad_per_sec(self, value):
+        self._max_speed_rad_per_sec = validate_float("max_speed_rad_per_sec", value)
+
+    @property
+    def accel_rad_per_sec2(self):
+        return self._accel_rad_per_sec2
+
+    @accel_rad_per_sec2.setter
+    def accel_rad_per_sec2(self, value):
+        self._accel_rad_per_sec2 = validate_float("accel_rad_per_sec2", value)
+
+    @property
+    def duration_sec(self):
+        return self._duration_sec
+
+    @duration_sec.setter
+    def duration_sec(self, value):
+        self._duration_sec = validate_float("duration_sec", value)
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        self._id = validate_integer("id", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "angle_rad={angle_rad}, " \
+               "max_speed_rad_per_sec={max_speed_rad_per_sec}, " \
+               "accel_rad_per_sec2={accel_rad_per_sec2}, " \
+               "duration_sec={duration_sec}, " \
+               "id={id})".format(
+                type=type(self).__name__,
+                angle_rad=self._angle_rad,
+                max_speed_rad_per_sec=self._max_speed_rad_per_sec,
+                accel_rad_per_sec2=self._accel_rad_per_sec2,
+                duration_sec=self._duration_sec,
+                id=self._id)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._angle_rad, "f")
+        writer.write(self._max_speed_rad_per_sec, "f")
+        writer.write(self._accel_rad_per_sec2, "f")
+        writer.write(self._duration_sec, "f")
+        writer.write(self._id, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        angle_rad = reader.read("f")
+        max_speed_rad_per_sec = reader.read("f")
+        accel_rad_per_sec2 = reader.read("f")
+        duration_sec = reader.read("f")
+        id = reader.read("B")
+        return cls(
+            angle_rad=angle_rad,
+            max_speed_rad_per_sec=max_speed_rad_per_sec,
+            accel_rad_per_sec2=accel_rad_per_sec2,
+            duration_sec=duration_sec,
+            id=id)
+
+    
 class StopAllMotors(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -367,36 +849,36 @@ class StopAllMotors(Packet):
             )
 
     
-class SetHeadLight(Packet):
+class AcknowledgeCommand(Packet):
 
     PACKET_ID = PacketType.ACTION
-    ID = 0x0b
+    ID = 0xc4
 
     __slots__ = (
-        "_enable",
+        "_id",
     )
 
     def __init__(self,
-                 enable=False):
-        self.enable = enable
+                 id=0):
+        self.id = id
 
     @property
-    def enable(self):
-        return self._enable
+    def id(self):
+        return self._id
 
-    @enable.setter
-    def enable(self, value):
-        self._enable = validate_bool("enable", value)
+    @id.setter
+    def id(self, value):
+        self._id = validate_integer("id", value, 0, 255)
 
     def __len__(self):
         return \
-            get_size('b')
+            get_size('B')
 
     def __repr__(self):
         return "{type}(" \
-               "enable={enable})".format(
+               "id={id})".format(
                 type=type(self).__name__,
-                enable=self._enable)
+                id=self._id)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -404,7 +886,7 @@ class SetHeadLight(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(int(self._enable), "b")
+        writer.write(self._id, "B")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -414,13 +896,97 @@ class SetHeadLight(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        enable = bool(reader.read("b"))
+        id = reader.read("B")
         return cls(
-            enable=enable)
+            id=id)
+
+    
+class RobotDelocalized(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xc2
+
+    __slots__ = (
+    )
+
+    def __init__(self):
+        pass
+
+    def __len__(self):
+        return 0
+
+    def __repr__(self):
+        return "{type}()".format(type=type(self).__name__)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        pass
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        del reader
+        return cls(
+            )
+
+    
+class RobotPoked(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xc3
+
+    __slots__ = (
+    )
+
+    def __init__(self):
+        pass
+
+    def __len__(self):
+        return 0
+
+    def __repr__(self):
+        return "{type}()".format(type=type(self).__name__)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        pass
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        del reader
+        return cls(
+            )
 
 
 ACTION_BY_ID = {
     0x0b: SetHeadLight,  # 11
     0x32: DriveWheels,  # 50
+    0x33: TurnInPlace,  # 51
+    0x34: DriveLift,  # 52
+    0x35: DriveHead,  # 53
+    0x36: SetLiftHeight,  # 54
+    0x37: SetHeadAngle,  # 55
     0x3b: StopAllMotors,  # 59
+    0xc2: RobotDelocalized,  # 194
+    0xc3: RobotPoked,  # 195
+    0xc4: AcknowledgeCommand,  # 196
 }

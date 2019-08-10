@@ -55,6 +55,8 @@ class ProtocolGenerator(object):
                 self.f.write('validate_integer("{name}", value, 0, 255)\n'.format(name=argument.name))
             elif isinstance(argument, protocol_declaration.UInt32Argument):
                 self.f.write('validate_integer("{name}", value, 0, 4294967295)\n'.format(name=argument.name))
+            elif isinstance(argument, protocol_declaration.Int16Argument):
+                self.f.write('validate_integer("{name}", value, -32768, 32767)\n'.format(name=argument.name))
             else:
                 raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
                     type(argument), argument.name))
@@ -77,6 +79,8 @@ class ProtocolGenerator(object):
                     statements.append("get_size('B')")
                 elif isinstance(argument, protocol_declaration.UInt32Argument):
                     statements.append("get_size('L')")
+                elif isinstance(argument, protocol_declaration.Int16Argument):
+                    statements.append("get_size('h')")
                 else:
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
                         type(argument), argument.name))
@@ -132,6 +136,8 @@ class ProtocolGenerator(object):
                     self.f.write('        writer.write(self._{name}, "B")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.UInt32Argument):
                     self.f.write('        writer.write(self._{name}, "L")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.Int16Argument):
+                    self.f.write('        writer.write(self._{name}, "h")\n'.format(name=argument.name))
                 else:
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
                         type(argument), argument.name))
@@ -161,6 +167,8 @@ class ProtocolGenerator(object):
                     self.f.write('        {name} = reader.read("B")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.UInt32Argument):
                     self.f.write('        {name} = reader.read("L")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.Int16Argument):
+                    self.f.write('        {name} = reader.read("h")\n'.format(name=argument.name))
                 else:
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
                         type(argument), argument.name))
