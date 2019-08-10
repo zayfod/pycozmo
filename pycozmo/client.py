@@ -7,7 +7,7 @@ from threading import Thread
 from typing import Optional, Tuple, Any
 
 from .frame import Frame
-from .packet import Packet
+from .protocol_base import Packet
 from .util import hex_dump
 from .window import ReceiveWindow, SendWindow
 

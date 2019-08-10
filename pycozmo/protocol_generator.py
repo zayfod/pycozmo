@@ -19,6 +19,18 @@ class ProtocolGenerator(object):
     def __init__(self, f):
         self.f = f
 
+    def generate_action_map(self):
+        action_map = {}
+        for packet in protocol_declaration.PROTOCOL.packets:
+            if not isinstance(packet, protocol_declaration.Command):
+                continue
+            action_map[packet.id] = to_pascal_case(packet.name)
+
+        self.f.write('\n\nACTION_BY_ID = {\n')
+        for k, v in sorted(action_map.items()):
+            self.f.write('    0x{id:02x}: {name},  # {id}\n'.format(id=k, name=v))
+        self.f.write('}\n')
+
     def generate_packet_slots(self, packet):
         for argument in packet.arguments:
             self.f.write('        "_{name}",\n'.format(name=argument.name))
@@ -35,10 +47,17 @@ class ProtocolGenerator(object):
         self._{name} = """.format(name=argument.name))
             if isinstance(argument, protocol_declaration.FloatArgument):
                 self.f.write('validate_float("{name}", value)\n'.format(name=argument.name))
+            elif isinstance(argument, protocol_declaration.DoubleArgument):
+                self.f.write('validate_float("{name}", value)\n'.format(name=argument.name))
             elif isinstance(argument, protocol_declaration.BoolArgument):
                 self.f.write('validate_bool("{name}", value)\n'.format(name=argument.name))
+            elif isinstance(argument, protocol_declaration.UInt8Argument):
+                self.f.write('validate_integer("{name}", value, 0, 255)\n'.format(name=argument.name))
+            elif isinstance(argument, protocol_declaration.UInt32Argument):
+                self.f.write('validate_integer("{name}", value, 0, 4294967295)\n'.format(name=argument.name))
             else:
-                raise NotImplementedError
+                raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
+                    type(argument), argument.name))
 
     def generate_len_method(self, packet):
         self.f.write("\n    def __len__(self):\n")
@@ -50,10 +69,17 @@ class ProtocolGenerator(object):
             for argument in packet.arguments:
                 if isinstance(argument, protocol_declaration.FloatArgument):
                     statements.append("get_size('f')")
+                elif isinstance(argument, protocol_declaration.DoubleArgument):
+                    statements.append("get_size('d')")
                 elif isinstance(argument, protocol_declaration.BoolArgument):
                     statements.append("get_size('b')")
+                elif isinstance(argument, protocol_declaration.UInt8Argument):
+                    statements.append("get_size('B')")
+                elif isinstance(argument, protocol_declaration.UInt32Argument):
+                    statements.append("get_size('L')")
                 else:
-                    raise NotImplementedError
+                    raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
+                        type(argument), argument.name))
             self.f.write("            ")
             self.f.write(" + \\\n            ".join(statements))
             self.f.write("\n")
@@ -98,10 +124,17 @@ class ProtocolGenerator(object):
             for argument in packet.arguments:
                 if isinstance(argument, protocol_declaration.FloatArgument):
                     self.f.write('        writer.write(self._{name}, "f")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.DoubleArgument):
+                    self.f.write('        writer.write(self._{name}, "d")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.BoolArgument):
                     self.f.write('        writer.write(int(self._{name}), "b")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.UInt8Argument):
+                    self.f.write('        writer.write(self._{name}, "B")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.UInt32Argument):
+                    self.f.write('        writer.write(self._{name}, "L")\n'.format(name=argument.name))
                 else:
-                    raise NotImplementedError
+                    raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
+                        type(argument), argument.name))
         else:
             self.f.write("        pass\n")
 
@@ -120,10 +153,17 @@ class ProtocolGenerator(object):
             for argument in packet.arguments:
                 if isinstance(argument, protocol_declaration.FloatArgument):
                     self.f.write('        {name} = reader.read("f")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.DoubleArgument):
+                    self.f.write('        {name} = reader.read("d")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.BoolArgument):
                     self.f.write('        {name} = bool(reader.read("b"))\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.UInt8Argument):
+                    self.f.write('        {name} = reader.read("B")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.UInt32Argument):
+                    self.f.write('        {name} = reader.read("L")\n'.format(name=argument.name))
                 else:
-                    raise NotImplementedError
+                    raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
+                        type(argument), argument.name))
         else:
             self.f.write("        del reader\n")
         self.f.write("        return cls(\n")
@@ -166,10 +206,13 @@ Do not modify.
 
 """
 
+from .protocol_declaration import PacketType
 from .protocol_base import Packet
-from .protocol_utils import validate_float, validate_bool, get_size, BinaryReader, BinaryWriter
+from .protocol_utils import validate_float, validate_bool, validate_integer, get_size, BinaryReader, BinaryWriter
 '''.format(declaration=os.path.basename(protocol_declaration.__file__), generator=os.path.basename(__file__))
         self.f.write(header)
 
         for packet in protocol_declaration.PROTOCOL.packets:
             self.generate_packet(packet)
+
+        self.generate_action_map()

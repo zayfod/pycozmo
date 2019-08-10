@@ -1,11 +1,14 @@
 
 from abc import ABC, abstractmethod
 
+from .protocol_declaration import PacketType
 from .protocol_utils import BinaryReader, BinaryWriter
+from .util import hex_dump
 
 
 class Packet(ABC):
 
+    # TODO: Rename to "PACKET_TYPE".
     PACKET_ID = None
 
     @abstractmethod
@@ -34,6 +37,10 @@ class Packet(ABC):
     def from_reader(cls, reader: BinaryReader):
         raise NotImplementedError
 
+    def is_oob(self) -> bool:
+        res = self.PACKET_ID.value >= PacketType.EVENT.value
+        return res
+
 
 class UnknownPacket(Packet):
 
@@ -42,7 +49,7 @@ class UnknownPacket(Packet):
         "_data",
     )
 
-    def __init__(self, packet_id: int = None, data: bytes = b""):
+    def __init__(self, packet_id: PacketType, data: bytes):
         self.PACKET_ID = packet_id
         self.data = data
 
@@ -52,7 +59,7 @@ class UnknownPacket(Packet):
 
     @PACKET_ID.setter
     def PACKET_ID(self, value):
-        self._PACKET_ID = int(value)
+        self._PACKET_ID = PacketType(value)
 
     @property
     def data(self):
@@ -66,7 +73,8 @@ class UnknownPacket(Packet):
         return len(self._data)
 
     def __repr__(self):
-        return "{type}(data={data})".format(type=type(self).__name__, data=self._data)
+        return "{type}({id:02x}, {data})".format(
+            id=self._PACKET_ID.value, type=type(self).__name__, data=hex_dump(data=self._data))
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -78,12 +86,12 @@ class UnknownPacket(Packet):
 
     @classmethod
     def from_bytes(cls, buffer):
-        # The size of UnknownPacket objects is not known.
+        # The size is not known.
         raise NotImplementedError
 
     @classmethod
     def from_reader(cls, reader):
-        # The size of UnknownPacket objects is not known.
+        # The size is not known.
         raise NotImplementedError
 
 
@@ -95,8 +103,8 @@ class UnknownCommand(UnknownPacket):
         "_data",
     )
 
-    def __init__(self, packet_id: int = None, cmd_id: int = None, data: bytes = b""):
-        super().__init__(packet_id, data)
+    def __init__(self, cmd_id: int, data: bytes):
+        super().__init__(PacketType.ACTION, data)
         self.ID = cmd_id
 
     @property
@@ -109,10 +117,49 @@ class UnknownCommand(UnknownPacket):
 
     @classmethod
     def from_bytes(cls, buffer):
-        # The size of UnknownPacket objects is not known.
+        # The size is not known.
         raise NotImplementedError
 
     @classmethod
     def from_reader(cls, reader):
-        # The size of UnknownPacket objects is not known.
+        # The size is not known.
         raise NotImplementedError
+
+    def __repr__(self):
+        return "{type}({id:02x}, {data})".format(
+            id=self._ID, type=type(self).__name__, data=hex_dump(data=self._data))
+
+
+class UnknownEvent(UnknownPacket):
+
+    __slots__ = (
+        "_PACKET_ID",
+        "_ID",
+        "_data",
+    )
+
+    def __init__(self, cmd_id: int, data: bytes):
+        super().__init__(PacketType.EVENT, data)
+        self.ID = cmd_id
+
+    @property
+    def ID(self):
+        return self._ID
+
+    @ID.setter
+    def ID(self, value):
+        self._ID = int(value)
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        # The size is not known.
+        raise NotImplementedError
+
+    @classmethod
+    def from_reader(cls, reader):
+        # The size is not known.
+        raise NotImplementedError
+
+    def __repr__(self):
+        return "{type}({id:02x}, {data})".format(
+            id=self._ID, type=type(self).__name__, data=hex_dump(data=self._data))

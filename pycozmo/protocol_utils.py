@@ -31,6 +31,17 @@ def validate_bool(name, value):
     return value
 
 
+def validate_integer(name, value, minimum, maximum):
+    try:
+        value = int(value)
+    except ValueError:
+        raise ValueError("{name} must be an integer. Got a {type}.".format(name=name, type=type(value).__name__))
+    if value < minimum or value > maximum:
+        raise ValueError('{name} must be between {minimum} and {maximum}. Got {value}.'.format(
+            name=name, minimum=minimum, maximum=maximum, value=value))
+    return value
+
+
 def get_size(fmt):
     """ Figures out the size of a value with the given format. """
     return _get_struct(fmt, 1).size
@@ -39,9 +50,9 @@ def get_size(fmt):
 class BinaryReader(object):
     """ Used to read in a stream of binary data, keeping track of the current position. """
 
-    def __init__(self, buffer: bytes):
+    def __init__(self, buffer: bytes, offset: int = 0):
         self._buffer = buffer
-        self._index = 0
+        self._index = offset
 
     @property
     def buffer(self):
@@ -49,6 +60,17 @@ class BinaryReader(object):
 
     def __len__(self):
         return len(self._buffer)
+
+    def seek_set(self, offset: int):
+        if offset < 0 or offset > len(self._buffer):
+            ValueError("Invalid offset.")
+        self._index = offset
+
+    def seek_cur(self, offset: int):
+        offset += self._index
+        if offset < 0 or offset > len(self._buffer):
+            ValueError("Invalid offset.")
+        self._index = offset
 
     def tell(self):
         """ Returns the current stream position as an offset within the buffer. """
@@ -113,6 +135,10 @@ class BinaryWriter(object):
 
     def dumps(self) -> bytes:
         return b"".join(self._buffer)
+
+    def write_bytes(self, value: bytes):
+        """ Writes out a byte sequence. """
+        self._buffer.append(value)
 
     def write(self, value, fmt):
         """ Writes out a single value of the given format. """
