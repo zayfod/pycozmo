@@ -41,15 +41,24 @@ Limitations
 Requirements
 ------------
 
-- Python 3.x
+- Python 3.5
 
 
 Installation
 ------------
 
+Using pip:
+
+```
+pip install pycozmo
+```
+
+From source:
+
 ```
 git clone https://github.com/zayfod/pycozmo.git
 cd pycozmo
+python setup.py install
 ```
 
 
