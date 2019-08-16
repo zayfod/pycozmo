@@ -32,10 +32,39 @@ cli.send_disconnect()
 ```
 
 
+Robot Support
+-------------
+
+Sensors:
+- Camera - work in progress
+- Cliff sensor - not supported
+- Accelerometers - not supported
+- Gyro - not supported
+- Battery voltage - not supported
+- Cube battery voltage - not supported
+- Cube accelerometers - not supported
+
+Actuators:
+- Wheel motors - supported
+- Head motor - supported
+- Lift motor - supported
+- Backpack LEDs - supported
+- IR LED - supported
+- OLED display - work in progress
+- Speaker - not supported
+- Cube LEDs - not supported
+
+Communication:
+- Wi-Fi AP - supported
+- Bluetooth LE - not supported
+
+
 Limitations
 -----------
 
 - there is no Wi-Fi control. The library assumes a Wi-Fi connection to Cozmo, established in advance.
+- frame retransmission is not implemented
+- transmission of multiple packets in a single frame is not implemented
 
 
 Requirements
