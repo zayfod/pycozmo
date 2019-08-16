@@ -53,6 +53,8 @@ class ProtocolGenerator(object):
                 self.f.write('validate_bool("{name}", value)\n'.format(name=argument.name))
             elif isinstance(argument, protocol_declaration.UInt8Argument):
                 self.f.write('validate_integer("{name}", value, 0, 255)\n'.format(name=argument.name))
+            elif isinstance(argument, protocol_declaration.UInt16Argument):
+                self.f.write('validate_integer("{name}", value, 0, 65535)\n'.format(name=argument.name))
             elif isinstance(argument, protocol_declaration.UInt32Argument):
                 self.f.write('validate_integer("{name}", value, 0, 4294967295)\n'.format(name=argument.name))
             elif isinstance(argument, protocol_declaration.Int16Argument):
@@ -77,6 +79,8 @@ class ProtocolGenerator(object):
                     statements.append("get_size('b')")
                 elif isinstance(argument, protocol_declaration.UInt8Argument):
                     statements.append("get_size('B')")
+                elif isinstance(argument, protocol_declaration.UInt16Argument):
+                    statements.append("get_size('H')")
                 elif isinstance(argument, protocol_declaration.UInt32Argument):
                     statements.append("get_size('L')")
                 elif isinstance(argument, protocol_declaration.Int16Argument):
@@ -134,6 +138,8 @@ class ProtocolGenerator(object):
                     self.f.write('        writer.write(int(self._{name}), "b")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.UInt8Argument):
                     self.f.write('        writer.write(self._{name}, "B")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.UInt16Argument):
+                    self.f.write('        writer.write(self._{name}, "H")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.UInt32Argument):
                     self.f.write('        writer.write(self._{name}, "L")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.Int16Argument):
@@ -165,6 +171,8 @@ class ProtocolGenerator(object):
                     self.f.write('        {name} = bool(reader.read("b"))\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.UInt8Argument):
                     self.f.write('        {name} = reader.read("B")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.UInt16Argument):
+                    self.f.write('        {name} = reader.read("H")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.UInt32Argument):
                     self.f.write('        {name} = reader.read("L")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.Int16Argument):

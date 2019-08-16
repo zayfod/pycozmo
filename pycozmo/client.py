@@ -308,13 +308,6 @@ class Client(Thread):
         pkt = UnknownCommand(0x8f)
         self.send(pkt)
 
-    def send_led(self) -> None:
-        print("Sending LED...")
-        pkt = UnknownCommand(0x03, b'\xc8\x90\x86\x88\t\x00\x00\x00\x00\x00\x0a\x99\x86\x88\t\x00\x00\x00\x00\x00\x4c\xa1\x86\x88\t\x00\x00\x00\x00\x00\x00')
-        self.send(pkt)
-        pkt = UnknownCommand(0x11, b'\x86\x88\x86\x88\t\x00\x00\x00\x00\x00\x8e\xa9\x86\x88\t\x00\x00\x00\x00\x00\x00')
-        self.send(pkt)
-
     def send_big_eyes(self) -> None:
         pkt = UnknownCommand(0x97, hex_load("24:00:16:a0:b6:41:9c:be:40:98:c6:5b:9c:be:9c:a0:b6:40:06:a4:ae:a4:a0:b6:40:9c:be:40:98:c6:5b:9c:be:40:a0:b6:40:16"))
         self.send(pkt)

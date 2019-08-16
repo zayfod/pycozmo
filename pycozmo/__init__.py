@@ -8,6 +8,7 @@ from . import protocol_declaration
 from . import protocol_generator
 from . import protocol_encoder
 from . import protocol_utils
+from . import lights
 
 
 __version__ = "0.1.0"

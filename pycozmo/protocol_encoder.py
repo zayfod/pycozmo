@@ -226,6 +226,415 @@ class Unknown0A(Packet):
             )
 
     
+class LightStateCenter(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x03
+
+    __slots__ = (
+        "_on_color_top",
+        "_off_color_top",
+        "_on_frames_top",
+        "_off_frames_top",
+        "_transmission_on_frames_top",
+        "_transmission_off_frames_top",
+        "_offset_top",
+        "_on_color_middle",
+        "_off_color_middle",
+        "_on_frames_middle",
+        "_off_frames_middle",
+        "_transmission_on_frames_middle",
+        "_transmission_off_frames_middle",
+        "_offset_middle",
+        "_on_color_bottom",
+        "_off_color_bottom",
+        "_on_frames_bottom",
+        "_off_frames_bottom",
+        "_transmission_on_frames_bottom",
+        "_transmission_off_frames_bottom",
+        "_offset_bottom",
+        "_unknown",
+    )
+
+    def __init__(self,
+                 on_color_top=0,
+                 off_color_top=0,
+                 on_frames_top=0,
+                 off_frames_top=0,
+                 transmission_on_frames_top=0,
+                 transmission_off_frames_top=0,
+                 offset_top=0,
+                 on_color_middle=0,
+                 off_color_middle=0,
+                 on_frames_middle=0,
+                 off_frames_middle=0,
+                 transmission_on_frames_middle=0,
+                 transmission_off_frames_middle=0,
+                 offset_middle=0,
+                 on_color_bottom=0,
+                 off_color_bottom=0,
+                 on_frames_bottom=0,
+                 off_frames_bottom=0,
+                 transmission_on_frames_bottom=0,
+                 transmission_off_frames_bottom=0,
+                 offset_bottom=0,
+                 unknown=0):
+        self.on_color_top = on_color_top
+        self.off_color_top = off_color_top
+        self.on_frames_top = on_frames_top
+        self.off_frames_top = off_frames_top
+        self.transmission_on_frames_top = transmission_on_frames_top
+        self.transmission_off_frames_top = transmission_off_frames_top
+        self.offset_top = offset_top
+        self.on_color_middle = on_color_middle
+        self.off_color_middle = off_color_middle
+        self.on_frames_middle = on_frames_middle
+        self.off_frames_middle = off_frames_middle
+        self.transmission_on_frames_middle = transmission_on_frames_middle
+        self.transmission_off_frames_middle = transmission_off_frames_middle
+        self.offset_middle = offset_middle
+        self.on_color_bottom = on_color_bottom
+        self.off_color_bottom = off_color_bottom
+        self.on_frames_bottom = on_frames_bottom
+        self.off_frames_bottom = off_frames_bottom
+        self.transmission_on_frames_bottom = transmission_on_frames_bottom
+        self.transmission_off_frames_bottom = transmission_off_frames_bottom
+        self.offset_bottom = offset_bottom
+        self.unknown = unknown
+
+    @property
+    def on_color_top(self):
+        return self._on_color_top
+
+    @on_color_top.setter
+    def on_color_top(self, value):
+        self._on_color_top = validate_integer("on_color_top", value, 0, 65535)
+
+    @property
+    def off_color_top(self):
+        return self._off_color_top
+
+    @off_color_top.setter
+    def off_color_top(self, value):
+        self._off_color_top = validate_integer("off_color_top", value, 0, 65535)
+
+    @property
+    def on_frames_top(self):
+        return self._on_frames_top
+
+    @on_frames_top.setter
+    def on_frames_top(self, value):
+        self._on_frames_top = validate_integer("on_frames_top", value, 0, 255)
+
+    @property
+    def off_frames_top(self):
+        return self._off_frames_top
+
+    @off_frames_top.setter
+    def off_frames_top(self, value):
+        self._off_frames_top = validate_integer("off_frames_top", value, 0, 255)
+
+    @property
+    def transmission_on_frames_top(self):
+        return self._transmission_on_frames_top
+
+    @transmission_on_frames_top.setter
+    def transmission_on_frames_top(self, value):
+        self._transmission_on_frames_top = validate_integer("transmission_on_frames_top", value, 0, 255)
+
+    @property
+    def transmission_off_frames_top(self):
+        return self._transmission_off_frames_top
+
+    @transmission_off_frames_top.setter
+    def transmission_off_frames_top(self, value):
+        self._transmission_off_frames_top = validate_integer("transmission_off_frames_top", value, 0, 255)
+
+    @property
+    def offset_top(self):
+        return self._offset_top
+
+    @offset_top.setter
+    def offset_top(self, value):
+        self._offset_top = validate_integer("offset_top", value, -32768, 32767)
+
+    @property
+    def on_color_middle(self):
+        return self._on_color_middle
+
+    @on_color_middle.setter
+    def on_color_middle(self, value):
+        self._on_color_middle = validate_integer("on_color_middle", value, 0, 65535)
+
+    @property
+    def off_color_middle(self):
+        return self._off_color_middle
+
+    @off_color_middle.setter
+    def off_color_middle(self, value):
+        self._off_color_middle = validate_integer("off_color_middle", value, 0, 65535)
+
+    @property
+    def on_frames_middle(self):
+        return self._on_frames_middle
+
+    @on_frames_middle.setter
+    def on_frames_middle(self, value):
+        self._on_frames_middle = validate_integer("on_frames_middle", value, 0, 255)
+
+    @property
+    def off_frames_middle(self):
+        return self._off_frames_middle
+
+    @off_frames_middle.setter
+    def off_frames_middle(self, value):
+        self._off_frames_middle = validate_integer("off_frames_middle", value, 0, 255)
+
+    @property
+    def transmission_on_frames_middle(self):
+        return self._transmission_on_frames_middle
+
+    @transmission_on_frames_middle.setter
+    def transmission_on_frames_middle(self, value):
+        self._transmission_on_frames_middle = validate_integer("transmission_on_frames_middle", value, 0, 255)
+
+    @property
+    def transmission_off_frames_middle(self):
+        return self._transmission_off_frames_middle
+
+    @transmission_off_frames_middle.setter
+    def transmission_off_frames_middle(self, value):
+        self._transmission_off_frames_middle = validate_integer("transmission_off_frames_middle", value, 0, 255)
+
+    @property
+    def offset_middle(self):
+        return self._offset_middle
+
+    @offset_middle.setter
+    def offset_middle(self, value):
+        self._offset_middle = validate_integer("offset_middle", value, -32768, 32767)
+
+    @property
+    def on_color_bottom(self):
+        return self._on_color_bottom
+
+    @on_color_bottom.setter
+    def on_color_bottom(self, value):
+        self._on_color_bottom = validate_integer("on_color_bottom", value, 0, 65535)
+
+    @property
+    def off_color_bottom(self):
+        return self._off_color_bottom
+
+    @off_color_bottom.setter
+    def off_color_bottom(self, value):
+        self._off_color_bottom = validate_integer("off_color_bottom", value, 0, 65535)
+
+    @property
+    def on_frames_bottom(self):
+        return self._on_frames_bottom
+
+    @on_frames_bottom.setter
+    def on_frames_bottom(self, value):
+        self._on_frames_bottom = validate_integer("on_frames_bottom", value, 0, 255)
+
+    @property
+    def off_frames_bottom(self):
+        return self._off_frames_bottom
+
+    @off_frames_bottom.setter
+    def off_frames_bottom(self, value):
+        self._off_frames_bottom = validate_integer("off_frames_bottom", value, 0, 255)
+
+    @property
+    def transmission_on_frames_bottom(self):
+        return self._transmission_on_frames_bottom
+
+    @transmission_on_frames_bottom.setter
+    def transmission_on_frames_bottom(self, value):
+        self._transmission_on_frames_bottom = validate_integer("transmission_on_frames_bottom", value, 0, 255)
+
+    @property
+    def transmission_off_frames_bottom(self):
+        return self._transmission_off_frames_bottom
+
+    @transmission_off_frames_bottom.setter
+    def transmission_off_frames_bottom(self, value):
+        self._transmission_off_frames_bottom = validate_integer("transmission_off_frames_bottom", value, 0, 255)
+
+    @property
+    def offset_bottom(self):
+        return self._offset_bottom
+
+    @offset_bottom.setter
+    def offset_bottom(self, value):
+        self._offset_bottom = validate_integer("offset_bottom", value, -32768, 32767)
+
+    @property
+    def unknown(self):
+        return self._unknown
+
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_integer("unknown", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('H') + \
+            get_size('H') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('h') + \
+            get_size('H') + \
+            get_size('H') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('h') + \
+            get_size('H') + \
+            get_size('H') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('h') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "on_color_top={on_color_top}, " \
+               "off_color_top={off_color_top}, " \
+               "on_frames_top={on_frames_top}, " \
+               "off_frames_top={off_frames_top}, " \
+               "transmission_on_frames_top={transmission_on_frames_top}, " \
+               "transmission_off_frames_top={transmission_off_frames_top}, " \
+               "offset_top={offset_top}, " \
+               "on_color_middle={on_color_middle}, " \
+               "off_color_middle={off_color_middle}, " \
+               "on_frames_middle={on_frames_middle}, " \
+               "off_frames_middle={off_frames_middle}, " \
+               "transmission_on_frames_middle={transmission_on_frames_middle}, " \
+               "transmission_off_frames_middle={transmission_off_frames_middle}, " \
+               "offset_middle={offset_middle}, " \
+               "on_color_bottom={on_color_bottom}, " \
+               "off_color_bottom={off_color_bottom}, " \
+               "on_frames_bottom={on_frames_bottom}, " \
+               "off_frames_bottom={off_frames_bottom}, " \
+               "transmission_on_frames_bottom={transmission_on_frames_bottom}, " \
+               "transmission_off_frames_bottom={transmission_off_frames_bottom}, " \
+               "offset_bottom={offset_bottom}, " \
+               "unknown={unknown})".format(
+                type=type(self).__name__,
+                on_color_top=self._on_color_top,
+                off_color_top=self._off_color_top,
+                on_frames_top=self._on_frames_top,
+                off_frames_top=self._off_frames_top,
+                transmission_on_frames_top=self._transmission_on_frames_top,
+                transmission_off_frames_top=self._transmission_off_frames_top,
+                offset_top=self._offset_top,
+                on_color_middle=self._on_color_middle,
+                off_color_middle=self._off_color_middle,
+                on_frames_middle=self._on_frames_middle,
+                off_frames_middle=self._off_frames_middle,
+                transmission_on_frames_middle=self._transmission_on_frames_middle,
+                transmission_off_frames_middle=self._transmission_off_frames_middle,
+                offset_middle=self._offset_middle,
+                on_color_bottom=self._on_color_bottom,
+                off_color_bottom=self._off_color_bottom,
+                on_frames_bottom=self._on_frames_bottom,
+                off_frames_bottom=self._off_frames_bottom,
+                transmission_on_frames_bottom=self._transmission_on_frames_bottom,
+                transmission_off_frames_bottom=self._transmission_off_frames_bottom,
+                offset_bottom=self._offset_bottom,
+                unknown=self._unknown)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._on_color_top, "H")
+        writer.write(self._off_color_top, "H")
+        writer.write(self._on_frames_top, "B")
+        writer.write(self._off_frames_top, "B")
+        writer.write(self._transmission_on_frames_top, "B")
+        writer.write(self._transmission_off_frames_top, "B")
+        writer.write(self._offset_top, "h")
+        writer.write(self._on_color_middle, "H")
+        writer.write(self._off_color_middle, "H")
+        writer.write(self._on_frames_middle, "B")
+        writer.write(self._off_frames_middle, "B")
+        writer.write(self._transmission_on_frames_middle, "B")
+        writer.write(self._transmission_off_frames_middle, "B")
+        writer.write(self._offset_middle, "h")
+        writer.write(self._on_color_bottom, "H")
+        writer.write(self._off_color_bottom, "H")
+        writer.write(self._on_frames_bottom, "B")
+        writer.write(self._off_frames_bottom, "B")
+        writer.write(self._transmission_on_frames_bottom, "B")
+        writer.write(self._transmission_off_frames_bottom, "B")
+        writer.write(self._offset_bottom, "h")
+        writer.write(self._unknown, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        on_color_top = reader.read("H")
+        off_color_top = reader.read("H")
+        on_frames_top = reader.read("B")
+        off_frames_top = reader.read("B")
+        transmission_on_frames_top = reader.read("B")
+        transmission_off_frames_top = reader.read("B")
+        offset_top = reader.read("h")
+        on_color_middle = reader.read("H")
+        off_color_middle = reader.read("H")
+        on_frames_middle = reader.read("B")
+        off_frames_middle = reader.read("B")
+        transmission_on_frames_middle = reader.read("B")
+        transmission_off_frames_middle = reader.read("B")
+        offset_middle = reader.read("h")
+        on_color_bottom = reader.read("H")
+        off_color_bottom = reader.read("H")
+        on_frames_bottom = reader.read("B")
+        off_frames_bottom = reader.read("B")
+        transmission_on_frames_bottom = reader.read("B")
+        transmission_off_frames_bottom = reader.read("B")
+        offset_bottom = reader.read("h")
+        unknown = reader.read("B")
+        return cls(
+            on_color_top=on_color_top,
+            off_color_top=off_color_top,
+            on_frames_top=on_frames_top,
+            off_frames_top=off_frames_top,
+            transmission_on_frames_top=transmission_on_frames_top,
+            transmission_off_frames_top=transmission_off_frames_top,
+            offset_top=offset_top,
+            on_color_middle=on_color_middle,
+            off_color_middle=off_color_middle,
+            on_frames_middle=on_frames_middle,
+            off_frames_middle=off_frames_middle,
+            transmission_on_frames_middle=transmission_on_frames_middle,
+            transmission_off_frames_middle=transmission_off_frames_middle,
+            offset_middle=offset_middle,
+            on_color_bottom=on_color_bottom,
+            off_color_bottom=off_color_bottom,
+            on_frames_bottom=on_frames_bottom,
+            off_frames_bottom=off_frames_bottom,
+            transmission_on_frames_bottom=transmission_on_frames_bottom,
+            transmission_off_frames_bottom=transmission_off_frames_bottom,
+            offset_bottom=offset_bottom,
+            unknown=unknown)
+
+    
 class SetHeadLight(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -276,6 +685,296 @@ class SetHeadLight(Packet):
         enable = bool(reader.read("b"))
         return cls(
             enable=enable)
+
+    
+class LightStateSide(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x11
+
+    __slots__ = (
+        "_on_color_left",
+        "_off_color_left",
+        "_on_frames_left",
+        "_off_frames_left",
+        "_transmission_on_frames_left",
+        "_transmission_off_frames_left",
+        "_offset_left",
+        "_on_color_right",
+        "_off_color_right",
+        "_on_frames_right",
+        "_off_frames_right",
+        "_transmission_on_frames_right",
+        "_transmission_off_frames_right",
+        "_offset_right",
+        "_unknown",
+    )
+
+    def __init__(self,
+                 on_color_left=0,
+                 off_color_left=0,
+                 on_frames_left=0,
+                 off_frames_left=0,
+                 transmission_on_frames_left=0,
+                 transmission_off_frames_left=0,
+                 offset_left=0,
+                 on_color_right=0,
+                 off_color_right=0,
+                 on_frames_right=0,
+                 off_frames_right=0,
+                 transmission_on_frames_right=0,
+                 transmission_off_frames_right=0,
+                 offset_right=0,
+                 unknown=0):
+        self.on_color_left = on_color_left
+        self.off_color_left = off_color_left
+        self.on_frames_left = on_frames_left
+        self.off_frames_left = off_frames_left
+        self.transmission_on_frames_left = transmission_on_frames_left
+        self.transmission_off_frames_left = transmission_off_frames_left
+        self.offset_left = offset_left
+        self.on_color_right = on_color_right
+        self.off_color_right = off_color_right
+        self.on_frames_right = on_frames_right
+        self.off_frames_right = off_frames_right
+        self.transmission_on_frames_right = transmission_on_frames_right
+        self.transmission_off_frames_right = transmission_off_frames_right
+        self.offset_right = offset_right
+        self.unknown = unknown
+
+    @property
+    def on_color_left(self):
+        return self._on_color_left
+
+    @on_color_left.setter
+    def on_color_left(self, value):
+        self._on_color_left = validate_integer("on_color_left", value, 0, 65535)
+
+    @property
+    def off_color_left(self):
+        return self._off_color_left
+
+    @off_color_left.setter
+    def off_color_left(self, value):
+        self._off_color_left = validate_integer("off_color_left", value, 0, 65535)
+
+    @property
+    def on_frames_left(self):
+        return self._on_frames_left
+
+    @on_frames_left.setter
+    def on_frames_left(self, value):
+        self._on_frames_left = validate_integer("on_frames_left", value, 0, 255)
+
+    @property
+    def off_frames_left(self):
+        return self._off_frames_left
+
+    @off_frames_left.setter
+    def off_frames_left(self, value):
+        self._off_frames_left = validate_integer("off_frames_left", value, 0, 255)
+
+    @property
+    def transmission_on_frames_left(self):
+        return self._transmission_on_frames_left
+
+    @transmission_on_frames_left.setter
+    def transmission_on_frames_left(self, value):
+        self._transmission_on_frames_left = validate_integer("transmission_on_frames_left", value, 0, 255)
+
+    @property
+    def transmission_off_frames_left(self):
+        return self._transmission_off_frames_left
+
+    @transmission_off_frames_left.setter
+    def transmission_off_frames_left(self, value):
+        self._transmission_off_frames_left = validate_integer("transmission_off_frames_left", value, 0, 255)
+
+    @property
+    def offset_left(self):
+        return self._offset_left
+
+    @offset_left.setter
+    def offset_left(self, value):
+        self._offset_left = validate_integer("offset_left", value, -32768, 32767)
+
+    @property
+    def on_color_right(self):
+        return self._on_color_right
+
+    @on_color_right.setter
+    def on_color_right(self, value):
+        self._on_color_right = validate_integer("on_color_right", value, 0, 65535)
+
+    @property
+    def off_color_right(self):
+        return self._off_color_right
+
+    @off_color_right.setter
+    def off_color_right(self, value):
+        self._off_color_right = validate_integer("off_color_right", value, 0, 65535)
+
+    @property
+    def on_frames_right(self):
+        return self._on_frames_right
+
+    @on_frames_right.setter
+    def on_frames_right(self, value):
+        self._on_frames_right = validate_integer("on_frames_right", value, 0, 255)
+
+    @property
+    def off_frames_right(self):
+        return self._off_frames_right
+
+    @off_frames_right.setter
+    def off_frames_right(self, value):
+        self._off_frames_right = validate_integer("off_frames_right", value, 0, 255)
+
+    @property
+    def transmission_on_frames_right(self):
+        return self._transmission_on_frames_right
+
+    @transmission_on_frames_right.setter
+    def transmission_on_frames_right(self, value):
+        self._transmission_on_frames_right = validate_integer("transmission_on_frames_right", value, 0, 255)
+
+    @property
+    def transmission_off_frames_right(self):
+        return self._transmission_off_frames_right
+
+    @transmission_off_frames_right.setter
+    def transmission_off_frames_right(self, value):
+        self._transmission_off_frames_right = validate_integer("transmission_off_frames_right", value, 0, 255)
+
+    @property
+    def offset_right(self):
+        return self._offset_right
+
+    @offset_right.setter
+    def offset_right(self, value):
+        self._offset_right = validate_integer("offset_right", value, -32768, 32767)
+
+    @property
+    def unknown(self):
+        return self._unknown
+
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_integer("unknown", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('H') + \
+            get_size('H') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('h') + \
+            get_size('H') + \
+            get_size('H') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('h') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "on_color_left={on_color_left}, " \
+               "off_color_left={off_color_left}, " \
+               "on_frames_left={on_frames_left}, " \
+               "off_frames_left={off_frames_left}, " \
+               "transmission_on_frames_left={transmission_on_frames_left}, " \
+               "transmission_off_frames_left={transmission_off_frames_left}, " \
+               "offset_left={offset_left}, " \
+               "on_color_right={on_color_right}, " \
+               "off_color_right={off_color_right}, " \
+               "on_frames_right={on_frames_right}, " \
+               "off_frames_right={off_frames_right}, " \
+               "transmission_on_frames_right={transmission_on_frames_right}, " \
+               "transmission_off_frames_right={transmission_off_frames_right}, " \
+               "offset_right={offset_right}, " \
+               "unknown={unknown})".format(
+                type=type(self).__name__,
+                on_color_left=self._on_color_left,
+                off_color_left=self._off_color_left,
+                on_frames_left=self._on_frames_left,
+                off_frames_left=self._off_frames_left,
+                transmission_on_frames_left=self._transmission_on_frames_left,
+                transmission_off_frames_left=self._transmission_off_frames_left,
+                offset_left=self._offset_left,
+                on_color_right=self._on_color_right,
+                off_color_right=self._off_color_right,
+                on_frames_right=self._on_frames_right,
+                off_frames_right=self._off_frames_right,
+                transmission_on_frames_right=self._transmission_on_frames_right,
+                transmission_off_frames_right=self._transmission_off_frames_right,
+                offset_right=self._offset_right,
+                unknown=self._unknown)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._on_color_left, "H")
+        writer.write(self._off_color_left, "H")
+        writer.write(self._on_frames_left, "B")
+        writer.write(self._off_frames_left, "B")
+        writer.write(self._transmission_on_frames_left, "B")
+        writer.write(self._transmission_off_frames_left, "B")
+        writer.write(self._offset_left, "h")
+        writer.write(self._on_color_right, "H")
+        writer.write(self._off_color_right, "H")
+        writer.write(self._on_frames_right, "B")
+        writer.write(self._off_frames_right, "B")
+        writer.write(self._transmission_on_frames_right, "B")
+        writer.write(self._transmission_off_frames_right, "B")
+        writer.write(self._offset_right, "h")
+        writer.write(self._unknown, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        on_color_left = reader.read("H")
+        off_color_left = reader.read("H")
+        on_frames_left = reader.read("B")
+        off_frames_left = reader.read("B")
+        transmission_on_frames_left = reader.read("B")
+        transmission_off_frames_left = reader.read("B")
+        offset_left = reader.read("h")
+        on_color_right = reader.read("H")
+        off_color_right = reader.read("H")
+        on_frames_right = reader.read("B")
+        off_frames_right = reader.read("B")
+        transmission_on_frames_right = reader.read("B")
+        transmission_off_frames_right = reader.read("B")
+        offset_right = reader.read("h")
+        unknown = reader.read("B")
+        return cls(
+            on_color_left=on_color_left,
+            off_color_left=off_color_left,
+            on_frames_left=on_frames_left,
+            off_frames_left=off_frames_left,
+            transmission_on_frames_left=transmission_on_frames_left,
+            transmission_off_frames_left=transmission_off_frames_left,
+            offset_left=offset_left,
+            on_color_right=on_color_right,
+            off_color_right=off_color_right,
+            on_frames_right=on_frames_right,
+            off_frames_right=off_frames_right,
+            transmission_on_frames_right=transmission_on_frames_right,
+            transmission_off_frames_right=transmission_off_frames_right,
+            offset_right=offset_right,
+            unknown=unknown)
 
     
 class DriveWheels(Packet):
@@ -978,7 +1677,9 @@ class RobotPoked(Packet):
 
 
 ACTION_BY_ID = {
+    0x03: LightStateCenter,  # 3
     0x0b: SetHeadLight,  # 11
+    0x11: LightStateSide,  # 17
     0x32: DriveWheels,  # 50
     0x33: TurnInPlace,  # 51
     0x34: DriveLift,  # 52

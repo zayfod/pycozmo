@@ -189,9 +189,56 @@ PROTOCOL = Protocol(packets=[
     Ping(),
     Unknown0A(),
 
+    Command(0x03, "light_state_center", arguments=[
+        UInt16Argument("on_color_top"),
+        UInt16Argument("off_color_top"),
+        UInt8Argument("on_frames_top"),
+        UInt8Argument("off_frames_top"),
+        UInt8Argument("transmission_on_frames_top"),
+        UInt8Argument("transmission_off_frames_top"),
+        Int16Argument("offset_top"),
+
+        UInt16Argument("on_color_middle"),
+        UInt16Argument("off_color_middle"),
+        UInt8Argument("on_frames_middle"),
+        UInt8Argument("off_frames_middle"),
+        UInt8Argument("transmission_on_frames_middle"),
+        UInt8Argument("transmission_off_frames_middle"),
+        Int16Argument("offset_middle"),
+
+        UInt16Argument("on_color_bottom"),
+        UInt16Argument("off_color_bottom"),
+        UInt8Argument("on_frames_bottom"),
+        UInt8Argument("off_frames_bottom"),
+        UInt8Argument("transmission_on_frames_bottom"),
+        UInt8Argument("transmission_off_frames_bottom"),
+        Int16Argument("offset_bottom"),
+
+        UInt8Argument("unknown"),
+    ]),
     Command(0x0b, "set_head_light", arguments=[
         BoolArgument("enable")
     ]),
+    Command(0x11, "light_state_side", arguments=[
+        UInt16Argument("on_color_left"),
+        UInt16Argument("off_color_left"),
+        UInt8Argument("on_frames_left"),
+        UInt8Argument("off_frames_left"),
+        UInt8Argument("transmission_on_frames_left"),
+        UInt8Argument("transmission_off_frames_left"),
+        Int16Argument("offset_left"),
+
+        UInt16Argument("on_color_right"),
+        UInt16Argument("off_color_right"),
+        UInt8Argument("on_frames_right"),
+        UInt8Argument("off_frames_right"),
+        UInt8Argument("transmission_on_frames_right"),
+        UInt8Argument("transmission_off_frames_right"),
+        Int16Argument("offset_right"),
+
+        UInt8Argument("unknown"),
+    ]),
+
     Command(0x32, "drive_wheels", arguments=[
         FloatArgument("lwheel_speed_mmps"),
         FloatArgument("rwheel_speed_mmps"),
