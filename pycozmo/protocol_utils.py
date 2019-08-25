@@ -71,9 +71,9 @@ def get_size(fmt):
     return _get_struct(fmt, 1).size
 
 
-def get_farray_size(format, length):
+def get_farray_size(fmt, length):
     """ Figures out the size of a fixed array with given format. """
-    return _get_struct(format, length).size
+    return _get_struct(fmt, length).size
 
 
 def get_varray_size(value, length_format, data_format):

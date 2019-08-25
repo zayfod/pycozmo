@@ -29,7 +29,8 @@ class Frame(object):
         self.to_writer(writer)
         return writer.dumps()
 
-    def _encode_packet(self, pkt, writer) -> None:
+    @staticmethod
+    def _encode_packet(pkt, writer) -> None:
         writer.write(pkt.PACKET_ID.value, "B")
         if pkt.PACKET_ID == PacketType.ACTION or pkt.PACKET_ID == PacketType.EVENT:
             writer.write(len(pkt) + 1, "H")

@@ -29,6 +29,7 @@ pkt = pycozmo.protocol_encoder.StopAllMotors()
 cli.send(pkt)
 
 cli.send_disconnect()
+
 ```
 
 

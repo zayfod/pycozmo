@@ -9,7 +9,6 @@ from typing import Optional, Tuple, Any
 from .frame import Frame
 from .protocol_declaration import FrameType
 from .protocol_base import Packet, UnknownCommand
-from .util import hex_load
 from .window import ReceiveWindow, SendWindow
 from .protocol_encoder import Connect, Disconnect, Ping, NextFrame, DisplayImage
 
@@ -102,7 +101,7 @@ class SendThread(Thread):
                  seq_bits: int = 16,
                  window_size: Optional[int] = 256) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
-        self.sock: socket.socket = sock
+        self.sock = sock
         self.receiver_address = receiver_address
         self.window = SendWindow(seq_bits, size=window_size)
         self.timeout = timeout
