@@ -32,6 +32,30 @@ cli.send_disconnect()
 ```
 
 
+Documentation
+-------------
+
+- [Cozmo protocol](docs/protocol.md) description
+- [Capturing Cozmo communication](docs/capturing.md)
+
+
+Tools
+-----
+
+- `pycozmo_dump.py` - a command-line application that can read and annotate Cozmo communication from
+    [pcap files](https://en.wikipedia.org/wiki/Pcap)
+
+
+Examples
+--------
+
+- `rc.py` - turns Cozmo into an RC tank that can be driven with an XBox 360 Wireless Controller
+- `extremes.py` - demonstrates Cozmo lift and head control
+- `backpack_lights.py` - demonstrates Cozmo backpack LED control
+- `display.py` - demonstrates low-level visualization of images on Cozmo's display
+- `audio.py` - demonstrates 22 kHz, 8-bit, mono WAVE file playback through Cozmo's speaker 
+
+
 Robot Support
 -------------
 
@@ -90,7 +114,7 @@ cd pycozmo
 python setup.py install
 ```
 
-
+ 
 Bugs
 ----
 
