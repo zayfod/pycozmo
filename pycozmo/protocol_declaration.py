@@ -294,6 +294,10 @@ PROTOCOL = Protocol(packets=[
     ]),
     Command(0x3b, "stop_all_motors"),
 
+    Command(0x8e, "output_audio", arguments=[
+        FArrayArgument("samples", length=744),
+    ]),
+
     Command(0x8f, "next_frame"),
     Command(0x97, "display_image", arguments=[
         VArrayArgument("image"),

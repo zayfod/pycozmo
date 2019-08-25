@@ -11,8 +11,8 @@ Do not modify.
 from .protocol_declaration import PacketType
 from .protocol_base import Packet
 from .protocol_utils import \
-    validate_float, validate_bool, validate_integer, validate_varray, \
-    get_size, get_varray_size, \
+    validate_float, validate_bool, validate_integer, validate_farray, validate_varray, \
+    get_size, get_farray_size, get_varray_size, \
     BinaryReader, BinaryWriter
 
     
@@ -1551,6 +1551,59 @@ class StopAllMotors(Packet):
             )
 
     
+class OutputAudio(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x8e
+
+    __slots__ = (
+        "_samples",
+    )
+
+    def __init__(self,
+                 samples=()):
+        self.samples = samples
+
+    @property
+    def samples(self):
+        return self._samples
+
+    @samples.setter
+    def samples(self, value):
+        self._samples = validate_farray(
+            "samples", value, 744, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
+
+    def __len__(self):
+        return \
+            get_farray_size('B', 744)
+
+    def __repr__(self):
+        return "{type}(" \
+               "samples={samples})".format(
+                type=type(self).__name__,
+                samples=self._samples)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write_farray(self._samples, "B", 744)
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        samples = reader.read_farray("B", 744)
+        return cls(
+            samples=samples)
+
+    
 class NextFrame(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -1781,6 +1834,7 @@ ACTION_BY_ID = {
     0x36: SetLiftHeight,  # 54
     0x37: SetHeadAngle,  # 55
     0x3b: StopAllMotors,  # 59
+    0x8e: OutputAudio,  # 142
     0x8f: NextFrame,  # 143
     0x97: DisplayImage,  # 151
     0xc2: RobotDelocalized,  # 194

@@ -51,7 +51,7 @@ Actuators:
 - Backpack LEDs - supported
 - IR LED - supported
 - OLED display - work in progress
-- Speaker - not supported
+- Speaker - supported
 - Cube LEDs - not supported
 
 Communication:
