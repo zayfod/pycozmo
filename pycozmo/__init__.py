@@ -12,7 +12,7 @@ from . import protocol_utils
 from . import lights
 
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "Frame",
