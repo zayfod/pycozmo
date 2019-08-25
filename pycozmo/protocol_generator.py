@@ -14,6 +14,38 @@ def to_pascal_case(name):
     return ''.join(x.title() for x in components)
 
 
+def get_fmt_by_type(t):
+    if t == protocol_declaration.FloatArgument:
+        fmt = "f"
+    elif t == protocol_declaration.DoubleArgument:
+        fmt = "d"
+    elif t == protocol_declaration.BoolArgument:
+        fmt = "b"
+    elif t == protocol_declaration.UInt8Argument:
+        fmt = "B"
+    elif t == protocol_declaration.UInt16Argument:
+        fmt = "H"
+    elif t == protocol_declaration.UInt32Argument:
+        fmt = "L"
+    elif t == protocol_declaration.Int16Argument:
+        fmt = "h"
+    else:
+        fmt = None
+    return fmt
+
+
+def get_varray_fmts(argument: protocol_declaration.VArrayArgument):
+    length_fmt = get_fmt_by_type(argument.length_type)
+    if not length_fmt:
+        raise NotImplementedError("Unexpected varray length type '{}' for '{}'".format(
+            argument.length_type, argument.name))
+    data_fmt = get_fmt_by_type(argument.data_type)
+    if not data_fmt:
+        raise NotImplementedError("Unexpected varray data type '{}' for '{}'".format(
+            argument.data_type, argument.name))
+    return length_fmt, data_fmt
+
+
 class ProtocolGenerator(object):
 
     def __init__(self, f):
@@ -34,6 +66,36 @@ class ProtocolGenerator(object):
     def generate_packet_slots(self, packet):
         for argument in packet.arguments:
             self.f.write('        "_{name}",\n'.format(name=argument.name))
+
+    def generate_varray_validation(self, argument):
+        if argument.length_type == protocol_declaration.UInt8Argument:
+            maximum_length = 255
+        elif argument.length_type == protocol_declaration.UInt16Argument:
+            maximum_length = 65536
+        else:
+            raise NotImplementedError("Unexpected varray length type '{}' for '{}'".format(
+                argument.length_type, argument.name))
+
+        if argument.data_type == protocol_declaration.FloatArgument:
+            element_validation = "lambda name, value_inner: validate_float(name, value_inner)"
+        elif argument.data_type == protocol_declaration.DoubleArgument:
+            element_validation = "lambda name, value_inner: validate_float(name, value_inner)"
+        elif argument.data_type == protocol_declaration.BoolArgument:
+            element_validation = "lambda name, value_inner: validate_bool(name, value_inner)"
+        elif argument.data_type == protocol_declaration.UInt8Argument:
+            element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 255)"
+        elif argument.data_type == protocol_declaration.UInt16Argument:
+            element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 65535)"
+        elif argument.data_type == protocol_declaration.UInt32Argument:
+            element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295)"
+        elif argument.data_type == protocol_declaration.Int16Argument:
+            element_validation = "lambda name, value_inner: validate_integer(name, value_inner, -32768, 32767)"
+        else:
+            raise NotImplementedError("Unexpected varray data type '{}' for '{}'".format(
+                argument.data_type, argument.name))
+
+        self.f.write('validate_varray(\n            "{name}", value, {maximum_length}, {element_validation})\n'.format(
+            name=argument.name, maximum_length=maximum_length, element_validation=element_validation))
 
     def generate_argument_methods(self, packet):
         for argument in packet.arguments:
@@ -59,9 +121,18 @@ class ProtocolGenerator(object):
                 self.f.write('validate_integer("{name}", value, 0, 4294967295)\n'.format(name=argument.name))
             elif isinstance(argument, protocol_declaration.Int16Argument):
                 self.f.write('validate_integer("{name}", value, -32768, 32767)\n'.format(name=argument.name))
+            elif isinstance(argument, protocol_declaration.VArrayArgument):
+                self.generate_varray_validation(argument)
             else:
                 raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
                     type(argument), argument.name))
+
+    @staticmethod
+    def generate_varray_len_method(argument):
+        length_fmt, data_fmt = get_varray_fmts(argument)
+        code = "get_varray_size(self._{name}, '{length_fmt}', '{data_fmt}')".format(
+            name=argument.name, length_fmt=length_fmt, data_fmt=data_fmt)
+        return code
 
     def generate_len_method(self, packet):
         self.f.write("\n    def __len__(self):\n")
@@ -85,6 +156,9 @@ class ProtocolGenerator(object):
                     statements.append("get_size('L')")
                 elif isinstance(argument, protocol_declaration.Int16Argument):
                     statements.append("get_size('h')")
+                elif isinstance(argument, protocol_declaration.VArrayArgument):
+                    code = self.generate_varray_len_method(argument)
+                    statements.append(code)
                 else:
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
                         type(argument), argument.name))
@@ -119,6 +193,11 @@ class ProtocolGenerator(object):
         else:
             self.f.write("        pass\n")
 
+    def generate_varray_encoding(self, argument):
+        length_fmt, data_fmt = get_varray_fmts(argument)
+        self.f.write('        writer.write_varray(self._{name}, "{data_fmt}", "{length_fmt}")\n'.format(
+            name=argument.name, length_fmt=length_fmt, data_fmt=data_fmt))
+
     def generate_packet_encoding(self, packet):
         self.f.write(r"""
     def to_bytes(self):
@@ -144,11 +223,18 @@ class ProtocolGenerator(object):
                     self.f.write('        writer.write(self._{name}, "L")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.Int16Argument):
                     self.f.write('        writer.write(self._{name}, "h")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.VArrayArgument):
+                    self.generate_varray_encoding(argument)
                 else:
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
                         type(argument), argument.name))
         else:
             self.f.write("        pass\n")
+
+    def generate_varray_decoding(self, argument):
+        length_fmt, data_fmt = get_varray_fmts(argument)
+        self.f.write('        {name} = reader.read_varray("{data_fmt}", "{length_fmt}")\n'.format(
+            name=argument.name, length_fmt=length_fmt, data_fmt=data_fmt))
 
     def generate_packet_decoding(self, packet):
         self.f.write(r"""
@@ -177,6 +263,8 @@ class ProtocolGenerator(object):
                     self.f.write('        {name} = reader.read("L")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.Int16Argument):
                     self.f.write('        {name} = reader.read("h")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.VArrayArgument):
+                    self.generate_varray_decoding(argument)
                 else:
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
                         type(argument), argument.name))
@@ -224,7 +312,10 @@ Do not modify.
 
 from .protocol_declaration import PacketType
 from .protocol_base import Packet
-from .protocol_utils import validate_float, validate_bool, validate_integer, get_size, BinaryReader, BinaryWriter
+from .protocol_utils import \
+    validate_float, validate_bool, validate_integer, validate_varray, \
+    get_size, get_varray_size, \
+    BinaryReader, BinaryWriter
 '''.format(declaration=os.path.basename(protocol_declaration.__file__), generator=os.path.basename(__file__))
         self.f.write(header)
 

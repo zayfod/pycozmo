@@ -10,7 +10,7 @@ def _get_struct(fmt, length):
     if key in _struct_cache:
         return _struct_cache[key]
     else:
-        reader = struct.Struct('<{0}{1}'.format(length, fmt))
+        reader = struct.Struct("<{0}{1}".format(length, fmt))
         _struct_cache[key] = reader
         return reader
 
@@ -37,14 +37,31 @@ def validate_integer(name, value, minimum, maximum):
     except ValueError:
         raise ValueError("{name} must be an integer. Got a {type}.".format(name=name, type=type(value).__name__))
     if value < minimum or value > maximum:
-        raise ValueError('{name} must be between {minimum} and {maximum}. Got {value}.'.format(
+        raise ValueError("{name} must be between {minimum} and {maximum}. Got {value}.".format(
             name=name, minimum=minimum, maximum=maximum, value=value))
     return value
+
+
+def validate_varray(name, value, maximum_length, element_validation):
+    try:
+        value = tuple(value)
+    except ValueError:
+        raise ValueError("{name} must be a sequence. Got a {type}.".format(name=name, type=type(value).__name__))
+    if len(value) > maximum_length:
+        raise ValueError(("{name} must be a sequence with length less than or equal to {maximum_length}. "
+                          "Got a sequence of length {value_length}.").format(
+            name=name, maximum_length=maximum_length, value_length=len(value)))
+    return [element_validation((name, i), element) for i, element in enumerate(value)]
 
 
 def get_size(fmt):
     """ Figures out the size of a value with the given format. """
     return _get_struct(fmt, 1).size
+
+
+def get_varray_size(value, length_format, data_format):
+    """ Figures out the size of a variable-length array with given format. """
+    return _get_struct(length_format, 1).size + _get_struct(data_format, len(value)).size
 
 
 class BinaryReader(object):

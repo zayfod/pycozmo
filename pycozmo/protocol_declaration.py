@@ -113,6 +113,17 @@ class Int32Argument(Argument):
         self.default = int(default)
 
 
+class VArrayArgument(Argument):
+    """ Variable-length array. """
+
+    def __init__(self, name: str, description: Optional[str] = None,
+                 data_type: Argument = UInt8Argument, length_type: Argument = UInt16Argument, default=()):
+        super().__init__(name, description)
+        self.data_type = data_type
+        self.length_type = length_type
+        self.default = tuple(default)
+
+
 class Packet(ABC):
     """ Base class for packets. """
 
