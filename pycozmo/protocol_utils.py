@@ -42,6 +42,18 @@ def validate_integer(name, value, minimum, maximum):
     return value
 
 
+def validate_farray(name, value, length, element_validation):
+    try:
+        value = tuple(value)
+    except ValueError:
+        raise ValueError("{name} must be a sequence. Got a {type}.".format(name=name, type=type(value).__name__))
+    if len(value) != length:
+        raise ValueError(("{name} must be a sequence of length {expected_length}. "
+                          "Got a sequence of length {value_length}.").format(
+            name=name, expected_length=length, value_length=len(value)))
+    return [element_validation((name, i), element) for i, element in enumerate(value)]
+
+
 def validate_varray(name, value, maximum_length, element_validation):
     try:
         value = tuple(value)
@@ -57,6 +69,11 @@ def validate_varray(name, value, maximum_length, element_validation):
 def get_size(fmt):
     """ Figures out the size of a value with the given format. """
     return _get_struct(fmt, 1).size
+
+
+def get_farray_size(format, length):
+    """ Figures out the size of a fixed array with given format. """
+    return _get_struct(format, length).size
 
 
 def get_varray_size(value, length_format, data_format):

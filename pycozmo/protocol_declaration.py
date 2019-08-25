@@ -124,6 +124,17 @@ class VArrayArgument(Argument):
         self.default = tuple(default)
 
 
+class FArrayArgument(Argument):
+    """ Fixed-length array. """
+
+    def __init__(self, name: str, description: Optional[str] = None,
+                 data_type: Argument = UInt8Argument, length: int = 0, default=()):
+        super().__init__(name, description)
+        self.data_type = data_type
+        self.length = length
+        self.default = tuple(default)
+
+
 class Packet(ABC):
     """ Base class for packets. """
 
