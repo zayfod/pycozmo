@@ -10,7 +10,10 @@ Do not modify.
 
 from .protocol_declaration import PacketType
 from .protocol_base import Packet
-from .protocol_utils import validate_float, validate_bool, validate_integer, get_size, BinaryReader, BinaryWriter
+from .protocol_utils import \
+    validate_float, validate_bool, validate_integer, validate_varray, \
+    get_size, get_varray_size, \
+    BinaryReader, BinaryWriter
 
     
 class Connect(Packet):
@@ -1280,7 +1283,7 @@ class SetLiftHeight(Packet):
         "_max_speed_rad_per_sec",
         "_accel_rad_per_sec2",
         "_duration_sec",
-        "_id",
+        "_action_id",
     )
 
     def __init__(self,
@@ -1288,12 +1291,12 @@ class SetLiftHeight(Packet):
                  max_speed_rad_per_sec=3.0,
                  accel_rad_per_sec2=20.0,
                  duration_sec=0.0,
-                 id=0):
+                 action_id=0):
         self.height_mm = height_mm
         self.max_speed_rad_per_sec = max_speed_rad_per_sec
         self.accel_rad_per_sec2 = accel_rad_per_sec2
         self.duration_sec = duration_sec
-        self.id = id
+        self.action_id = action_id
 
     @property
     def height_mm(self):
@@ -1328,12 +1331,12 @@ class SetLiftHeight(Packet):
         self._duration_sec = validate_float("duration_sec", value)
 
     @property
-    def id(self):
-        return self._id
+    def action_id(self):
+        return self._action_id
 
-    @id.setter
-    def id(self, value):
-        self._id = validate_integer("id", value, 0, 255)
+    @action_id.setter
+    def action_id(self, value):
+        self._action_id = validate_integer("action_id", value, 0, 255)
 
     def __len__(self):
         return \
@@ -1349,13 +1352,13 @@ class SetLiftHeight(Packet):
                "max_speed_rad_per_sec={max_speed_rad_per_sec}, " \
                "accel_rad_per_sec2={accel_rad_per_sec2}, " \
                "duration_sec={duration_sec}, " \
-               "id={id})".format(
+               "action_id={action_id})".format(
                 type=type(self).__name__,
                 height_mm=self._height_mm,
                 max_speed_rad_per_sec=self._max_speed_rad_per_sec,
                 accel_rad_per_sec2=self._accel_rad_per_sec2,
                 duration_sec=self._duration_sec,
-                id=self._id)
+                action_id=self._action_id)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -1367,7 +1370,7 @@ class SetLiftHeight(Packet):
         writer.write(self._max_speed_rad_per_sec, "f")
         writer.write(self._accel_rad_per_sec2, "f")
         writer.write(self._duration_sec, "f")
-        writer.write(self._id, "B")
+        writer.write(self._action_id, "B")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -1381,13 +1384,13 @@ class SetLiftHeight(Packet):
         max_speed_rad_per_sec = reader.read("f")
         accel_rad_per_sec2 = reader.read("f")
         duration_sec = reader.read("f")
-        id = reader.read("B")
+        action_id = reader.read("B")
         return cls(
             height_mm=height_mm,
             max_speed_rad_per_sec=max_speed_rad_per_sec,
             accel_rad_per_sec2=accel_rad_per_sec2,
             duration_sec=duration_sec,
-            id=id)
+            action_id=action_id)
 
     
 class SetHeadAngle(Packet):
@@ -1400,7 +1403,7 @@ class SetHeadAngle(Packet):
         "_max_speed_rad_per_sec",
         "_accel_rad_per_sec2",
         "_duration_sec",
-        "_id",
+        "_action_id",
     )
 
     def __init__(self,
@@ -1408,12 +1411,12 @@ class SetHeadAngle(Packet):
                  max_speed_rad_per_sec=15.0,
                  accel_rad_per_sec2=20.0,
                  duration_sec=0.0,
-                 id=0):
+                 action_id=0):
         self.angle_rad = angle_rad
         self.max_speed_rad_per_sec = max_speed_rad_per_sec
         self.accel_rad_per_sec2 = accel_rad_per_sec2
         self.duration_sec = duration_sec
-        self.id = id
+        self.action_id = action_id
 
     @property
     def angle_rad(self):
@@ -1448,12 +1451,12 @@ class SetHeadAngle(Packet):
         self._duration_sec = validate_float("duration_sec", value)
 
     @property
-    def id(self):
-        return self._id
+    def action_id(self):
+        return self._action_id
 
-    @id.setter
-    def id(self, value):
-        self._id = validate_integer("id", value, 0, 255)
+    @action_id.setter
+    def action_id(self, value):
+        self._action_id = validate_integer("action_id", value, 0, 255)
 
     def __len__(self):
         return \
@@ -1469,13 +1472,13 @@ class SetHeadAngle(Packet):
                "max_speed_rad_per_sec={max_speed_rad_per_sec}, " \
                "accel_rad_per_sec2={accel_rad_per_sec2}, " \
                "duration_sec={duration_sec}, " \
-               "id={id})".format(
+               "action_id={action_id})".format(
                 type=type(self).__name__,
                 angle_rad=self._angle_rad,
                 max_speed_rad_per_sec=self._max_speed_rad_per_sec,
                 accel_rad_per_sec2=self._accel_rad_per_sec2,
                 duration_sec=self._duration_sec,
-                id=self._id)
+                action_id=self._action_id)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -1487,7 +1490,7 @@ class SetHeadAngle(Packet):
         writer.write(self._max_speed_rad_per_sec, "f")
         writer.write(self._accel_rad_per_sec2, "f")
         writer.write(self._duration_sec, "f")
-        writer.write(self._id, "B")
+        writer.write(self._action_id, "B")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -1501,13 +1504,13 @@ class SetHeadAngle(Packet):
         max_speed_rad_per_sec = reader.read("f")
         accel_rad_per_sec2 = reader.read("f")
         duration_sec = reader.read("f")
-        id = reader.read("B")
+        action_id = reader.read("B")
         return cls(
             angle_rad=angle_rad,
             max_speed_rad_per_sec=max_speed_rad_per_sec,
             accel_rad_per_sec2=accel_rad_per_sec2,
             duration_sec=duration_sec,
-            id=id)
+            action_id=action_id)
 
     
 class StopAllMotors(Packet):
@@ -1548,36 +1551,22 @@ class StopAllMotors(Packet):
             )
 
     
-class AcknowledgeCommand(Packet):
+class NextFrame(Packet):
 
     PACKET_ID = PacketType.ACTION
-    ID = 0xc4
+    ID = 0x8f
 
     __slots__ = (
-        "_id",
     )
 
-    def __init__(self,
-                 id=0):
-        self.id = id
-
-    @property
-    def id(self):
-        return self._id
-
-    @id.setter
-    def id(self, value):
-        self._id = validate_integer("id", value, 0, 255)
+    def __init__(self):
+        pass
 
     def __len__(self):
-        return \
-            get_size('B')
+        return 0
 
     def __repr__(self):
-        return "{type}(" \
-               "id={id})".format(
-                type=type(self).__name__,
-                id=self._id)
+        return "{type}()".format(type=type(self).__name__)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -1585,7 +1574,7 @@ class AcknowledgeCommand(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(self._id, "B")
+        pass
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -1595,9 +1584,114 @@ class AcknowledgeCommand(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        id = reader.read("B")
+        del reader
         return cls(
-            id=id)
+            )
+
+    
+class DisplayImage(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x97
+
+    __slots__ = (
+        "_image",
+    )
+
+    def __init__(self,
+                 image=()):
+        self.image = image
+
+    @property
+    def image(self):
+        return self._image
+
+    @image.setter
+    def image(self, value):
+        self._image = validate_varray(
+            "image", value, 65536, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
+
+    def __len__(self):
+        return \
+            get_varray_size(self._image, 'H', 'B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "image={image})".format(
+                type=type(self).__name__,
+                image=self._image)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write_varray(self._image, "B", "H")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        image = reader.read_varray("B", "H")
+        return cls(
+            image=image)
+
+    
+class AcknowledgeCommand(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xc4
+
+    __slots__ = (
+        "_action_id",
+    )
+
+    def __init__(self,
+                 action_id=0):
+        self.action_id = action_id
+
+    @property
+    def action_id(self):
+        return self._action_id
+
+    @action_id.setter
+    def action_id(self, value):
+        self._action_id = validate_integer("action_id", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "action_id={action_id})".format(
+                type=type(self).__name__,
+                action_id=self._action_id)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._action_id, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        action_id = reader.read("B")
+        return cls(
+            action_id=action_id)
 
     
 class RobotDelocalized(Packet):
@@ -1687,6 +1781,8 @@ ACTION_BY_ID = {
     0x36: SetLiftHeight,  # 54
     0x37: SetHeadAngle,  # 55
     0x3b: StopAllMotors,  # 59
+    0x8f: NextFrame,  # 143
+    0x97: DisplayImage,  # 151
     0xc2: RobotDelocalized,  # 194
     0xc3: RobotPoked,  # 195
     0xc4: AcknowledgeCommand,  # 196

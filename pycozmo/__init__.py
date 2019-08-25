@@ -4,6 +4,7 @@ from .client import ROBOT_ADDR, Client
 from . robot import *
 
 from . import util
+from . import protocol_base
 from . import protocol_declaration
 from . import protocol_generator
 from . import protocol_encoder

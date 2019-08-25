@@ -272,19 +272,24 @@ PROTOCOL = Protocol(packets=[
         FloatArgument("max_speed_rad_per_sec", default=3.0),
         FloatArgument("accel_rad_per_sec2", default=20.0),
         FloatArgument("duration_sec"),
-        UInt8Argument("id"),
+        UInt8Argument("action_id"),
     ]),
     Command(0x37, "set_head_angle", arguments=[
         FloatArgument("angle_rad"),
         FloatArgument("max_speed_rad_per_sec", default=15.0),
         FloatArgument("accel_rad_per_sec2", default=20.0),
         FloatArgument("duration_sec"),
-        UInt8Argument("id"),
+        UInt8Argument("action_id"),
     ]),
     Command(0x3b, "stop_all_motors"),
 
+    Command(0x8f, "next_frame"),
+    Command(0x97, "display_image", arguments=[
+        VArrayArgument("image"),
+    ]),
+
     Command(0xc4, "acknowledge_command", arguments=[
-        UInt8Argument("id"),
+        UInt8Argument("action_id"),
     ]),
 
     Command(0xc2, "robot_delocalized"),

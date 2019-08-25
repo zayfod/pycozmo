@@ -11,7 +11,7 @@ from .protocol_declaration import FrameType
 from .protocol_base import Packet, UnknownCommand
 from .util import hex_load
 from .window import ReceiveWindow, SendWindow
-from .protocol_encoder import Connect, Disconnect, Ping
+from .protocol_encoder import Connect, Disconnect, Ping, NextFrame, DisplayImage
 
 
 ROBOT_ADDR = ("172.31.1.1", 5551)
@@ -270,52 +270,9 @@ class Client(Thread):
         pkt = UnknownCommand(0x9f)
         self.send(pkt)
 
-    def send_init_oled_face(self) -> None:
-        pkt = UnknownCommand(0x8f)
-        self.send(pkt)
-        pkt = UnknownCommand(0x97, hex_load("0d:00:1e:f8:81:f8:83:52:17:f8:81:f8:83:51:1f"))
-        self.send(pkt)
-        pkt = UnknownCommand(0x8f)
-        self.send(pkt)
-
-        pkt = UnknownCommand(0x97, hex_load("0d:00:1e:f8:81:f8:83:53:15:f8:81:f8:83:53:1e"))
-        self.send(pkt)
-        pkt = UnknownCommand(0x8f)
-        self.send(pkt)
-
-        pkt = UnknownCommand(0x97, hex_load("0d:00:1d:f8:81:f8:83:54:15:f8:81:f8:83:54:1d"))
-        self.send(pkt)
-        pkt = UnknownCommand(0x8f)
-        self.send(pkt)
-
-        pkt = UnknownCommand(0x97, hex_load("0d:00:1c:f8:81:f8:83:56:13:f8:81:f8:83:56:1c"))
-        self.send(pkt)
-        pkt = UnknownCommand(0x8f)
-        self.send(pkt)
-
-        pkt = UnknownCommand(0x97, hex_load("14:00:1a:f4:81:40:f4:85:f4:81:83:57:f4:81:40:0f:f8:81:f8:83:57:1c"))
-        self.send(pkt)
-        pkt = UnknownCommand(0x8f)
-        self.send(pkt)
-
-        pkt = UnknownCommand(0x97, hex_load("14:00:19:f4:81:40:f4:85:f4:81:83:58:f4:81:41:0e:f8:81:f8:83:58:1b"))
-        self.send(pkt)
-        pkt = UnknownCommand(0x8f)
-        self.send(pkt)
-
-        pkt = UnknownCommand(0x97, hex_load("14:00:18:f4:81:40:f4:85:f4:81:83:5a:f4:81:41:0c:f8:81:f8:83:5a:1a"))
-        self.send(pkt)
-        pkt = UnknownCommand(0x8f)
-        self.send(pkt)
-
-    def send_big_eyes(self) -> None:
-        pkt = UnknownCommand(0x97, hex_load("24:00:16:a0:b6:41:9c:be:40:98:c6:5b:9c:be:9c:a0:b6:40:06:a4:ae:a4:a0:b6:40:9c:be:40:98:c6:5b:9c:be:40:a0:b6:40:16"))
-        self.send(pkt)
-        pkt = UnknownCommand(0x8f)
-        self.send(pkt)
-
-    def send_sleepy_eyes(self) -> None:
-        pkt = UnknownCommand(0x97, hex_load("1d:00:17:f4:81:41:f4:85:f4:81:83:5b:f4:81:40:09:f4:81:40:f4:85:f4:81:83:4c:f8:83:4d:f8:81:19"))
-        self.send(pkt)
-        pkt = UnknownCommand(0x8f)
-        self.send(pkt)
+    def send_init_display(self) -> None:
+        for _ in range(7):
+            pkt = NextFrame()
+            self.send(pkt)
+            pkt = DisplayImage(b"\x3f\x3f")
+            self.send(pkt)
