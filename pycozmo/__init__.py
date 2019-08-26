@@ -1,4 +1,6 @@
 
+import sys
+
 from .frame import Frame
 from .client import ROBOT_ADDR, Client
 from . robot import *
@@ -27,3 +29,8 @@ __all__ = [
     "LIFT_PIVOT_HEIGHT_MM",
     "MAX_WHEEL_SPEED_MMPS",
 ]
+
+
+if sys.version_info < (3, 5):
+    sys.exit("ERROR: PyCozmo requires Python 3.5 or newer.")
+del sys
