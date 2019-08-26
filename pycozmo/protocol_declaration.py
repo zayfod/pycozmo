@@ -113,6 +113,17 @@ class Int32Argument(Argument):
         self.default = int(default)
 
 
+class FArrayArgument(Argument):
+    """ Fixed-length array. """
+
+    def __init__(self, name: str, description: Optional[str] = None,
+                 data_type: Argument = UInt8Argument, length: int = 0, default=()):
+        super().__init__(name, description)
+        self.data_type = data_type
+        self.length = length
+        self.default = tuple(default)
+
+
 class VArrayArgument(Argument):
     """ Variable-length array. """
 
@@ -124,15 +135,14 @@ class VArrayArgument(Argument):
         self.default = tuple(default)
 
 
-class FArrayArgument(Argument):
-    """ Fixed-length array. """
+class StringArgument(Argument):
+    """ String. """
 
     def __init__(self, name: str, description: Optional[str] = None,
-                 data_type: Argument = UInt8Argument, length: int = 0, default=()):
+                 length_type: Argument = UInt16Argument, default=""):
         super().__init__(name, description)
-        self.data_type = data_type
-        self.length = length
-        self.default = tuple(default)
+        self.length_type = length_type
+        self.default = str(default)
 
 
 class Packet(ABC):
@@ -309,4 +319,9 @@ PROTOCOL = Protocol(packets=[
 
     Command(0xc2, "robot_delocalized"),
     Command(0xc3, "robot_poked"),
+
+    Command(0xee, "firmware_signature", arguments=[
+        UInt16Argument("unknown"),
+        StringArgument("signature"),
+    ]),
 ])

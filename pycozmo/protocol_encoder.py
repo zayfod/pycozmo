@@ -11,8 +11,8 @@ Do not modify.
 from .protocol_declaration import PacketType
 from .protocol_base import Packet
 from .protocol_utils import \
-    validate_float, validate_bool, validate_integer, validate_farray, validate_varray, \
-    get_size, get_farray_size, get_varray_size, \
+    validate_float, validate_bool, validate_integer, validate_farray, validate_varray, validate_string, \
+    get_size, get_farray_size, get_varray_size, get_string_size, \
     BinaryReader, BinaryWriter
 
     
@@ -1822,6 +1822,75 @@ class RobotPoked(Packet):
         return cls(
             )
 
+    
+class FirmwareSignature(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xee
+
+    __slots__ = (
+        "_unknown",
+        "_signature",
+    )
+
+    def __init__(self,
+                 unknown=0,
+                 signature=''):
+        self.unknown = unknown
+        self.signature = signature
+
+    @property
+    def unknown(self):
+        return self._unknown
+
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_integer("unknown", value, 0, 65535)
+
+    @property
+    def signature(self):
+        return self._signature
+
+    @signature.setter
+    def signature(self, value):
+        self._signature = validate_string("signature", value, 65536)
+
+    def __len__(self):
+        return \
+            get_size('H') + \
+            get_string_size(self._signature, 'H')
+
+    def __repr__(self):
+        return "{type}(" \
+               "unknown={unknown}, " \
+               "signature={signature})".format(
+                type=type(self).__name__,
+                unknown=self._unknown,
+                signature=self._signature)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._unknown, "H")
+        writer.write_string(self._signature, "H")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        unknown = reader.read("H")
+        signature = reader.read_string("H")
+        return cls(
+            unknown=unknown,
+            signature=signature)
+
 
 ACTION_BY_ID = {
     0x03: LightStateCenter,  # 3
@@ -1840,4 +1909,5 @@ ACTION_BY_ID = {
     0xc2: RobotDelocalized,  # 194
     0xc3: RobotPoked,  # 195
     0xc4: AcknowledgeCommand,  # 196
+    0xee: FirmwareSignature,  # 238
 }

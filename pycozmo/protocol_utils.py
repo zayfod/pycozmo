@@ -66,6 +66,14 @@ def validate_varray(name, value, maximum_length, element_validation):
     return [element_validation((name, i), element) for i, element in enumerate(value)]
 
 
+def validate_string(name, value, maximum_length):
+    if len(value) > maximum_length:
+        raise ValueError(("{name} must be a string with less than or equal to {maximum_length}. "
+                          "Got a string of length {value_length}.").format(
+            name=name, maximum_length=maximum_length, value_length=len(value)))
+    return value
+
+
 def get_size(fmt):
     """ Figures out the size of a value with the given format. """
     return _get_struct(fmt, 1).size
@@ -79,6 +87,12 @@ def get_farray_size(fmt, length):
 def get_varray_size(value, length_format, data_format):
     """ Figures out the size of a variable-length array with given format. """
     return _get_struct(length_format, 1).size + _get_struct(data_format, len(value)).size
+
+
+def get_string_size(value, length_format):
+    """ Figures out the size of a string with given length format. """
+    buf = value.encode('utf_8')
+    return _get_struct(length_format, 1).size + _get_struct('s', len(buf)).size
 
 
 class BinaryReader(object):

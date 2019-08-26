@@ -5,12 +5,13 @@ from datetime import datetime, timedelta
 from queue import Queue, Empty
 from threading import Thread
 from typing import Optional, Tuple, Any
+import json
 
 from .frame import Frame
 from .protocol_declaration import FrameType
 from .protocol_base import Packet, UnknownCommand
 from .window import ReceiveWindow, SendWindow
-from .protocol_encoder import Connect, Disconnect, Ping, NextFrame, DisplayImage
+from .protocol_encoder import Connect, Disconnect, Ping, NextFrame, DisplayImage, FirmwareSignature
 
 
 ROBOT_ADDR = ("172.31.1.1", 5551)
@@ -185,6 +186,7 @@ class Client(Thread):
     def __init__(self, robot_addr: Optional[Tuple[str, int]] = None) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         self.robot_addr = robot_addr or ROBOT_ADDR
+        self.robot_fw_sig = None
         self.state = self.IDLE
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setblocking(False)
@@ -227,6 +229,10 @@ class Client(Thread):
                 if now - self.send_last > timedelta(seconds=PING_INTERVAL):
                     # print("Sending ping.")
                     self.send_ping()
+
+                if pkt is not None and isinstance(pkt, FirmwareSignature):
+                    self.robot_fw_sig = json.loads(pkt.signature)
+                    print("Cozmo firmware v{}".format(self.robot_fw_sig["version"]))
             else:
                 assert False
 
