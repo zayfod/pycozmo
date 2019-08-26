@@ -1823,6 +1823,144 @@ class RobotPoked(Packet):
             )
 
     
+class FallingStarted(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xdd
+
+    __slots__ = (
+        "_unknown",
+    )
+
+    def __init__(self,
+                 unknown=0):
+        self.unknown = unknown
+
+    @property
+    def unknown(self):
+        return self._unknown
+
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_integer("unknown", value, 0, 4294967295)
+
+    def __len__(self):
+        return \
+            get_size('L')
+
+    def __repr__(self):
+        return "{type}(" \
+               "unknown={unknown})".format(
+                type=type(self).__name__,
+                unknown=self._unknown)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._unknown, "L")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        unknown = reader.read("L")
+        return cls(
+            unknown=unknown)
+
+    
+class FallingStopped(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xde
+
+    __slots__ = (
+        "_unknown",
+        "_duration_ms",
+        "_impact_intensity",
+    )
+
+    def __init__(self,
+                 unknown=0,
+                 duration_ms=0,
+                 impact_intensity=0.0):
+        self.unknown = unknown
+        self.duration_ms = duration_ms
+        self.impact_intensity = impact_intensity
+
+    @property
+    def unknown(self):
+        return self._unknown
+
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_integer("unknown", value, 0, 4294967295)
+
+    @property
+    def duration_ms(self):
+        return self._duration_ms
+
+    @duration_ms.setter
+    def duration_ms(self, value):
+        self._duration_ms = validate_integer("duration_ms", value, 0, 4294967295)
+
+    @property
+    def impact_intensity(self):
+        return self._impact_intensity
+
+    @impact_intensity.setter
+    def impact_intensity(self, value):
+        self._impact_intensity = validate_float("impact_intensity", value)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('f')
+
+    def __repr__(self):
+        return "{type}(" \
+               "unknown={unknown}, " \
+               "duration_ms={duration_ms}, " \
+               "impact_intensity={impact_intensity})".format(
+                type=type(self).__name__,
+                unknown=self._unknown,
+                duration_ms=self._duration_ms,
+                impact_intensity=self._impact_intensity)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._unknown, "L")
+        writer.write(self._duration_ms, "L")
+        writer.write(self._impact_intensity, "f")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        unknown = reader.read("L")
+        duration_ms = reader.read("L")
+        impact_intensity = reader.read("f")
+        return cls(
+            unknown=unknown,
+            duration_ms=duration_ms,
+            impact_intensity=impact_intensity)
+
+    
 class FirmwareSignature(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -1909,5 +2047,7 @@ ACTION_BY_ID = {
     0xc2: RobotDelocalized,  # 194
     0xc3: RobotPoked,  # 195
     0xc4: AcknowledgeCommand,  # 196
+    0xdd: FallingStarted,  # 221
+    0xde: FallingStopped,  # 222
     0xee: FirmwareSignature,  # 238
 }

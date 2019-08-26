@@ -320,6 +320,15 @@ PROTOCOL = Protocol(packets=[
     Command(0xc2, "robot_delocalized"),
     Command(0xc3, "robot_poked"),
 
+    Command(0xdd, "falling_started", arguments=[
+        UInt32Argument("unknown"),
+    ]),
+    Command(0xde, "falling_stopped", arguments=[
+        UInt32Argument("unknown"),
+        UInt32Argument("duration_ms"),
+        FloatArgument("impact_intensity"),
+    ]),
+
     Command(0xee, "firmware_signature", arguments=[
         UInt16Argument("unknown"),
         StringArgument("signature"),
