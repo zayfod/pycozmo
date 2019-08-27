@@ -66,8 +66,8 @@ Sensors:
 - Accelerometers - not supported
 - Gyro - not supported
 - Battery voltage - not supported
-- Cube battery voltage - not supported
-- Cube accelerometers - not supported
+- Cube battery voltage - supported
+- Cube accelerometers - supported
 
 Actuators:
 - Wheel motors - supported
@@ -77,11 +77,11 @@ Actuators:
 - IR LED - supported
 - OLED display - work in progress
 - Speaker - supported
-- Cube LEDs - not supported
+- Cube LEDs - supported
 
 Communication:
 - Wi-Fi AP - supported
-- Bluetooth LE - not supported
+- Bluetooth LE - supported
 
 
 Limitations

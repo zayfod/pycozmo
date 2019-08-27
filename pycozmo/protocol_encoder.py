@@ -638,6 +638,586 @@ class LightStateCenter(Packet):
             unknown=unknown)
 
     
+class CubeLights(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x04
+
+    __slots__ = (
+        "_on_color_1",
+        "_off_color_1",
+        "_on_frames_1",
+        "_off_frames_1",
+        "_transmission_on_frames_1",
+        "_transmission_off_frames_1",
+        "_offset_1",
+        "_on_color_2",
+        "_off_color_2",
+        "_on_frames_2",
+        "_off_frames_2",
+        "_transmission_on_frames_2",
+        "_transmission_off_frames_2",
+        "_offset_2",
+        "_on_color_3",
+        "_off_color_3",
+        "_on_frames_3",
+        "_off_frames_3",
+        "_transmission_on_frames_3",
+        "_transmission_off_frames_3",
+        "_offset_3",
+        "_on_color_4",
+        "_off_color_4",
+        "_on_frames_4",
+        "_off_frames_4",
+        "_transmission_on_frames_4",
+        "_transmission_off_frames_4",
+        "_offset_4",
+    )
+
+    def __init__(self,
+                 on_color_1=0,
+                 off_color_1=0,
+                 on_frames_1=0,
+                 off_frames_1=0,
+                 transmission_on_frames_1=0,
+                 transmission_off_frames_1=0,
+                 offset_1=0,
+                 on_color_2=0,
+                 off_color_2=0,
+                 on_frames_2=0,
+                 off_frames_2=0,
+                 transmission_on_frames_2=0,
+                 transmission_off_frames_2=0,
+                 offset_2=0,
+                 on_color_3=0,
+                 off_color_3=0,
+                 on_frames_3=0,
+                 off_frames_3=0,
+                 transmission_on_frames_3=0,
+                 transmission_off_frames_3=0,
+                 offset_3=0,
+                 on_color_4=0,
+                 off_color_4=0,
+                 on_frames_4=0,
+                 off_frames_4=0,
+                 transmission_on_frames_4=0,
+                 transmission_off_frames_4=0,
+                 offset_4=0):
+        self.on_color_1 = on_color_1
+        self.off_color_1 = off_color_1
+        self.on_frames_1 = on_frames_1
+        self.off_frames_1 = off_frames_1
+        self.transmission_on_frames_1 = transmission_on_frames_1
+        self.transmission_off_frames_1 = transmission_off_frames_1
+        self.offset_1 = offset_1
+        self.on_color_2 = on_color_2
+        self.off_color_2 = off_color_2
+        self.on_frames_2 = on_frames_2
+        self.off_frames_2 = off_frames_2
+        self.transmission_on_frames_2 = transmission_on_frames_2
+        self.transmission_off_frames_2 = transmission_off_frames_2
+        self.offset_2 = offset_2
+        self.on_color_3 = on_color_3
+        self.off_color_3 = off_color_3
+        self.on_frames_3 = on_frames_3
+        self.off_frames_3 = off_frames_3
+        self.transmission_on_frames_3 = transmission_on_frames_3
+        self.transmission_off_frames_3 = transmission_off_frames_3
+        self.offset_3 = offset_3
+        self.on_color_4 = on_color_4
+        self.off_color_4 = off_color_4
+        self.on_frames_4 = on_frames_4
+        self.off_frames_4 = off_frames_4
+        self.transmission_on_frames_4 = transmission_on_frames_4
+        self.transmission_off_frames_4 = transmission_off_frames_4
+        self.offset_4 = offset_4
+
+    @property
+    def on_color_1(self):
+        return self._on_color_1
+
+    @on_color_1.setter
+    def on_color_1(self, value):
+        self._on_color_1 = validate_integer("on_color_1", value, 0, 65535)
+
+    @property
+    def off_color_1(self):
+        return self._off_color_1
+
+    @off_color_1.setter
+    def off_color_1(self, value):
+        self._off_color_1 = validate_integer("off_color_1", value, 0, 65535)
+
+    @property
+    def on_frames_1(self):
+        return self._on_frames_1
+
+    @on_frames_1.setter
+    def on_frames_1(self, value):
+        self._on_frames_1 = validate_integer("on_frames_1", value, 0, 255)
+
+    @property
+    def off_frames_1(self):
+        return self._off_frames_1
+
+    @off_frames_1.setter
+    def off_frames_1(self, value):
+        self._off_frames_1 = validate_integer("off_frames_1", value, 0, 255)
+
+    @property
+    def transmission_on_frames_1(self):
+        return self._transmission_on_frames_1
+
+    @transmission_on_frames_1.setter
+    def transmission_on_frames_1(self, value):
+        self._transmission_on_frames_1 = validate_integer("transmission_on_frames_1", value, 0, 255)
+
+    @property
+    def transmission_off_frames_1(self):
+        return self._transmission_off_frames_1
+
+    @transmission_off_frames_1.setter
+    def transmission_off_frames_1(self, value):
+        self._transmission_off_frames_1 = validate_integer("transmission_off_frames_1", value, 0, 255)
+
+    @property
+    def offset_1(self):
+        return self._offset_1
+
+    @offset_1.setter
+    def offset_1(self, value):
+        self._offset_1 = validate_integer("offset_1", value, -32768, 32767)
+
+    @property
+    def on_color_2(self):
+        return self._on_color_2
+
+    @on_color_2.setter
+    def on_color_2(self, value):
+        self._on_color_2 = validate_integer("on_color_2", value, 0, 65535)
+
+    @property
+    def off_color_2(self):
+        return self._off_color_2
+
+    @off_color_2.setter
+    def off_color_2(self, value):
+        self._off_color_2 = validate_integer("off_color_2", value, 0, 65535)
+
+    @property
+    def on_frames_2(self):
+        return self._on_frames_2
+
+    @on_frames_2.setter
+    def on_frames_2(self, value):
+        self._on_frames_2 = validate_integer("on_frames_2", value, 0, 255)
+
+    @property
+    def off_frames_2(self):
+        return self._off_frames_2
+
+    @off_frames_2.setter
+    def off_frames_2(self, value):
+        self._off_frames_2 = validate_integer("off_frames_2", value, 0, 255)
+
+    @property
+    def transmission_on_frames_2(self):
+        return self._transmission_on_frames_2
+
+    @transmission_on_frames_2.setter
+    def transmission_on_frames_2(self, value):
+        self._transmission_on_frames_2 = validate_integer("transmission_on_frames_2", value, 0, 255)
+
+    @property
+    def transmission_off_frames_2(self):
+        return self._transmission_off_frames_2
+
+    @transmission_off_frames_2.setter
+    def transmission_off_frames_2(self, value):
+        self._transmission_off_frames_2 = validate_integer("transmission_off_frames_2", value, 0, 255)
+
+    @property
+    def offset_2(self):
+        return self._offset_2
+
+    @offset_2.setter
+    def offset_2(self, value):
+        self._offset_2 = validate_integer("offset_2", value, -32768, 32767)
+
+    @property
+    def on_color_3(self):
+        return self._on_color_3
+
+    @on_color_3.setter
+    def on_color_3(self, value):
+        self._on_color_3 = validate_integer("on_color_3", value, 0, 65535)
+
+    @property
+    def off_color_3(self):
+        return self._off_color_3
+
+    @off_color_3.setter
+    def off_color_3(self, value):
+        self._off_color_3 = validate_integer("off_color_3", value, 0, 65535)
+
+    @property
+    def on_frames_3(self):
+        return self._on_frames_3
+
+    @on_frames_3.setter
+    def on_frames_3(self, value):
+        self._on_frames_3 = validate_integer("on_frames_3", value, 0, 255)
+
+    @property
+    def off_frames_3(self):
+        return self._off_frames_3
+
+    @off_frames_3.setter
+    def off_frames_3(self, value):
+        self._off_frames_3 = validate_integer("off_frames_3", value, 0, 255)
+
+    @property
+    def transmission_on_frames_3(self):
+        return self._transmission_on_frames_3
+
+    @transmission_on_frames_3.setter
+    def transmission_on_frames_3(self, value):
+        self._transmission_on_frames_3 = validate_integer("transmission_on_frames_3", value, 0, 255)
+
+    @property
+    def transmission_off_frames_3(self):
+        return self._transmission_off_frames_3
+
+    @transmission_off_frames_3.setter
+    def transmission_off_frames_3(self, value):
+        self._transmission_off_frames_3 = validate_integer("transmission_off_frames_3", value, 0, 255)
+
+    @property
+    def offset_3(self):
+        return self._offset_3
+
+    @offset_3.setter
+    def offset_3(self, value):
+        self._offset_3 = validate_integer("offset_3", value, -32768, 32767)
+
+    @property
+    def on_color_4(self):
+        return self._on_color_4
+
+    @on_color_4.setter
+    def on_color_4(self, value):
+        self._on_color_4 = validate_integer("on_color_4", value, 0, 65535)
+
+    @property
+    def off_color_4(self):
+        return self._off_color_4
+
+    @off_color_4.setter
+    def off_color_4(self, value):
+        self._off_color_4 = validate_integer("off_color_4", value, 0, 65535)
+
+    @property
+    def on_frames_4(self):
+        return self._on_frames_4
+
+    @on_frames_4.setter
+    def on_frames_4(self, value):
+        self._on_frames_4 = validate_integer("on_frames_4", value, 0, 255)
+
+    @property
+    def off_frames_4(self):
+        return self._off_frames_4
+
+    @off_frames_4.setter
+    def off_frames_4(self, value):
+        self._off_frames_4 = validate_integer("off_frames_4", value, 0, 255)
+
+    @property
+    def transmission_on_frames_4(self):
+        return self._transmission_on_frames_4
+
+    @transmission_on_frames_4.setter
+    def transmission_on_frames_4(self, value):
+        self._transmission_on_frames_4 = validate_integer("transmission_on_frames_4", value, 0, 255)
+
+    @property
+    def transmission_off_frames_4(self):
+        return self._transmission_off_frames_4
+
+    @transmission_off_frames_4.setter
+    def transmission_off_frames_4(self, value):
+        self._transmission_off_frames_4 = validate_integer("transmission_off_frames_4", value, 0, 255)
+
+    @property
+    def offset_4(self):
+        return self._offset_4
+
+    @offset_4.setter
+    def offset_4(self, value):
+        self._offset_4 = validate_integer("offset_4", value, -32768, 32767)
+
+    def __len__(self):
+        return \
+            get_size('H') + \
+            get_size('H') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('h') + \
+            get_size('H') + \
+            get_size('H') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('h') + \
+            get_size('H') + \
+            get_size('H') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('h') + \
+            get_size('H') + \
+            get_size('H') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('h')
+
+    def __repr__(self):
+        return "{type}(" \
+               "on_color_1={on_color_1}, " \
+               "off_color_1={off_color_1}, " \
+               "on_frames_1={on_frames_1}, " \
+               "off_frames_1={off_frames_1}, " \
+               "transmission_on_frames_1={transmission_on_frames_1}, " \
+               "transmission_off_frames_1={transmission_off_frames_1}, " \
+               "offset_1={offset_1}, " \
+               "on_color_2={on_color_2}, " \
+               "off_color_2={off_color_2}, " \
+               "on_frames_2={on_frames_2}, " \
+               "off_frames_2={off_frames_2}, " \
+               "transmission_on_frames_2={transmission_on_frames_2}, " \
+               "transmission_off_frames_2={transmission_off_frames_2}, " \
+               "offset_2={offset_2}, " \
+               "on_color_3={on_color_3}, " \
+               "off_color_3={off_color_3}, " \
+               "on_frames_3={on_frames_3}, " \
+               "off_frames_3={off_frames_3}, " \
+               "transmission_on_frames_3={transmission_on_frames_3}, " \
+               "transmission_off_frames_3={transmission_off_frames_3}, " \
+               "offset_3={offset_3}, " \
+               "on_color_4={on_color_4}, " \
+               "off_color_4={off_color_4}, " \
+               "on_frames_4={on_frames_4}, " \
+               "off_frames_4={off_frames_4}, " \
+               "transmission_on_frames_4={transmission_on_frames_4}, " \
+               "transmission_off_frames_4={transmission_off_frames_4}, " \
+               "offset_4={offset_4})".format(
+                type=type(self).__name__,
+                on_color_1=self._on_color_1,
+                off_color_1=self._off_color_1,
+                on_frames_1=self._on_frames_1,
+                off_frames_1=self._off_frames_1,
+                transmission_on_frames_1=self._transmission_on_frames_1,
+                transmission_off_frames_1=self._transmission_off_frames_1,
+                offset_1=self._offset_1,
+                on_color_2=self._on_color_2,
+                off_color_2=self._off_color_2,
+                on_frames_2=self._on_frames_2,
+                off_frames_2=self._off_frames_2,
+                transmission_on_frames_2=self._transmission_on_frames_2,
+                transmission_off_frames_2=self._transmission_off_frames_2,
+                offset_2=self._offset_2,
+                on_color_3=self._on_color_3,
+                off_color_3=self._off_color_3,
+                on_frames_3=self._on_frames_3,
+                off_frames_3=self._off_frames_3,
+                transmission_on_frames_3=self._transmission_on_frames_3,
+                transmission_off_frames_3=self._transmission_off_frames_3,
+                offset_3=self._offset_3,
+                on_color_4=self._on_color_4,
+                off_color_4=self._off_color_4,
+                on_frames_4=self._on_frames_4,
+                off_frames_4=self._off_frames_4,
+                transmission_on_frames_4=self._transmission_on_frames_4,
+                transmission_off_frames_4=self._transmission_off_frames_4,
+                offset_4=self._offset_4)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._on_color_1, "H")
+        writer.write(self._off_color_1, "H")
+        writer.write(self._on_frames_1, "B")
+        writer.write(self._off_frames_1, "B")
+        writer.write(self._transmission_on_frames_1, "B")
+        writer.write(self._transmission_off_frames_1, "B")
+        writer.write(self._offset_1, "h")
+        writer.write(self._on_color_2, "H")
+        writer.write(self._off_color_2, "H")
+        writer.write(self._on_frames_2, "B")
+        writer.write(self._off_frames_2, "B")
+        writer.write(self._transmission_on_frames_2, "B")
+        writer.write(self._transmission_off_frames_2, "B")
+        writer.write(self._offset_2, "h")
+        writer.write(self._on_color_3, "H")
+        writer.write(self._off_color_3, "H")
+        writer.write(self._on_frames_3, "B")
+        writer.write(self._off_frames_3, "B")
+        writer.write(self._transmission_on_frames_3, "B")
+        writer.write(self._transmission_off_frames_3, "B")
+        writer.write(self._offset_3, "h")
+        writer.write(self._on_color_4, "H")
+        writer.write(self._off_color_4, "H")
+        writer.write(self._on_frames_4, "B")
+        writer.write(self._off_frames_4, "B")
+        writer.write(self._transmission_on_frames_4, "B")
+        writer.write(self._transmission_off_frames_4, "B")
+        writer.write(self._offset_4, "h")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        on_color_1 = reader.read("H")
+        off_color_1 = reader.read("H")
+        on_frames_1 = reader.read("B")
+        off_frames_1 = reader.read("B")
+        transmission_on_frames_1 = reader.read("B")
+        transmission_off_frames_1 = reader.read("B")
+        offset_1 = reader.read("h")
+        on_color_2 = reader.read("H")
+        off_color_2 = reader.read("H")
+        on_frames_2 = reader.read("B")
+        off_frames_2 = reader.read("B")
+        transmission_on_frames_2 = reader.read("B")
+        transmission_off_frames_2 = reader.read("B")
+        offset_2 = reader.read("h")
+        on_color_3 = reader.read("H")
+        off_color_3 = reader.read("H")
+        on_frames_3 = reader.read("B")
+        off_frames_3 = reader.read("B")
+        transmission_on_frames_3 = reader.read("B")
+        transmission_off_frames_3 = reader.read("B")
+        offset_3 = reader.read("h")
+        on_color_4 = reader.read("H")
+        off_color_4 = reader.read("H")
+        on_frames_4 = reader.read("B")
+        off_frames_4 = reader.read("B")
+        transmission_on_frames_4 = reader.read("B")
+        transmission_off_frames_4 = reader.read("B")
+        offset_4 = reader.read("h")
+        return cls(
+            on_color_1=on_color_1,
+            off_color_1=off_color_1,
+            on_frames_1=on_frames_1,
+            off_frames_1=off_frames_1,
+            transmission_on_frames_1=transmission_on_frames_1,
+            transmission_off_frames_1=transmission_off_frames_1,
+            offset_1=offset_1,
+            on_color_2=on_color_2,
+            off_color_2=off_color_2,
+            on_frames_2=on_frames_2,
+            off_frames_2=off_frames_2,
+            transmission_on_frames_2=transmission_on_frames_2,
+            transmission_off_frames_2=transmission_off_frames_2,
+            offset_2=offset_2,
+            on_color_3=on_color_3,
+            off_color_3=off_color_3,
+            on_frames_3=on_frames_3,
+            off_frames_3=off_frames_3,
+            transmission_on_frames_3=transmission_on_frames_3,
+            transmission_off_frames_3=transmission_off_frames_3,
+            offset_3=offset_3,
+            on_color_4=on_color_4,
+            off_color_4=off_color_4,
+            on_frames_4=on_frames_4,
+            off_frames_4=off_frames_4,
+            transmission_on_frames_4=transmission_on_frames_4,
+            transmission_off_frames_4=transmission_off_frames_4,
+            offset_4=offset_4)
+
+    
+class ObjectConnect(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x05
+
+    __slots__ = (
+        "_factory_id",
+        "_connect",
+    )
+
+    def __init__(self,
+                 factory_id=0,
+                 connect=False):
+        self.factory_id = factory_id
+        self.connect = connect
+
+    @property
+    def factory_id(self):
+        return self._factory_id
+
+    @factory_id.setter
+    def factory_id(self, value):
+        self._factory_id = validate_integer("factory_id", value, 0, 4294967295)
+
+    @property
+    def connect(self):
+        return self._connect
+
+    @connect.setter
+    def connect(self, value):
+        self._connect = validate_bool("connect", value)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "factory_id={factory_id}, " \
+               "connect={connect})".format(
+                type=type(self).__name__,
+                factory_id=self._factory_id,
+                connect=self._connect)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._factory_id, "L")
+        writer.write(int(self._connect), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        factory_id = reader.read("L")
+        connect = bool(reader.read("b"))
+        return cls(
+            factory_id=factory_id,
+            connect=connect)
+
+    
 class SetHeadLight(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -688,6 +1268,75 @@ class SetHeadLight(Packet):
         enable = bool(reader.read("b"))
         return cls(
             enable=enable)
+
+    
+class CubeId(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x10
+
+    __slots__ = (
+        "_object_id",
+        "_rotation_period_frames",
+    )
+
+    def __init__(self,
+                 object_id=0,
+                 rotation_period_frames=0):
+        self.object_id = object_id
+        self.rotation_period_frames = rotation_period_frames
+
+    @property
+    def object_id(self):
+        return self._object_id
+
+    @object_id.setter
+    def object_id(self, value):
+        self._object_id = validate_integer("object_id", value, 0, 4294967295)
+
+    @property
+    def rotation_period_frames(self):
+        return self._rotation_period_frames
+
+    @rotation_period_frames.setter
+    def rotation_period_frames(self, value):
+        self._rotation_period_frames = validate_integer("rotation_period_frames", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "object_id={object_id}, " \
+               "rotation_period_frames={rotation_period_frames})".format(
+                type=type(self).__name__,
+                object_id=self._object_id,
+                rotation_period_frames=self._rotation_period_frames)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._object_id, "L")
+        writer.write(self._rotation_period_frames, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        object_id = reader.read("L")
+        rotation_period_frames = reader.read("B")
+        return cls(
+            object_id=object_id,
+            rotation_period_frames=rotation_period_frames)
 
     
 class LightStateSide(Packet):
@@ -1747,6 +2396,452 @@ class DisplayImage(Packet):
             image=image)
 
     
+class ObjectMoved(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xb4
+
+    __slots__ = (
+        "_timestamp",
+        "_object_id",
+        "_active_accel_x",
+        "_active_accel_y",
+        "_active_accel_z",
+        "_axis_of_accel",
+    )
+
+    def __init__(self,
+                 timestamp=0,
+                 object_id=0,
+                 active_accel_x=0.0,
+                 active_accel_y=0.0,
+                 active_accel_z=0.0,
+                 axis_of_accel=0):
+        self.timestamp = timestamp
+        self.object_id = object_id
+        self.active_accel_x = active_accel_x
+        self.active_accel_y = active_accel_y
+        self.active_accel_z = active_accel_z
+        self.axis_of_accel = axis_of_accel
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = validate_integer("timestamp", value, 0, 4294967295)
+
+    @property
+    def object_id(self):
+        return self._object_id
+
+    @object_id.setter
+    def object_id(self, value):
+        self._object_id = validate_integer("object_id", value, 0, 4294967295)
+
+    @property
+    def active_accel_x(self):
+        return self._active_accel_x
+
+    @active_accel_x.setter
+    def active_accel_x(self, value):
+        self._active_accel_x = validate_float("active_accel_x", value)
+
+    @property
+    def active_accel_y(self):
+        return self._active_accel_y
+
+    @active_accel_y.setter
+    def active_accel_y(self, value):
+        self._active_accel_y = validate_float("active_accel_y", value)
+
+    @property
+    def active_accel_z(self):
+        return self._active_accel_z
+
+    @active_accel_z.setter
+    def active_accel_z(self, value):
+        self._active_accel_z = validate_float("active_accel_z", value)
+
+    @property
+    def axis_of_accel(self):
+        return self._axis_of_accel
+
+    @axis_of_accel.setter
+    def axis_of_accel(self, value):
+        self._axis_of_accel = validate_integer("axis_of_accel", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "timestamp={timestamp}, " \
+               "object_id={object_id}, " \
+               "active_accel_x={active_accel_x}, " \
+               "active_accel_y={active_accel_y}, " \
+               "active_accel_z={active_accel_z}, " \
+               "axis_of_accel={axis_of_accel})".format(
+                type=type(self).__name__,
+                timestamp=self._timestamp,
+                object_id=self._object_id,
+                active_accel_x=self._active_accel_x,
+                active_accel_y=self._active_accel_y,
+                active_accel_z=self._active_accel_z,
+                axis_of_accel=self._axis_of_accel)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._timestamp, "L")
+        writer.write(self._object_id, "L")
+        writer.write(self._active_accel_x, "f")
+        writer.write(self._active_accel_y, "f")
+        writer.write(self._active_accel_z, "f")
+        writer.write(self._axis_of_accel, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        timestamp = reader.read("L")
+        object_id = reader.read("L")
+        active_accel_x = reader.read("f")
+        active_accel_y = reader.read("f")
+        active_accel_z = reader.read("f")
+        axis_of_accel = reader.read("B")
+        return cls(
+            timestamp=timestamp,
+            object_id=object_id,
+            active_accel_x=active_accel_x,
+            active_accel_y=active_accel_y,
+            active_accel_z=active_accel_z,
+            axis_of_accel=axis_of_accel)
+
+    
+class ObjectStoppedMoving(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xb5
+
+    __slots__ = (
+        "_timestamp",
+        "_object_id",
+    )
+
+    def __init__(self,
+                 timestamp=0,
+                 object_id=0):
+        self.timestamp = timestamp
+        self.object_id = object_id
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = validate_integer("timestamp", value, 0, 4294967295)
+
+    @property
+    def object_id(self):
+        return self._object_id
+
+    @object_id.setter
+    def object_id(self, value):
+        self._object_id = validate_integer("object_id", value, 0, 4294967295)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L')
+
+    def __repr__(self):
+        return "{type}(" \
+               "timestamp={timestamp}, " \
+               "object_id={object_id})".format(
+                type=type(self).__name__,
+                timestamp=self._timestamp,
+                object_id=self._object_id)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._timestamp, "L")
+        writer.write(self._object_id, "L")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        timestamp = reader.read("L")
+        object_id = reader.read("L")
+        return cls(
+            timestamp=timestamp,
+            object_id=object_id)
+
+    
+class ObjectTapped(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xb6
+
+    __slots__ = (
+        "_timestamp",
+        "_object_id",
+        "_num_taps",
+        "_tap_time",
+        "_tap_neg",
+        "_tap_pos",
+    )
+
+    def __init__(self,
+                 timestamp=0,
+                 object_id=0,
+                 num_taps=0,
+                 tap_time=0,
+                 tap_neg=0,
+                 tap_pos=0):
+        self.timestamp = timestamp
+        self.object_id = object_id
+        self.num_taps = num_taps
+        self.tap_time = tap_time
+        self.tap_neg = tap_neg
+        self.tap_pos = tap_pos
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = validate_integer("timestamp", value, 0, 4294967295)
+
+    @property
+    def object_id(self):
+        return self._object_id
+
+    @object_id.setter
+    def object_id(self, value):
+        self._object_id = validate_integer("object_id", value, 0, 4294967295)
+
+    @property
+    def num_taps(self):
+        return self._num_taps
+
+    @num_taps.setter
+    def num_taps(self, value):
+        self._num_taps = validate_integer("num_taps", value, 0, 255)
+
+    @property
+    def tap_time(self):
+        return self._tap_time
+
+    @tap_time.setter
+    def tap_time(self, value):
+        self._tap_time = validate_integer("tap_time", value, 0, 255)
+
+    @property
+    def tap_neg(self):
+        return self._tap_neg
+
+    @tap_neg.setter
+    def tap_neg(self, value):
+        self._tap_neg = validate_integer("tap_neg", value, 0, 255)
+
+    @property
+    def tap_pos(self):
+        return self._tap_pos
+
+    @tap_pos.setter
+    def tap_pos(self, value):
+        self._tap_pos = validate_integer("tap_pos", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "timestamp={timestamp}, " \
+               "object_id={object_id}, " \
+               "num_taps={num_taps}, " \
+               "tap_time={tap_time}, " \
+               "tap_neg={tap_neg}, " \
+               "tap_pos={tap_pos})".format(
+                type=type(self).__name__,
+                timestamp=self._timestamp,
+                object_id=self._object_id,
+                num_taps=self._num_taps,
+                tap_time=self._tap_time,
+                tap_neg=self._tap_neg,
+                tap_pos=self._tap_pos)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._timestamp, "L")
+        writer.write(self._object_id, "L")
+        writer.write(self._num_taps, "B")
+        writer.write(self._tap_time, "B")
+        writer.write(self._tap_neg, "B")
+        writer.write(self._tap_pos, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        timestamp = reader.read("L")
+        object_id = reader.read("L")
+        num_taps = reader.read("B")
+        tap_time = reader.read("B")
+        tap_neg = reader.read("B")
+        tap_pos = reader.read("B")
+        return cls(
+            timestamp=timestamp,
+            object_id=object_id,
+            num_taps=num_taps,
+            tap_time=tap_time,
+            tap_neg=tap_neg,
+            tap_pos=tap_pos)
+
+    
+class ObjectTapFiltered(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xb9
+
+    __slots__ = (
+        "_timestamp",
+        "_object_id",
+        "_time",
+        "_intensity",
+    )
+
+    def __init__(self,
+                 timestamp=0,
+                 object_id=0,
+                 time=0,
+                 intensity=0):
+        self.timestamp = timestamp
+        self.object_id = object_id
+        self.time = time
+        self.intensity = intensity
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = validate_integer("timestamp", value, 0, 4294967295)
+
+    @property
+    def object_id(self):
+        return self._object_id
+
+    @object_id.setter
+    def object_id(self, value):
+        self._object_id = validate_integer("object_id", value, 0, 4294967295)
+
+    @property
+    def time(self):
+        return self._time
+
+    @time.setter
+    def time(self, value):
+        self._time = validate_integer("time", value, 0, 255)
+
+    @property
+    def intensity(self):
+        return self._intensity
+
+    @intensity.setter
+    def intensity(self, value):
+        self._intensity = validate_integer("intensity", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('B') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "timestamp={timestamp}, " \
+               "object_id={object_id}, " \
+               "time={time}, " \
+               "intensity={intensity})".format(
+                type=type(self).__name__,
+                timestamp=self._timestamp,
+                object_id=self._object_id,
+                time=self._time,
+                intensity=self._intensity)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._timestamp, "L")
+        writer.write(self._object_id, "L")
+        writer.write(self._time, "B")
+        writer.write(self._intensity, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        timestamp = reader.read("L")
+        object_id = reader.read("L")
+        time = reader.read("B")
+        intensity = reader.read("B")
+        return cls(
+            timestamp=timestamp,
+            object_id=object_id,
+            time=time,
+            intensity=intensity)
+
+    
 class AcknowledgeCommand(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -1873,6 +2968,281 @@ class RobotPoked(Packet):
         del reader
         return cls(
             )
+
+    
+class ObjectPowerState(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xce
+
+    __slots__ = (
+        "_object_id",
+        "_missed_packets",
+        "_battery_level",
+    )
+
+    def __init__(self,
+                 object_id=0,
+                 missed_packets=0,
+                 battery_level=0):
+        self.object_id = object_id
+        self.missed_packets = missed_packets
+        self.battery_level = battery_level
+
+    @property
+    def object_id(self):
+        return self._object_id
+
+    @object_id.setter
+    def object_id(self, value):
+        self._object_id = validate_integer("object_id", value, 0, 4294967295)
+
+    @property
+    def missed_packets(self):
+        return self._missed_packets
+
+    @missed_packets.setter
+    def missed_packets(self, value):
+        self._missed_packets = validate_integer("missed_packets", value, 0, 4294967295)
+
+    @property
+    def battery_level(self):
+        return self._battery_level
+
+    @battery_level.setter
+    def battery_level(self, value):
+        self._battery_level = validate_integer("battery_level", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "object_id={object_id}, " \
+               "missed_packets={missed_packets}, " \
+               "battery_level={battery_level})".format(
+                type=type(self).__name__,
+                object_id=self._object_id,
+                missed_packets=self._missed_packets,
+                battery_level=self._battery_level)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._object_id, "L")
+        writer.write(self._missed_packets, "L")
+        writer.write(self._battery_level, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        object_id = reader.read("L")
+        missed_packets = reader.read("L")
+        battery_level = reader.read("B")
+        return cls(
+            object_id=object_id,
+            missed_packets=missed_packets,
+            battery_level=battery_level)
+
+    
+class ObjectConnectionState(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xd0
+
+    __slots__ = (
+        "_object_id",
+        "_factory_id",
+        "_object_type",
+        "_connected",
+    )
+
+    def __init__(self,
+                 object_id=0,
+                 factory_id=0,
+                 object_type=0,
+                 connected=False):
+        self.object_id = object_id
+        self.factory_id = factory_id
+        self.object_type = object_type
+        self.connected = connected
+
+    @property
+    def object_id(self):
+        return self._object_id
+
+    @object_id.setter
+    def object_id(self, value):
+        self._object_id = validate_integer("object_id", value, 0, 4294967295)
+
+    @property
+    def factory_id(self):
+        return self._factory_id
+
+    @factory_id.setter
+    def factory_id(self, value):
+        self._factory_id = validate_integer("factory_id", value, 0, 4294967295)
+
+    @property
+    def object_type(self):
+        return self._object_type
+
+    @object_type.setter
+    def object_type(self, value):
+        self._object_type = validate_integer("object_type", value, 0, 4294967295)
+
+    @property
+    def connected(self):
+        return self._connected
+
+    @connected.setter
+    def connected(self, value):
+        self._connected = validate_bool("connected", value)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "object_id={object_id}, " \
+               "factory_id={factory_id}, " \
+               "object_type={object_type}, " \
+               "connected={connected})".format(
+                type=type(self).__name__,
+                object_id=self._object_id,
+                factory_id=self._factory_id,
+                object_type=self._object_type,
+                connected=self._connected)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._object_id, "L")
+        writer.write(self._factory_id, "L")
+        writer.write(self._object_type, "L")
+        writer.write(int(self._connected), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        object_id = reader.read("L")
+        factory_id = reader.read("L")
+        object_type = reader.read("L")
+        connected = bool(reader.read("b"))
+        return cls(
+            object_id=object_id,
+            factory_id=factory_id,
+            object_type=object_type,
+            connected=connected)
+
+    
+class ObjectUpAxisChanged(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xd7
+
+    __slots__ = (
+        "_timestamp",
+        "_object_id",
+        "_axis",
+    )
+
+    def __init__(self,
+                 timestamp=0,
+                 object_id=0,
+                 axis=0):
+        self.timestamp = timestamp
+        self.object_id = object_id
+        self.axis = axis
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = validate_integer("timestamp", value, 0, 4294967295)
+
+    @property
+    def object_id(self):
+        return self._object_id
+
+    @object_id.setter
+    def object_id(self, value):
+        self._object_id = validate_integer("object_id", value, 0, 4294967295)
+
+    @property
+    def axis(self):
+        return self._axis
+
+    @axis.setter
+    def axis(self, value):
+        self._axis = validate_integer("axis", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "timestamp={timestamp}, " \
+               "object_id={object_id}, " \
+               "axis={axis})".format(
+                type=type(self).__name__,
+                timestamp=self._timestamp,
+                object_id=self._object_id,
+                axis=self._axis)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._timestamp, "L")
+        writer.write(self._object_id, "L")
+        writer.write(self._axis, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        timestamp = reader.read("L")
+        object_id = reader.read("L")
+        axis = reader.read("B")
+        return cls(
+            timestamp=timestamp,
+            object_id=object_id,
+            axis=axis)
 
     
 class FallingStarted(Packet):
@@ -2084,7 +3454,10 @@ class FirmwareSignature(Packet):
 
 ACTION_BY_ID = {
     0x03: LightStateCenter,  # 3
+    0x04: CubeLights,  # 4
+    0x05: ObjectConnect,  # 5
     0x0b: SetHeadLight,  # 11
+    0x10: CubeId,  # 16
     0x11: LightStateSide,  # 17
     0x32: DriveWheels,  # 50
     0x33: TurnInPlace,  # 51
@@ -2097,9 +3470,16 @@ ACTION_BY_ID = {
     0x8e: OutputAudio,  # 142
     0x8f: NextFrame,  # 143
     0x97: DisplayImage,  # 151
+    0xb4: ObjectMoved,  # 180
+    0xb5: ObjectStoppedMoving,  # 181
+    0xb6: ObjectTapped,  # 182
+    0xb9: ObjectTapFiltered,  # 185
     0xc2: RobotDelocalized,  # 194
     0xc3: RobotPoked,  # 195
     0xc4: AcknowledgeCommand,  # 196
+    0xce: ObjectPowerState,  # 206
+    0xd0: ObjectConnectionState,  # 208
+    0xd7: ObjectUpAxisChanged,  # 215
     0xdd: FallingStarted,  # 221
     0xde: FallingStopped,  # 222
     0xee: FirmwareSignature,  # 238
