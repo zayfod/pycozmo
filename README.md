@@ -50,11 +50,11 @@ Tools
 Examples
 --------
 
-- `rc.py` - turns Cozmo into an RC tank that can be driven with an XBox 360 Wireless Controller
-- `extremes.py` - demonstrates Cozmo lift and head control
-- `backpack_lights.py` - demonstrates Cozmo backpack LED control
-- `display.py` - demonstrates low-level visualization of images on Cozmo's display
-- `audio.py` - demonstrates 22 kHz, 8-bit, mono WAVE file playback through Cozmo's speaker 
+- [rc.py](examples/rc.py) - turns Cozmo into an RC tank that can be driven with an XBox 360 Wireless Controller
+- [extremes.py](examples/extremes.py) - demonstrates Cozmo lift and head control
+- [backpack_lights.py](examples/backpack_lights.py) - demonstrates Cozmo backpack LED control
+- [display.py](examples/display.py) - demonstrates low-level visualization of images on Cozmo's display
+- [audio.py](examples/audio.py) - demonstrates 22 kHz, 8-bit, mono WAVE file playback through Cozmo's speaker 
 
 
 Robot Support
@@ -84,9 +84,44 @@ Communication:
 - Bluetooth LE - supported
 
 
+Connecting to Cozmo over Wi-Fi
+------------------------------
+
+A Wi-Fi connection needs to be established with Cozmo before using PyCozmo applications.
+
+1. Wake up Cozmo by placing it on the charging platform
+2. Make Cozmo display it's Wi-Fi PSK by rising and lowering its lift
+3. Scan for Cozmo's Wi-Fi SSID (depends on the OS)
+4. Connect using Cozmo's Wi-Fi PSK (depends on the OS)
+
+
+PyCozmo vs. the Cozmo SDK
+-------------------------
+
+A Cozmo SDK application (aka "game") acts as a client to the Cozmo app (aka "engine") that runs on a mobile device.
+The low-level communication happens over USB and is handled by the `cozmoclad` library.
+
+In contrast, an application using PyCozmo basically replaces the Cozmo app and acts as the "engine". PyCozmo handles
+the low-level UDP communication with Cozmo.
+   
+```
++--------------------+                        +--------------------+                        +--------------------+
+|      SDK app       |        Cozmo SDK       |     Cozmo app      |         PyCozmo        |       Cozmo        |
+|       "game"       |        cozmoclad       |      "engine"      |                        |      "robot"       |
+|                    | +--------------------> |    Wi-Fi client    | +--------------------> |      Wi-Fi AP      |
+|                    |           USB          |     UDP client     |        UDP/Wi-Fi       |     UDP Server     |
++--------------------+                        +--------------------+                        +--------------------+
+```
+
+
 Limitations
 -----------
 
+- some high-level Cozmo SDK features are implemented in the Cozmo app and have no equivalent in PyCozmo:
+    - personality engine
+    - behaviors
+    - text-to-speech
+    - songs
 - there is no Wi-Fi control. The library assumes a Wi-Fi connection to Cozmo, established in advance.
 - frame retransmission is not implemented
 - transmission of multiple packets in a single frame is not implemented
