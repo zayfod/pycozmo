@@ -29,6 +29,9 @@ def main():
     cli.send_enable()
     time.sleep(1)
 
+    pkt = pycozmo.protocol_encoder.SetRobotVolume(20000)
+    cli.send(pkt)
+
     done = False
     while not done:
         frame = f.readframes(744)

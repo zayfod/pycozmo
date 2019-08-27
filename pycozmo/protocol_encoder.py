@@ -1551,6 +1551,58 @@ class StopAllMotors(Packet):
             )
 
     
+class SetRobotVolume(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x64
+
+    __slots__ = (
+        "_level",
+    )
+
+    def __init__(self,
+                 level=0):
+        self.level = level
+
+    @property
+    def level(self):
+        return self._level
+
+    @level.setter
+    def level(self, value):
+        self._level = validate_integer("level", value, 0, 65535)
+
+    def __len__(self):
+        return \
+            get_size('H')
+
+    def __repr__(self):
+        return "{type}(" \
+               "level={level})".format(
+                type=type(self).__name__,
+                level=self._level)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._level, "H")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        level = reader.read("H")
+        return cls(
+            level=level)
+
+    
 class OutputAudio(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -2041,6 +2093,7 @@ ACTION_BY_ID = {
     0x36: SetLiftHeight,  # 54
     0x37: SetHeadAngle,  # 55
     0x3b: StopAllMotors,  # 59
+    0x64: SetRobotVolume,  # 100
     0x8e: OutputAudio,  # 142
     0x8f: NextFrame,  # 143
     0x97: DisplayImage,  # 151

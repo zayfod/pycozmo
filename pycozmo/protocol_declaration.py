@@ -304,6 +304,9 @@ PROTOCOL = Protocol(packets=[
     ]),
     Command(0x3b, "stop_all_motors"),
 
+    Command(0x64, "set_robot_volume", arguments=[
+        UInt16Argument("level"),
+    ]),
     Command(0x8e, "output_audio", arguments=[
         FArrayArgument("samples", length=744),
     ]),
