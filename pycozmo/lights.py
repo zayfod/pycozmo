@@ -6,14 +6,23 @@ Helper routeines for working with colors and lights.
 
 from typing import Optional, Tuple
 
+from .protocol_encoder import LightState
+
 
 __all__ = [
+    'Color',
+
     'green',
     'red',
     'blue',
     'white',
     'off',
-    'Color'
+
+    'green_light',
+    'red_light',
+    'blue_light',
+    'white_light',
+    'off_light',
 ]
 
 
@@ -87,3 +96,9 @@ red = Color(name="red", int_color=0xff0000ff)
 blue = Color(name="blue", int_color=0x0000ffff)
 white = Color(name="white", int_color=0xffffffff)
 off = Color(name="off")
+
+green_light = LightState(on_color=green.to_int16(), off_color=green.to_int16())
+red_light = LightState(on_color=red.to_int16(), off_color=red.to_int16())
+blue_light = LightState(on_color=blue.to_int16(), off_color=blue.to_int16())
+white_light = LightState(on_color=white.to_int16(), off_color=white.to_int16())
+off_light = LightState(on_color=off.to_int16(), off_color=off.to_int16())

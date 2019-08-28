@@ -42,6 +42,13 @@ def validate_integer(name, value, minimum, maximum):
     return value
 
 
+def validate_object(name, value, expected_type):
+    if not isinstance(value, expected_type):
+        raise ValueError("{name} must be a {expected_type}. Got a {value_type}.".format(
+            name=name, expected_type=expected_type.__name__, value_type=type(value).__name__))
+    return value
+
+
 def validate_farray(name, value, length, element_validation):
     try:
         value = tuple(value)
@@ -93,6 +100,21 @@ def get_string_size(value, length_format):
     """ Figures out the size of a string with given length format. """
     buf = value.encode('utf_8')
     return _get_struct(length_format, 1).size + _get_struct('s', len(buf)).size
+
+
+def get_object_size(value):
+    """ Figures out the size of a given object. """
+    return len(value)
+
+
+def get_object_farray_size(value, length):
+    """ Figures out the size of a given fixed-length object sequence. """
+    if len(value) != length:
+        raise ValueError("The given fixed-length sequence has the wrong length.")
+    if not value:
+        return 0
+    else:
+        return sum(get_object_size(element) for element in value)
 
 
 class BinaryReader(object):

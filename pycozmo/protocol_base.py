@@ -6,13 +6,7 @@ from .protocol_utils import BinaryReader, BinaryWriter
 from .util import hex_dump
 
 
-class Packet(ABC):
-
-    # TODO: Rename to "PACKET_TYPE".
-    PACKET_ID = None
-    # TODO: Remove.
-    seq = 0
-    ack = 0
+class Struct(ABC):
 
     @abstractmethod
     def __len__(self):
@@ -39,6 +33,15 @@ class Packet(ABC):
     @abstractmethod
     def from_reader(cls, reader: BinaryReader):
         raise NotImplementedError
+
+
+class Packet(Struct, ABC):
+
+    # TODO: Rename to "PACKET_TYPE".
+    PACKET_ID = None
+    # TODO: Remove.
+    seq = 0
+    ack = 0
 
     def is_oob(self) -> bool:
         res = self.PACKET_ID.value >= PacketType.EVENT.value

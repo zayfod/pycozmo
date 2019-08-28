@@ -9,11 +9,163 @@ Do not modify.
 """
 
 from .protocol_declaration import PacketType
-from .protocol_base import Packet
+from .protocol_base import Struct, Packet
 from .protocol_utils import \
-    validate_float, validate_bool, validate_integer, validate_farray, validate_varray, validate_string, \
-    get_size, get_farray_size, get_varray_size, get_string_size, \
+    validate_float, validate_bool, validate_integer, validate_object, \
+    validate_farray, validate_varray, validate_string, \
+    get_size, get_farray_size, get_varray_size, get_string_size, get_object_farray_size, \
     BinaryReader, BinaryWriter
+
+
+class LightState(Struct):
+
+    __slots__ = (
+        "_on_color",
+        "_off_color",
+        "_on_frames",
+        "_off_frames",
+        "_transmission_on_frames",
+        "_transmission_off_frames",
+        "_offset",
+    )
+
+    def __init__(self,
+                 on_color=0,
+                 off_color=0,
+                 on_frames=0,
+                 off_frames=0,
+                 transmission_on_frames=0,
+                 transmission_off_frames=0,
+                 offset=0):
+        self.on_color = on_color
+        self.off_color = off_color
+        self.on_frames = on_frames
+        self.off_frames = off_frames
+        self.transmission_on_frames = transmission_on_frames
+        self.transmission_off_frames = transmission_off_frames
+        self.offset = offset
+
+    @property
+    def on_color(self):
+        return self._on_color
+
+    @on_color.setter
+    def on_color(self, value):
+        self._on_color = validate_integer("on_color", value, 0, 65535)
+
+    @property
+    def off_color(self):
+        return self._off_color
+
+    @off_color.setter
+    def off_color(self, value):
+        self._off_color = validate_integer("off_color", value, 0, 65535)
+
+    @property
+    def on_frames(self):
+        return self._on_frames
+
+    @on_frames.setter
+    def on_frames(self, value):
+        self._on_frames = validate_integer("on_frames", value, 0, 255)
+
+    @property
+    def off_frames(self):
+        return self._off_frames
+
+    @off_frames.setter
+    def off_frames(self, value):
+        self._off_frames = validate_integer("off_frames", value, 0, 255)
+
+    @property
+    def transmission_on_frames(self):
+        return self._transmission_on_frames
+
+    @transmission_on_frames.setter
+    def transmission_on_frames(self, value):
+        self._transmission_on_frames = validate_integer("transmission_on_frames", value, 0, 255)
+
+    @property
+    def transmission_off_frames(self):
+        return self._transmission_off_frames
+
+    @transmission_off_frames.setter
+    def transmission_off_frames(self, value):
+        self._transmission_off_frames = validate_integer("transmission_off_frames", value, 0, 255)
+
+    @property
+    def offset(self):
+        return self._offset
+
+    @offset.setter
+    def offset(self, value):
+        self._offset = validate_integer("offset", value, -32768, 32767)
+
+    def __len__(self):
+        return \
+            get_size('H') + \
+            get_size('H') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('h')
+
+    def __repr__(self):
+        return "{type}(" \
+               "on_color={on_color}, " \
+               "off_color={off_color}, " \
+               "on_frames={on_frames}, " \
+               "off_frames={off_frames}, " \
+               "transmission_on_frames={transmission_on_frames}, " \
+               "transmission_off_frames={transmission_off_frames}, " \
+               "offset={offset})".format(
+                type=type(self).__name__,
+                on_color=self._on_color,
+                off_color=self._off_color,
+                on_frames=self._on_frames,
+                off_frames=self._off_frames,
+                transmission_on_frames=self._transmission_on_frames,
+                transmission_off_frames=self._transmission_off_frames,
+                offset=self._offset)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._on_color, "H")
+        writer.write(self._off_color, "H")
+        writer.write(self._on_frames, "B")
+        writer.write(self._off_frames, "B")
+        writer.write(self._transmission_on_frames, "B")
+        writer.write(self._transmission_off_frames, "B")
+        writer.write(self._offset, "h")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        on_color = reader.read("H")
+        off_color = reader.read("H")
+        on_frames = reader.read("B")
+        off_frames = reader.read("B")
+        transmission_on_frames = reader.read("B")
+        transmission_off_frames = reader.read("B")
+        offset = reader.read("h")
+        return cls(
+            on_color=on_color,
+            off_color=off_color,
+            on_frames=on_frames,
+            off_frames=off_frames,
+            transmission_on_frames=transmission_on_frames,
+            transmission_off_frames=transmission_off_frames,
+            offset=offset)
 
     
 class Connect(Packet):
@@ -235,243 +387,24 @@ class LightStateCenter(Packet):
     ID = 0x03
 
     __slots__ = (
-        "_on_color_top",
-        "_off_color_top",
-        "_on_frames_top",
-        "_off_frames_top",
-        "_transmission_on_frames_top",
-        "_transmission_off_frames_top",
-        "_offset_top",
-        "_on_color_middle",
-        "_off_color_middle",
-        "_on_frames_middle",
-        "_off_frames_middle",
-        "_transmission_on_frames_middle",
-        "_transmission_off_frames_middle",
-        "_offset_middle",
-        "_on_color_bottom",
-        "_off_color_bottom",
-        "_on_frames_bottom",
-        "_off_frames_bottom",
-        "_transmission_on_frames_bottom",
-        "_transmission_off_frames_bottom",
-        "_offset_bottom",
+        "_states",
         "_unknown",
     )
 
     def __init__(self,
-                 on_color_top=0,
-                 off_color_top=0,
-                 on_frames_top=0,
-                 off_frames_top=0,
-                 transmission_on_frames_top=0,
-                 transmission_off_frames_top=0,
-                 offset_top=0,
-                 on_color_middle=0,
-                 off_color_middle=0,
-                 on_frames_middle=0,
-                 off_frames_middle=0,
-                 transmission_on_frames_middle=0,
-                 transmission_off_frames_middle=0,
-                 offset_middle=0,
-                 on_color_bottom=0,
-                 off_color_bottom=0,
-                 on_frames_bottom=0,
-                 off_frames_bottom=0,
-                 transmission_on_frames_bottom=0,
-                 transmission_off_frames_bottom=0,
-                 offset_bottom=0,
+                 states=(),
                  unknown=0):
-        self.on_color_top = on_color_top
-        self.off_color_top = off_color_top
-        self.on_frames_top = on_frames_top
-        self.off_frames_top = off_frames_top
-        self.transmission_on_frames_top = transmission_on_frames_top
-        self.transmission_off_frames_top = transmission_off_frames_top
-        self.offset_top = offset_top
-        self.on_color_middle = on_color_middle
-        self.off_color_middle = off_color_middle
-        self.on_frames_middle = on_frames_middle
-        self.off_frames_middle = off_frames_middle
-        self.transmission_on_frames_middle = transmission_on_frames_middle
-        self.transmission_off_frames_middle = transmission_off_frames_middle
-        self.offset_middle = offset_middle
-        self.on_color_bottom = on_color_bottom
-        self.off_color_bottom = off_color_bottom
-        self.on_frames_bottom = on_frames_bottom
-        self.off_frames_bottom = off_frames_bottom
-        self.transmission_on_frames_bottom = transmission_on_frames_bottom
-        self.transmission_off_frames_bottom = transmission_off_frames_bottom
-        self.offset_bottom = offset_bottom
+        self.states = states
         self.unknown = unknown
 
     @property
-    def on_color_top(self):
-        return self._on_color_top
+    def states(self):
+        return self._states
 
-    @on_color_top.setter
-    def on_color_top(self, value):
-        self._on_color_top = validate_integer("on_color_top", value, 0, 65535)
-
-    @property
-    def off_color_top(self):
-        return self._off_color_top
-
-    @off_color_top.setter
-    def off_color_top(self, value):
-        self._off_color_top = validate_integer("off_color_top", value, 0, 65535)
-
-    @property
-    def on_frames_top(self):
-        return self._on_frames_top
-
-    @on_frames_top.setter
-    def on_frames_top(self, value):
-        self._on_frames_top = validate_integer("on_frames_top", value, 0, 255)
-
-    @property
-    def off_frames_top(self):
-        return self._off_frames_top
-
-    @off_frames_top.setter
-    def off_frames_top(self, value):
-        self._off_frames_top = validate_integer("off_frames_top", value, 0, 255)
-
-    @property
-    def transmission_on_frames_top(self):
-        return self._transmission_on_frames_top
-
-    @transmission_on_frames_top.setter
-    def transmission_on_frames_top(self, value):
-        self._transmission_on_frames_top = validate_integer("transmission_on_frames_top", value, 0, 255)
-
-    @property
-    def transmission_off_frames_top(self):
-        return self._transmission_off_frames_top
-
-    @transmission_off_frames_top.setter
-    def transmission_off_frames_top(self, value):
-        self._transmission_off_frames_top = validate_integer("transmission_off_frames_top", value, 0, 255)
-
-    @property
-    def offset_top(self):
-        return self._offset_top
-
-    @offset_top.setter
-    def offset_top(self, value):
-        self._offset_top = validate_integer("offset_top", value, -32768, 32767)
-
-    @property
-    def on_color_middle(self):
-        return self._on_color_middle
-
-    @on_color_middle.setter
-    def on_color_middle(self, value):
-        self._on_color_middle = validate_integer("on_color_middle", value, 0, 65535)
-
-    @property
-    def off_color_middle(self):
-        return self._off_color_middle
-
-    @off_color_middle.setter
-    def off_color_middle(self, value):
-        self._off_color_middle = validate_integer("off_color_middle", value, 0, 65535)
-
-    @property
-    def on_frames_middle(self):
-        return self._on_frames_middle
-
-    @on_frames_middle.setter
-    def on_frames_middle(self, value):
-        self._on_frames_middle = validate_integer("on_frames_middle", value, 0, 255)
-
-    @property
-    def off_frames_middle(self):
-        return self._off_frames_middle
-
-    @off_frames_middle.setter
-    def off_frames_middle(self, value):
-        self._off_frames_middle = validate_integer("off_frames_middle", value, 0, 255)
-
-    @property
-    def transmission_on_frames_middle(self):
-        return self._transmission_on_frames_middle
-
-    @transmission_on_frames_middle.setter
-    def transmission_on_frames_middle(self, value):
-        self._transmission_on_frames_middle = validate_integer("transmission_on_frames_middle", value, 0, 255)
-
-    @property
-    def transmission_off_frames_middle(self):
-        return self._transmission_off_frames_middle
-
-    @transmission_off_frames_middle.setter
-    def transmission_off_frames_middle(self, value):
-        self._transmission_off_frames_middle = validate_integer("transmission_off_frames_middle", value, 0, 255)
-
-    @property
-    def offset_middle(self):
-        return self._offset_middle
-
-    @offset_middle.setter
-    def offset_middle(self, value):
-        self._offset_middle = validate_integer("offset_middle", value, -32768, 32767)
-
-    @property
-    def on_color_bottom(self):
-        return self._on_color_bottom
-
-    @on_color_bottom.setter
-    def on_color_bottom(self, value):
-        self._on_color_bottom = validate_integer("on_color_bottom", value, 0, 65535)
-
-    @property
-    def off_color_bottom(self):
-        return self._off_color_bottom
-
-    @off_color_bottom.setter
-    def off_color_bottom(self, value):
-        self._off_color_bottom = validate_integer("off_color_bottom", value, 0, 65535)
-
-    @property
-    def on_frames_bottom(self):
-        return self._on_frames_bottom
-
-    @on_frames_bottom.setter
-    def on_frames_bottom(self, value):
-        self._on_frames_bottom = validate_integer("on_frames_bottom", value, 0, 255)
-
-    @property
-    def off_frames_bottom(self):
-        return self._off_frames_bottom
-
-    @off_frames_bottom.setter
-    def off_frames_bottom(self, value):
-        self._off_frames_bottom = validate_integer("off_frames_bottom", value, 0, 255)
-
-    @property
-    def transmission_on_frames_bottom(self):
-        return self._transmission_on_frames_bottom
-
-    @transmission_on_frames_bottom.setter
-    def transmission_on_frames_bottom(self, value):
-        self._transmission_on_frames_bottom = validate_integer("transmission_on_frames_bottom", value, 0, 255)
-
-    @property
-    def transmission_off_frames_bottom(self):
-        return self._transmission_off_frames_bottom
-
-    @transmission_off_frames_bottom.setter
-    def transmission_off_frames_bottom(self, value):
-        self._transmission_off_frames_bottom = validate_integer("transmission_off_frames_bottom", value, 0, 255)
-
-    @property
-    def offset_bottom(self):
-        return self._offset_bottom
-
-    @offset_bottom.setter
-    def offset_bottom(self, value):
-        self._offset_bottom = validate_integer("offset_bottom", value, -32768, 32767)
+    @states.setter
+    def states(self, value):
+        self._states = validate_farray(
+            "states", value, 3, lambda name, value_inner: validate_object(name, value_inner, LightState))
 
     @property
     def unknown(self):
@@ -483,75 +416,15 @@ class LightStateCenter(Packet):
 
     def __len__(self):
         return \
-            get_size('H') + \
-            get_size('H') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('h') + \
-            get_size('H') + \
-            get_size('H') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('h') + \
-            get_size('H') + \
-            get_size('H') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('h') + \
+            get_object_farray_size(self._states, 3) + \
             get_size('B')
 
     def __repr__(self):
         return "{type}(" \
-               "on_color_top={on_color_top}, " \
-               "off_color_top={off_color_top}, " \
-               "on_frames_top={on_frames_top}, " \
-               "off_frames_top={off_frames_top}, " \
-               "transmission_on_frames_top={transmission_on_frames_top}, " \
-               "transmission_off_frames_top={transmission_off_frames_top}, " \
-               "offset_top={offset_top}, " \
-               "on_color_middle={on_color_middle}, " \
-               "off_color_middle={off_color_middle}, " \
-               "on_frames_middle={on_frames_middle}, " \
-               "off_frames_middle={off_frames_middle}, " \
-               "transmission_on_frames_middle={transmission_on_frames_middle}, " \
-               "transmission_off_frames_middle={transmission_off_frames_middle}, " \
-               "offset_middle={offset_middle}, " \
-               "on_color_bottom={on_color_bottom}, " \
-               "off_color_bottom={off_color_bottom}, " \
-               "on_frames_bottom={on_frames_bottom}, " \
-               "off_frames_bottom={off_frames_bottom}, " \
-               "transmission_on_frames_bottom={transmission_on_frames_bottom}, " \
-               "transmission_off_frames_bottom={transmission_off_frames_bottom}, " \
-               "offset_bottom={offset_bottom}, " \
+               "states={states}, " \
                "unknown={unknown})".format(
                 type=type(self).__name__,
-                on_color_top=self._on_color_top,
-                off_color_top=self._off_color_top,
-                on_frames_top=self._on_frames_top,
-                off_frames_top=self._off_frames_top,
-                transmission_on_frames_top=self._transmission_on_frames_top,
-                transmission_off_frames_top=self._transmission_off_frames_top,
-                offset_top=self._offset_top,
-                on_color_middle=self._on_color_middle,
-                off_color_middle=self._off_color_middle,
-                on_frames_middle=self._on_frames_middle,
-                off_frames_middle=self._off_frames_middle,
-                transmission_on_frames_middle=self._transmission_on_frames_middle,
-                transmission_off_frames_middle=self._transmission_off_frames_middle,
-                offset_middle=self._offset_middle,
-                on_color_bottom=self._on_color_bottom,
-                off_color_bottom=self._off_color_bottom,
-                on_frames_bottom=self._on_frames_bottom,
-                off_frames_bottom=self._off_frames_bottom,
-                transmission_on_frames_bottom=self._transmission_on_frames_bottom,
-                transmission_off_frames_bottom=self._transmission_off_frames_bottom,
-                offset_bottom=self._offset_bottom,
+                states=self._states,
                 unknown=self._unknown)
 
     def to_bytes(self):
@@ -560,27 +433,7 @@ class LightStateCenter(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(self._on_color_top, "H")
-        writer.write(self._off_color_top, "H")
-        writer.write(self._on_frames_top, "B")
-        writer.write(self._off_frames_top, "B")
-        writer.write(self._transmission_on_frames_top, "B")
-        writer.write(self._transmission_off_frames_top, "B")
-        writer.write(self._offset_top, "h")
-        writer.write(self._on_color_middle, "H")
-        writer.write(self._off_color_middle, "H")
-        writer.write(self._on_frames_middle, "B")
-        writer.write(self._off_frames_middle, "B")
-        writer.write(self._transmission_on_frames_middle, "B")
-        writer.write(self._transmission_off_frames_middle, "B")
-        writer.write(self._offset_middle, "h")
-        writer.write(self._on_color_bottom, "H")
-        writer.write(self._off_color_bottom, "H")
-        writer.write(self._on_frames_bottom, "B")
-        writer.write(self._off_frames_bottom, "B")
-        writer.write(self._transmission_on_frames_bottom, "B")
-        writer.write(self._transmission_off_frames_bottom, "B")
-        writer.write(self._offset_bottom, "h")
+        writer.write_object_farray(self._states, 3)
         writer.write(self._unknown, "B")
 
     @classmethod
@@ -591,50 +444,10 @@ class LightStateCenter(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        on_color_top = reader.read("H")
-        off_color_top = reader.read("H")
-        on_frames_top = reader.read("B")
-        off_frames_top = reader.read("B")
-        transmission_on_frames_top = reader.read("B")
-        transmission_off_frames_top = reader.read("B")
-        offset_top = reader.read("h")
-        on_color_middle = reader.read("H")
-        off_color_middle = reader.read("H")
-        on_frames_middle = reader.read("B")
-        off_frames_middle = reader.read("B")
-        transmission_on_frames_middle = reader.read("B")
-        transmission_off_frames_middle = reader.read("B")
-        offset_middle = reader.read("h")
-        on_color_bottom = reader.read("H")
-        off_color_bottom = reader.read("H")
-        on_frames_bottom = reader.read("B")
-        off_frames_bottom = reader.read("B")
-        transmission_on_frames_bottom = reader.read("B")
-        transmission_off_frames_bottom = reader.read("B")
-        offset_bottom = reader.read("h")
+        states = reader.read_object_farray(LightState.from_reader, 3)
         unknown = reader.read("B")
         return cls(
-            on_color_top=on_color_top,
-            off_color_top=off_color_top,
-            on_frames_top=on_frames_top,
-            off_frames_top=off_frames_top,
-            transmission_on_frames_top=transmission_on_frames_top,
-            transmission_off_frames_top=transmission_off_frames_top,
-            offset_top=offset_top,
-            on_color_middle=on_color_middle,
-            off_color_middle=off_color_middle,
-            on_frames_middle=on_frames_middle,
-            off_frames_middle=off_frames_middle,
-            transmission_on_frames_middle=transmission_on_frames_middle,
-            transmission_off_frames_middle=transmission_off_frames_middle,
-            offset_middle=offset_middle,
-            on_color_bottom=on_color_bottom,
-            off_color_bottom=off_color_bottom,
-            on_frames_bottom=on_frames_bottom,
-            off_frames_bottom=off_frames_bottom,
-            transmission_on_frames_bottom=transmission_on_frames_bottom,
-            transmission_off_frames_bottom=transmission_off_frames_bottom,
-            offset_bottom=offset_bottom,
+            states=states,
             unknown=unknown)
 
     
@@ -644,408 +457,31 @@ class CubeLights(Packet):
     ID = 0x04
 
     __slots__ = (
-        "_on_color_1",
-        "_off_color_1",
-        "_on_frames_1",
-        "_off_frames_1",
-        "_transmission_on_frames_1",
-        "_transmission_off_frames_1",
-        "_offset_1",
-        "_on_color_2",
-        "_off_color_2",
-        "_on_frames_2",
-        "_off_frames_2",
-        "_transmission_on_frames_2",
-        "_transmission_off_frames_2",
-        "_offset_2",
-        "_on_color_3",
-        "_off_color_3",
-        "_on_frames_3",
-        "_off_frames_3",
-        "_transmission_on_frames_3",
-        "_transmission_off_frames_3",
-        "_offset_3",
-        "_on_color_4",
-        "_off_color_4",
-        "_on_frames_4",
-        "_off_frames_4",
-        "_transmission_on_frames_4",
-        "_transmission_off_frames_4",
-        "_offset_4",
+        "_states",
     )
 
     def __init__(self,
-                 on_color_1=0,
-                 off_color_1=0,
-                 on_frames_1=0,
-                 off_frames_1=0,
-                 transmission_on_frames_1=0,
-                 transmission_off_frames_1=0,
-                 offset_1=0,
-                 on_color_2=0,
-                 off_color_2=0,
-                 on_frames_2=0,
-                 off_frames_2=0,
-                 transmission_on_frames_2=0,
-                 transmission_off_frames_2=0,
-                 offset_2=0,
-                 on_color_3=0,
-                 off_color_3=0,
-                 on_frames_3=0,
-                 off_frames_3=0,
-                 transmission_on_frames_3=0,
-                 transmission_off_frames_3=0,
-                 offset_3=0,
-                 on_color_4=0,
-                 off_color_4=0,
-                 on_frames_4=0,
-                 off_frames_4=0,
-                 transmission_on_frames_4=0,
-                 transmission_off_frames_4=0,
-                 offset_4=0):
-        self.on_color_1 = on_color_1
-        self.off_color_1 = off_color_1
-        self.on_frames_1 = on_frames_1
-        self.off_frames_1 = off_frames_1
-        self.transmission_on_frames_1 = transmission_on_frames_1
-        self.transmission_off_frames_1 = transmission_off_frames_1
-        self.offset_1 = offset_1
-        self.on_color_2 = on_color_2
-        self.off_color_2 = off_color_2
-        self.on_frames_2 = on_frames_2
-        self.off_frames_2 = off_frames_2
-        self.transmission_on_frames_2 = transmission_on_frames_2
-        self.transmission_off_frames_2 = transmission_off_frames_2
-        self.offset_2 = offset_2
-        self.on_color_3 = on_color_3
-        self.off_color_3 = off_color_3
-        self.on_frames_3 = on_frames_3
-        self.off_frames_3 = off_frames_3
-        self.transmission_on_frames_3 = transmission_on_frames_3
-        self.transmission_off_frames_3 = transmission_off_frames_3
-        self.offset_3 = offset_3
-        self.on_color_4 = on_color_4
-        self.off_color_4 = off_color_4
-        self.on_frames_4 = on_frames_4
-        self.off_frames_4 = off_frames_4
-        self.transmission_on_frames_4 = transmission_on_frames_4
-        self.transmission_off_frames_4 = transmission_off_frames_4
-        self.offset_4 = offset_4
+                 states=()):
+        self.states = states
 
     @property
-    def on_color_1(self):
-        return self._on_color_1
+    def states(self):
+        return self._states
 
-    @on_color_1.setter
-    def on_color_1(self, value):
-        self._on_color_1 = validate_integer("on_color_1", value, 0, 65535)
-
-    @property
-    def off_color_1(self):
-        return self._off_color_1
-
-    @off_color_1.setter
-    def off_color_1(self, value):
-        self._off_color_1 = validate_integer("off_color_1", value, 0, 65535)
-
-    @property
-    def on_frames_1(self):
-        return self._on_frames_1
-
-    @on_frames_1.setter
-    def on_frames_1(self, value):
-        self._on_frames_1 = validate_integer("on_frames_1", value, 0, 255)
-
-    @property
-    def off_frames_1(self):
-        return self._off_frames_1
-
-    @off_frames_1.setter
-    def off_frames_1(self, value):
-        self._off_frames_1 = validate_integer("off_frames_1", value, 0, 255)
-
-    @property
-    def transmission_on_frames_1(self):
-        return self._transmission_on_frames_1
-
-    @transmission_on_frames_1.setter
-    def transmission_on_frames_1(self, value):
-        self._transmission_on_frames_1 = validate_integer("transmission_on_frames_1", value, 0, 255)
-
-    @property
-    def transmission_off_frames_1(self):
-        return self._transmission_off_frames_1
-
-    @transmission_off_frames_1.setter
-    def transmission_off_frames_1(self, value):
-        self._transmission_off_frames_1 = validate_integer("transmission_off_frames_1", value, 0, 255)
-
-    @property
-    def offset_1(self):
-        return self._offset_1
-
-    @offset_1.setter
-    def offset_1(self, value):
-        self._offset_1 = validate_integer("offset_1", value, -32768, 32767)
-
-    @property
-    def on_color_2(self):
-        return self._on_color_2
-
-    @on_color_2.setter
-    def on_color_2(self, value):
-        self._on_color_2 = validate_integer("on_color_2", value, 0, 65535)
-
-    @property
-    def off_color_2(self):
-        return self._off_color_2
-
-    @off_color_2.setter
-    def off_color_2(self, value):
-        self._off_color_2 = validate_integer("off_color_2", value, 0, 65535)
-
-    @property
-    def on_frames_2(self):
-        return self._on_frames_2
-
-    @on_frames_2.setter
-    def on_frames_2(self, value):
-        self._on_frames_2 = validate_integer("on_frames_2", value, 0, 255)
-
-    @property
-    def off_frames_2(self):
-        return self._off_frames_2
-
-    @off_frames_2.setter
-    def off_frames_2(self, value):
-        self._off_frames_2 = validate_integer("off_frames_2", value, 0, 255)
-
-    @property
-    def transmission_on_frames_2(self):
-        return self._transmission_on_frames_2
-
-    @transmission_on_frames_2.setter
-    def transmission_on_frames_2(self, value):
-        self._transmission_on_frames_2 = validate_integer("transmission_on_frames_2", value, 0, 255)
-
-    @property
-    def transmission_off_frames_2(self):
-        return self._transmission_off_frames_2
-
-    @transmission_off_frames_2.setter
-    def transmission_off_frames_2(self, value):
-        self._transmission_off_frames_2 = validate_integer("transmission_off_frames_2", value, 0, 255)
-
-    @property
-    def offset_2(self):
-        return self._offset_2
-
-    @offset_2.setter
-    def offset_2(self, value):
-        self._offset_2 = validate_integer("offset_2", value, -32768, 32767)
-
-    @property
-    def on_color_3(self):
-        return self._on_color_3
-
-    @on_color_3.setter
-    def on_color_3(self, value):
-        self._on_color_3 = validate_integer("on_color_3", value, 0, 65535)
-
-    @property
-    def off_color_3(self):
-        return self._off_color_3
-
-    @off_color_3.setter
-    def off_color_3(self, value):
-        self._off_color_3 = validate_integer("off_color_3", value, 0, 65535)
-
-    @property
-    def on_frames_3(self):
-        return self._on_frames_3
-
-    @on_frames_3.setter
-    def on_frames_3(self, value):
-        self._on_frames_3 = validate_integer("on_frames_3", value, 0, 255)
-
-    @property
-    def off_frames_3(self):
-        return self._off_frames_3
-
-    @off_frames_3.setter
-    def off_frames_3(self, value):
-        self._off_frames_3 = validate_integer("off_frames_3", value, 0, 255)
-
-    @property
-    def transmission_on_frames_3(self):
-        return self._transmission_on_frames_3
-
-    @transmission_on_frames_3.setter
-    def transmission_on_frames_3(self, value):
-        self._transmission_on_frames_3 = validate_integer("transmission_on_frames_3", value, 0, 255)
-
-    @property
-    def transmission_off_frames_3(self):
-        return self._transmission_off_frames_3
-
-    @transmission_off_frames_3.setter
-    def transmission_off_frames_3(self, value):
-        self._transmission_off_frames_3 = validate_integer("transmission_off_frames_3", value, 0, 255)
-
-    @property
-    def offset_3(self):
-        return self._offset_3
-
-    @offset_3.setter
-    def offset_3(self, value):
-        self._offset_3 = validate_integer("offset_3", value, -32768, 32767)
-
-    @property
-    def on_color_4(self):
-        return self._on_color_4
-
-    @on_color_4.setter
-    def on_color_4(self, value):
-        self._on_color_4 = validate_integer("on_color_4", value, 0, 65535)
-
-    @property
-    def off_color_4(self):
-        return self._off_color_4
-
-    @off_color_4.setter
-    def off_color_4(self, value):
-        self._off_color_4 = validate_integer("off_color_4", value, 0, 65535)
-
-    @property
-    def on_frames_4(self):
-        return self._on_frames_4
-
-    @on_frames_4.setter
-    def on_frames_4(self, value):
-        self._on_frames_4 = validate_integer("on_frames_4", value, 0, 255)
-
-    @property
-    def off_frames_4(self):
-        return self._off_frames_4
-
-    @off_frames_4.setter
-    def off_frames_4(self, value):
-        self._off_frames_4 = validate_integer("off_frames_4", value, 0, 255)
-
-    @property
-    def transmission_on_frames_4(self):
-        return self._transmission_on_frames_4
-
-    @transmission_on_frames_4.setter
-    def transmission_on_frames_4(self, value):
-        self._transmission_on_frames_4 = validate_integer("transmission_on_frames_4", value, 0, 255)
-
-    @property
-    def transmission_off_frames_4(self):
-        return self._transmission_off_frames_4
-
-    @transmission_off_frames_4.setter
-    def transmission_off_frames_4(self, value):
-        self._transmission_off_frames_4 = validate_integer("transmission_off_frames_4", value, 0, 255)
-
-    @property
-    def offset_4(self):
-        return self._offset_4
-
-    @offset_4.setter
-    def offset_4(self, value):
-        self._offset_4 = validate_integer("offset_4", value, -32768, 32767)
+    @states.setter
+    def states(self, value):
+        self._states = validate_farray(
+            "states", value, 4, lambda name, value_inner: validate_object(name, value_inner, LightState))
 
     def __len__(self):
         return \
-            get_size('H') + \
-            get_size('H') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('h') + \
-            get_size('H') + \
-            get_size('H') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('h') + \
-            get_size('H') + \
-            get_size('H') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('h') + \
-            get_size('H') + \
-            get_size('H') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('h')
+            get_object_farray_size(self._states, 4)
 
     def __repr__(self):
         return "{type}(" \
-               "on_color_1={on_color_1}, " \
-               "off_color_1={off_color_1}, " \
-               "on_frames_1={on_frames_1}, " \
-               "off_frames_1={off_frames_1}, " \
-               "transmission_on_frames_1={transmission_on_frames_1}, " \
-               "transmission_off_frames_1={transmission_off_frames_1}, " \
-               "offset_1={offset_1}, " \
-               "on_color_2={on_color_2}, " \
-               "off_color_2={off_color_2}, " \
-               "on_frames_2={on_frames_2}, " \
-               "off_frames_2={off_frames_2}, " \
-               "transmission_on_frames_2={transmission_on_frames_2}, " \
-               "transmission_off_frames_2={transmission_off_frames_2}, " \
-               "offset_2={offset_2}, " \
-               "on_color_3={on_color_3}, " \
-               "off_color_3={off_color_3}, " \
-               "on_frames_3={on_frames_3}, " \
-               "off_frames_3={off_frames_3}, " \
-               "transmission_on_frames_3={transmission_on_frames_3}, " \
-               "transmission_off_frames_3={transmission_off_frames_3}, " \
-               "offset_3={offset_3}, " \
-               "on_color_4={on_color_4}, " \
-               "off_color_4={off_color_4}, " \
-               "on_frames_4={on_frames_4}, " \
-               "off_frames_4={off_frames_4}, " \
-               "transmission_on_frames_4={transmission_on_frames_4}, " \
-               "transmission_off_frames_4={transmission_off_frames_4}, " \
-               "offset_4={offset_4})".format(
+               "states={states})".format(
                 type=type(self).__name__,
-                on_color_1=self._on_color_1,
-                off_color_1=self._off_color_1,
-                on_frames_1=self._on_frames_1,
-                off_frames_1=self._off_frames_1,
-                transmission_on_frames_1=self._transmission_on_frames_1,
-                transmission_off_frames_1=self._transmission_off_frames_1,
-                offset_1=self._offset_1,
-                on_color_2=self._on_color_2,
-                off_color_2=self._off_color_2,
-                on_frames_2=self._on_frames_2,
-                off_frames_2=self._off_frames_2,
-                transmission_on_frames_2=self._transmission_on_frames_2,
-                transmission_off_frames_2=self._transmission_off_frames_2,
-                offset_2=self._offset_2,
-                on_color_3=self._on_color_3,
-                off_color_3=self._off_color_3,
-                on_frames_3=self._on_frames_3,
-                off_frames_3=self._off_frames_3,
-                transmission_on_frames_3=self._transmission_on_frames_3,
-                transmission_off_frames_3=self._transmission_off_frames_3,
-                offset_3=self._offset_3,
-                on_color_4=self._on_color_4,
-                off_color_4=self._off_color_4,
-                on_frames_4=self._on_frames_4,
-                off_frames_4=self._off_frames_4,
-                transmission_on_frames_4=self._transmission_on_frames_4,
-                transmission_off_frames_4=self._transmission_off_frames_4,
-                offset_4=self._offset_4)
+                states=self._states)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -1053,34 +489,7 @@ class CubeLights(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(self._on_color_1, "H")
-        writer.write(self._off_color_1, "H")
-        writer.write(self._on_frames_1, "B")
-        writer.write(self._off_frames_1, "B")
-        writer.write(self._transmission_on_frames_1, "B")
-        writer.write(self._transmission_off_frames_1, "B")
-        writer.write(self._offset_1, "h")
-        writer.write(self._on_color_2, "H")
-        writer.write(self._off_color_2, "H")
-        writer.write(self._on_frames_2, "B")
-        writer.write(self._off_frames_2, "B")
-        writer.write(self._transmission_on_frames_2, "B")
-        writer.write(self._transmission_off_frames_2, "B")
-        writer.write(self._offset_2, "h")
-        writer.write(self._on_color_3, "H")
-        writer.write(self._off_color_3, "H")
-        writer.write(self._on_frames_3, "B")
-        writer.write(self._off_frames_3, "B")
-        writer.write(self._transmission_on_frames_3, "B")
-        writer.write(self._transmission_off_frames_3, "B")
-        writer.write(self._offset_3, "h")
-        writer.write(self._on_color_4, "H")
-        writer.write(self._off_color_4, "H")
-        writer.write(self._on_frames_4, "B")
-        writer.write(self._off_frames_4, "B")
-        writer.write(self._transmission_on_frames_4, "B")
-        writer.write(self._transmission_off_frames_4, "B")
-        writer.write(self._offset_4, "h")
+        writer.write_object_farray(self._states, 4)
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -1090,63 +499,9 @@ class CubeLights(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        on_color_1 = reader.read("H")
-        off_color_1 = reader.read("H")
-        on_frames_1 = reader.read("B")
-        off_frames_1 = reader.read("B")
-        transmission_on_frames_1 = reader.read("B")
-        transmission_off_frames_1 = reader.read("B")
-        offset_1 = reader.read("h")
-        on_color_2 = reader.read("H")
-        off_color_2 = reader.read("H")
-        on_frames_2 = reader.read("B")
-        off_frames_2 = reader.read("B")
-        transmission_on_frames_2 = reader.read("B")
-        transmission_off_frames_2 = reader.read("B")
-        offset_2 = reader.read("h")
-        on_color_3 = reader.read("H")
-        off_color_3 = reader.read("H")
-        on_frames_3 = reader.read("B")
-        off_frames_3 = reader.read("B")
-        transmission_on_frames_3 = reader.read("B")
-        transmission_off_frames_3 = reader.read("B")
-        offset_3 = reader.read("h")
-        on_color_4 = reader.read("H")
-        off_color_4 = reader.read("H")
-        on_frames_4 = reader.read("B")
-        off_frames_4 = reader.read("B")
-        transmission_on_frames_4 = reader.read("B")
-        transmission_off_frames_4 = reader.read("B")
-        offset_4 = reader.read("h")
+        states = reader.read_object_farray(LightState.from_reader, 4)
         return cls(
-            on_color_1=on_color_1,
-            off_color_1=off_color_1,
-            on_frames_1=on_frames_1,
-            off_frames_1=off_frames_1,
-            transmission_on_frames_1=transmission_on_frames_1,
-            transmission_off_frames_1=transmission_off_frames_1,
-            offset_1=offset_1,
-            on_color_2=on_color_2,
-            off_color_2=off_color_2,
-            on_frames_2=on_frames_2,
-            off_frames_2=off_frames_2,
-            transmission_on_frames_2=transmission_on_frames_2,
-            transmission_off_frames_2=transmission_off_frames_2,
-            offset_2=offset_2,
-            on_color_3=on_color_3,
-            off_color_3=off_color_3,
-            on_frames_3=on_frames_3,
-            off_frames_3=off_frames_3,
-            transmission_on_frames_3=transmission_on_frames_3,
-            transmission_off_frames_3=transmission_off_frames_3,
-            offset_3=offset_3,
-            on_color_4=on_color_4,
-            off_color_4=off_color_4,
-            on_frames_4=on_frames_4,
-            off_frames_4=off_frames_4,
-            transmission_on_frames_4=transmission_on_frames_4,
-            transmission_off_frames_4=transmission_off_frames_4,
-            offset_4=offset_4)
+            states=states)
 
     
 class ObjectConnect(Packet):
@@ -1345,166 +700,24 @@ class LightStateSide(Packet):
     ID = 0x11
 
     __slots__ = (
-        "_on_color_left",
-        "_off_color_left",
-        "_on_frames_left",
-        "_off_frames_left",
-        "_transmission_on_frames_left",
-        "_transmission_off_frames_left",
-        "_offset_left",
-        "_on_color_right",
-        "_off_color_right",
-        "_on_frames_right",
-        "_off_frames_right",
-        "_transmission_on_frames_right",
-        "_transmission_off_frames_right",
-        "_offset_right",
+        "_states",
         "_unknown",
     )
 
     def __init__(self,
-                 on_color_left=0,
-                 off_color_left=0,
-                 on_frames_left=0,
-                 off_frames_left=0,
-                 transmission_on_frames_left=0,
-                 transmission_off_frames_left=0,
-                 offset_left=0,
-                 on_color_right=0,
-                 off_color_right=0,
-                 on_frames_right=0,
-                 off_frames_right=0,
-                 transmission_on_frames_right=0,
-                 transmission_off_frames_right=0,
-                 offset_right=0,
+                 states=(),
                  unknown=0):
-        self.on_color_left = on_color_left
-        self.off_color_left = off_color_left
-        self.on_frames_left = on_frames_left
-        self.off_frames_left = off_frames_left
-        self.transmission_on_frames_left = transmission_on_frames_left
-        self.transmission_off_frames_left = transmission_off_frames_left
-        self.offset_left = offset_left
-        self.on_color_right = on_color_right
-        self.off_color_right = off_color_right
-        self.on_frames_right = on_frames_right
-        self.off_frames_right = off_frames_right
-        self.transmission_on_frames_right = transmission_on_frames_right
-        self.transmission_off_frames_right = transmission_off_frames_right
-        self.offset_right = offset_right
+        self.states = states
         self.unknown = unknown
 
     @property
-    def on_color_left(self):
-        return self._on_color_left
+    def states(self):
+        return self._states
 
-    @on_color_left.setter
-    def on_color_left(self, value):
-        self._on_color_left = validate_integer("on_color_left", value, 0, 65535)
-
-    @property
-    def off_color_left(self):
-        return self._off_color_left
-
-    @off_color_left.setter
-    def off_color_left(self, value):
-        self._off_color_left = validate_integer("off_color_left", value, 0, 65535)
-
-    @property
-    def on_frames_left(self):
-        return self._on_frames_left
-
-    @on_frames_left.setter
-    def on_frames_left(self, value):
-        self._on_frames_left = validate_integer("on_frames_left", value, 0, 255)
-
-    @property
-    def off_frames_left(self):
-        return self._off_frames_left
-
-    @off_frames_left.setter
-    def off_frames_left(self, value):
-        self._off_frames_left = validate_integer("off_frames_left", value, 0, 255)
-
-    @property
-    def transmission_on_frames_left(self):
-        return self._transmission_on_frames_left
-
-    @transmission_on_frames_left.setter
-    def transmission_on_frames_left(self, value):
-        self._transmission_on_frames_left = validate_integer("transmission_on_frames_left", value, 0, 255)
-
-    @property
-    def transmission_off_frames_left(self):
-        return self._transmission_off_frames_left
-
-    @transmission_off_frames_left.setter
-    def transmission_off_frames_left(self, value):
-        self._transmission_off_frames_left = validate_integer("transmission_off_frames_left", value, 0, 255)
-
-    @property
-    def offset_left(self):
-        return self._offset_left
-
-    @offset_left.setter
-    def offset_left(self, value):
-        self._offset_left = validate_integer("offset_left", value, -32768, 32767)
-
-    @property
-    def on_color_right(self):
-        return self._on_color_right
-
-    @on_color_right.setter
-    def on_color_right(self, value):
-        self._on_color_right = validate_integer("on_color_right", value, 0, 65535)
-
-    @property
-    def off_color_right(self):
-        return self._off_color_right
-
-    @off_color_right.setter
-    def off_color_right(self, value):
-        self._off_color_right = validate_integer("off_color_right", value, 0, 65535)
-
-    @property
-    def on_frames_right(self):
-        return self._on_frames_right
-
-    @on_frames_right.setter
-    def on_frames_right(self, value):
-        self._on_frames_right = validate_integer("on_frames_right", value, 0, 255)
-
-    @property
-    def off_frames_right(self):
-        return self._off_frames_right
-
-    @off_frames_right.setter
-    def off_frames_right(self, value):
-        self._off_frames_right = validate_integer("off_frames_right", value, 0, 255)
-
-    @property
-    def transmission_on_frames_right(self):
-        return self._transmission_on_frames_right
-
-    @transmission_on_frames_right.setter
-    def transmission_on_frames_right(self, value):
-        self._transmission_on_frames_right = validate_integer("transmission_on_frames_right", value, 0, 255)
-
-    @property
-    def transmission_off_frames_right(self):
-        return self._transmission_off_frames_right
-
-    @transmission_off_frames_right.setter
-    def transmission_off_frames_right(self, value):
-        self._transmission_off_frames_right = validate_integer("transmission_off_frames_right", value, 0, 255)
-
-    @property
-    def offset_right(self):
-        return self._offset_right
-
-    @offset_right.setter
-    def offset_right(self, value):
-        self._offset_right = validate_integer("offset_right", value, -32768, 32767)
+    @states.setter
+    def states(self, value):
+        self._states = validate_farray(
+            "states", value, 2, lambda name, value_inner: validate_object(name, value_inner, LightState))
 
     @property
     def unknown(self):
@@ -1516,54 +729,15 @@ class LightStateSide(Packet):
 
     def __len__(self):
         return \
-            get_size('H') + \
-            get_size('H') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('h') + \
-            get_size('H') + \
-            get_size('H') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('h') + \
+            get_object_farray_size(self._states, 2) + \
             get_size('B')
 
     def __repr__(self):
         return "{type}(" \
-               "on_color_left={on_color_left}, " \
-               "off_color_left={off_color_left}, " \
-               "on_frames_left={on_frames_left}, " \
-               "off_frames_left={off_frames_left}, " \
-               "transmission_on_frames_left={transmission_on_frames_left}, " \
-               "transmission_off_frames_left={transmission_off_frames_left}, " \
-               "offset_left={offset_left}, " \
-               "on_color_right={on_color_right}, " \
-               "off_color_right={off_color_right}, " \
-               "on_frames_right={on_frames_right}, " \
-               "off_frames_right={off_frames_right}, " \
-               "transmission_on_frames_right={transmission_on_frames_right}, " \
-               "transmission_off_frames_right={transmission_off_frames_right}, " \
-               "offset_right={offset_right}, " \
+               "states={states}, " \
                "unknown={unknown})".format(
                 type=type(self).__name__,
-                on_color_left=self._on_color_left,
-                off_color_left=self._off_color_left,
-                on_frames_left=self._on_frames_left,
-                off_frames_left=self._off_frames_left,
-                transmission_on_frames_left=self._transmission_on_frames_left,
-                transmission_off_frames_left=self._transmission_off_frames_left,
-                offset_left=self._offset_left,
-                on_color_right=self._on_color_right,
-                off_color_right=self._off_color_right,
-                on_frames_right=self._on_frames_right,
-                off_frames_right=self._off_frames_right,
-                transmission_on_frames_right=self._transmission_on_frames_right,
-                transmission_off_frames_right=self._transmission_off_frames_right,
-                offset_right=self._offset_right,
+                states=self._states,
                 unknown=self._unknown)
 
     def to_bytes(self):
@@ -1572,20 +746,7 @@ class LightStateSide(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(self._on_color_left, "H")
-        writer.write(self._off_color_left, "H")
-        writer.write(self._on_frames_left, "B")
-        writer.write(self._off_frames_left, "B")
-        writer.write(self._transmission_on_frames_left, "B")
-        writer.write(self._transmission_off_frames_left, "B")
-        writer.write(self._offset_left, "h")
-        writer.write(self._on_color_right, "H")
-        writer.write(self._off_color_right, "H")
-        writer.write(self._on_frames_right, "B")
-        writer.write(self._off_frames_right, "B")
-        writer.write(self._transmission_on_frames_right, "B")
-        writer.write(self._transmission_off_frames_right, "B")
-        writer.write(self._offset_right, "h")
+        writer.write_object_farray(self._states, 2)
         writer.write(self._unknown, "B")
 
     @classmethod
@@ -1596,36 +757,10 @@ class LightStateSide(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        on_color_left = reader.read("H")
-        off_color_left = reader.read("H")
-        on_frames_left = reader.read("B")
-        off_frames_left = reader.read("B")
-        transmission_on_frames_left = reader.read("B")
-        transmission_off_frames_left = reader.read("B")
-        offset_left = reader.read("h")
-        on_color_right = reader.read("H")
-        off_color_right = reader.read("H")
-        on_frames_right = reader.read("B")
-        off_frames_right = reader.read("B")
-        transmission_on_frames_right = reader.read("B")
-        transmission_off_frames_right = reader.read("B")
-        offset_right = reader.read("h")
+        states = reader.read_object_farray(LightState.from_reader, 2)
         unknown = reader.read("B")
         return cls(
-            on_color_left=on_color_left,
-            off_color_left=off_color_left,
-            on_frames_left=on_frames_left,
-            off_frames_left=off_frames_left,
-            transmission_on_frames_left=transmission_on_frames_left,
-            transmission_off_frames_left=transmission_off_frames_left,
-            offset_left=offset_left,
-            on_color_right=on_color_right,
-            off_color_right=off_color_right,
-            on_frames_right=on_frames_right,
-            off_frames_right=off_frames_right,
-            transmission_on_frames_right=transmission_on_frames_right,
-            transmission_off_frames_right=transmission_off_frames_right,
-            offset_right=offset_right,
+            states=states,
             unknown=unknown)
 
     

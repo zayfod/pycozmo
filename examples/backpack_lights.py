@@ -16,29 +16,20 @@ def main():
     cli.send_enable()
     time.sleep(1)
 
-    colors = [
-        pycozmo.lights.red,
-        pycozmo.lights.green,
-        pycozmo.lights.blue,
-        pycozmo.lights.white,
-        pycozmo.lights.off,
+    lights = [
+        pycozmo.lights.red_light,
+        pycozmo.lights.green_light,
+        pycozmo.lights.blue_light,
+        pycozmo.lights.white_light,
+        pycozmo.lights.off_light,
     ]
-    for color in colors:
-        pkt = pycozmo.protocol_encoder.LightStateCenter(
-            on_color_top=color.to_int16(),
-            off_color_top=color.to_int16(),
-            on_color_middle=color.to_int16(),
-            off_color_middle=color.to_int16(),
-            on_color_bottom=color.to_int16(),
-            off_color_bottom=color.to_int16())
+    for light in lights:
+        pkt = pycozmo.protocol_encoder.LightStateCenter(states=(light, light, light))
         cli.send(pkt)
 
-        pkt = pycozmo.protocol_encoder.LightStateSide(
-            on_color_left=color.to_int16(),
-            off_color_left=color.to_int16(),
-            on_color_right=color.to_int16(),
-            off_color_right=color.to_int16())
+        pkt = pycozmo.protocol_encoder.LightStateSide(states=(light, light))
         cli.send(pkt)
+
         time.sleep(2)
 
     cli.send_disconnect()

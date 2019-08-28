@@ -98,6 +98,9 @@ class ProtocolGenerator(object):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295)"
         elif argument.data_type == protocol_declaration.Int16Argument:
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, -32768, 32767)"
+        elif isinstance(argument.data_type, str):
+            element_validation = "lambda name, value_inner: validate_object(name, value_inner, {})".format(
+                argument.data_type)
         else:
             raise NotImplementedError("Unexpected farray data type '{}' for '{}'".format(
                 argument.data_type, argument.name))
@@ -204,9 +207,13 @@ class ProtocolGenerator(object):
                 elif isinstance(argument, protocol_declaration.Int16Argument):
                     statements.append("get_size('h')")
                 elif isinstance(argument, protocol_declaration.FArrayArgument):
-                    data_fmt = get_farray_fmt(argument)
-                    statements.append("get_farray_size('{data_fmt}', {length})".format(
-                        data_fmt=data_fmt, length=argument.length))
+                    if isinstance(argument.data_type, str):
+                        statements.append("get_object_farray_size(self._{name}, {length})".format(
+                            name=argument.name, length=argument.length))
+                    else:
+                        data_fmt = get_farray_fmt(argument)
+                        statements.append("get_farray_size('{data_fmt}', {length})".format(
+                            data_fmt=data_fmt, length=argument.length))
                 elif isinstance(argument, protocol_declaration.VArrayArgument):
                     length_fmt, data_fmt = get_varray_fmts(argument)
                     statements.append("get_varray_size(self._{name}, '{length_fmt}', '{data_fmt}')".format(
@@ -280,9 +287,13 @@ class ProtocolGenerator(object):
                 elif isinstance(argument, protocol_declaration.Int16Argument):
                     self.f.write('        writer.write(self._{name}, "h")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.FArrayArgument):
-                    data_fmt = get_farray_fmt(argument)
-                    self.f.write('        writer.write_farray(self._{name}, "{data_fmt}", {length})\n'.format(
-                        name=argument.name, length=argument.length, data_fmt=data_fmt))
+                    if isinstance(argument.data_type, str):
+                        self.f.write('        writer.write_object_farray(self._{name}, {length})\n'.format(
+                            name=argument.name, length=argument.length))
+                    else:
+                        data_fmt = get_farray_fmt(argument)
+                        self.f.write('        writer.write_farray(self._{name}, "{data_fmt}", {length})\n'.format(
+                            name=argument.name, length=argument.length, data_fmt=data_fmt))
                 elif isinstance(argument, protocol_declaration.VArrayArgument):
                     length_fmt, data_fmt = get_varray_fmts(argument)
                     self.f.write('        writer.write_varray(self._{name}, "{data_fmt}", "{length_fmt}")\n'.format(
@@ -325,9 +336,14 @@ class ProtocolGenerator(object):
                 elif isinstance(argument, protocol_declaration.Int16Argument):
                     self.f.write('        {name} = reader.read("h")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.FArrayArgument):
-                    data_fmt = get_farray_fmt(argument)
-                    self.f.write('        {name} = reader.read_farray("{data_fmt}", {length})\n'.format(
-                        name=argument.name, length=argument.length, data_fmt=data_fmt))
+                    if isinstance(argument.data_type, str):
+                        self.f.write(
+                            '        {name} = reader.read_object_farray({data_type}.from_reader, {length})\n'.format(
+                                name=argument.name, data_type=argument.data_type, length=argument.length))
+                    else:
+                        data_fmt = get_farray_fmt(argument)
+                        self.f.write('        {name} = reader.read_farray("{data_fmt}", {length})\n'.format(
+                            name=argument.name, length=argument.length, data_fmt=data_fmt))
                 elif isinstance(argument, protocol_declaration.VArrayArgument):
                     length_fmt, data_fmt = get_varray_fmts(argument)
                     self.f.write('        {name} = reader.read_varray("{data_fmt}", "{length_fmt}")\n'.format(
@@ -348,6 +364,23 @@ class ProtocolGenerator(object):
         self.f.write("            ")
         self.f.write(",\n            ".join(arguments))
         self.f.write(")\n")
+
+    def generate_struct(self, packet):
+        self.f.write(r"""
+
+class {name}(Struct):
+""".format(name=to_pascal_case(packet.name)))
+        self.f.write("\n    __slots__ = (\n")
+        self.generate_packet_slots(packet)
+        self.f.write("    )\n\n    def __init__(self")
+        self.generate_argument_defaults(packet)
+        self.f.write("):\n")
+        self.generate_arugment_assignments(packet)
+        self.generate_argument_methods(packet)
+        self.generate_len_method(packet)
+        self.generate_repr_method(packet)
+        self.generate_packet_encoding(packet)
+        self.generate_packet_decoding(packet)
 
     def generate_packet(self, packet):
         self.f.write(r"""
@@ -382,13 +415,17 @@ Do not modify.
 """
 
 from .protocol_declaration import PacketType
-from .protocol_base import Packet
+from .protocol_base import Struct, Packet
 from .protocol_utils import \
-    validate_float, validate_bool, validate_integer, validate_farray, validate_varray, validate_string, \
-    get_size, get_farray_size, get_varray_size, get_string_size, \
+    validate_float, validate_bool, validate_integer, validate_object, \
+    validate_farray, validate_varray, validate_string, \
+    get_size, get_farray_size, get_varray_size, get_string_size, get_object_farray_size, \
     BinaryReader, BinaryWriter
 '''.format(declaration=os.path.basename(protocol_declaration.__file__), generator=os.path.basename(__file__))
         self.f.write(header)
+
+        for struct in protocol_declaration.PROTOCOL.structs:
+            self.generate_struct(struct)
 
         for packet in protocol_declaration.PROTOCOL.packets:
             self.generate_packet(packet)
