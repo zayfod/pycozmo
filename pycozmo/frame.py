@@ -4,7 +4,7 @@ from typing import List
 from .protocol_declaration import FRAME_ID, MIN_FRAME_SIZE, FrameType, PacketType
 from .protocol_base import Packet, UnknownPacket, UnknownCommand, UnknownEvent
 from .protocol_utils import BinaryReader, BinaryWriter
-from .protocol_encoder import Connect, Disconnect, Ping, Unknown0A, ACTION_BY_ID
+from .protocol_encoder import Connect, Disconnect, Ping, Unknown0A, ACTION_BY_ID, EVENT_BY_ID
 
 
 class Frame(object):
@@ -84,7 +84,11 @@ class Frame(object):
 
     @classmethod
     def _decode_event(cls, event_id, event_len, reader):
-        res = UnknownEvent(event_id, reader.read_farray("B", event_len))
+        pkt_class = EVENT_BY_ID.get(event_id)
+        if pkt_class:
+            res = pkt_class.from_reader(reader)
+        else:
+            res = UnknownEvent(event_id, reader.read_farray("B", event_len))
         return res
 
     @classmethod

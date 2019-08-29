@@ -2586,6 +2586,195 @@ class FirmwareSignature(Packet):
             unknown=unknown,
             signature=signature)
 
+    
+class ImageChunk(Packet):
+
+    PACKET_ID = PacketType.EVENT
+    ID = 0xf2
+
+    __slots__ = (
+        "_frame_timestamp",
+        "_image_id",
+        "_chunk_debug",
+        "_image_encoding",
+        "_image_resolution",
+        "_image_chunk_count",
+        "_chunk_id",
+        "_status",
+        "_data",
+    )
+
+    def __init__(self,
+                 frame_timestamp=0,
+                 image_id=0,
+                 chunk_debug=0,
+                 image_encoding=0,
+                 image_resolution=0,
+                 image_chunk_count=0,
+                 chunk_id=0,
+                 status=0,
+                 data=()):
+        self.frame_timestamp = frame_timestamp
+        self.image_id = image_id
+        self.chunk_debug = chunk_debug
+        self.image_encoding = image_encoding
+        self.image_resolution = image_resolution
+        self.image_chunk_count = image_chunk_count
+        self.chunk_id = chunk_id
+        self.status = status
+        self.data = data
+
+    @property
+    def frame_timestamp(self):
+        return self._frame_timestamp
+
+    @frame_timestamp.setter
+    def frame_timestamp(self, value):
+        self._frame_timestamp = validate_integer("frame_timestamp", value, 0, 4294967295)
+
+    @property
+    def image_id(self):
+        return self._image_id
+
+    @image_id.setter
+    def image_id(self, value):
+        self._image_id = validate_integer("image_id", value, 0, 4294967295)
+
+    @property
+    def chunk_debug(self):
+        return self._chunk_debug
+
+    @chunk_debug.setter
+    def chunk_debug(self, value):
+        self._chunk_debug = validate_integer("chunk_debug", value, 0, 4294967295)
+
+    @property
+    def image_encoding(self):
+        return self._image_encoding
+
+    @image_encoding.setter
+    def image_encoding(self, value):
+        self._image_encoding = validate_integer("image_encoding", value, 0, 255)
+
+    @property
+    def image_resolution(self):
+        return self._image_resolution
+
+    @image_resolution.setter
+    def image_resolution(self, value):
+        self._image_resolution = validate_integer("image_resolution", value, 0, 255)
+
+    @property
+    def image_chunk_count(self):
+        return self._image_chunk_count
+
+    @image_chunk_count.setter
+    def image_chunk_count(self, value):
+        self._image_chunk_count = validate_integer("image_chunk_count", value, 0, 255)
+
+    @property
+    def chunk_id(self):
+        return self._chunk_id
+
+    @chunk_id.setter
+    def chunk_id(self, value):
+        self._chunk_id = validate_integer("chunk_id", value, 0, 255)
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        self._status = validate_integer("status", value, 0, 65535)
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = validate_varray(
+            "data", value, 65536, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('H') + \
+            get_varray_size(self._data, 'H', 'B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "frame_timestamp={frame_timestamp}, " \
+               "image_id={image_id}, " \
+               "chunk_debug={chunk_debug}, " \
+               "image_encoding={image_encoding}, " \
+               "image_resolution={image_resolution}, " \
+               "image_chunk_count={image_chunk_count}, " \
+               "chunk_id={chunk_id}, " \
+               "status={status}, " \
+               "data={data})".format(
+                type=type(self).__name__,
+                frame_timestamp=self._frame_timestamp,
+                image_id=self._image_id,
+                chunk_debug=self._chunk_debug,
+                image_encoding=self._image_encoding,
+                image_resolution=self._image_resolution,
+                image_chunk_count=self._image_chunk_count,
+                chunk_id=self._chunk_id,
+                status=self._status,
+                data=self._data)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._frame_timestamp, "L")
+        writer.write(self._image_id, "L")
+        writer.write(self._chunk_debug, "L")
+        writer.write(self._image_encoding, "B")
+        writer.write(self._image_resolution, "B")
+        writer.write(self._image_chunk_count, "B")
+        writer.write(self._chunk_id, "B")
+        writer.write(self._status, "H")
+        writer.write_varray(self._data, "B", "H")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        frame_timestamp = reader.read("L")
+        image_id = reader.read("L")
+        chunk_debug = reader.read("L")
+        image_encoding = reader.read("B")
+        image_resolution = reader.read("B")
+        image_chunk_count = reader.read("B")
+        chunk_id = reader.read("B")
+        status = reader.read("H")
+        data = reader.read_varray("B", "H")
+        return cls(
+            frame_timestamp=frame_timestamp,
+            image_id=image_id,
+            chunk_debug=chunk_debug,
+            image_encoding=image_encoding,
+            image_resolution=image_resolution,
+            image_chunk_count=image_chunk_count,
+            chunk_id=chunk_id,
+            status=status,
+            data=data)
+
 
 ACTION_BY_ID = {
     0x03: LightStateCenter,  # 3
@@ -2618,4 +2807,9 @@ ACTION_BY_ID = {
     0xdd: FallingStarted,  # 221
     0xde: FallingStopped,  # 222
     0xee: FirmwareSignature,  # 238
+}
+
+
+EVENT_BY_ID = {
+    0xf2: ImageChunk,  # 242
 }

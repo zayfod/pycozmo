@@ -79,6 +79,18 @@ class ProtocolGenerator(object):
             self.f.write('    0x{id:02x}: {name},  # {id}\n'.format(id=k, name=v))
         self.f.write('}\n')
 
+    def generate_event_map(self):
+        event_map = {}
+        for packet in protocol_declaration.PROTOCOL.packets:
+            if not isinstance(packet, protocol_declaration.Event):
+                continue
+            event_map[packet.id] = to_pascal_case(packet.name)
+
+        self.f.write('\n\nEVENT_BY_ID = {\n')
+        for k, v in sorted(event_map.items()):
+            self.f.write('    0x{id:02x}: {name},  # {id}\n'.format(id=k, name=v))
+        self.f.write('}\n')
+
     def generate_packet_slots(self, packet):
         for argument in packet.arguments:
             self.f.write('        "_{name}",\n'.format(name=argument.name))
@@ -431,3 +443,4 @@ from .protocol_utils import \
             self.generate_packet(packet)
 
         self.generate_action_map()
+        self.generate_event_map()

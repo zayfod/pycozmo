@@ -383,6 +383,18 @@ PROTOCOL = Protocol(
             UInt16Argument("unknown"),
             StringArgument("signature"),
         ]),
+
+        Event(0xf2, "image_chunk", arguments=[
+            UInt32Argument("frame_timestamp"),
+            UInt32Argument("image_id"),
+            UInt32Argument("chunk_debug"),
+            UInt8Argument("image_encoding"),
+            UInt8Argument("image_resolution"),
+            UInt8Argument("image_chunk_count"),
+            UInt8Argument("chunk_id"),
+            UInt16Argument("status"),
+            VArrayArgument("data"),
+        ]),
     ]
 
 )
