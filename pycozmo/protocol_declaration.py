@@ -307,6 +307,11 @@ PROTOCOL = Protocol(
         ]),
         Command(0x3b, "stop_all_motors"),
 
+        Command(0x4c, "enable_camera", arguments=[
+            BoolArgument("enable"),
+            UInt8Argument("unknown", default=4)
+        ]),
+
         Command(0x64, "set_robot_volume", arguments=[
             UInt16Argument("level"),
         ]),
@@ -382,6 +387,34 @@ PROTOCOL = Protocol(
         Command(0xee, "firmware_signature", arguments=[
             UInt16Argument("unknown"),
             StringArgument("signature"),
+        ]),
+
+        Event(0xf0, "robot_state", arguments=[
+            UInt32Argument("timestamp"),
+            FloatArgument("unknown1"),
+            FloatArgument("unknown2"),
+            FloatArgument("unknown3"),
+            FloatArgument("unknown4"),
+            FloatArgument("unknown5"),
+            FloatArgument("pose_angle_rad"),
+            FloatArgument("pose_pitch_rad"),
+            FloatArgument("lwheel_speed_mmps"),
+            FloatArgument("rwheel_speed_mmps"),
+            FloatArgument("head_angle_rad"),
+            FloatArgument("lift_height_mm"),
+            FloatArgument("battery_voltage"),
+            FloatArgument("unknown13"),
+            FloatArgument("unknown14"),
+            FloatArgument("unknown15"),
+            FloatArgument("unknown16"),
+            FloatArgument("unknown17"),
+            FloatArgument("unknown18"),
+            FloatArgument("unknown19"),
+            FloatArgument("unknown20"),
+            FloatArgument("unknown21"),
+            UInt8Argument("unknown22"),
+            UInt8Argument("unknown23"),
+            UInt8Argument("unknown24"),
         ]),
 
         Event(0xf2, "image_chunk", arguments=[

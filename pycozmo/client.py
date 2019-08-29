@@ -9,7 +9,7 @@ import json
 
 from .frame import Frame
 from .protocol_declaration import FrameType
-from .protocol_base import Packet, UnknownCommand
+from .protocol_base import PacketType, Packet, UnknownCommand
 from .window import ReceiveWindow, SendWindow
 from .protocol_encoder import Connect, Disconnect, Ping, NextFrame, DisplayImage, FirmwareSignature
 
@@ -236,7 +236,7 @@ class Client(Thread):
             else:
                 assert False
 
-            if pkt is not None and pkt.PACKET_ID.value not in (5, 0x0b):
+            if pkt is not None and pkt.PACKET_ID not in (PacketType.PING, PacketType.EVENT):
                 print("Got  {}".format(pkt))
 
     def connect(self) -> None:
@@ -270,8 +270,10 @@ class Client(Thread):
         print("Sending enable...")
         pkt = UnknownCommand(0x25)
         self.send(pkt)
+        # Enables 0xf0 and 0xf3 events - engages motors? Requires 0x25.
         pkt = UnknownCommand(0x4b, b"\xc4\xb69\x00\x00\x00\xa0\xc1")
         self.send(pkt)
+        # Enables 0xf1 events - works independent of 0x25.
         pkt = UnknownCommand(0x9f)
         self.send(pkt)
 

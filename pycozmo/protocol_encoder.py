@@ -1335,6 +1335,75 @@ class StopAllMotors(Packet):
             )
 
     
+class EnableCamera(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x4c
+
+    __slots__ = (
+        "_enable",
+        "_unknown",
+    )
+
+    def __init__(self,
+                 enable=False,
+                 unknown=4):
+        self.enable = enable
+        self.unknown = unknown
+
+    @property
+    def enable(self):
+        return self._enable
+
+    @enable.setter
+    def enable(self, value):
+        self._enable = validate_bool("enable", value)
+
+    @property
+    def unknown(self):
+        return self._unknown
+
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_integer("unknown", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('b') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "enable={enable}, " \
+               "unknown={unknown})".format(
+                type=type(self).__name__,
+                enable=self._enable,
+                unknown=self._unknown)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(int(self._enable), "b")
+        writer.write(self._unknown, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        enable = bool(reader.read("b"))
+        unknown = reader.read("B")
+        return cls(
+            enable=enable,
+            unknown=unknown)
+
+    
 class SetRobotVolume(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -2587,6 +2656,466 @@ class FirmwareSignature(Packet):
             signature=signature)
 
     
+class RobotState(Packet):
+
+    PACKET_ID = PacketType.EVENT
+    ID = 0xf0
+
+    __slots__ = (
+        "_timestamp",
+        "_unknown1",
+        "_unknown2",
+        "_unknown3",
+        "_unknown4",
+        "_unknown5",
+        "_pose_angle_rad",
+        "_pose_pitch_rad",
+        "_lwheel_speed_mmps",
+        "_rwheel_speed_mmps",
+        "_head_angle_rad",
+        "_lift_height_mm",
+        "_battery_voltage",
+        "_unknown13",
+        "_unknown14",
+        "_unknown15",
+        "_unknown16",
+        "_unknown17",
+        "_unknown18",
+        "_unknown19",
+        "_unknown20",
+        "_unknown21",
+        "_unknown22",
+        "_unknown23",
+        "_unknown24",
+    )
+
+    def __init__(self,
+                 timestamp=0,
+                 unknown1=0.0,
+                 unknown2=0.0,
+                 unknown3=0.0,
+                 unknown4=0.0,
+                 unknown5=0.0,
+                 pose_angle_rad=0.0,
+                 pose_pitch_rad=0.0,
+                 lwheel_speed_mmps=0.0,
+                 rwheel_speed_mmps=0.0,
+                 head_angle_rad=0.0,
+                 lift_height_mm=0.0,
+                 battery_voltage=0.0,
+                 unknown13=0.0,
+                 unknown14=0.0,
+                 unknown15=0.0,
+                 unknown16=0.0,
+                 unknown17=0.0,
+                 unknown18=0.0,
+                 unknown19=0.0,
+                 unknown20=0.0,
+                 unknown21=0.0,
+                 unknown22=0,
+                 unknown23=0,
+                 unknown24=0):
+        self.timestamp = timestamp
+        self.unknown1 = unknown1
+        self.unknown2 = unknown2
+        self.unknown3 = unknown3
+        self.unknown4 = unknown4
+        self.unknown5 = unknown5
+        self.pose_angle_rad = pose_angle_rad
+        self.pose_pitch_rad = pose_pitch_rad
+        self.lwheel_speed_mmps = lwheel_speed_mmps
+        self.rwheel_speed_mmps = rwheel_speed_mmps
+        self.head_angle_rad = head_angle_rad
+        self.lift_height_mm = lift_height_mm
+        self.battery_voltage = battery_voltage
+        self.unknown13 = unknown13
+        self.unknown14 = unknown14
+        self.unknown15 = unknown15
+        self.unknown16 = unknown16
+        self.unknown17 = unknown17
+        self.unknown18 = unknown18
+        self.unknown19 = unknown19
+        self.unknown20 = unknown20
+        self.unknown21 = unknown21
+        self.unknown22 = unknown22
+        self.unknown23 = unknown23
+        self.unknown24 = unknown24
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = validate_integer("timestamp", value, 0, 4294967295)
+
+    @property
+    def unknown1(self):
+        return self._unknown1
+
+    @unknown1.setter
+    def unknown1(self, value):
+        self._unknown1 = validate_float("unknown1", value)
+
+    @property
+    def unknown2(self):
+        return self._unknown2
+
+    @unknown2.setter
+    def unknown2(self, value):
+        self._unknown2 = validate_float("unknown2", value)
+
+    @property
+    def unknown3(self):
+        return self._unknown3
+
+    @unknown3.setter
+    def unknown3(self, value):
+        self._unknown3 = validate_float("unknown3", value)
+
+    @property
+    def unknown4(self):
+        return self._unknown4
+
+    @unknown4.setter
+    def unknown4(self, value):
+        self._unknown4 = validate_float("unknown4", value)
+
+    @property
+    def unknown5(self):
+        return self._unknown5
+
+    @unknown5.setter
+    def unknown5(self, value):
+        self._unknown5 = validate_float("unknown5", value)
+
+    @property
+    def pose_angle_rad(self):
+        return self._pose_angle_rad
+
+    @pose_angle_rad.setter
+    def pose_angle_rad(self, value):
+        self._pose_angle_rad = validate_float("pose_angle_rad", value)
+
+    @property
+    def pose_pitch_rad(self):
+        return self._pose_pitch_rad
+
+    @pose_pitch_rad.setter
+    def pose_pitch_rad(self, value):
+        self._pose_pitch_rad = validate_float("pose_pitch_rad", value)
+
+    @property
+    def lwheel_speed_mmps(self):
+        return self._lwheel_speed_mmps
+
+    @lwheel_speed_mmps.setter
+    def lwheel_speed_mmps(self, value):
+        self._lwheel_speed_mmps = validate_float("lwheel_speed_mmps", value)
+
+    @property
+    def rwheel_speed_mmps(self):
+        return self._rwheel_speed_mmps
+
+    @rwheel_speed_mmps.setter
+    def rwheel_speed_mmps(self, value):
+        self._rwheel_speed_mmps = validate_float("rwheel_speed_mmps", value)
+
+    @property
+    def head_angle_rad(self):
+        return self._head_angle_rad
+
+    @head_angle_rad.setter
+    def head_angle_rad(self, value):
+        self._head_angle_rad = validate_float("head_angle_rad", value)
+
+    @property
+    def lift_height_mm(self):
+        return self._lift_height_mm
+
+    @lift_height_mm.setter
+    def lift_height_mm(self, value):
+        self._lift_height_mm = validate_float("lift_height_mm", value)
+
+    @property
+    def battery_voltage(self):
+        return self._battery_voltage
+
+    @battery_voltage.setter
+    def battery_voltage(self, value):
+        self._battery_voltage = validate_float("battery_voltage", value)
+
+    @property
+    def unknown13(self):
+        return self._unknown13
+
+    @unknown13.setter
+    def unknown13(self, value):
+        self._unknown13 = validate_float("unknown13", value)
+
+    @property
+    def unknown14(self):
+        return self._unknown14
+
+    @unknown14.setter
+    def unknown14(self, value):
+        self._unknown14 = validate_float("unknown14", value)
+
+    @property
+    def unknown15(self):
+        return self._unknown15
+
+    @unknown15.setter
+    def unknown15(self, value):
+        self._unknown15 = validate_float("unknown15", value)
+
+    @property
+    def unknown16(self):
+        return self._unknown16
+
+    @unknown16.setter
+    def unknown16(self, value):
+        self._unknown16 = validate_float("unknown16", value)
+
+    @property
+    def unknown17(self):
+        return self._unknown17
+
+    @unknown17.setter
+    def unknown17(self, value):
+        self._unknown17 = validate_float("unknown17", value)
+
+    @property
+    def unknown18(self):
+        return self._unknown18
+
+    @unknown18.setter
+    def unknown18(self, value):
+        self._unknown18 = validate_float("unknown18", value)
+
+    @property
+    def unknown19(self):
+        return self._unknown19
+
+    @unknown19.setter
+    def unknown19(self, value):
+        self._unknown19 = validate_float("unknown19", value)
+
+    @property
+    def unknown20(self):
+        return self._unknown20
+
+    @unknown20.setter
+    def unknown20(self, value):
+        self._unknown20 = validate_float("unknown20", value)
+
+    @property
+    def unknown21(self):
+        return self._unknown21
+
+    @unknown21.setter
+    def unknown21(self, value):
+        self._unknown21 = validate_float("unknown21", value)
+
+    @property
+    def unknown22(self):
+        return self._unknown22
+
+    @unknown22.setter
+    def unknown22(self, value):
+        self._unknown22 = validate_integer("unknown22", value, 0, 255)
+
+    @property
+    def unknown23(self):
+        return self._unknown23
+
+    @unknown23.setter
+    def unknown23(self, value):
+        self._unknown23 = validate_integer("unknown23", value, 0, 255)
+
+    @property
+    def unknown24(self):
+        return self._unknown24
+
+    @unknown24.setter
+    def unknown24(self, value):
+        self._unknown24 = validate_integer("unknown24", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "timestamp={timestamp}, " \
+               "unknown1={unknown1}, " \
+               "unknown2={unknown2}, " \
+               "unknown3={unknown3}, " \
+               "unknown4={unknown4}, " \
+               "unknown5={unknown5}, " \
+               "pose_angle_rad={pose_angle_rad}, " \
+               "pose_pitch_rad={pose_pitch_rad}, " \
+               "lwheel_speed_mmps={lwheel_speed_mmps}, " \
+               "rwheel_speed_mmps={rwheel_speed_mmps}, " \
+               "head_angle_rad={head_angle_rad}, " \
+               "lift_height_mm={lift_height_mm}, " \
+               "battery_voltage={battery_voltage}, " \
+               "unknown13={unknown13}, " \
+               "unknown14={unknown14}, " \
+               "unknown15={unknown15}, " \
+               "unknown16={unknown16}, " \
+               "unknown17={unknown17}, " \
+               "unknown18={unknown18}, " \
+               "unknown19={unknown19}, " \
+               "unknown20={unknown20}, " \
+               "unknown21={unknown21}, " \
+               "unknown22={unknown22}, " \
+               "unknown23={unknown23}, " \
+               "unknown24={unknown24})".format(
+                type=type(self).__name__,
+                timestamp=self._timestamp,
+                unknown1=self._unknown1,
+                unknown2=self._unknown2,
+                unknown3=self._unknown3,
+                unknown4=self._unknown4,
+                unknown5=self._unknown5,
+                pose_angle_rad=self._pose_angle_rad,
+                pose_pitch_rad=self._pose_pitch_rad,
+                lwheel_speed_mmps=self._lwheel_speed_mmps,
+                rwheel_speed_mmps=self._rwheel_speed_mmps,
+                head_angle_rad=self._head_angle_rad,
+                lift_height_mm=self._lift_height_mm,
+                battery_voltage=self._battery_voltage,
+                unknown13=self._unknown13,
+                unknown14=self._unknown14,
+                unknown15=self._unknown15,
+                unknown16=self._unknown16,
+                unknown17=self._unknown17,
+                unknown18=self._unknown18,
+                unknown19=self._unknown19,
+                unknown20=self._unknown20,
+                unknown21=self._unknown21,
+                unknown22=self._unknown22,
+                unknown23=self._unknown23,
+                unknown24=self._unknown24)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._timestamp, "L")
+        writer.write(self._unknown1, "f")
+        writer.write(self._unknown2, "f")
+        writer.write(self._unknown3, "f")
+        writer.write(self._unknown4, "f")
+        writer.write(self._unknown5, "f")
+        writer.write(self._pose_angle_rad, "f")
+        writer.write(self._pose_pitch_rad, "f")
+        writer.write(self._lwheel_speed_mmps, "f")
+        writer.write(self._rwheel_speed_mmps, "f")
+        writer.write(self._head_angle_rad, "f")
+        writer.write(self._lift_height_mm, "f")
+        writer.write(self._battery_voltage, "f")
+        writer.write(self._unknown13, "f")
+        writer.write(self._unknown14, "f")
+        writer.write(self._unknown15, "f")
+        writer.write(self._unknown16, "f")
+        writer.write(self._unknown17, "f")
+        writer.write(self._unknown18, "f")
+        writer.write(self._unknown19, "f")
+        writer.write(self._unknown20, "f")
+        writer.write(self._unknown21, "f")
+        writer.write(self._unknown22, "B")
+        writer.write(self._unknown23, "B")
+        writer.write(self._unknown24, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        timestamp = reader.read("L")
+        unknown1 = reader.read("f")
+        unknown2 = reader.read("f")
+        unknown3 = reader.read("f")
+        unknown4 = reader.read("f")
+        unknown5 = reader.read("f")
+        pose_angle_rad = reader.read("f")
+        pose_pitch_rad = reader.read("f")
+        lwheel_speed_mmps = reader.read("f")
+        rwheel_speed_mmps = reader.read("f")
+        head_angle_rad = reader.read("f")
+        lift_height_mm = reader.read("f")
+        battery_voltage = reader.read("f")
+        unknown13 = reader.read("f")
+        unknown14 = reader.read("f")
+        unknown15 = reader.read("f")
+        unknown16 = reader.read("f")
+        unknown17 = reader.read("f")
+        unknown18 = reader.read("f")
+        unknown19 = reader.read("f")
+        unknown20 = reader.read("f")
+        unknown21 = reader.read("f")
+        unknown22 = reader.read("B")
+        unknown23 = reader.read("B")
+        unknown24 = reader.read("B")
+        return cls(
+            timestamp=timestamp,
+            unknown1=unknown1,
+            unknown2=unknown2,
+            unknown3=unknown3,
+            unknown4=unknown4,
+            unknown5=unknown5,
+            pose_angle_rad=pose_angle_rad,
+            pose_pitch_rad=pose_pitch_rad,
+            lwheel_speed_mmps=lwheel_speed_mmps,
+            rwheel_speed_mmps=rwheel_speed_mmps,
+            head_angle_rad=head_angle_rad,
+            lift_height_mm=lift_height_mm,
+            battery_voltage=battery_voltage,
+            unknown13=unknown13,
+            unknown14=unknown14,
+            unknown15=unknown15,
+            unknown16=unknown16,
+            unknown17=unknown17,
+            unknown18=unknown18,
+            unknown19=unknown19,
+            unknown20=unknown20,
+            unknown21=unknown21,
+            unknown22=unknown22,
+            unknown23=unknown23,
+            unknown24=unknown24)
+
+    
 class ImageChunk(Packet):
 
     PACKET_ID = PacketType.EVENT
@@ -2790,6 +3319,7 @@ ACTION_BY_ID = {
     0x36: SetLiftHeight,  # 54
     0x37: SetHeadAngle,  # 55
     0x3b: StopAllMotors,  # 59
+    0x4c: EnableCamera,  # 76
     0x64: SetRobotVolume,  # 100
     0x8e: OutputAudio,  # 142
     0x8f: NextFrame,  # 143
@@ -2811,5 +3341,6 @@ ACTION_BY_ID = {
 
 
 EVENT_BY_ID = {
+    0xf0: RobotState,  # 240
     0xf2: ImageChunk,  # 242
 }
