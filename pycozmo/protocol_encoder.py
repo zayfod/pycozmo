@@ -2665,22 +2665,22 @@ class RobotState(Packet):
         "_timestamp",
         "_unknown1",
         "_unknown2",
-        "_unknown3",
-        "_unknown4",
-        "_unknown5",
+        "_x",
+        "_y",
+        "_z",
         "_pose_angle_rad",
         "_pose_pitch_rad",
         "_lwheel_speed_mmps",
         "_rwheel_speed_mmps",
         "_head_angle_rad",
         "_lift_height_mm",
-        "_battery_voltage",
+        "_unknown12",
         "_unknown13",
         "_unknown14",
         "_unknown15",
         "_unknown16",
         "_unknown17",
-        "_unknown18",
+        "_battery_voltage",
         "_unknown19",
         "_unknown20",
         "_unknown21",
@@ -2693,22 +2693,22 @@ class RobotState(Packet):
                  timestamp=0,
                  unknown1=0.0,
                  unknown2=0.0,
-                 unknown3=0.0,
-                 unknown4=0.0,
-                 unknown5=0.0,
+                 x=0.0,
+                 y=0.0,
+                 z=0.0,
                  pose_angle_rad=0.0,
                  pose_pitch_rad=0.0,
                  lwheel_speed_mmps=0.0,
                  rwheel_speed_mmps=0.0,
                  head_angle_rad=0.0,
                  lift_height_mm=0.0,
-                 battery_voltage=0.0,
+                 unknown12=0.0,
                  unknown13=0.0,
                  unknown14=0.0,
                  unknown15=0.0,
                  unknown16=0.0,
                  unknown17=0.0,
-                 unknown18=0.0,
+                 battery_voltage=0.0,
                  unknown19=0.0,
                  unknown20=0.0,
                  unknown21=0.0,
@@ -2718,22 +2718,22 @@ class RobotState(Packet):
         self.timestamp = timestamp
         self.unknown1 = unknown1
         self.unknown2 = unknown2
-        self.unknown3 = unknown3
-        self.unknown4 = unknown4
-        self.unknown5 = unknown5
+        self.x = x
+        self.y = y
+        self.z = z
         self.pose_angle_rad = pose_angle_rad
         self.pose_pitch_rad = pose_pitch_rad
         self.lwheel_speed_mmps = lwheel_speed_mmps
         self.rwheel_speed_mmps = rwheel_speed_mmps
         self.head_angle_rad = head_angle_rad
         self.lift_height_mm = lift_height_mm
-        self.battery_voltage = battery_voltage
+        self.unknown12 = unknown12
         self.unknown13 = unknown13
         self.unknown14 = unknown14
         self.unknown15 = unknown15
         self.unknown16 = unknown16
         self.unknown17 = unknown17
-        self.unknown18 = unknown18
+        self.battery_voltage = battery_voltage
         self.unknown19 = unknown19
         self.unknown20 = unknown20
         self.unknown21 = unknown21
@@ -2766,28 +2766,28 @@ class RobotState(Packet):
         self._unknown2 = validate_float("unknown2", value)
 
     @property
-    def unknown3(self):
-        return self._unknown3
+    def x(self):
+        return self._x
 
-    @unknown3.setter
-    def unknown3(self, value):
-        self._unknown3 = validate_float("unknown3", value)
-
-    @property
-    def unknown4(self):
-        return self._unknown4
-
-    @unknown4.setter
-    def unknown4(self, value):
-        self._unknown4 = validate_float("unknown4", value)
+    @x.setter
+    def x(self, value):
+        self._x = validate_float("x", value)
 
     @property
-    def unknown5(self):
-        return self._unknown5
+    def y(self):
+        return self._y
 
-    @unknown5.setter
-    def unknown5(self, value):
-        self._unknown5 = validate_float("unknown5", value)
+    @y.setter
+    def y(self, value):
+        self._y = validate_float("y", value)
+
+    @property
+    def z(self):
+        return self._z
+
+    @z.setter
+    def z(self, value):
+        self._z = validate_float("z", value)
 
     @property
     def pose_angle_rad(self):
@@ -2838,12 +2838,12 @@ class RobotState(Packet):
         self._lift_height_mm = validate_float("lift_height_mm", value)
 
     @property
-    def battery_voltage(self):
-        return self._battery_voltage
+    def unknown12(self):
+        return self._unknown12
 
-    @battery_voltage.setter
-    def battery_voltage(self, value):
-        self._battery_voltage = validate_float("battery_voltage", value)
+    @unknown12.setter
+    def unknown12(self, value):
+        self._unknown12 = validate_float("unknown12", value)
 
     @property
     def unknown13(self):
@@ -2886,12 +2886,12 @@ class RobotState(Packet):
         self._unknown17 = validate_float("unknown17", value)
 
     @property
-    def unknown18(self):
-        return self._unknown18
+    def battery_voltage(self):
+        return self._battery_voltage
 
-    @unknown18.setter
-    def unknown18(self, value):
-        self._unknown18 = validate_float("unknown18", value)
+    @battery_voltage.setter
+    def battery_voltage(self, value):
+        self._battery_voltage = validate_float("battery_voltage", value)
 
     @property
     def unknown19(self):
@@ -2974,22 +2974,22 @@ class RobotState(Packet):
                "timestamp={timestamp}, " \
                "unknown1={unknown1}, " \
                "unknown2={unknown2}, " \
-               "unknown3={unknown3}, " \
-               "unknown4={unknown4}, " \
-               "unknown5={unknown5}, " \
+               "x={x}, " \
+               "y={y}, " \
+               "z={z}, " \
                "pose_angle_rad={pose_angle_rad}, " \
                "pose_pitch_rad={pose_pitch_rad}, " \
                "lwheel_speed_mmps={lwheel_speed_mmps}, " \
                "rwheel_speed_mmps={rwheel_speed_mmps}, " \
                "head_angle_rad={head_angle_rad}, " \
                "lift_height_mm={lift_height_mm}, " \
-               "battery_voltage={battery_voltage}, " \
+               "unknown12={unknown12}, " \
                "unknown13={unknown13}, " \
                "unknown14={unknown14}, " \
                "unknown15={unknown15}, " \
                "unknown16={unknown16}, " \
                "unknown17={unknown17}, " \
-               "unknown18={unknown18}, " \
+               "battery_voltage={battery_voltage}, " \
                "unknown19={unknown19}, " \
                "unknown20={unknown20}, " \
                "unknown21={unknown21}, " \
@@ -3000,22 +3000,22 @@ class RobotState(Packet):
                 timestamp=self._timestamp,
                 unknown1=self._unknown1,
                 unknown2=self._unknown2,
-                unknown3=self._unknown3,
-                unknown4=self._unknown4,
-                unknown5=self._unknown5,
+                x=self._x,
+                y=self._y,
+                z=self._z,
                 pose_angle_rad=self._pose_angle_rad,
                 pose_pitch_rad=self._pose_pitch_rad,
                 lwheel_speed_mmps=self._lwheel_speed_mmps,
                 rwheel_speed_mmps=self._rwheel_speed_mmps,
                 head_angle_rad=self._head_angle_rad,
                 lift_height_mm=self._lift_height_mm,
-                battery_voltage=self._battery_voltage,
+                unknown12=self._unknown12,
                 unknown13=self._unknown13,
                 unknown14=self._unknown14,
                 unknown15=self._unknown15,
                 unknown16=self._unknown16,
                 unknown17=self._unknown17,
-                unknown18=self._unknown18,
+                battery_voltage=self._battery_voltage,
                 unknown19=self._unknown19,
                 unknown20=self._unknown20,
                 unknown21=self._unknown21,
@@ -3032,22 +3032,22 @@ class RobotState(Packet):
         writer.write(self._timestamp, "L")
         writer.write(self._unknown1, "f")
         writer.write(self._unknown2, "f")
-        writer.write(self._unknown3, "f")
-        writer.write(self._unknown4, "f")
-        writer.write(self._unknown5, "f")
+        writer.write(self._x, "f")
+        writer.write(self._y, "f")
+        writer.write(self._z, "f")
         writer.write(self._pose_angle_rad, "f")
         writer.write(self._pose_pitch_rad, "f")
         writer.write(self._lwheel_speed_mmps, "f")
         writer.write(self._rwheel_speed_mmps, "f")
         writer.write(self._head_angle_rad, "f")
         writer.write(self._lift_height_mm, "f")
-        writer.write(self._battery_voltage, "f")
+        writer.write(self._unknown12, "f")
         writer.write(self._unknown13, "f")
         writer.write(self._unknown14, "f")
         writer.write(self._unknown15, "f")
         writer.write(self._unknown16, "f")
         writer.write(self._unknown17, "f")
-        writer.write(self._unknown18, "f")
+        writer.write(self._battery_voltage, "f")
         writer.write(self._unknown19, "f")
         writer.write(self._unknown20, "f")
         writer.write(self._unknown21, "f")
@@ -3066,22 +3066,22 @@ class RobotState(Packet):
         timestamp = reader.read("L")
         unknown1 = reader.read("f")
         unknown2 = reader.read("f")
-        unknown3 = reader.read("f")
-        unknown4 = reader.read("f")
-        unknown5 = reader.read("f")
+        x = reader.read("f")
+        y = reader.read("f")
+        z = reader.read("f")
         pose_angle_rad = reader.read("f")
         pose_pitch_rad = reader.read("f")
         lwheel_speed_mmps = reader.read("f")
         rwheel_speed_mmps = reader.read("f")
         head_angle_rad = reader.read("f")
         lift_height_mm = reader.read("f")
-        battery_voltage = reader.read("f")
+        unknown12 = reader.read("f")
         unknown13 = reader.read("f")
         unknown14 = reader.read("f")
         unknown15 = reader.read("f")
         unknown16 = reader.read("f")
         unknown17 = reader.read("f")
-        unknown18 = reader.read("f")
+        battery_voltage = reader.read("f")
         unknown19 = reader.read("f")
         unknown20 = reader.read("f")
         unknown21 = reader.read("f")
@@ -3092,22 +3092,22 @@ class RobotState(Packet):
             timestamp=timestamp,
             unknown1=unknown1,
             unknown2=unknown2,
-            unknown3=unknown3,
-            unknown4=unknown4,
-            unknown5=unknown5,
+            x=x,
+            y=y,
+            z=z,
             pose_angle_rad=pose_angle_rad,
             pose_pitch_rad=pose_pitch_rad,
             lwheel_speed_mmps=lwheel_speed_mmps,
             rwheel_speed_mmps=rwheel_speed_mmps,
             head_angle_rad=head_angle_rad,
             lift_height_mm=lift_height_mm,
-            battery_voltage=battery_voltage,
+            unknown12=unknown12,
             unknown13=unknown13,
             unknown14=unknown14,
             unknown15=unknown15,
             unknown16=unknown16,
             unknown17=unknown17,
-            unknown18=unknown18,
+            battery_voltage=battery_voltage,
             unknown19=unknown19,
             unknown20=unknown20,
             unknown21=unknown21,
