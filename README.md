@@ -72,18 +72,19 @@ Examples
 - [backpack_lights.py](examples/backpack_lights.py) - demonstrates Cozmo backpack LED control
 - [display.py](examples/display.py) - demonstrates low-level visualization of images on Cozmo's display
 - [audio.py](examples/audio.py) - demonstrates 22 kHz, 8-bit, mono WAVE file playback through Cozmo's speaker 
-- [events.py](examples/events.py) - demonstrates event handling 
+- [events.py](examples/events.py) - demonstrates event handling
+- [camera.py](examples/camera.py) - demonstrates capturing a camera image 
 
 
 Robot Support
 -------------
 
 Sensors:
-- Camera - work in progress
+- Camera - supported
 - Cliff sensor - not supported
-- Accelerometers - not supported
-- Gyro - not supported
-- Battery voltage - not supported
+- Accelerometers - work in progress
+- Gyro - work in progress
+- Battery voltage - supported
 - Cube battery voltage - supported
 - Cube accelerometers - supported
 

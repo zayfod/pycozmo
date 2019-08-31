@@ -7,14 +7,19 @@ from threading import Thread, Event
 from typing import Optional, Tuple, Any
 import json
 import time
+import io
+
+import numpy as np
+from PIL import Image
 
 from .logging import logger, logger_protocol
 from .frame import Frame
 from .protocol_declaration import FrameType
 from .protocol_base import PacketType, Packet, UnknownCommand
 from .window import ReceiveWindow, SendWindow
-from .protocol_encoder import Connect, Disconnect, Ping, NextFrame, DisplayImage, FirmwareSignature
+from . import protocol_encoder
 from . import event
+from . import camera
 
 
 ROBOT_ADDR = ("172.31.1.1", 5551)
@@ -145,7 +150,7 @@ class SendThread(Thread):
                 continue
 
             # Construct frame
-            if isinstance(pkt, Ping):
+            if isinstance(pkt, protocol_encoder.Ping):
                 frame = Frame(FrameType.PING, 0, 0, self.last_ack, [pkt])
             else:
                 seq = self.window.put(pkt)
@@ -188,6 +193,10 @@ class EvtRobotReady(event.Event):
     """ Triggered when the robot has been initialized and is ready for commands. """
 
 
+class EvtNewRawCameraImage(event.Event):
+    """ Triggered when a new raw image is received from the robot's camera. """
+
+
 class Client(Thread, event.Dispatcher):
 
     IDLE = 1
@@ -207,12 +216,14 @@ class Client(Thread, event.Dispatcher):
         self.send_thread = SendThread(self.sock, self.robot_addr)
         self.stop_flag = False
         self.send_last = datetime.now() - timedelta(days=1)
+        self._reset_partial_state()
 
     def start(self) -> None:
         logger.debug("Starting...")
-        self.add_handler(Connect, self._on_connect)
-        self.add_handler(FirmwareSignature, self._on_firmware_signature)
-        self.add_handler(Ping, self._on_ping)
+        self.add_handler(protocol_encoder.Connect, self._on_connect)
+        self.add_handler(protocol_encoder.FirmwareSignature, self._on_firmware_signature)
+        self.add_handler(protocol_encoder.Ping, self._on_ping)
+        self.add_handler(protocol_encoder.ImageChunk, self._on_image_chunk)
         self.recv_thread.start()
         self.send_thread.start()
         super().start()
@@ -268,11 +279,11 @@ class Client(Thread, event.Dispatcher):
         logger.debug("Disconnecting...")
         if self.state != self.CONNECTED:
             return
-        pkt = Disconnect()
+        pkt = protocol_encoder.Disconnect()
         self.send(pkt)
 
     def _send_ping(self) -> None:
-        pkt = Ping(0, 1, 0)
+        pkt = protocol_encoder.Ping(0, 1, 0)
         self.send(pkt)
 
     def _on_connect(self, cli, pkt):
@@ -293,9 +304,9 @@ class Client(Thread, event.Dispatcher):
 
         # Initialize display.
         for _ in range(7):
-            pkt = NextFrame()
+            pkt = protocol_encoder.NextFrame()
             self.send(pkt)
-            pkt = DisplayImage(b"\x3f\x3f")
+            pkt = protocol_encoder.DisplayImage(b"\x3f\x3f")
             self.send(pkt)
 
         # TODO: This should not be necessary.
@@ -318,3 +329,78 @@ class Client(Thread, event.Dispatcher):
         self.add_handler(EvtRobotReady, lambda cli: e.set(), one_shot=True)
         if not e.wait(timeout):
             raise TimeoutError("Failed to connect and initialize Cozmo.")
+
+    def _reset_partial_state(self):
+        self._partial_data = None
+        self._partial_image_id = None
+        self._partial_invalid = False
+        self._partial_size = 0
+        self._partial_image_encoding = None
+        self._partial_image_resolution = None
+        self._last_chunk_id = -1
+
+    def _on_image_chunk(self, cli, pkt: protocol_encoder.ImageChunk):
+        del cli
+        if self._partial_image_id is not None and pkt.chunk_id == 0:
+            if not self._partial_invalid:
+                logger.debug("Lost final chunk of image - discarding.")
+            self._partial_image_id = None
+
+        if self._partial_image_id is None:
+            if pkt.chunk_id != 0:
+                if not self._partial_invalid:
+                    logger.debug("Received chunk of broken image.")
+                self._partial_invalid = True
+                return
+            # Discard any previous in-progress image
+            self._reset_partial_state()
+            self._partial_image_id = pkt.image_id
+            self._partial_image_encoding = camera.ImageEncoding(pkt.image_encoding)
+            self._partial_image_resolution = camera.ImageResolution(pkt.image_resolution)
+
+            image_resolution = camera.ImageResolution(pkt.image_resolution)
+            width, height = camera.RESOLUTIONS[image_resolution]
+            max_size = width * height * 3  # 3 bytes per pixel (RGB)
+            self._partial_data = np.empty(max_size, dtype=np.uint8)
+
+        if pkt.chunk_id != (self._last_chunk_id + 1) or pkt.image_id != self._partial_image_id:
+            logger.debug("Image missing chunks - discarding (last_chunk_id=%d partial_image_id=%s).",
+                         self._last_chunk_id, self._partial_image_id)
+            self._reset_partial_state()
+            self._partial_invalid = True
+            return
+
+        offset = self._partial_size
+        self._partial_data[offset:offset + len(pkt.data)] = pkt.data
+        self._partial_size += len(pkt.data)
+        self._last_chunk_id = pkt.chunk_id
+
+        if pkt.chunk_id == pkt.image_chunk_count - 1:
+            self._process_completed_image()
+            self._reset_partial_state()
+
+    def _process_completed_image(self):
+        data = self._partial_data[0:self._partial_size]
+
+        # The first byte of the image is whether or not it is in color
+        is_color_image = data[0] != 0
+
+        if self._partial_image_encoding == camera.ImageEncoding.JPEGMinimizedGray:
+            width, height = camera.RESOLUTIONS[self._partial_image_resolution]
+
+            if is_color_image:
+                # Color images are half width
+                width = width // 2
+                data = camera.minicolor_to_jpeg(data, width, height)
+            else:
+                data = camera.minigray_to_jpeg(data, width, height)
+
+        image = Image.open(io.BytesIO(data)).convert('RGB')
+
+        # Color images need to be resized to the proper resolution
+        if is_color_image:
+            size = camera.RESOLUTIONS[self._partial_image_resolution]
+            image = image.resize(size)
+
+        self._latest_image = image
+        self.dispatch(EvtNewRawCameraImage, self, image)

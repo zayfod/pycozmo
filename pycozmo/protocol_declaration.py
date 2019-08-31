@@ -422,7 +422,7 @@ PROTOCOL = Protocol(
             UInt32Argument("image_id"),
             UInt32Argument("chunk_debug"),
             UInt8Argument("image_encoding"),
-            UInt8Argument("image_resolution"),
+            UInt8Argument("image_resolution"),  # TODO: Should be an enumeration.
             UInt8Argument("image_chunk_count"),
             UInt8Argument("chunk_id"),
             UInt16Argument("status"),

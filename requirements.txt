@@ -1,2 +1,4 @@
 setuptools>=38.6.0
 dpkt
+numpy
+Pillow

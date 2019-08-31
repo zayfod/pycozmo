@@ -16,6 +16,7 @@ from . import protocol_generator
 from . import protocol_encoder
 from . import protocol_utils
 from . import lights
+from . import camera
 
 
 __version__ = "0.3.0"
