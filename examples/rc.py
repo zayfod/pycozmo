@@ -297,7 +297,7 @@ def main():
     # Configure logging.
     level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(
-        format='%(asctime)s.%(msecs)03d %(levelname)-8s %(message)s',
+        format="%(asctime)s.%(msecs)03d %(name)-15s %(levelname)-8s %(message)s",
         datefmt='%Y-%m-%d %H:%M:%S',
         level=level)
 

@@ -5,11 +5,7 @@ import time
 import pycozmo
 
 
-def main():
-    cli = pycozmo.Client()
-    cli.start()
-    cli.connect()
-    cli.wait_for_robot()
+def pycozmo_program(cli):
 
     cli.send(pycozmo.protocol_encoder.SetHeadAngle(angle_rad=pycozmo.MAX_HEAD_ANGLE_RAD))
     time.sleep(1)
@@ -23,9 +19,5 @@ def main():
     time.sleep(1)
     cli.send(pycozmo.protocol_encoder.DriveLift())
 
-    cli.disconnect()
-    cli.stop()
 
-
-if __name__ == '__main__':
-    main()
+pycozmo.run_program(pycozmo_program)

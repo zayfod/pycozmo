@@ -1,6 +1,9 @@
 
 import sys
 
+from .logging import *
+from .run import *
+
 from .frame import Frame
 from .client import ROBOT_ADDR, Client, EvtRobotFound, EvtRobotReady
 from .robot import *
@@ -15,9 +18,12 @@ from . import protocol_utils
 from . import lights
 
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
+    "logger",
+    "logger_protocol",
+
     "Frame",
     "ROBOT_ADDR",
     "Client",
@@ -29,8 +35,10 @@ __all__ = [
     "LIFT_ARM_LENGTH_MM",
     "LIFT_PIVOT_HEIGHT_MM",
     "MAX_WHEEL_SPEED_MMPS",
-]
 
+    "setup_basic_logging",
+    "run_program",
+]
 
 if sys.version_info < (3, 5):
     sys.exit("ERROR: PyCozmo requires Python 3.5 or newer.")

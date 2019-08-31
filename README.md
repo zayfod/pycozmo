@@ -14,6 +14,21 @@ development.
 Usage
 -----
 
+Basic mode:
+```python
+import time
+import pycozmo
+
+def pycozmo_program(cli):
+    pkt = pycozmo.protocol_encoder.SetHeadAngle(angle_rad=0.6)
+    cli.send(pkt)
+    time.sleep(1)
+
+pycozmo.run_program(pycozmo_program)
+
+```
+
+Advanced mode:
 ```python
 import time
 import pycozmo
@@ -57,6 +72,7 @@ Examples
 - [backpack_lights.py](examples/backpack_lights.py) - demonstrates Cozmo backpack LED control
 - [display.py](examples/display.py) - demonstrates low-level visualization of images on Cozmo's display
 - [audio.py](examples/audio.py) - demonstrates 22 kHz, 8-bit, mono WAVE file playback through Cozmo's speaker 
+- [events.py](examples/events.py) - demonstrates event handling 
 
 
 Robot Support

@@ -8,6 +8,7 @@ from typing import Optional, Tuple, Any
 import json
 import time
 
+from .logging import logger, logger_protocol
 from .frame import Frame
 from .protocol_declaration import FrameType
 from .protocol_base import PacketType, Packet, UnknownCommand
@@ -158,7 +159,7 @@ class SendThread(Thread):
 
             self.last_send_timestamp = datetime.now()
             if frame.type != FrameType.PING:
-                print("Sent {}".format(pkt))
+                logger_protocol.debug("Sent %s", pkt)
 
     def send(self, data: Any) -> None:
         self.queue.put(data)
@@ -208,6 +209,7 @@ class Client(Thread, event.Dispatcher):
         self.send_last = datetime.now() - timedelta(days=1)
 
     def start(self) -> None:
+        logger.debug("Starting...")
         self.add_handler(Connect, self._on_connect)
         self.add_handler(FirmwareSignature, self._on_firmware_signature)
         self.add_handler(Ping, self._on_ping)
@@ -216,6 +218,7 @@ class Client(Thread, event.Dispatcher):
         super().start()
 
     def stop(self) -> None:
+        logger.debug("Stopping client...")
         self.stop_flag = True
         self.join()
         self.send_thread.stop()
@@ -240,11 +243,12 @@ class Client(Thread, event.Dispatcher):
                     self._send_ping()
 
             if pkt is not None and pkt.PACKET_ID not in (PacketType.PING, PacketType.EVENT):
-                print("Got  {}".format(pkt))
+                logger_protocol.debug("Got  %s", pkt)
 
             self.dispatch(pkt.__class__, self, pkt)
 
     def connect(self) -> None:
+        logger.debug("Connecting...")
         self.state = self.CONNECTING
 
         self.send_thread.reset()
@@ -256,11 +260,12 @@ class Client(Thread, event.Dispatcher):
         except InterruptedError:
             pass
 
-    def send(self, pkt: Packet):
+    def send(self, pkt: Packet) -> None:
         self.send_last = datetime.now()
         self.send_thread.send(pkt)
 
     def disconnect(self) -> None:
+        logger.debug("Disconnecting...")
         if self.state != self.CONNECTED:
             return
         pkt = Disconnect()
@@ -273,6 +278,7 @@ class Client(Thread, event.Dispatcher):
     def _on_connect(self, cli, pkt):
         del cli, pkt
         self.state = Client.CONNECTED
+        logger.debug("Connected.")
 
     def _initialize_robot(self):
         # Enable
@@ -293,20 +299,21 @@ class Client(Thread, event.Dispatcher):
             self.send(pkt)
 
         # TODO: This should not be necessary.
-        time.sleep(1)
+        time.sleep(0.5)
 
         self.dispatch(EvtRobotReady, self)
 
     def _on_firmware_signature(self, cli, pkt):
         del cli
         self.robot_fw_sig = json.loads(pkt.signature)
+        logger.info("Cozmo version %s.", self.robot_fw_sig["version"])
         self._initialize_robot()
         self.dispatch(EvtRobotFound, self)
 
     def _on_ping(self, cli, pkt):
         del cli, pkt
 
-    def wait_for_robot(self, timeout=10):
+    def wait_for_robot(self, timeout: float = 5.0) -> None:
         e = Event()
         self.add_handler(EvtRobotReady, lambda cli: e.set(), one_shot=True)
         if not e.wait(timeout):

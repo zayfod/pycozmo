@@ -5,12 +5,7 @@ import time
 import pycozmo
 
 
-def main():
-    cli = pycozmo.Client()
-    cli.start()
-    cli.connect()
-    cli.wait_for_robot()
-
+def pycozmo_program(cli):
     lights = [
         pycozmo.lights.red_light,
         pycozmo.lights.green_light,
@@ -27,9 +22,5 @@ def main():
 
         time.sleep(2)
 
-    cli.disconnect()
-    cli.stop()
 
-
-if __name__ == '__main__':
-    main()
+pycozmo.run_program(pycozmo_program)

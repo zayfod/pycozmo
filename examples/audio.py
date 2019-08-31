@@ -6,7 +6,7 @@ import wave
 import pycozmo
 
 
-def main():
+def pycozmo_program(cli):
     f = wave.open("hello.wav", "rb")
     sampwidth = f.getsampwidth()
     print("Sample width: {} byte(s)".format(sampwidth))
@@ -18,11 +18,6 @@ def main():
     assert sampwidth == 1
     assert rate == 22050
     assert channels == 1
-
-    cli = pycozmo.Client()
-    cli.start()
-    cli.connect()
-    cli.wait_for_robot()
 
     pkt = pycozmo.protocol_encoder.SetRobotVolume(20000)
     cli.send(pkt)
@@ -38,9 +33,5 @@ def main():
         cli.send(pkt)
         time.sleep(0.033742)
 
-    cli.disconnect()
-    cli.stop()
 
-
-if __name__ == '__main__':
-    main()
+pycozmo.run_program(pycozmo_program)
