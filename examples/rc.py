@@ -131,7 +131,6 @@ class RCApp(object):
         self.cli.connect()
         while self.cli.state != pycozmo.Client.CONNECTED:
             time.sleep(0.2)
-        self.cli.send_enable()
         return True
 
     def term(self):
@@ -139,8 +138,8 @@ class RCApp(object):
         logging.info("Terminating...")
 
         self.cli.send(pycozmo.protocol_encoder.StopAllMotors())
-        self.cli.send_disconnect()
-        time.sleep(1)
+        self.cli.disconnect()
+        self.cli.stop()
 
     def run(self):
         """ Main loop. """

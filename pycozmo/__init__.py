@@ -2,8 +2,9 @@
 import sys
 
 from .frame import Frame
-from .client import ROBOT_ADDR, Client
-from . robot import *
+from .client import ROBOT_ADDR, Client, EvtRobotFound, EvtRobotReady
+from .robot import *
+from .event import *
 
 from . import util
 from . import protocol_base

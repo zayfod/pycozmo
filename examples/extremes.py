@@ -9,12 +9,7 @@ def main():
     cli = pycozmo.Client()
     cli.start()
     cli.connect()
-
-    while cli.state != pycozmo.Client.CONNECTED:
-        time.sleep(0.2)
-
-    cli.send_enable()
-    time.sleep(1)
+    cli.wait_for_robot()
 
     cli.send(pycozmo.protocol_encoder.SetHeadAngle(angle_rad=pycozmo.MAX_HEAD_ANGLE_RAD))
     time.sleep(1)
@@ -28,8 +23,8 @@ def main():
     time.sleep(1)
     cli.send(pycozmo.protocol_encoder.DriveLift())
 
-    cli.send_disconnect()
-    time.sleep(1)
+    cli.disconnect()
+    cli.stop()
 
 
 if __name__ == '__main__':

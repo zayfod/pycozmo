@@ -9,14 +9,11 @@ def main():
     cli = pycozmo.Client()
     cli.start()
     cli.connect()
+    cli.wait_for_robot()
 
-    while cli.state != pycozmo.Client.CONNECTED:
-        time.sleep(0.2)
-
-    cli.send_enable()
-    time.sleep(1)
-
-    cli.send_init_display()
+    angle = (pycozmo.robot.MAX_HEAD_ANGLE_RAD - pycozmo.robot.MIN_HEAD_ANGLE_RAD) / 2
+    pkt = pycozmo.protocol_encoder.SetHeadAngle(angle_rad=angle)
+    cli.send(pkt)
 
     for _ in range(30):
         pkt = pycozmo.protocol_encoder.NextFrame()
@@ -31,8 +28,8 @@ def main():
         cli.send(pkt)
         time.sleep(1)
 
-    cli.send_disconnect()
-    time.sleep(1)
+    cli.disconnect()
+    cli.stop()
 
 
 if __name__ == '__main__':

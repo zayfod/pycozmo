@@ -21,6 +21,7 @@ import pycozmo
 cli = pycozmo.Client()
 cli.start()
 cli.connect()
+cli.wait_for_robot()
 
 pkt = pycozmo.protocol_encoder.DriveWheels(lwheel_speed_mmps=50.0, rwheel_speed_mmps=50.0) 
 cli.send(pkt)
@@ -28,7 +29,8 @@ time.sleep(2.0)
 pkt = pycozmo.protocol_encoder.StopAllMotors()
 cli.send(pkt)
 
-cli.send_disconnect()
+cli.disconnect()
+cli.stop()
 
 ```
 

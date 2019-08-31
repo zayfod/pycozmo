@@ -3,15 +3,17 @@ import select
 import socket
 from datetime import datetime, timedelta
 from queue import Queue, Empty
-from threading import Thread
+from threading import Thread, Event
 from typing import Optional, Tuple, Any
 import json
+import time
 
 from .frame import Frame
 from .protocol_declaration import FrameType
 from .protocol_base import PacketType, Packet, UnknownCommand
 from .window import ReceiveWindow, SendWindow
 from .protocol_encoder import Connect, Disconnect, Ping, NextFrame, DisplayImage, FirmwareSignature
+from . import event
 
 
 ROBOT_ADDR = ("172.31.1.1", 5551)
@@ -177,7 +179,15 @@ class SendThread(Thread):
         self.last_send_timestamp = None
 
 
-class Client(Thread):
+class EvtRobotFound(event.Event):
+    """ Triggered when the robot has been first connected. """
+
+
+class EvtRobotReady(event.Event):
+    """ Triggered when the robot has been initialized and is ready for commands. """
+
+
+class Client(Thread, event.Dispatcher):
 
     IDLE = 1
     CONNECTING = 2
@@ -185,6 +195,8 @@ class Client(Thread):
 
     def __init__(self, robot_addr: Optional[Tuple[str, int]] = None) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
+        # Thread is an old-style class and does not propagate initialization.
+        event.Dispatcher.__init__(self)
         self.robot_addr = robot_addr or ROBOT_ADDR
         self.robot_fw_sig = None
         self.state = self.IDLE
@@ -196,6 +208,9 @@ class Client(Thread):
         self.send_last = datetime.now() - timedelta(days=1)
 
     def start(self) -> None:
+        self.add_handler(Connect, self._on_connect)
+        self.add_handler(FirmwareSignature, self._on_firmware_signature)
+        self.add_handler(Ping, self._on_ping)
         self.recv_thread.start()
         self.send_thread.start()
         super().start()
@@ -206,6 +221,7 @@ class Client(Thread):
         self.send_thread.stop()
         self.recv_thread.stop()
         self.sock.close()
+        self.del_all_handlers()
 
     def run(self) -> None:
         while not self.stop_flag:
@@ -218,56 +234,48 @@ class Client(Thread):
             except Empty:
                 pkt = None
 
-            now = datetime.now()
-            if self.state == Client.IDLE:
-                pass
-            elif self.state == Client.CONNECTING:
-                if pkt is not None and isinstance(pkt, Connect):
-                    print("Connected!")
-                    self.state = Client.CONNECTED
-            elif self.state == Client.CONNECTED:
+            if self.state == Client.CONNECTED:
+                now = datetime.now()
                 if now - self.send_last > timedelta(seconds=PING_INTERVAL):
-                    # print("Sending ping.")
-                    self.send_ping()
-
-                if pkt is not None and isinstance(pkt, FirmwareSignature):
-                    self.robot_fw_sig = json.loads(pkt.signature)
-                    print("Cozmo firmware v{}".format(self.robot_fw_sig["version"]))
-            else:
-                assert False
+                    self._send_ping()
 
             if pkt is not None and pkt.PACKET_ID not in (PacketType.PING, PacketType.EVENT):
                 print("Got  {}".format(pkt))
 
+            self.dispatch(pkt.__class__, self, pkt)
+
     def connect(self) -> None:
         self.state = self.CONNECTING
-        print("Sending hello...")
+
         self.send_thread.reset()
-        self.send_hello()
 
-    def send(self, pkt: Packet):
-        self.send_last = datetime.now()
-        self.send_thread.send(pkt)
-
-    def send_hello(self) -> None:
         frame = Frame(FrameType.RESET, 1, 1, 0, [])
         raw_frame = frame.to_bytes()
-
         try:
             self.sock.sendto(raw_frame, self.robot_addr)
         except InterruptedError:
             pass
 
-    def send_disconnect(self) -> None:
+    def send(self, pkt: Packet):
+        self.send_last = datetime.now()
+        self.send_thread.send(pkt)
+
+    def disconnect(self) -> None:
+        if self.state != self.CONNECTED:
+            return
         pkt = Disconnect()
         self.send(pkt)
 
-    def send_ping(self) -> None:
+    def _send_ping(self) -> None:
         pkt = Ping(0, 1, 0)
         self.send(pkt)
 
-    def send_enable(self) -> None:
-        print("Sending enable...")
+    def _on_connect(self, cli, pkt):
+        del cli, pkt
+        self.state = Client.CONNECTED
+
+    def _initialize_robot(self):
+        # Enable
         pkt = UnknownCommand(0x25)
         self.send(pkt)
         # Enables 0xf0 and 0xf3 events - engages motors? Requires 0x25.
@@ -277,9 +285,29 @@ class Client(Thread):
         pkt = UnknownCommand(0x9f)
         self.send(pkt)
 
-    def send_init_display(self) -> None:
+        # Initialize display.
         for _ in range(7):
             pkt = NextFrame()
             self.send(pkt)
             pkt = DisplayImage(b"\x3f\x3f")
             self.send(pkt)
+
+        # TODO: This should not be necessary.
+        time.sleep(1)
+
+        self.dispatch(EvtRobotReady, self)
+
+    def _on_firmware_signature(self, cli, pkt):
+        del cli
+        self.robot_fw_sig = json.loads(pkt.signature)
+        self._initialize_robot()
+        self.dispatch(EvtRobotFound, self)
+
+    def _on_ping(self, cli, pkt):
+        del cli, pkt
+
+    def wait_for_robot(self, timeout=10):
+        e = Event()
+        self.add_handler(EvtRobotReady, lambda cli: e.set(), one_shot=True)
+        if not e.wait(timeout):
+            raise TimeoutError("Failed to connect and initialize Cozmo.")

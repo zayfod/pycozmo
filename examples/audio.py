@@ -22,12 +22,7 @@ def main():
     cli = pycozmo.Client()
     cli.start()
     cli.connect()
-
-    while cli.state != pycozmo.Client.CONNECTED:
-        time.sleep(0.2)
-
-    cli.send_enable()
-    time.sleep(1)
+    cli.wait_for_robot()
 
     pkt = pycozmo.protocol_encoder.SetRobotVolume(20000)
     cli.send(pkt)
@@ -43,8 +38,8 @@ def main():
         cli.send(pkt)
         time.sleep(0.033742)
 
-    cli.send_disconnect()
-    time.sleep(1)
+    cli.disconnect()
+    cli.stop()
 
 
 if __name__ == '__main__':
