@@ -102,6 +102,10 @@ PROTOCOL = Protocol(
             BoolArgument("auto_exposure_enabled"),
         ]),
 
+        Command(0x60, "enable_stop_on_cliff", arguments=[
+            BoolArgument("enable"),
+        ]),
+
         Command(0x64, "set_robot_volume", arguments=[
             UInt16Argument("level"),
         ]),
@@ -192,12 +196,12 @@ PROTOCOL = Protocol(
             FloatArgument("rwheel_speed_mmps"),
             FloatArgument("head_angle_rad"),
             FloatArgument("lift_height_mm"),
-            FloatArgument("unknown12"),
-            FloatArgument("unknown13"),
-            FloatArgument("unknown14"),
-            FloatArgument("unknown15"),
-            FloatArgument("unknown16"),
-            FloatArgument("unknown17"),
+            FloatArgument("accel_x"),
+            FloatArgument("accel_y"),
+            FloatArgument("accel_z"),
+            FloatArgument("gyro_x"),
+            FloatArgument("gyro_y"),
+            FloatArgument("gyro_z"),
             FloatArgument("battery_voltage"),
             FloatArgument("unknown19"),
             FloatArgument("unknown20"),

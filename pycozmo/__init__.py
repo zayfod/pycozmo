@@ -19,7 +19,7 @@ from . import lights
 from . import camera
 
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "logger",

@@ -1490,6 +1490,58 @@ class SetCameraParams(Packet):
             auto_exposure_enabled=auto_exposure_enabled)
 
     
+class EnableStopOnCliff(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x60
+
+    __slots__ = (
+        "_enable",
+    )
+
+    def __init__(self,
+                 enable=False):
+        self.enable = enable
+
+    @property
+    def enable(self):
+        return self._enable
+
+    @enable.setter
+    def enable(self, value):
+        self._enable = validate_bool("enable", value)
+
+    def __len__(self):
+        return \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "enable={enable})".format(
+                type=type(self).__name__,
+                enable=self._enable)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(int(self._enable), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        enable = bool(reader.read("b"))
+        return cls(
+            enable=enable)
+
+    
 class SetRobotVolume(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -2760,12 +2812,12 @@ class RobotState(Packet):
         "_rwheel_speed_mmps",
         "_head_angle_rad",
         "_lift_height_mm",
-        "_unknown12",
-        "_unknown13",
-        "_unknown14",
-        "_unknown15",
-        "_unknown16",
-        "_unknown17",
+        "_accel_x",
+        "_accel_y",
+        "_accel_z",
+        "_gyro_x",
+        "_gyro_y",
+        "_gyro_z",
         "_battery_voltage",
         "_unknown19",
         "_unknown20",
@@ -2788,12 +2840,12 @@ class RobotState(Packet):
                  rwheel_speed_mmps=0.0,
                  head_angle_rad=0.0,
                  lift_height_mm=0.0,
-                 unknown12=0.0,
-                 unknown13=0.0,
-                 unknown14=0.0,
-                 unknown15=0.0,
-                 unknown16=0.0,
-                 unknown17=0.0,
+                 accel_x=0.0,
+                 accel_y=0.0,
+                 accel_z=0.0,
+                 gyro_x=0.0,
+                 gyro_y=0.0,
+                 gyro_z=0.0,
                  battery_voltage=0.0,
                  unknown19=0.0,
                  unknown20=0.0,
@@ -2813,12 +2865,12 @@ class RobotState(Packet):
         self.rwheel_speed_mmps = rwheel_speed_mmps
         self.head_angle_rad = head_angle_rad
         self.lift_height_mm = lift_height_mm
-        self.unknown12 = unknown12
-        self.unknown13 = unknown13
-        self.unknown14 = unknown14
-        self.unknown15 = unknown15
-        self.unknown16 = unknown16
-        self.unknown17 = unknown17
+        self.accel_x = accel_x
+        self.accel_y = accel_y
+        self.accel_z = accel_z
+        self.gyro_x = gyro_x
+        self.gyro_y = gyro_y
+        self.gyro_z = gyro_z
         self.battery_voltage = battery_voltage
         self.unknown19 = unknown19
         self.unknown20 = unknown20
@@ -2924,52 +2976,52 @@ class RobotState(Packet):
         self._lift_height_mm = validate_float("lift_height_mm", value)
 
     @property
-    def unknown12(self):
-        return self._unknown12
+    def accel_x(self):
+        return self._accel_x
 
-    @unknown12.setter
-    def unknown12(self, value):
-        self._unknown12 = validate_float("unknown12", value)
-
-    @property
-    def unknown13(self):
-        return self._unknown13
-
-    @unknown13.setter
-    def unknown13(self, value):
-        self._unknown13 = validate_float("unknown13", value)
+    @accel_x.setter
+    def accel_x(self, value):
+        self._accel_x = validate_float("accel_x", value)
 
     @property
-    def unknown14(self):
-        return self._unknown14
+    def accel_y(self):
+        return self._accel_y
 
-    @unknown14.setter
-    def unknown14(self, value):
-        self._unknown14 = validate_float("unknown14", value)
-
-    @property
-    def unknown15(self):
-        return self._unknown15
-
-    @unknown15.setter
-    def unknown15(self, value):
-        self._unknown15 = validate_float("unknown15", value)
+    @accel_y.setter
+    def accel_y(self, value):
+        self._accel_y = validate_float("accel_y", value)
 
     @property
-    def unknown16(self):
-        return self._unknown16
+    def accel_z(self):
+        return self._accel_z
 
-    @unknown16.setter
-    def unknown16(self, value):
-        self._unknown16 = validate_float("unknown16", value)
+    @accel_z.setter
+    def accel_z(self, value):
+        self._accel_z = validate_float("accel_z", value)
 
     @property
-    def unknown17(self):
-        return self._unknown17
+    def gyro_x(self):
+        return self._gyro_x
 
-    @unknown17.setter
-    def unknown17(self, value):
-        self._unknown17 = validate_float("unknown17", value)
+    @gyro_x.setter
+    def gyro_x(self, value):
+        self._gyro_x = validate_float("gyro_x", value)
+
+    @property
+    def gyro_y(self):
+        return self._gyro_y
+
+    @gyro_y.setter
+    def gyro_y(self, value):
+        self._gyro_y = validate_float("gyro_y", value)
+
+    @property
+    def gyro_z(self):
+        return self._gyro_z
+
+    @gyro_z.setter
+    def gyro_z(self, value):
+        self._gyro_z = validate_float("gyro_z", value)
 
     @property
     def battery_voltage(self):
@@ -3069,12 +3121,12 @@ class RobotState(Packet):
                "rwheel_speed_mmps={rwheel_speed_mmps}, " \
                "head_angle_rad={head_angle_rad}, " \
                "lift_height_mm={lift_height_mm}, " \
-               "unknown12={unknown12}, " \
-               "unknown13={unknown13}, " \
-               "unknown14={unknown14}, " \
-               "unknown15={unknown15}, " \
-               "unknown16={unknown16}, " \
-               "unknown17={unknown17}, " \
+               "accel_x={accel_x}, " \
+               "accel_y={accel_y}, " \
+               "accel_z={accel_z}, " \
+               "gyro_x={gyro_x}, " \
+               "gyro_y={gyro_y}, " \
+               "gyro_z={gyro_z}, " \
                "battery_voltage={battery_voltage}, " \
                "unknown19={unknown19}, " \
                "unknown20={unknown20}, " \
@@ -3095,12 +3147,12 @@ class RobotState(Packet):
                 rwheel_speed_mmps=self._rwheel_speed_mmps,
                 head_angle_rad=self._head_angle_rad,
                 lift_height_mm=self._lift_height_mm,
-                unknown12=self._unknown12,
-                unknown13=self._unknown13,
-                unknown14=self._unknown14,
-                unknown15=self._unknown15,
-                unknown16=self._unknown16,
-                unknown17=self._unknown17,
+                accel_x=self._accel_x,
+                accel_y=self._accel_y,
+                accel_z=self._accel_z,
+                gyro_x=self._gyro_x,
+                gyro_y=self._gyro_y,
+                gyro_z=self._gyro_z,
                 battery_voltage=self._battery_voltage,
                 unknown19=self._unknown19,
                 unknown20=self._unknown20,
@@ -3127,12 +3179,12 @@ class RobotState(Packet):
         writer.write(self._rwheel_speed_mmps, "f")
         writer.write(self._head_angle_rad, "f")
         writer.write(self._lift_height_mm, "f")
-        writer.write(self._unknown12, "f")
-        writer.write(self._unknown13, "f")
-        writer.write(self._unknown14, "f")
-        writer.write(self._unknown15, "f")
-        writer.write(self._unknown16, "f")
-        writer.write(self._unknown17, "f")
+        writer.write(self._accel_x, "f")
+        writer.write(self._accel_y, "f")
+        writer.write(self._accel_z, "f")
+        writer.write(self._gyro_x, "f")
+        writer.write(self._gyro_y, "f")
+        writer.write(self._gyro_z, "f")
         writer.write(self._battery_voltage, "f")
         writer.write(self._unknown19, "f")
         writer.write(self._unknown20, "f")
@@ -3161,12 +3213,12 @@ class RobotState(Packet):
         rwheel_speed_mmps = reader.read("f")
         head_angle_rad = reader.read("f")
         lift_height_mm = reader.read("f")
-        unknown12 = reader.read("f")
-        unknown13 = reader.read("f")
-        unknown14 = reader.read("f")
-        unknown15 = reader.read("f")
-        unknown16 = reader.read("f")
-        unknown17 = reader.read("f")
+        accel_x = reader.read("f")
+        accel_y = reader.read("f")
+        accel_z = reader.read("f")
+        gyro_x = reader.read("f")
+        gyro_y = reader.read("f")
+        gyro_z = reader.read("f")
         battery_voltage = reader.read("f")
         unknown19 = reader.read("f")
         unknown20 = reader.read("f")
@@ -3187,12 +3239,12 @@ class RobotState(Packet):
             rwheel_speed_mmps=rwheel_speed_mmps,
             head_angle_rad=head_angle_rad,
             lift_height_mm=lift_height_mm,
-            unknown12=unknown12,
-            unknown13=unknown13,
-            unknown14=unknown14,
-            unknown15=unknown15,
-            unknown16=unknown16,
-            unknown17=unknown17,
+            accel_x=accel_x,
+            accel_y=accel_y,
+            accel_z=accel_z,
+            gyro_x=gyro_x,
+            gyro_y=gyro_y,
+            gyro_z=gyro_z,
             battery_voltage=battery_voltage,
             unknown19=unknown19,
             unknown20=unknown20,
@@ -3407,6 +3459,7 @@ ACTION_BY_ID = {
     0x3b: StopAllMotors,  # 59
     0x4c: EnableCamera,  # 76
     0x57: SetCameraParams,  # 87
+    0x60: EnableStopOnCliff,  # 96
     0x64: SetRobotVolume,  # 100
     0x8e: OutputAudio,  # 142
     0x8f: NextFrame,  # 143

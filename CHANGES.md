@@ -1,6 +1,11 @@
 Revision History
 ================
 
+v0.4.0
+------
+- Improved robot state.
+- Added stop-on-cliff command.
+
 v0.3.0 (Sep 1, 2019)
 --------------------
 - Camera control and image reconstruction commands.
