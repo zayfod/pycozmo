@@ -25,7 +25,6 @@ def pycozmo_program(cli):
     time.sleep(1)
 
 pycozmo.run_program(pycozmo_program)
-
 ```
 
 Advanced mode:
@@ -46,7 +45,6 @@ cli.send(pkt)
 
 cli.disconnect()
 cli.stop()
-
 ```
 
 
@@ -139,6 +137,7 @@ Limitations
 - some high-level Cozmo SDK features are implemented in the Cozmo app and have no equivalent in PyCozmo:
     - personality engine
     - behaviors
+    - motion detection
     - text-to-speech
     - songs
 - there is no Wi-Fi control. The library assumes a Wi-Fi connection to Cozmo, established in advance.

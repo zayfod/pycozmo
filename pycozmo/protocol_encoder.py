@@ -1404,6 +1404,92 @@ class EnableCamera(Packet):
             unknown=unknown)
 
     
+class SetCameraParams(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x57
+
+    __slots__ = (
+        "_gain",
+        "_exposure_ms",
+        "_auto_exposure_enabled",
+    )
+
+    def __init__(self,
+                 gain=0.0,
+                 exposure_ms=0,
+                 auto_exposure_enabled=False):
+        self.gain = gain
+        self.exposure_ms = exposure_ms
+        self.auto_exposure_enabled = auto_exposure_enabled
+
+    @property
+    def gain(self):
+        return self._gain
+
+    @gain.setter
+    def gain(self, value):
+        self._gain = validate_float("gain", value)
+
+    @property
+    def exposure_ms(self):
+        return self._exposure_ms
+
+    @exposure_ms.setter
+    def exposure_ms(self, value):
+        self._exposure_ms = validate_integer("exposure_ms", value, 0, 65535)
+
+    @property
+    def auto_exposure_enabled(self):
+        return self._auto_exposure_enabled
+
+    @auto_exposure_enabled.setter
+    def auto_exposure_enabled(self, value):
+        self._auto_exposure_enabled = validate_bool("auto_exposure_enabled", value)
+
+    def __len__(self):
+        return \
+            get_size('f') + \
+            get_size('H') + \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "gain={gain}, " \
+               "exposure_ms={exposure_ms}, " \
+               "auto_exposure_enabled={auto_exposure_enabled})".format(
+                type=type(self).__name__,
+                gain=self._gain,
+                exposure_ms=self._exposure_ms,
+                auto_exposure_enabled=self._auto_exposure_enabled)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._gain, "f")
+        writer.write(self._exposure_ms, "H")
+        writer.write(int(self._auto_exposure_enabled), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        gain = reader.read("f")
+        exposure_ms = reader.read("H")
+        auto_exposure_enabled = bool(reader.read("b"))
+        return cls(
+            gain=gain,
+            exposure_ms=exposure_ms,
+            auto_exposure_enabled=auto_exposure_enabled)
+
+    
 class SetRobotVolume(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -2174,7 +2260,7 @@ class RobotPoked(Packet):
             )
 
     
-class ObjectPowerState(Packet):
+class ObjectPowerLevel(Packet):
 
     PACKET_ID = PacketType.ACTION
     ID = 0xce
@@ -3320,6 +3406,7 @@ ACTION_BY_ID = {
     0x37: SetHeadAngle,  # 55
     0x3b: StopAllMotors,  # 59
     0x4c: EnableCamera,  # 76
+    0x57: SetCameraParams,  # 87
     0x64: SetRobotVolume,  # 100
     0x8e: OutputAudio,  # 142
     0x8f: NextFrame,  # 143
@@ -3331,7 +3418,7 @@ ACTION_BY_ID = {
     0xc2: RobotDelocalized,  # 194
     0xc3: RobotPoked,  # 195
     0xc4: AcknowledgeCommand,  # 196
-    0xce: ObjectPowerState,  # 206
+    0xce: ObjectPowerLevel,  # 206
     0xd0: ObjectConnectionState,  # 208
     0xd7: ObjectUpAxisChanged,  # 215
     0xdd: FallingStarted,  # 221

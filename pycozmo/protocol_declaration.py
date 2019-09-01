@@ -96,6 +96,12 @@ PROTOCOL = Protocol(
             UInt8Argument("unknown", default=4)
         ]),
 
+        Command(0x57, "set_camera_params", arguments=[
+            FloatArgument("gain"),
+            UInt16Argument("exposure_ms"),
+            BoolArgument("auto_exposure_enabled"),
+        ]),
+
         Command(0x64, "set_robot_volume", arguments=[
             UInt16Argument("level"),
         ]),
@@ -142,7 +148,7 @@ PROTOCOL = Protocol(
         Command(0xc2, "robot_delocalized"),
         Command(0xc3, "robot_poked"),
 
-        Command(0xce, "object_power_state", arguments=[
+        Command(0xce, "object_power_level", arguments=[
             UInt32Argument("object_id"),
             UInt32Argument("missed_packets"),
             UInt8Argument("battery_level"),
