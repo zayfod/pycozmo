@@ -18,9 +18,11 @@ def pycozmo_program(cli):
 
     pkt = pycozmo.protocol_encoder.EnableCamera(enable=True)
     cli.send(pkt)
+    pkt = pycozmo.protocol_encoder.EnableColorImages(enable=True)
+    cli.send(pkt)
 
     # Wait for image to stabilize.
-    time.sleep(1.5)
+    time.sleep(2.0)
 
     cli.add_handler(pycozmo.client.EvtNewRawCameraImage, on_camera_image, one_shot=True)
 

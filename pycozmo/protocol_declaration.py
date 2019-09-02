@@ -109,6 +109,9 @@ PROTOCOL = Protocol(
         Command(0x64, "set_robot_volume", arguments=[
             UInt16Argument("level"),
         ]),
+        Command(0x66, "enable_color_images", arguments=[
+            BoolArgument("enable"),
+        ]),
         Command(0x8e, "output_audio", arguments=[
             FArrayArgument("samples", length=744),
         ]),

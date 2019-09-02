@@ -1594,6 +1594,58 @@ class SetRobotVolume(Packet):
             level=level)
 
     
+class EnableColorImages(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x66
+
+    __slots__ = (
+        "_enable",
+    )
+
+    def __init__(self,
+                 enable=False):
+        self.enable = enable
+
+    @property
+    def enable(self):
+        return self._enable
+
+    @enable.setter
+    def enable(self, value):
+        self._enable = validate_bool("enable", value)
+
+    def __len__(self):
+        return \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "enable={enable})".format(
+                type=type(self).__name__,
+                enable=self._enable)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(int(self._enable), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        enable = bool(reader.read("b"))
+        return cls(
+            enable=enable)
+
+    
 class OutputAudio(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -3633,6 +3685,7 @@ ACTION_BY_ID = {
     0x57: SetCameraParams,  # 87
     0x60: EnableStopOnCliff,  # 96
     0x64: SetRobotVolume,  # 100
+    0x66: EnableColorImages,  # 102
     0x8e: OutputAudio,  # 142
     0x8f: NextFrame,  # 143
     0x97: DisplayImage,  # 151
