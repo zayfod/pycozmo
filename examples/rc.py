@@ -168,8 +168,8 @@ class RCApp(object):
             self.cli.send(pycozmo.protocol_encoder.DriveHead(speed))
 
     def _drive_wheels(self, speed_left, speed_right):
-        lw = int(speed_left * pycozmo.MAX_WHEEL_SPEED_MMPS)
-        rw = int(speed_right * pycozmo.MAX_WHEEL_SPEED_MMPS)
+        lw = int(speed_left * pycozmo.MAX_WHEEL_SPEED.mmps)
+        rw = int(speed_right * pycozmo.MAX_WHEEL_SPEED.mmps)
         self.cli.send(pycozmo.protocol_encoder.DriveWheels(lwheel_speed_mmps=lw, rwheel_speed_mmps=rw))
 
     @staticmethod

@@ -2939,11 +2939,11 @@ class RobotState(Packet):
 
     __slots__ = (
         "_timestamp",
-        "_unknown1",
-        "_unknown2",
-        "_x",
-        "_y",
-        "_z",
+        "_pose_frame_id",
+        "_pose_origin_id",
+        "_pose_x",
+        "_pose_y",
+        "_pose_z",
         "_pose_angle_rad",
         "_pose_pitch_rad",
         "_lwheel_speed_mmps",
@@ -2957,21 +2957,19 @@ class RobotState(Packet):
         "_gyro_y",
         "_gyro_z",
         "_battery_voltage",
-        "_unknown19",
-        "_unknown20",
-        "_unknown21",
-        "_unknown22",
-        "_unknown23",
-        "_unknown24",
+        "_status",
+        "_cliff_data_raw",
+        "_backpack_touch_sensor_raw",
+        "_curr_path_segment",
     )
 
     def __init__(self,
                  timestamp=0,
-                 unknown1=0.0,
-                 unknown2=0.0,
-                 x=0.0,
-                 y=0.0,
-                 z=0.0,
+                 pose_frame_id=0,
+                 pose_origin_id=0,
+                 pose_x=0.0,
+                 pose_y=0.0,
+                 pose_z=0.0,
                  pose_angle_rad=0.0,
                  pose_pitch_rad=0.0,
                  lwheel_speed_mmps=0.0,
@@ -2985,18 +2983,16 @@ class RobotState(Packet):
                  gyro_y=0.0,
                  gyro_z=0.0,
                  battery_voltage=0.0,
-                 unknown19=0.0,
-                 unknown20=0.0,
-                 unknown21=0.0,
-                 unknown22=0,
-                 unknown23=0,
-                 unknown24=0):
+                 status=0,
+                 cliff_data_raw=(),
+                 backpack_touch_sensor_raw=0,
+                 curr_path_segment=0):
         self.timestamp = timestamp
-        self.unknown1 = unknown1
-        self.unknown2 = unknown2
-        self.x = x
-        self.y = y
-        self.z = z
+        self.pose_frame_id = pose_frame_id
+        self.pose_origin_id = pose_origin_id
+        self.pose_x = pose_x
+        self.pose_y = pose_y
+        self.pose_z = pose_z
         self.pose_angle_rad = pose_angle_rad
         self.pose_pitch_rad = pose_pitch_rad
         self.lwheel_speed_mmps = lwheel_speed_mmps
@@ -3010,12 +3006,10 @@ class RobotState(Packet):
         self.gyro_y = gyro_y
         self.gyro_z = gyro_z
         self.battery_voltage = battery_voltage
-        self.unknown19 = unknown19
-        self.unknown20 = unknown20
-        self.unknown21 = unknown21
-        self.unknown22 = unknown22
-        self.unknown23 = unknown23
-        self.unknown24 = unknown24
+        self.status = status
+        self.cliff_data_raw = cliff_data_raw
+        self.backpack_touch_sensor_raw = backpack_touch_sensor_raw
+        self.curr_path_segment = curr_path_segment
 
     @property
     def timestamp(self):
@@ -3026,44 +3020,44 @@ class RobotState(Packet):
         self._timestamp = validate_integer("timestamp", value, 0, 4294967295)
 
     @property
-    def unknown1(self):
-        return self._unknown1
+    def pose_frame_id(self):
+        return self._pose_frame_id
 
-    @unknown1.setter
-    def unknown1(self, value):
-        self._unknown1 = validate_float("unknown1", value)
-
-    @property
-    def unknown2(self):
-        return self._unknown2
-
-    @unknown2.setter
-    def unknown2(self, value):
-        self._unknown2 = validate_float("unknown2", value)
+    @pose_frame_id.setter
+    def pose_frame_id(self, value):
+        self._pose_frame_id = validate_integer("pose_frame_id", value, 0, 4294967295)
 
     @property
-    def x(self):
-        return self._x
+    def pose_origin_id(self):
+        return self._pose_origin_id
 
-    @x.setter
-    def x(self, value):
-        self._x = validate_float("x", value)
-
-    @property
-    def y(self):
-        return self._y
-
-    @y.setter
-    def y(self, value):
-        self._y = validate_float("y", value)
+    @pose_origin_id.setter
+    def pose_origin_id(self, value):
+        self._pose_origin_id = validate_integer("pose_origin_id", value, 0, 4294967295)
 
     @property
-    def z(self):
-        return self._z
+    def pose_x(self):
+        return self._pose_x
 
-    @z.setter
-    def z(self, value):
-        self._z = validate_float("z", value)
+    @pose_x.setter
+    def pose_x(self, value):
+        self._pose_x = validate_float("pose_x", value)
+
+    @property
+    def pose_y(self):
+        return self._pose_y
+
+    @pose_y.setter
+    def pose_y(self, value):
+        self._pose_y = validate_float("pose_y", value)
+
+    @property
+    def pose_z(self):
+        return self._pose_z
+
+    @pose_z.setter
+    def pose_z(self, value):
+        self._pose_z = validate_float("pose_z", value)
 
     @property
     def pose_angle_rad(self):
@@ -3170,55 +3164,42 @@ class RobotState(Packet):
         self._battery_voltage = validate_float("battery_voltage", value)
 
     @property
-    def unknown19(self):
-        return self._unknown19
+    def status(self):
+        return self._status
 
-    @unknown19.setter
-    def unknown19(self, value):
-        self._unknown19 = validate_float("unknown19", value)
-
-    @property
-    def unknown20(self):
-        return self._unknown20
-
-    @unknown20.setter
-    def unknown20(self, value):
-        self._unknown20 = validate_float("unknown20", value)
+    @status.setter
+    def status(self, value):
+        self._status = validate_integer("status", value, 0, 4294967295)
 
     @property
-    def unknown21(self):
-        return self._unknown21
+    def cliff_data_raw(self):
+        return self._cliff_data_raw
 
-    @unknown21.setter
-    def unknown21(self, value):
-        self._unknown21 = validate_float("unknown21", value)
-
-    @property
-    def unknown22(self):
-        return self._unknown22
-
-    @unknown22.setter
-    def unknown22(self, value):
-        self._unknown22 = validate_integer("unknown22", value, 0, 255)
+    @cliff_data_raw.setter
+    def cliff_data_raw(self, value):
+        self._cliff_data_raw = validate_farray(
+            "cliff_data_raw", value, 4, lambda name, value_inner: validate_integer(name, value_inner, 0, 65535))
 
     @property
-    def unknown23(self):
-        return self._unknown23
+    def backpack_touch_sensor_raw(self):
+        return self._backpack_touch_sensor_raw
 
-    @unknown23.setter
-    def unknown23(self, value):
-        self._unknown23 = validate_integer("unknown23", value, 0, 255)
+    @backpack_touch_sensor_raw.setter
+    def backpack_touch_sensor_raw(self, value):
+        self._backpack_touch_sensor_raw = validate_integer("backpack_touch_sensor_raw", value, 0, 65535)
 
     @property
-    def unknown24(self):
-        return self._unknown24
+    def curr_path_segment(self):
+        return self._curr_path_segment
 
-    @unknown24.setter
-    def unknown24(self, value):
-        self._unknown24 = validate_integer("unknown24", value, 0, 255)
+    @curr_path_segment.setter
+    def curr_path_segment(self, value):
+        self._curr_path_segment = validate_integer("curr_path_segment", value, 0, 255)
 
     def __len__(self):
         return \
+            get_size('L') + \
+            get_size('L') + \
             get_size('L') + \
             get_size('f') + \
             get_size('f') + \
@@ -3236,23 +3217,19 @@ class RobotState(Packet):
             get_size('f') + \
             get_size('f') + \
             get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('B') + \
-            get_size('B') + \
+            get_size('L') + \
+            get_farray_size('H', 4) + \
+            get_size('H') + \
             get_size('B')
 
     def __repr__(self):
         return "{type}(" \
                "timestamp={timestamp}, " \
-               "unknown1={unknown1}, " \
-               "unknown2={unknown2}, " \
-               "x={x}, " \
-               "y={y}, " \
-               "z={z}, " \
+               "pose_frame_id={pose_frame_id}, " \
+               "pose_origin_id={pose_origin_id}, " \
+               "pose_x={pose_x}, " \
+               "pose_y={pose_y}, " \
+               "pose_z={pose_z}, " \
                "pose_angle_rad={pose_angle_rad}, " \
                "pose_pitch_rad={pose_pitch_rad}, " \
                "lwheel_speed_mmps={lwheel_speed_mmps}, " \
@@ -3266,19 +3243,17 @@ class RobotState(Packet):
                "gyro_y={gyro_y}, " \
                "gyro_z={gyro_z}, " \
                "battery_voltage={battery_voltage}, " \
-               "unknown19={unknown19}, " \
-               "unknown20={unknown20}, " \
-               "unknown21={unknown21}, " \
-               "unknown22={unknown22}, " \
-               "unknown23={unknown23}, " \
-               "unknown24={unknown24})".format(
+               "status={status}, " \
+               "cliff_data_raw={cliff_data_raw}, " \
+               "backpack_touch_sensor_raw={backpack_touch_sensor_raw}, " \
+               "curr_path_segment={curr_path_segment})".format(
                 type=type(self).__name__,
                 timestamp=self._timestamp,
-                unknown1=self._unknown1,
-                unknown2=self._unknown2,
-                x=self._x,
-                y=self._y,
-                z=self._z,
+                pose_frame_id=self._pose_frame_id,
+                pose_origin_id=self._pose_origin_id,
+                pose_x=self._pose_x,
+                pose_y=self._pose_y,
+                pose_z=self._pose_z,
                 pose_angle_rad=self._pose_angle_rad,
                 pose_pitch_rad=self._pose_pitch_rad,
                 lwheel_speed_mmps=self._lwheel_speed_mmps,
@@ -3292,12 +3267,10 @@ class RobotState(Packet):
                 gyro_y=self._gyro_y,
                 gyro_z=self._gyro_z,
                 battery_voltage=self._battery_voltage,
-                unknown19=self._unknown19,
-                unknown20=self._unknown20,
-                unknown21=self._unknown21,
-                unknown22=self._unknown22,
-                unknown23=self._unknown23,
-                unknown24=self._unknown24)
+                status=self._status,
+                cliff_data_raw=self._cliff_data_raw,
+                backpack_touch_sensor_raw=self._backpack_touch_sensor_raw,
+                curr_path_segment=self._curr_path_segment)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -3306,11 +3279,11 @@ class RobotState(Packet):
         
     def to_writer(self, writer):
         writer.write(self._timestamp, "L")
-        writer.write(self._unknown1, "f")
-        writer.write(self._unknown2, "f")
-        writer.write(self._x, "f")
-        writer.write(self._y, "f")
-        writer.write(self._z, "f")
+        writer.write(self._pose_frame_id, "L")
+        writer.write(self._pose_origin_id, "L")
+        writer.write(self._pose_x, "f")
+        writer.write(self._pose_y, "f")
+        writer.write(self._pose_z, "f")
         writer.write(self._pose_angle_rad, "f")
         writer.write(self._pose_pitch_rad, "f")
         writer.write(self._lwheel_speed_mmps, "f")
@@ -3324,12 +3297,10 @@ class RobotState(Packet):
         writer.write(self._gyro_y, "f")
         writer.write(self._gyro_z, "f")
         writer.write(self._battery_voltage, "f")
-        writer.write(self._unknown19, "f")
-        writer.write(self._unknown20, "f")
-        writer.write(self._unknown21, "f")
-        writer.write(self._unknown22, "B")
-        writer.write(self._unknown23, "B")
-        writer.write(self._unknown24, "B")
+        writer.write(self._status, "L")
+        writer.write_farray(self._cliff_data_raw, "H", 4)
+        writer.write(self._backpack_touch_sensor_raw, "H")
+        writer.write(self._curr_path_segment, "B")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -3340,11 +3311,11 @@ class RobotState(Packet):
     @classmethod
     def from_reader(cls, reader):
         timestamp = reader.read("L")
-        unknown1 = reader.read("f")
-        unknown2 = reader.read("f")
-        x = reader.read("f")
-        y = reader.read("f")
-        z = reader.read("f")
+        pose_frame_id = reader.read("L")
+        pose_origin_id = reader.read("L")
+        pose_x = reader.read("f")
+        pose_y = reader.read("f")
+        pose_z = reader.read("f")
         pose_angle_rad = reader.read("f")
         pose_pitch_rad = reader.read("f")
         lwheel_speed_mmps = reader.read("f")
@@ -3358,19 +3329,17 @@ class RobotState(Packet):
         gyro_y = reader.read("f")
         gyro_z = reader.read("f")
         battery_voltage = reader.read("f")
-        unknown19 = reader.read("f")
-        unknown20 = reader.read("f")
-        unknown21 = reader.read("f")
-        unknown22 = reader.read("B")
-        unknown23 = reader.read("B")
-        unknown24 = reader.read("B")
+        status = reader.read("L")
+        cliff_data_raw = reader.read_farray("H", 4)
+        backpack_touch_sensor_raw = reader.read("H")
+        curr_path_segment = reader.read("B")
         return cls(
             timestamp=timestamp,
-            unknown1=unknown1,
-            unknown2=unknown2,
-            x=x,
-            y=y,
-            z=z,
+            pose_frame_id=pose_frame_id,
+            pose_origin_id=pose_origin_id,
+            pose_x=pose_x,
+            pose_y=pose_y,
+            pose_z=pose_z,
             pose_angle_rad=pose_angle_rad,
             pose_pitch_rad=pose_pitch_rad,
             lwheel_speed_mmps=lwheel_speed_mmps,
@@ -3384,12 +3353,10 @@ class RobotState(Packet):
             gyro_y=gyro_y,
             gyro_z=gyro_z,
             battery_voltage=battery_voltage,
-            unknown19=unknown19,
-            unknown20=unknown20,
-            unknown21=unknown21,
-            unknown22=unknown22,
-            unknown23=unknown23,
-            unknown24=unknown24)
+            status=status,
+            cliff_data_raw=cliff_data_raw,
+            backpack_touch_sensor_raw=backpack_touch_sensor_raw,
+            curr_path_segment=curr_path_segment)
 
     
 class ImageChunk(Packet):

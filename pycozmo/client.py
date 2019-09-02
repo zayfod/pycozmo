@@ -21,6 +21,8 @@ from . import protocol_encoder
 from . import event
 from . import camera
 from . import object
+from . import util
+from . import robot
 
 
 ROBOT_ADDR = ("172.31.1.1", 5551)
@@ -198,6 +200,10 @@ class EvtNewRawCameraImage(event.Event):
     """ Triggered when a new raw image is received from the robot's camera. """
 
 
+class EvtRobotStateUpdated(event.Event):
+    """ Triggered when a new robot state is received. """
+
+
 class Client(Thread, event.Dispatcher):
 
     IDLE = 1
@@ -211,6 +217,18 @@ class Client(Thread, event.Dispatcher):
         self.robot_addr = robot_addr or ROBOT_ADDR
         self.serial_number_head = None
         self.robot_fw_sig = None
+        # Heading in X-Y plane.
+        self.pose_angle = util.Angle(radians=0.0)
+        self.pose_pitch = util.Angle(radians=0.0)
+        self.head_angle = util.Angle(radians=robot.MIN_HEAD_ANGLE.radians)
+        self.left_wheel_speed = util.Speed(mmps=0.0)
+        self.right_wheel_speed = util.Speed(mmps=0.0)
+        self.lift_position = robot.LiftPosition(height=robot.MIN_LIFT_HEIGHT)
+        self.battery_voltage = 0.0
+        self.accel = util.Vector3(0.0, 0.0, 0.0)
+        self.gyro = util.Vector3(0.0, 0.0, 0.0)
+        self.robot_status = 0
+        self.last_image_timestamp = None
         self.available_objects = dict()
         self.state = self.IDLE
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -228,6 +246,7 @@ class Client(Thread, event.Dispatcher):
         self.add_handler(protocol_encoder.FirmwareSignature, self._on_firmware_signature)
         self.add_handler(protocol_encoder.Ping, self._on_ping)
         self.add_handler(protocol_encoder.ImageChunk, self._on_image_chunk)
+        self.add_handler(protocol_encoder.RobotState, self._on_robot_state)
         self.add_handler(protocol_encoder.ObjectAvailable, self._on_object_available)
         self.recv_thread.start()
         self.send_thread.start()
@@ -291,7 +310,7 @@ class Client(Thread, event.Dispatcher):
         pkt = protocol_encoder.Ping(0, 1, 0)
         self.send(pkt)
 
-    def _on_connect(self, cli, pkt):
+    def _on_connect(self, cli, pkt: protocol_encoder.Connect):
         del cli, pkt
         self.state = Client.CONNECTED
         logger.debug("Connected.")
@@ -324,15 +343,17 @@ class Client(Thread, event.Dispatcher):
         self.serial_number_head = pkt.serial_number_head
         logger.info("Head S/N %s.", self.serial_number_head)
 
-    def _on_firmware_signature(self, cli, pkt):
+    def _on_firmware_signature(self, cli, pkt: protocol_encoder.FirmwareSignature):
         del cli
         self.robot_fw_sig = json.loads(pkt.signature)
         logger.info("Firmware version %s.", self.robot_fw_sig["version"])
         self._initialize_robot()
         self.dispatch(EvtRobotFound, self)
 
-    def _on_ping(self, cli, pkt):
+    @staticmethod
+    def _on_ping(cli, pkt: protocol_encoder.Ping):
         del cli, pkt
+        # TODO: Calculate round-trip time
 
     def wait_for_robot(self, timeout: float = 5.0) -> None:
         e = Event()
@@ -341,6 +362,7 @@ class Client(Thread, event.Dispatcher):
             raise TimeoutError("Failed to connect and initialize Cozmo.")
 
     def _reset_partial_state(self):
+        self._partial_image_timestamp = None
         self._partial_data = None
         self._partial_image_id = None
         self._partial_invalid = False
@@ -364,6 +386,7 @@ class Client(Thread, event.Dispatcher):
                 return
             # Discard any previous in-progress image
             self._reset_partial_state()
+            self._partial_image_timestamp = pkt.frame_timestamp
             self._partial_image_id = pkt.image_id
             self._partial_image_encoding = camera.ImageEncoding(pkt.image_encoding)
             self._partial_image_resolution = camera.ImageResolution(pkt.image_resolution)
@@ -413,7 +436,22 @@ class Client(Thread, event.Dispatcher):
             image = image.resize(size)
 
         self._latest_image = image
+        self.last_image_timestamp = self._partial_image_timestamp
         self.dispatch(EvtNewRawCameraImage, self, image)
+
+    def _on_robot_state(self, cli, pkt: protocol_encoder.RobotState):
+        del cli
+        self.pose_angle = util.Angle(radians=pkt.pose_angle_rad)   # heading in X-Y plane
+        self.pose_pitch = util.Angle(radians=pkt.pose_pitch_rad)
+        self.head_angle = util.Angle(radians=pkt.head_angle_rad)
+        self.left_wheel_speed = util.Speed(mmps=pkt.lwheel_speed_mmps)
+        self.right_wheel_speed = util.Speed(mmps=pkt.rwheel_speed_mmps)
+        self.lift_position = robot.LiftPosition(height=util.Distance(mm=pkt.lift_height_mm))
+        self.battery_voltage = pkt.battery_voltage
+        self.accel = util.Vector3(pkt.accel_x, pkt.accel_y, pkt.accel_z)
+        self.gyro = util.Vector3(pkt.gyro_x, pkt.gyro_y, pkt.gyro_z)
+        self.robot_status = pkt.status
+        self.dispatch(EvtRobotStateUpdated)
 
     def _on_object_available(self, cli, pkt: protocol_encoder.ObjectAvailable):
         del cli

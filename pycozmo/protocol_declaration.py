@@ -93,7 +93,7 @@ PROTOCOL = Protocol(
 
         Command(0x4c, "enable_camera", arguments=[
             BoolArgument("enable"),
-            UInt8Argument("unknown", default=4)
+            UInt8Argument("unknown", default=4)     # resolution but ignored?
         ]),
 
         Command(0x57, "set_camera_params", arguments=[
@@ -188,36 +188,34 @@ PROTOCOL = Protocol(
         ]),
 
         Command(0xee, "firmware_signature", arguments=[
-            UInt16Argument("unknown"),
+            UInt16Argument("unknown"),          # Last 2 bytes of head s/n?
             StringArgument("signature"),
         ]),
 
         Event(0xf0, "robot_state", arguments=[
             UInt32Argument("timestamp"),
-            FloatArgument("unknown1"),
-            FloatArgument("unknown2"),
-            FloatArgument("x"),
-            FloatArgument("y"),
-            FloatArgument("z"),
+            UInt32Argument("pose_frame_id"),
+            UInt32Argument("pose_origin_id"),
+            FloatArgument("pose_x"),            # TODO: Change to RobotPose struct.
+            FloatArgument("pose_y"),
+            FloatArgument("pose_z"),
             FloatArgument("pose_angle_rad"),
             FloatArgument("pose_pitch_rad"),
             FloatArgument("lwheel_speed_mmps"),
             FloatArgument("rwheel_speed_mmps"),
             FloatArgument("head_angle_rad"),
             FloatArgument("lift_height_mm"),
-            FloatArgument("accel_x"),
+            FloatArgument("accel_x"),           # TODO: Change to AccelData struct
             FloatArgument("accel_y"),
             FloatArgument("accel_z"),
-            FloatArgument("gyro_x"),
+            FloatArgument("gyro_x"),            # TODO: Change to GyroData struct
             FloatArgument("gyro_y"),
             FloatArgument("gyro_z"),
             FloatArgument("battery_voltage"),
-            FloatArgument("unknown19"),
-            FloatArgument("unknown20"),
-            FloatArgument("unknown21"),
-            UInt8Argument("unknown22"),
-            UInt8Argument("unknown23"),
-            UInt8Argument("unknown24"),
+            UInt32Argument("status"),
+            FArrayArgument("cliff_data_raw", data_type=UInt16Argument, length=4),
+            UInt16Argument("backpack_touch_sensor_raw"),
+            UInt8Argument("curr_path_segment"),
         ]),
 
         Event(0xf2, "image_chunk", arguments=[
