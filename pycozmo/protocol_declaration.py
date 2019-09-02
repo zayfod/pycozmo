@@ -152,6 +152,12 @@ PROTOCOL = Protocol(
         Command(0xc2, "robot_delocalized"),
         Command(0xc3, "robot_poked"),
 
+        Command(0xc9, "hardware_info", arguments=[
+            UInt32Argument("serial_number_head"),
+            UInt8Argument("unknown1"),          # body_hw_version?
+            UInt8Argument("unknown2"),          # body_color?
+        ]),
+
         Command(0xce, "object_power_level", arguments=[
             UInt32Argument("object_id"),
             UInt32Argument("missed_packets"),

@@ -208,6 +208,7 @@ class Client(Thread, event.Dispatcher):
         # Thread is an old-style class and does not propagate initialization.
         event.Dispatcher.__init__(self)
         self.robot_addr = robot_addr or ROBOT_ADDR
+        self.serial_number_head = None
         self.robot_fw_sig = None
         self.state = self.IDLE
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -221,6 +222,7 @@ class Client(Thread, event.Dispatcher):
     def start(self) -> None:
         logger.debug("Starting...")
         self.add_handler(protocol_encoder.Connect, self._on_connect)
+        self.add_handler(protocol_encoder.HardwareInfo, self._on_hardware_info)
         self.add_handler(protocol_encoder.FirmwareSignature, self._on_firmware_signature)
         self.add_handler(protocol_encoder.Ping, self._on_ping)
         self.add_handler(protocol_encoder.ImageChunk, self._on_image_chunk)
@@ -253,7 +255,7 @@ class Client(Thread, event.Dispatcher):
                 if now - self.send_last > timedelta(seconds=PING_INTERVAL):
                     self._send_ping()
 
-            if pkt is not None and pkt.PACKET_ID not in (PacketType.PING, PacketType.EVENT):
+            if pkt is not None and pkt.PACKET_ID not in (PacketType.PING, ):
                 logger_protocol.debug("Got  %s", pkt)
 
             self.dispatch(pkt.__class__, self, pkt)
@@ -314,10 +316,15 @@ class Client(Thread, event.Dispatcher):
 
         self.dispatch(EvtRobotReady, self)
 
+    def _on_hardware_info(self, cli, pkt: protocol_encoder.HardwareInfo):
+        del cli
+        self.serial_number_head = pkt.serial_number_head
+        logger.info("Head S/N %s.", self.serial_number_head)
+
     def _on_firmware_signature(self, cli, pkt):
         del cli
         self.robot_fw_sig = json.loads(pkt.signature)
-        logger.info("Cozmo version %s.", self.robot_fw_sig["version"])
+        logger.info("Firmware version %s.", self.robot_fw_sig["version"])
         self._initialize_robot()
         self.dispatch(EvtRobotFound, self)
 

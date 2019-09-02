@@ -2312,6 +2312,92 @@ class RobotPoked(Packet):
             )
 
     
+class HardwareInfo(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xc9
+
+    __slots__ = (
+        "_serial_number_head",
+        "_unknown1",
+        "_unknown2",
+    )
+
+    def __init__(self,
+                 serial_number_head=0,
+                 unknown1=0,
+                 unknown2=0):
+        self.serial_number_head = serial_number_head
+        self.unknown1 = unknown1
+        self.unknown2 = unknown2
+
+    @property
+    def serial_number_head(self):
+        return self._serial_number_head
+
+    @serial_number_head.setter
+    def serial_number_head(self, value):
+        self._serial_number_head = validate_integer("serial_number_head", value, 0, 4294967295)
+
+    @property
+    def unknown1(self):
+        return self._unknown1
+
+    @unknown1.setter
+    def unknown1(self, value):
+        self._unknown1 = validate_integer("unknown1", value, 0, 255)
+
+    @property
+    def unknown2(self):
+        return self._unknown2
+
+    @unknown2.setter
+    def unknown2(self, value):
+        self._unknown2 = validate_integer("unknown2", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('B') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "serial_number_head={serial_number_head}, " \
+               "unknown1={unknown1}, " \
+               "unknown2={unknown2})".format(
+                type=type(self).__name__,
+                serial_number_head=self._serial_number_head,
+                unknown1=self._unknown1,
+                unknown2=self._unknown2)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._serial_number_head, "L")
+        writer.write(self._unknown1, "B")
+        writer.write(self._unknown2, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        serial_number_head = reader.read("L")
+        unknown1 = reader.read("B")
+        unknown2 = reader.read("B")
+        return cls(
+            serial_number_head=serial_number_head,
+            unknown1=unknown1,
+            unknown2=unknown2)
+
+    
 class ObjectPowerLevel(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -3471,6 +3557,7 @@ ACTION_BY_ID = {
     0xc2: RobotDelocalized,  # 194
     0xc3: RobotPoked,  # 195
     0xc4: AcknowledgeCommand,  # 196
+    0xc9: HardwareInfo,  # 201
     0xce: ObjectPowerLevel,  # 206
     0xd0: ObjectConnectionState,  # 208
     0xd7: ObjectUpAxisChanged,  # 215
