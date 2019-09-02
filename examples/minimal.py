@@ -10,4 +10,4 @@ def pycozmo_program(cli):
         time.sleep(0.1)
 
 
-pycozmo.run_program(pycozmo_program)
+pycozmo.run_program(pycozmo_program, log_level="DEBUG")

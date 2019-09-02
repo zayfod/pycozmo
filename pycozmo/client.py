@@ -200,6 +200,95 @@ class EvtNewRawCameraImage(event.Event):
     """ Triggered when a new raw image is received from the robot's camera. """
 
 
+class EvtRobotMovingChange(event.Event):
+    pass
+
+
+class EvtRobotCarryingBlockChange(event.Event):
+    pass
+
+
+class EvtRobotPickingOrPlacingChange(event.Event):
+    pass
+
+
+class EvtRobotPickedUpChange(event.Event):
+    pass
+
+
+class EvtRobotBodyAccModeChange(event.Event):
+    pass
+
+
+class EvtRobotFallingChange(event.Event):
+    pass
+
+
+class EvtRobotAnimatingChange(event.Event):
+    pass
+
+
+class EvtRobotPathingChange(event.Event):
+    pass
+
+
+class EvtRobotLiftInPositionChange(event.Event):
+    pass
+
+
+class EvtRobotHeadInPositionChange(event.Event):
+    pass
+
+
+class EvtRobotAnimBufferFullChange(event.Event):
+    pass
+
+
+class EvtRobotAnimatingIdleChange(event.Event):
+    pass
+
+
+class EvtRobotOnChargerChange(event.Event):
+    pass
+
+
+class EvtRobotChargingChange(event.Event):
+    pass
+
+
+class EvtCliffDetectedChange(event.Event):
+    pass
+
+
+class EvtRobotWheelsMovingChange(event.Event):
+    pass
+
+
+class EvtChargerOOSChange(event.Event):
+    pass
+
+
+STATUS_EVTS = {
+    robot.RobotStatusFlag.IS_MOVING: EvtRobotMovingChange,
+    robot.RobotStatusFlag.IS_CARRYING_BLOCK: EvtRobotCarryingBlockChange,
+    robot.RobotStatusFlag.IS_PICKING_OR_PLACING: EvtRobotPickingOrPlacingChange,
+    robot.RobotStatusFlag.IS_PICKED_UP: EvtRobotPickedUpChange,
+    robot.RobotStatusFlag.IS_BODY_ACC_MODE: EvtRobotBodyAccModeChange,
+    robot.RobotStatusFlag.IS_FALLING: EvtRobotFallingChange,
+    robot.RobotStatusFlag.IS_ANIMATING: EvtRobotAnimatingChange,
+    robot.RobotStatusFlag.IS_PATHING: EvtRobotPathingChange,
+    robot.RobotStatusFlag.LIFT_IN_POS: EvtRobotLiftInPositionChange,
+    robot.RobotStatusFlag.HEAD_IN_POS: EvtRobotHeadInPositionChange,
+    robot.RobotStatusFlag.IS_ANIM_BUFFER_FULL: EvtRobotAnimBufferFullChange,
+    robot.RobotStatusFlag.IS_ANIMATING_IDLE: EvtRobotAnimatingChange,
+    robot.RobotStatusFlag.IS_ON_CHARGER: EvtRobotOnChargerChange,
+    robot.RobotStatusFlag.IS_CHARGING: EvtRobotChargingChange,
+    robot.RobotStatusFlag.CLIFF_DETECTED: EvtCliffDetectedChange,
+    robot.RobotStatusFlag.ARE_WHEELS_MOVING: EvtRobotWheelsMovingChange,
+    robot.RobotStatusFlag.IS_CHARGER_OOS: EvtChargerOOSChange,
+}
+
+
 class EvtRobotStateUpdated(event.Event):
     """ Triggered when a new robot state is received. """
 
@@ -450,8 +539,15 @@ class Client(Thread, event.Dispatcher):
         self.battery_voltage = pkt.battery_voltage
         self.accel = util.Vector3(pkt.accel_x, pkt.accel_y, pkt.accel_z)
         self.gyro = util.Vector3(pkt.gyro_x, pkt.gyro_y, pkt.gyro_z)
+        old_status = self.robot_status
         self.robot_status = pkt.status
-        self.dispatch(EvtRobotStateUpdated)
+        self.dispatch(EvtRobotStateUpdated, self)
+        # Dispatch status flag change events.
+        for flag, evt in STATUS_EVTS.items():
+            if (old_status & flag) != (pkt.status & flag):
+                state = (pkt.status & flag) != 0
+                logger.debug("%s: %i", robot.RobotStatusFlagNames[flag], state)
+                self.dispatch(evt, self, state)
 
     def _on_object_available(self, cli, pkt: protocol_encoder.ObjectAvailable):
         del cli

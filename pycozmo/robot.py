@@ -36,6 +36,27 @@ class RobotStatusFlag(object):
     IS_CHARGER_OOS = 0x10000
 
 
+RobotStatusFlagNames = {
+    RobotStatusFlag.IS_MOVING: "IS_MOVING",
+    RobotStatusFlag.IS_CARRYING_BLOCK: "IS_CARRYING_BLOCK",
+    RobotStatusFlag.IS_PICKING_OR_PLACING: "IS_PICKING_OR_PLACING",
+    RobotStatusFlag.IS_PICKED_UP: "IS_PICKED_UP",
+    RobotStatusFlag.IS_BODY_ACC_MODE: "IS_BODY_ACC_MODE",
+    RobotStatusFlag.IS_FALLING: "IS_FALLING",
+    RobotStatusFlag.IS_ANIMATING: "IS_ANIMATING",
+    RobotStatusFlag.IS_PATHING: "IS_PATHING",
+    RobotStatusFlag.LIFT_IN_POS: "LIFT_IN_POS",
+    RobotStatusFlag.HEAD_IN_POS: "HEAD_IN_POS",
+    RobotStatusFlag.IS_ANIM_BUFFER_FULL: "IS_ANIM_BUFFER_FULL",
+    RobotStatusFlag.IS_ANIMATING_IDLE: "IS_ANIMATING_IDLE",
+    RobotStatusFlag.IS_ON_CHARGER: "IS_ON_CHARGER",
+    RobotStatusFlag.IS_CHARGING: "IS_CHARGING",
+    RobotStatusFlag.CLIFF_DETECTED: "CLIFF_DETECTED",
+    RobotStatusFlag.ARE_WHEELS_MOVING: "ARE_WHEELS_MOVING",
+    RobotStatusFlag.IS_CHARGER_OOS: "IS_CHARGER_OOS",
+}
+
+
 class LiftPosition(object):
     """
     Represents the position of Cozmo's lift.
