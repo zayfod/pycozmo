@@ -22,7 +22,7 @@ def setup_basic_logging(log_level: Optional[str] = None, protocol_log_level: Opt
         protocol_log_level = os.environ.get('PYCOZMO_PROTOCOL_LOG_LEVEL', logging.WARNING)
     handler = logging.StreamHandler(stream=target)
     formatter = logging.Formatter(
-        fmt="%(asctime)s.%(msecs)03d %(name)-15s %(levelname)-8s %(message)s",
+        fmt="%(asctime)s.%(msecs)03d %(name)-20s %(levelname)-8s %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S")
     handler.setFormatter(formatter)
     logger.addHandler(handler)

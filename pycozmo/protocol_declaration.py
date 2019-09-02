@@ -218,6 +218,15 @@ PROTOCOL = Protocol(
             UInt8Argument("curr_path_segment"),
         ]),
 
+        Event(0xf1, "animation_state", arguments=[
+            UInt32Argument("timestamp"),
+            UInt32Argument("num_anim_bytes_played"),
+            UInt32Argument("num_audio_frames_played"),
+            UInt8Argument("enabled_anim_tracks"),
+            UInt8Argument("tag"),
+            UInt8Argument("client_drop_count"),
+        ]),
+
         Event(0xf2, "image_chunk", arguments=[
             UInt32Argument("frame_timestamp"),
             UInt32Argument("image_id"),

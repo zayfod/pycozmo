@@ -3359,6 +3359,143 @@ class RobotState(Packet):
             curr_path_segment=curr_path_segment)
 
     
+class AnimationState(Packet):
+
+    PACKET_ID = PacketType.EVENT
+    ID = 0xf1
+
+    __slots__ = (
+        "_timestamp",
+        "_num_anim_bytes_played",
+        "_num_audio_frames_played",
+        "_enabled_anim_tracks",
+        "_tag",
+        "_client_drop_count",
+    )
+
+    def __init__(self,
+                 timestamp=0,
+                 num_anim_bytes_played=0,
+                 num_audio_frames_played=0,
+                 enabled_anim_tracks=0,
+                 tag=0,
+                 client_drop_count=0):
+        self.timestamp = timestamp
+        self.num_anim_bytes_played = num_anim_bytes_played
+        self.num_audio_frames_played = num_audio_frames_played
+        self.enabled_anim_tracks = enabled_anim_tracks
+        self.tag = tag
+        self.client_drop_count = client_drop_count
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = validate_integer("timestamp", value, 0, 4294967295)
+
+    @property
+    def num_anim_bytes_played(self):
+        return self._num_anim_bytes_played
+
+    @num_anim_bytes_played.setter
+    def num_anim_bytes_played(self, value):
+        self._num_anim_bytes_played = validate_integer("num_anim_bytes_played", value, 0, 4294967295)
+
+    @property
+    def num_audio_frames_played(self):
+        return self._num_audio_frames_played
+
+    @num_audio_frames_played.setter
+    def num_audio_frames_played(self, value):
+        self._num_audio_frames_played = validate_integer("num_audio_frames_played", value, 0, 4294967295)
+
+    @property
+    def enabled_anim_tracks(self):
+        return self._enabled_anim_tracks
+
+    @enabled_anim_tracks.setter
+    def enabled_anim_tracks(self, value):
+        self._enabled_anim_tracks = validate_integer("enabled_anim_tracks", value, 0, 255)
+
+    @property
+    def tag(self):
+        return self._tag
+
+    @tag.setter
+    def tag(self, value):
+        self._tag = validate_integer("tag", value, 0, 255)
+
+    @property
+    def client_drop_count(self):
+        return self._client_drop_count
+
+    @client_drop_count.setter
+    def client_drop_count(self, value):
+        self._client_drop_count = validate_integer("client_drop_count", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "timestamp={timestamp}, " \
+               "num_anim_bytes_played={num_anim_bytes_played}, " \
+               "num_audio_frames_played={num_audio_frames_played}, " \
+               "enabled_anim_tracks={enabled_anim_tracks}, " \
+               "tag={tag}, " \
+               "client_drop_count={client_drop_count})".format(
+                type=type(self).__name__,
+                timestamp=self._timestamp,
+                num_anim_bytes_played=self._num_anim_bytes_played,
+                num_audio_frames_played=self._num_audio_frames_played,
+                enabled_anim_tracks=self._enabled_anim_tracks,
+                tag=self._tag,
+                client_drop_count=self._client_drop_count)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._timestamp, "L")
+        writer.write(self._num_anim_bytes_played, "L")
+        writer.write(self._num_audio_frames_played, "L")
+        writer.write(self._enabled_anim_tracks, "B")
+        writer.write(self._tag, "B")
+        writer.write(self._client_drop_count, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        timestamp = reader.read("L")
+        num_anim_bytes_played = reader.read("L")
+        num_audio_frames_played = reader.read("L")
+        enabled_anim_tracks = reader.read("B")
+        tag = reader.read("B")
+        client_drop_count = reader.read("B")
+        return cls(
+            timestamp=timestamp,
+            num_anim_bytes_played=num_anim_bytes_played,
+            num_audio_frames_played=num_audio_frames_played,
+            enabled_anim_tracks=enabled_anim_tracks,
+            tag=tag,
+            client_drop_count=client_drop_count)
+
+    
 class ImageChunk(Packet):
 
     PACKET_ID = PacketType.EVENT
@@ -3675,6 +3812,7 @@ ACTION_BY_ID = {
 
 EVENT_BY_ID = {
     0xf0: RobotState,  # 240
+    0xf1: AnimationState,  # 241
     0xf2: ImageChunk,  # 242
     0xf3: ObjectAvailable,  # 243
 }

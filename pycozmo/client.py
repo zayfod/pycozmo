@@ -306,6 +306,7 @@ class Client(Thread, event.Dispatcher):
         self.robot_addr = robot_addr or ROBOT_ADDR
         self.serial_number_head = None
         self.robot_fw_sig = None
+        # Robot state
         # Heading in X-Y plane.
         self.pose_angle = util.Angle(radians=0.0)
         self.pose_pitch = util.Angle(radians=0.0)
@@ -317,6 +318,13 @@ class Client(Thread, event.Dispatcher):
         self.accel = util.Vector3(0.0, 0.0, 0.0)
         self.gyro = util.Vector3(0.0, 0.0, 0.0)
         self.robot_status = 0
+        # Animation state
+        self.num_anim_bytes_played = 0
+        self.num_audio_frames_played = 0
+        self.enabled_anim_tracks = 0
+        self.tag = 0
+        self.client_drop_count = 0
+        # Camera state
         self.last_image_timestamp = None
         self.available_objects = dict()
         self.state = self.IDLE
@@ -336,6 +344,7 @@ class Client(Thread, event.Dispatcher):
         self.add_handler(protocol_encoder.Ping, self._on_ping)
         self.add_handler(protocol_encoder.ImageChunk, self._on_image_chunk)
         self.add_handler(protocol_encoder.RobotState, self._on_robot_state)
+        self.add_handler(protocol_encoder.AnimationState, self._on_animation_state)
         self.add_handler(protocol_encoder.ObjectAvailable, self._on_object_available)
         self.recv_thread.start()
         self.send_thread.start()
@@ -411,7 +420,7 @@ class Client(Thread, event.Dispatcher):
         # Enables 0xf0 and 0xf3 events - engages motors? Requires 0x25.
         pkt = UnknownCommand(0x4b, b"\xc4\xb69\x00\x00\x00\xa0\xc1")
         self.send(pkt)
-        # Enables 0xf1 events - works independent of 0x25.
+        # Enables 0xf1 events. Requires 0x25.
         pkt = UnknownCommand(0x9f)
         self.send(pkt)
 
@@ -548,6 +557,14 @@ class Client(Thread, event.Dispatcher):
                 state = (pkt.status & flag) != 0
                 logger.debug("%s: %i", robot.RobotStatusFlagNames[flag], state)
                 self.dispatch(evt, self, state)
+
+    def _on_animation_state(self, cli, pkt: protocol_encoder.AnimationState):
+        del cli
+        self.num_anim_bytes_played = pkt.num_anim_bytes_played
+        self.num_audio_frames_played = pkt.num_audio_frames_played
+        self.enabled_anim_tracks = pkt.enabled_anim_tracks
+        self.tag = pkt.tag
+        self.client_drop_count = pkt.client_drop_count
 
     def _on_object_available(self, cli, pkt: protocol_encoder.ObjectAvailable):
         del cli
