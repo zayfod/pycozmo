@@ -79,9 +79,9 @@ Robot Support
 
 Sensors:
 - Camera - supported
-- Cliff sensor - not supported
-- Accelerometers - work in progress
-- Gyro - work in progress
+- Cliff sensor - supported
+- Accelerometers - supported
+- Gyro - supported
 - Battery voltage - supported
 - Cube battery voltage - supported
 - Cube accelerometers - supported
@@ -93,7 +93,7 @@ Actuators:
 - Backpack LEDs - supported
 - IR LED - supported
 - OLED display - work in progress
-- Speaker - supported
+- Speaker - work in progress
 - Cube LEDs - supported
 
 Communication:

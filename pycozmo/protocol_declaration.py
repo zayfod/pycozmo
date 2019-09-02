@@ -38,26 +38,21 @@ PROTOCOL = Protocol(
         Command(0x04, "cube_lights", arguments=[
             FArrayArgument("states", data_type="LightState", length=4)
         ]),
-
         Command(0x05, "object_connect", arguments=[
             UInt32Argument("factory_id"),
             BoolArgument("connect"),
         ]),
-
         Command(0x0b, "set_head_light", arguments=[
             BoolArgument("enable")
         ]),
-
         Command(0x10, "cube_id", arguments=[
             UInt32Argument("object_id"),
             UInt8Argument("rotation_period_frames"),
         ]),
-
         Command(0x11, "light_state_side", arguments=[
             FArrayArgument("states", data_type="LightState", length=2),     # left, right
             UInt8Argument("unknown"),
         ]),
-
         Command(0x32, "drive_wheels", arguments=[
             FloatArgument("lwheel_speed_mmps"),
             FloatArgument("rwheel_speed_mmps"),
@@ -90,22 +85,18 @@ PROTOCOL = Protocol(
             UInt8Argument("action_id"),
         ]),
         Command(0x3b, "stop_all_motors"),
-
         Command(0x4c, "enable_camera", arguments=[
             BoolArgument("enable"),
             UInt8Argument("unknown", default=4)     # resolution but ignored?
         ]),
-
         Command(0x57, "set_camera_params", arguments=[
             FloatArgument("gain"),
             UInt16Argument("exposure_ms"),
             BoolArgument("auto_exposure_enabled"),
         ]),
-
         Command(0x60, "enable_stop_on_cliff", arguments=[
             BoolArgument("enable"),
         ]),
-
         Command(0x64, "set_robot_volume", arguments=[
             UInt16Argument("level"),
         ]),
@@ -115,12 +106,10 @@ PROTOCOL = Protocol(
         Command(0x8e, "output_audio", arguments=[
             FArrayArgument("samples", length=744),
         ]),
-
         Command(0x8f, "next_frame"),
         Command(0x97, "display_image", arguments=[
             VArrayArgument("image"),
         ]),
-
         Command(0xb4, "object_moved", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("object_id"),
@@ -147,20 +136,16 @@ PROTOCOL = Protocol(
             UInt8Argument("time"),
             UInt8Argument("intensity"),
         ]),
-
         Command(0xc4, "acknowledge_command", arguments=[
             UInt8Argument("action_id"),
         ]),
-
         Command(0xc2, "robot_delocalized"),
         Command(0xc3, "robot_poked"),
-
         Command(0xc9, "hardware_info", arguments=[
             UInt32Argument("serial_number_head"),
             UInt8Argument("unknown1"),          # body_hw_version?
             UInt8Argument("unknown2"),          # body_color?
         ]),
-
         Command(0xce, "object_power_level", arguments=[
             UInt32Argument("object_id"),
             UInt32Argument("missed_packets"),
@@ -177,7 +162,6 @@ PROTOCOL = Protocol(
             UInt32Argument("object_id"),
             UInt8Argument("axis"),              # TODO: Change to enum?
         ]),
-
         Command(0xdd, "falling_started", arguments=[
             UInt32Argument("unknown"),
         ]),
@@ -186,7 +170,6 @@ PROTOCOL = Protocol(
             UInt32Argument("duration_ms"),
             FloatArgument("impact_intensity"),
         ]),
-
         Command(0xee, "firmware_signature", arguments=[
             UInt16Argument("unknown"),          # Last 2 bytes of head s/n?
             StringArgument("signature"),
@@ -196,7 +179,7 @@ PROTOCOL = Protocol(
             UInt32Argument("timestamp"),
             UInt32Argument("pose_frame_id"),
             UInt32Argument("pose_origin_id"),
-            FloatArgument("pose_x"),            # TODO: Change to RobotPose struct.
+            FloatArgument("pose_x"),
             FloatArgument("pose_y"),
             FloatArgument("pose_z"),
             FloatArgument("pose_angle_rad"),
@@ -205,10 +188,10 @@ PROTOCOL = Protocol(
             FloatArgument("rwheel_speed_mmps"),
             FloatArgument("head_angle_rad"),
             FloatArgument("lift_height_mm"),
-            FloatArgument("accel_x"),           # TODO: Change to AccelData struct
+            FloatArgument("accel_x"),
             FloatArgument("accel_y"),
             FloatArgument("accel_z"),
-            FloatArgument("gyro_x"),            # TODO: Change to GyroData struct
+            FloatArgument("gyro_x"),
             FloatArgument("gyro_y"),
             FloatArgument("gyro_z"),
             FloatArgument("battery_voltage"),
@@ -217,7 +200,6 @@ PROTOCOL = Protocol(
             UInt16Argument("backpack_touch_sensor_raw"),
             UInt8Argument("curr_path_segment"),
         ]),
-
         Event(0xf1, "animation_state", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("num_anim_bytes_played"),
@@ -226,7 +208,6 @@ PROTOCOL = Protocol(
             UInt8Argument("tag"),
             UInt8Argument("client_drop_count"),
         ]),
-
         Event(0xf2, "image_chunk", arguments=[
             UInt32Argument("frame_timestamp"),
             UInt32Argument("image_id"),
@@ -238,13 +219,11 @@ PROTOCOL = Protocol(
             UInt16Argument("status"),
             VArrayArgument("data"),
         ]),
-
         Event(0xf3, "object_available", arguments=[
             UInt32Argument("factory_id"),
             UInt32Argument("object_type"),
             UInt8Argument("rssi"),
         ]),
-
         Event(0xf4, "image_imu_data", arguments=[
             UInt32Argument("image_id"),
             FloatArgument("rate_x"),
