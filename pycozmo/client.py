@@ -20,6 +20,7 @@ from .window import ReceiveWindow, SendWindow
 from . import protocol_encoder
 from . import event
 from . import camera
+from . import object
 
 
 ROBOT_ADDR = ("172.31.1.1", 5551)
@@ -210,6 +211,7 @@ class Client(Thread, event.Dispatcher):
         self.robot_addr = robot_addr or ROBOT_ADDR
         self.serial_number_head = None
         self.robot_fw_sig = None
+        self.available_objects = dict()
         self.state = self.IDLE
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setblocking(False)
@@ -226,6 +228,7 @@ class Client(Thread, event.Dispatcher):
         self.add_handler(protocol_encoder.FirmwareSignature, self._on_firmware_signature)
         self.add_handler(protocol_encoder.Ping, self._on_ping)
         self.add_handler(protocol_encoder.ImageChunk, self._on_image_chunk)
+        self.add_handler(protocol_encoder.ObjectAvailable, self._on_object_available)
         self.recv_thread.start()
         self.send_thread.start()
         super().start()
@@ -411,3 +414,12 @@ class Client(Thread, event.Dispatcher):
 
         self._latest_image = image
         self.dispatch(EvtNewRawCameraImage, self, image)
+
+    def _on_object_available(self, cli, pkt: protocol_encoder.ObjectAvailable):
+        del cli
+        factory_id = pkt.factory_id
+        object_type = object.ObjectType(pkt.object_type)
+        obj = object.Object(factory_id=factory_id, object_type=object_type)
+        if factory_id not in self.available_objects:
+            self.available_objects[factory_id] = obj
+            logger.debug("Object of type %s with S/N %i available.", str(obj.object_type), obj.factory_id)

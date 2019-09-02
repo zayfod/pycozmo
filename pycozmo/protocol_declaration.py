@@ -228,6 +228,12 @@ PROTOCOL = Protocol(
             UInt16Argument("status"),
             VArrayArgument("data"),
         ]),
+
+        Event(0xf3, "object_available", arguments=[
+            UInt32Argument("factory_id"),
+            UInt32Argument("object_type"),
+            UInt8Argument("rssi"),
+        ]),
     ]
 
 )

@@ -6,6 +6,7 @@ v0.4.0
 - Improved robot state.
 - Added stop-on-cliff command.
 - Added head serial number access.
+- Added object availability access.
 
 v0.3.0 (Sep 1, 2019)
 --------------------

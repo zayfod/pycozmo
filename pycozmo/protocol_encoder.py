@@ -3528,6 +3528,92 @@ class ImageChunk(Packet):
             status=status,
             data=data)
 
+    
+class ObjectAvailable(Packet):
+
+    PACKET_ID = PacketType.EVENT
+    ID = 0xf3
+
+    __slots__ = (
+        "_factory_id",
+        "_object_type",
+        "_rssi",
+    )
+
+    def __init__(self,
+                 factory_id=0,
+                 object_type=0,
+                 rssi=0):
+        self.factory_id = factory_id
+        self.object_type = object_type
+        self.rssi = rssi
+
+    @property
+    def factory_id(self):
+        return self._factory_id
+
+    @factory_id.setter
+    def factory_id(self, value):
+        self._factory_id = validate_integer("factory_id", value, 0, 4294967295)
+
+    @property
+    def object_type(self):
+        return self._object_type
+
+    @object_type.setter
+    def object_type(self, value):
+        self._object_type = validate_integer("object_type", value, 0, 4294967295)
+
+    @property
+    def rssi(self):
+        return self._rssi
+
+    @rssi.setter
+    def rssi(self, value):
+        self._rssi = validate_integer("rssi", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "factory_id={factory_id}, " \
+               "object_type={object_type}, " \
+               "rssi={rssi})".format(
+                type=type(self).__name__,
+                factory_id=self._factory_id,
+                object_type=self._object_type,
+                rssi=self._rssi)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._factory_id, "L")
+        writer.write(self._object_type, "L")
+        writer.write(self._rssi, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        factory_id = reader.read("L")
+        object_type = reader.read("L")
+        rssi = reader.read("B")
+        return cls(
+            factory_id=factory_id,
+            object_type=object_type,
+            rssi=rssi)
+
 
 ACTION_BY_ID = {
     0x03: LightStateCenter,  # 3
@@ -3570,4 +3656,5 @@ ACTION_BY_ID = {
 EVENT_BY_ID = {
     0xf0: RobotState,  # 240
     0xf2: ImageChunk,  # 242
+    0xf3: ObjectAvailable,  # 243
 }
