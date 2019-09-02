@@ -7,6 +7,8 @@ v0.4.0
 - Added stop-on-cliff command.
 - Added head serial number access.
 - Added object availability access.
+- Added animation state.
+- Added image IMU data event access.
 
 v0.3.0 (Sep 1, 2019)
 --------------------

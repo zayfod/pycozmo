@@ -417,10 +417,10 @@ class Client(Thread, event.Dispatcher):
         # Enable
         pkt = UnknownCommand(0x25)
         self.send(pkt)
-        # Enables 0xf0 and 0xf3 events - engages motors? Requires 0x25.
+        # Enables RobotState and ObjectAvailable events - enables body ACC? Requires 0x25.
         pkt = UnknownCommand(0x4b, b"\xc4\xb69\x00\x00\x00\xa0\xc1")
         self.send(pkt)
-        # Enables 0xf1 events. Requires 0x25.
+        # Enables AnimationState events. Requires 0x25.
         pkt = UnknownCommand(0x9f)
         self.send(pkt)
 

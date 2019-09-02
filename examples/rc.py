@@ -99,6 +99,7 @@ class InputThread(object):
                 logging.warning("Input I/O error. {}".format(e))
                 time.sleep(3)
                 dev = InputDevice(self._controller.event_device)
+                # TODO: Handle FileNotFoundError.
                 fds = {dev.fd: dev}
         logging.debug("Input thread stopped.")
 

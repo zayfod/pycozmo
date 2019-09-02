@@ -244,6 +244,14 @@ PROTOCOL = Protocol(
             UInt32Argument("object_type"),
             UInt8Argument("rssi"),
         ]),
+
+        Event(0xf4, "image_imu_data", arguments=[
+            UInt32Argument("image_id"),
+            FloatArgument("rate_x"),
+            FloatArgument("rate_y"),
+            FloatArgument("rate_z"),
+            UInt8Argument("line_2_number"),
+        ]),
     ]
 
 )

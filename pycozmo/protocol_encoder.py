@@ -3770,6 +3770,126 @@ class ObjectAvailable(Packet):
             object_type=object_type,
             rssi=rssi)
 
+    
+class ImageImuData(Packet):
+
+    PACKET_ID = PacketType.EVENT
+    ID = 0xf4
+
+    __slots__ = (
+        "_image_id",
+        "_rate_x",
+        "_rate_y",
+        "_rate_z",
+        "_line_2_number",
+    )
+
+    def __init__(self,
+                 image_id=0,
+                 rate_x=0.0,
+                 rate_y=0.0,
+                 rate_z=0.0,
+                 line_2_number=0):
+        self.image_id = image_id
+        self.rate_x = rate_x
+        self.rate_y = rate_y
+        self.rate_z = rate_z
+        self.line_2_number = line_2_number
+
+    @property
+    def image_id(self):
+        return self._image_id
+
+    @image_id.setter
+    def image_id(self, value):
+        self._image_id = validate_integer("image_id", value, 0, 4294967295)
+
+    @property
+    def rate_x(self):
+        return self._rate_x
+
+    @rate_x.setter
+    def rate_x(self, value):
+        self._rate_x = validate_float("rate_x", value)
+
+    @property
+    def rate_y(self):
+        return self._rate_y
+
+    @rate_y.setter
+    def rate_y(self, value):
+        self._rate_y = validate_float("rate_y", value)
+
+    @property
+    def rate_z(self):
+        return self._rate_z
+
+    @rate_z.setter
+    def rate_z(self, value):
+        self._rate_z = validate_float("rate_z", value)
+
+    @property
+    def line_2_number(self):
+        return self._line_2_number
+
+    @line_2_number.setter
+    def line_2_number(self, value):
+        self._line_2_number = validate_integer("line_2_number", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "image_id={image_id}, " \
+               "rate_x={rate_x}, " \
+               "rate_y={rate_y}, " \
+               "rate_z={rate_z}, " \
+               "line_2_number={line_2_number})".format(
+                type=type(self).__name__,
+                image_id=self._image_id,
+                rate_x=self._rate_x,
+                rate_y=self._rate_y,
+                rate_z=self._rate_z,
+                line_2_number=self._line_2_number)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._image_id, "L")
+        writer.write(self._rate_x, "f")
+        writer.write(self._rate_y, "f")
+        writer.write(self._rate_z, "f")
+        writer.write(self._line_2_number, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        image_id = reader.read("L")
+        rate_x = reader.read("f")
+        rate_y = reader.read("f")
+        rate_z = reader.read("f")
+        line_2_number = reader.read("B")
+        return cls(
+            image_id=image_id,
+            rate_x=rate_x,
+            rate_y=rate_y,
+            rate_z=rate_z,
+            line_2_number=line_2_number)
+
 
 ACTION_BY_ID = {
     0x03: LightStateCenter,  # 3
@@ -3815,4 +3935,5 @@ EVENT_BY_ID = {
     0xf1: AnimationState,  # 241
     0xf2: ImageChunk,  # 242
     0xf3: ObjectAvailable,  # 243
+    0xf4: ImageImuData,  # 244
 }
