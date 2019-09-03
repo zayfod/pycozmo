@@ -1710,7 +1710,7 @@ class NvStorageOp(Packet):
     @data.setter
     def data(self, value):
         self._data = validate_varray(
-            "data", value, 65536, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
+            "data", value, 65535, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
 
     def __len__(self):
         return \
@@ -1878,7 +1878,7 @@ class DisplayImage(Packet):
     @image.setter
     def image(self, value):
         self._image = validate_varray(
-            "image", value, 65536, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
+            "image", value, 65535, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
 
     def __len__(self):
         return \
@@ -1966,7 +1966,7 @@ class UnknownB0(Packet):
 
     @unknown3.setter
     def unknown3(self, value):
-        self._unknown3 = validate_integer("unknown3", value, 0, 255)
+        self._unknown3 = validate_integer("unknown3", value, -128, 127)
 
     @property
     def unknown4(self):
@@ -1982,7 +1982,7 @@ class UnknownB0(Packet):
             get_size('H') + \
             get_size('H') + \
             get_size('H') + \
-            get_size('B') + \
+            get_size('b') + \
             get_varray_size(self._unknown4, 'B', 'L')
 
     def __repr__(self):
@@ -2008,7 +2008,7 @@ class UnknownB0(Packet):
         writer.write(self._unknown0, "H")
         writer.write(self._unknown1, "H")
         writer.write(self._unknown2, "H")
-        writer.write(self._unknown3, "B")
+        writer.write(self._unknown3, "b")
         writer.write_varray(self._unknown4, "L", "B")
 
     @classmethod
@@ -2022,7 +2022,7 @@ class UnknownB0(Packet):
         unknown0 = reader.read("H")
         unknown1 = reader.read("H")
         unknown2 = reader.read("H")
-        unknown3 = reader.read("B")
+        unknown3 = reader.read("b")
         unknown4 = reader.read_varray("L", "B")
         return cls(
             unknown0=unknown0,
@@ -2304,7 +2304,7 @@ class ObjectTapped(Packet):
 
     @tap_neg.setter
     def tap_neg(self, value):
-        self._tap_neg = validate_integer("tap_neg", value, 0, 255)
+        self._tap_neg = validate_integer("tap_neg", value, -128, 127)
 
     @property
     def tap_pos(self):
@@ -2312,7 +2312,7 @@ class ObjectTapped(Packet):
 
     @tap_pos.setter
     def tap_pos(self, value):
-        self._tap_pos = validate_integer("tap_pos", value, 0, 255)
+        self._tap_pos = validate_integer("tap_pos", value, -128, 127)
 
     def __len__(self):
         return \
@@ -2320,8 +2320,8 @@ class ObjectTapped(Packet):
             get_size('L') + \
             get_size('B') + \
             get_size('B') + \
-            get_size('B') + \
-            get_size('B')
+            get_size('b') + \
+            get_size('b')
 
     def __repr__(self):
         return "{type}(" \
@@ -2349,8 +2349,8 @@ class ObjectTapped(Packet):
         writer.write(self._object_id, "L")
         writer.write(self._num_taps, "B")
         writer.write(self._tap_time, "B")
-        writer.write(self._tap_neg, "B")
-        writer.write(self._tap_pos, "B")
+        writer.write(self._tap_neg, "b")
+        writer.write(self._tap_pos, "b")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -2364,8 +2364,8 @@ class ObjectTapped(Packet):
         object_id = reader.read("L")
         num_taps = reader.read("B")
         tap_time = reader.read("B")
-        tap_neg = reader.read("B")
-        tap_pos = reader.read("B")
+        tap_neg = reader.read("b")
+        tap_pos = reader.read("b")
         return cls(
             timestamp=timestamp,
             object_id=object_id,
@@ -2731,7 +2731,7 @@ class NvStorageOpResult(Packet):
 
     @result.setter
     def result(self, value):
-        self._result = validate_integer("result", value, 0, 4294967295)
+        self._result = validate_integer("result", value, -2147483648, 2147483647)
 
     @property
     def op(self):
@@ -2756,12 +2756,12 @@ class NvStorageOpResult(Packet):
     @data.setter
     def data(self, value):
         self._data = validate_varray(
-            "data", value, 65536, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
+            "data", value, 65535, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
 
     def __len__(self):
         return \
             get_size('L') + \
-            get_size('L') + \
+            get_size('l') + \
             get_size('B') + \
             get_size('B') + \
             get_varray_size(self._data, 'H', 'B')
@@ -2787,7 +2787,7 @@ class NvStorageOpResult(Packet):
         
     def to_writer(self, writer):
         writer.write(self._tag, "L")
-        writer.write(self._result, "L")
+        writer.write(self._result, "l")
         writer.write(self._op, "B")
         writer.write(self._index, "B")
         writer.write_varray(self._data, "B", "H")
@@ -2801,7 +2801,7 @@ class NvStorageOpResult(Packet):
     @classmethod
     def from_reader(cls, reader):
         tag = reader.read("L")
-        result = reader.read("L")
+        result = reader.read("l")
         op = reader.read("B")
         index = reader.read("B")
         data = reader.read_varray("B", "H")
@@ -3342,7 +3342,7 @@ class FirmwareSignature(Packet):
 
     @signature.setter
     def signature(self, value):
-        self._signature = validate_string("signature", value, 65536)
+        self._signature = validate_string("signature", value, 65535)
 
     def __len__(self):
         return \
@@ -3850,7 +3850,7 @@ class AnimationState(Packet):
 
     @num_anim_bytes_played.setter
     def num_anim_bytes_played(self, value):
-        self._num_anim_bytes_played = validate_integer("num_anim_bytes_played", value, 0, 4294967295)
+        self._num_anim_bytes_played = validate_integer("num_anim_bytes_played", value, -2147483648, 2147483647)
 
     @property
     def num_audio_frames_played(self):
@@ -3858,7 +3858,7 @@ class AnimationState(Packet):
 
     @num_audio_frames_played.setter
     def num_audio_frames_played(self, value):
-        self._num_audio_frames_played = validate_integer("num_audio_frames_played", value, 0, 4294967295)
+        self._num_audio_frames_played = validate_integer("num_audio_frames_played", value, -2147483648, 2147483647)
 
     @property
     def enabled_anim_tracks(self):
@@ -3887,8 +3887,8 @@ class AnimationState(Packet):
     def __len__(self):
         return \
             get_size('L') + \
-            get_size('L') + \
-            get_size('L') + \
+            get_size('l') + \
+            get_size('l') + \
             get_size('B') + \
             get_size('B') + \
             get_size('B')
@@ -3916,8 +3916,8 @@ class AnimationState(Packet):
         
     def to_writer(self, writer):
         writer.write(self._timestamp, "L")
-        writer.write(self._num_anim_bytes_played, "L")
-        writer.write(self._num_audio_frames_played, "L")
+        writer.write(self._num_anim_bytes_played, "l")
+        writer.write(self._num_audio_frames_played, "l")
         writer.write(self._enabled_anim_tracks, "B")
         writer.write(self._tag, "B")
         writer.write(self._client_drop_count, "B")
@@ -3931,8 +3931,8 @@ class AnimationState(Packet):
     @classmethod
     def from_reader(cls, reader):
         timestamp = reader.read("L")
-        num_anim_bytes_played = reader.read("L")
-        num_audio_frames_played = reader.read("L")
+        num_anim_bytes_played = reader.read("l")
+        num_audio_frames_played = reader.read("l")
         enabled_anim_tracks = reader.read("B")
         tag = reader.read("B")
         client_drop_count = reader.read("B")
@@ -4053,7 +4053,7 @@ class ImageChunk(Packet):
     @data.setter
     def data(self, value):
         self._data = validate_varray(
-            "data", value, 65536, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
+            "data", value, 65535, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
 
     def __len__(self):
         return \
@@ -4175,13 +4175,13 @@ class ObjectAvailable(Packet):
 
     @rssi.setter
     def rssi(self, value):
-        self._rssi = validate_integer("rssi", value, 0, 255)
+        self._rssi = validate_integer("rssi", value, -128, 127)
 
     def __len__(self):
         return \
             get_size('L') + \
             get_size('L') + \
-            get_size('B')
+            get_size('b')
 
     def __repr__(self):
         return "{type}(" \
@@ -4201,7 +4201,7 @@ class ObjectAvailable(Packet):
     def to_writer(self, writer):
         writer.write(self._factory_id, "L")
         writer.write(self._object_type, "L")
-        writer.write(self._rssi, "B")
+        writer.write(self._rssi, "b")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -4213,7 +4213,7 @@ class ObjectAvailable(Packet):
     def from_reader(cls, reader):
         factory_id = reader.read("L")
         object_type = reader.read("L")
-        rssi = reader.read("B")
+        rssi = reader.read("b")
         return cls(
             factory_id=factory_id,
             object_type=object_type,

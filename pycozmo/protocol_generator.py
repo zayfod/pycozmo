@@ -27,8 +27,12 @@ def get_fmt_by_type(t):
         fmt = "H"
     elif t == protocol_declaration.UInt32Argument:
         fmt = "L"
+    elif t == protocol_declaration.Int8Argument:
+        fmt = "b"
     elif t == protocol_declaration.Int16Argument:
         fmt = "h"
+    elif t == protocol_declaration.Int32Argument:
+        fmt = "l"
     else:
         fmt = None
     return fmt
@@ -108,8 +112,13 @@ class ProtocolGenerator(object):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 65535)"
         elif argument.data_type == protocol_declaration.UInt32Argument:
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295)"
+        elif argument.data_type == protocol_declaration.Int8Argument:
+            element_validation = "lambda name, value_inner: validate_integer(name, value_inner, -128, 127)"
         elif argument.data_type == protocol_declaration.Int16Argument:
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, -32768, 32767)"
+        elif argument.data_type == protocol_declaration.Int32Argument:
+            element_validation = \
+                "lambda name, value_inner: validate_integer(name, value_inner, -2147483648, 2147483647)"
         elif isinstance(argument.data_type, str):
             element_validation = "lambda name, value_inner: validate_object(name, value_inner, {})".format(
                 argument.data_type)
@@ -124,7 +133,7 @@ class ProtocolGenerator(object):
         if argument.length_type == protocol_declaration.UInt8Argument:
             maximum_length = 255
         elif argument.length_type == protocol_declaration.UInt16Argument:
-            maximum_length = 65536
+            maximum_length = 65535
         else:
             raise NotImplementedError("Unexpected varray length type '{}' for '{}'".format(
                 argument.length_type, argument.name))
@@ -141,8 +150,13 @@ class ProtocolGenerator(object):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 65535)"
         elif argument.data_type == protocol_declaration.UInt32Argument:
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295)"
+        elif argument.data_type == protocol_declaration.Int8Argument:
+            element_validation = "lambda name, value_inner: validate_integer(name, value_inner, -128, 127)"
         elif argument.data_type == protocol_declaration.Int16Argument:
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, -32768, 32767)"
+        elif argument.data_type == protocol_declaration.Int32Argument:
+            element_validation = \
+                "lambda name, value_inner: validate_integer(name, value_inner, -2147483648, 2147483647)"
         else:
             raise NotImplementedError("Unexpected varray data type '{}' for '{}'".format(
                 argument.data_type, argument.name))
@@ -154,7 +168,7 @@ class ProtocolGenerator(object):
         if argument.length_type == protocol_declaration.UInt8Argument:
             maximum_length = 255
         elif argument.length_type == protocol_declaration.UInt16Argument:
-            maximum_length = 65536
+            maximum_length = 65535
         else:
             raise NotImplementedError("Unexpected string length type '{}' for '{}'".format(
                 argument.length_type, argument.name))
@@ -184,8 +198,12 @@ class ProtocolGenerator(object):
                 self.f.write('validate_integer("{name}", value, 0, 65535)\n'.format(name=argument.name))
             elif isinstance(argument, protocol_declaration.UInt32Argument):
                 self.f.write('validate_integer("{name}", value, 0, 4294967295)\n'.format(name=argument.name))
+            elif isinstance(argument, protocol_declaration.Int8Argument):
+                self.f.write('validate_integer("{name}", value, -128, 127)\n'.format(name=argument.name))
             elif isinstance(argument, protocol_declaration.Int16Argument):
                 self.f.write('validate_integer("{name}", value, -32768, 32767)\n'.format(name=argument.name))
+            elif isinstance(argument, protocol_declaration.Int32Argument):
+                self.f.write('validate_integer("{name}", value, -2147483648, 2147483647)\n'.format(name=argument.name))
             elif isinstance(argument, protocol_declaration.FArrayArgument):
                 self.generate_farray_validation(argument)
             elif isinstance(argument, protocol_declaration.VArrayArgument):
@@ -216,8 +234,12 @@ class ProtocolGenerator(object):
                     statements.append("get_size('H')")
                 elif isinstance(argument, protocol_declaration.UInt32Argument):
                     statements.append("get_size('L')")
+                elif isinstance(argument, protocol_declaration.Int8Argument):
+                    statements.append("get_size('b')")
                 elif isinstance(argument, protocol_declaration.Int16Argument):
                     statements.append("get_size('h')")
+                elif isinstance(argument, protocol_declaration.Int32Argument):
+                    statements.append("get_size('l')")
                 elif isinstance(argument, protocol_declaration.FArrayArgument):
                     if isinstance(argument.data_type, str):
                         statements.append("get_object_farray_size(self._{name}, {length})".format(
@@ -296,8 +318,12 @@ class ProtocolGenerator(object):
                     self.f.write('        writer.write(self._{name}, "H")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.UInt32Argument):
                     self.f.write('        writer.write(self._{name}, "L")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.Int8Argument):
+                    self.f.write('        writer.write(self._{name}, "b")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.Int16Argument):
                     self.f.write('        writer.write(self._{name}, "h")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.Int32Argument):
+                    self.f.write('        writer.write(self._{name}, "l")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.FArrayArgument):
                     if isinstance(argument.data_type, str):
                         self.f.write('        writer.write_object_farray(self._{name}, {length})\n'.format(
@@ -345,8 +371,12 @@ class ProtocolGenerator(object):
                     self.f.write('        {name} = reader.read("H")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.UInt32Argument):
                     self.f.write('        {name} = reader.read("L")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.Int8Argument):
+                    self.f.write('        {name} = reader.read("b")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.Int16Argument):
                     self.f.write('        {name} = reader.read("h")\n'.format(name=argument.name))
+                elif isinstance(argument, protocol_declaration.Int32Argument):
+                    self.f.write('        {name} = reader.read("l")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.FArrayArgument):
                     if isinstance(argument.data_type, str):
                         self.f.write(

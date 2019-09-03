@@ -121,7 +121,7 @@ PROTOCOL = Protocol(
             UInt16Argument("unknown0"),
             UInt16Argument("unknown1"),
             UInt16Argument("unknown2"),
-            UInt8Argument("unknown3"),
+            Int8Argument("unknown3"),
             VArrayArgument("unknown4", data_type=UInt32Argument, length_type=UInt8Argument)
         ]),
         Command(0xb4, "object_moved", arguments=[
@@ -141,8 +141,8 @@ PROTOCOL = Protocol(
             UInt32Argument("object_id"),
             UInt8Argument("num_taps"),
             UInt8Argument("tap_time"),
-            UInt8Argument("tap_neg"),
-            UInt8Argument("tap_pos"),
+            Int8Argument("tap_neg"),
+            Int8Argument("tap_pos"),
         ]),
         Command(0xb9, "object_tap_filtered", arguments=[
             UInt32Argument("timestamp"),
@@ -162,7 +162,7 @@ PROTOCOL = Protocol(
         ]),
         Command(0xcd, "nv_storage_op_result", arguments=[
             UInt32Argument("tag"),
-            UInt32Argument("result"),
+            Int32Argument("result"),
             UInt8Argument("op"),
             UInt8Argument("index"),
             VArrayArgument("data"),
@@ -228,8 +228,8 @@ PROTOCOL = Protocol(
         ]),
         Event(0xf1, "animation_state", arguments=[
             UInt32Argument("timestamp"),
-            UInt32Argument("num_anim_bytes_played"),
-            UInt32Argument("num_audio_frames_played"),
+            Int32Argument("num_anim_bytes_played"),
+            Int32Argument("num_audio_frames_played"),
             UInt8Argument("enabled_anim_tracks"),
             UInt8Argument("tag"),
             UInt8Argument("client_drop_count"),
@@ -248,7 +248,7 @@ PROTOCOL = Protocol(
         Event(0xf3, "object_available", arguments=[
             UInt32Argument("factory_id"),
             UInt32Argument("object_type"),
-            UInt8Argument("rssi"),
+            Int8Argument("rssi"),
         ]),
         Event(0xf4, "image_imu_data", arguments=[
             UInt32Argument("image_id"),
