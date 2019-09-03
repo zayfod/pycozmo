@@ -1,4 +1,5 @@
 
+from enum import Enum
 import math
 
 from . import util
@@ -54,6 +55,23 @@ RobotStatusFlagNames = {
     RobotStatusFlag.CLIFF_DETECTED: "CLIFF_DETECTED",
     RobotStatusFlag.ARE_WHEELS_MOVING: "ARE_WHEELS_MOVING",
     RobotStatusFlag.IS_CHARGER_OOS: "IS_CHARGER_OOS",
+}
+
+
+class BodyColor(Enum):
+    WHITE_v10 = 0
+    RESERVED  = 1
+    WHITE_v15 = 2
+    CE_LM_v15 = 3
+    LE_BL_v16 = 4
+
+
+BODY_COLOR_NAMES = {
+    BodyColor.WHITE_v10: "Original",
+    BodyColor.RESERVED: "Reserved",
+    BodyColor.WHITE_v15: "White",
+    BodyColor.CE_LM_v15: "CE_LM",
+    BodyColor.LE_BL_v16: "LE_BL",
 }
 
 

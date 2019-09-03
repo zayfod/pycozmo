@@ -103,12 +103,26 @@ PROTOCOL = Protocol(
         Command(0x66, "enable_color_images", arguments=[
             BoolArgument("enable"),
         ]),
+        Command(0x81, "nv_storage_op", arguments=[
+            UInt32Argument("tag"),
+            UInt32Argument("unknown"),
+            UInt8Argument("op"),
+            UInt8Argument("index"),
+            VArrayArgument("data"),
+        ]),
         Command(0x8e, "output_audio", arguments=[
             FArrayArgument("samples", length=744),
         ]),
         Command(0x8f, "next_frame"),
         Command(0x97, "display_image", arguments=[
             VArrayArgument("image"),
+        ]),
+        Command(0xb0, "unknown_b0", arguments=[
+            UInt16Argument("unknown0"),
+            UInt16Argument("unknown1"),
+            UInt16Argument("unknown2"),
+            UInt8Argument("unknown3"),
+            VArrayArgument("unknown4", data_type=UInt32Argument, length_type=UInt8Argument)
         ]),
         Command(0xb4, "object_moved", arguments=[
             UInt32Argument("timestamp"),
@@ -143,8 +157,15 @@ PROTOCOL = Protocol(
         Command(0xc3, "robot_poked"),
         Command(0xc9, "hardware_info", arguments=[
             UInt32Argument("serial_number_head"),
-            UInt8Argument("unknown1"),          # body_hw_version?
-            UInt8Argument("unknown2"),          # body_color?
+            UInt8Argument("unknown1"),
+            UInt8Argument("unknown2"),
+        ]),
+        Command(0xcd, "nv_storage_op_result", arguments=[
+            UInt32Argument("tag"),
+            UInt32Argument("result"),
+            UInt8Argument("op"),
+            UInt8Argument("index"),
+            VArrayArgument("data"),
         ]),
         Command(0xce, "object_power_level", arguments=[
             UInt32Argument("object_id"),
@@ -169,6 +190,11 @@ PROTOCOL = Protocol(
             UInt32Argument("unknown"),
             UInt32Argument("duration_ms"),
             FloatArgument("impact_intensity"),
+        ]),
+        Command(0xed, "body_info", arguments=[
+            UInt32Argument("serial_number"),
+            UInt32Argument("body_hw_version"),
+            UInt32Argument("body_color"),
         ]),
         Command(0xee, "firmware_signature", arguments=[
             UInt16Argument("unknown"),          # Last 2 bytes of head s/n?

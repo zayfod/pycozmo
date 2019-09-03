@@ -1646,6 +1646,127 @@ class EnableColorImages(Packet):
             enable=enable)
 
     
+class NvStorageOp(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x81
+
+    __slots__ = (
+        "_tag",
+        "_unknown",
+        "_op",
+        "_index",
+        "_data",
+    )
+
+    def __init__(self,
+                 tag=0,
+                 unknown=0,
+                 op=0,
+                 index=0,
+                 data=()):
+        self.tag = tag
+        self.unknown = unknown
+        self.op = op
+        self.index = index
+        self.data = data
+
+    @property
+    def tag(self):
+        return self._tag
+
+    @tag.setter
+    def tag(self, value):
+        self._tag = validate_integer("tag", value, 0, 4294967295)
+
+    @property
+    def unknown(self):
+        return self._unknown
+
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_integer("unknown", value, 0, 4294967295)
+
+    @property
+    def op(self):
+        return self._op
+
+    @op.setter
+    def op(self, value):
+        self._op = validate_integer("op", value, 0, 255)
+
+    @property
+    def index(self):
+        return self._index
+
+    @index.setter
+    def index(self, value):
+        self._index = validate_integer("index", value, 0, 255)
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = validate_varray(
+            "data", value, 65536, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_varray_size(self._data, 'H', 'B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "tag={tag}, " \
+               "unknown={unknown}, " \
+               "op={op}, " \
+               "index={index}, " \
+               "data={data})".format(
+                type=type(self).__name__,
+                tag=self._tag,
+                unknown=self._unknown,
+                op=self._op,
+                index=self._index,
+                data=self._data)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._tag, "L")
+        writer.write(self._unknown, "L")
+        writer.write(self._op, "B")
+        writer.write(self._index, "B")
+        writer.write_varray(self._data, "B", "H")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        tag = reader.read("L")
+        unknown = reader.read("L")
+        op = reader.read("B")
+        index = reader.read("B")
+        data = reader.read_varray("B", "H")
+        return cls(
+            tag=tag,
+            unknown=unknown,
+            op=op,
+            index=index,
+            data=data)
+
+    
 class OutputAudio(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -1788,6 +1909,127 @@ class DisplayImage(Packet):
         image = reader.read_varray("B", "H")
         return cls(
             image=image)
+
+    
+class UnknownB0(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xb0
+
+    __slots__ = (
+        "_unknown0",
+        "_unknown1",
+        "_unknown2",
+        "_unknown3",
+        "_unknown4",
+    )
+
+    def __init__(self,
+                 unknown0=0,
+                 unknown1=0,
+                 unknown2=0,
+                 unknown3=0,
+                 unknown4=()):
+        self.unknown0 = unknown0
+        self.unknown1 = unknown1
+        self.unknown2 = unknown2
+        self.unknown3 = unknown3
+        self.unknown4 = unknown4
+
+    @property
+    def unknown0(self):
+        return self._unknown0
+
+    @unknown0.setter
+    def unknown0(self, value):
+        self._unknown0 = validate_integer("unknown0", value, 0, 65535)
+
+    @property
+    def unknown1(self):
+        return self._unknown1
+
+    @unknown1.setter
+    def unknown1(self, value):
+        self._unknown1 = validate_integer("unknown1", value, 0, 65535)
+
+    @property
+    def unknown2(self):
+        return self._unknown2
+
+    @unknown2.setter
+    def unknown2(self, value):
+        self._unknown2 = validate_integer("unknown2", value, 0, 65535)
+
+    @property
+    def unknown3(self):
+        return self._unknown3
+
+    @unknown3.setter
+    def unknown3(self, value):
+        self._unknown3 = validate_integer("unknown3", value, 0, 255)
+
+    @property
+    def unknown4(self):
+        return self._unknown4
+
+    @unknown4.setter
+    def unknown4(self, value):
+        self._unknown4 = validate_varray(
+            "unknown4", value, 255, lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295))
+
+    def __len__(self):
+        return \
+            get_size('H') + \
+            get_size('H') + \
+            get_size('H') + \
+            get_size('B') + \
+            get_varray_size(self._unknown4, 'B', 'L')
+
+    def __repr__(self):
+        return "{type}(" \
+               "unknown0={unknown0}, " \
+               "unknown1={unknown1}, " \
+               "unknown2={unknown2}, " \
+               "unknown3={unknown3}, " \
+               "unknown4={unknown4})".format(
+                type=type(self).__name__,
+                unknown0=self._unknown0,
+                unknown1=self._unknown1,
+                unknown2=self._unknown2,
+                unknown3=self._unknown3,
+                unknown4=self._unknown4)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._unknown0, "H")
+        writer.write(self._unknown1, "H")
+        writer.write(self._unknown2, "H")
+        writer.write(self._unknown3, "B")
+        writer.write_varray(self._unknown4, "L", "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        unknown0 = reader.read("H")
+        unknown1 = reader.read("H")
+        unknown2 = reader.read("H")
+        unknown3 = reader.read("B")
+        unknown4 = reader.read_varray("L", "B")
+        return cls(
+            unknown0=unknown0,
+            unknown1=unknown1,
+            unknown2=unknown2,
+            unknown3=unknown3,
+            unknown4=unknown4)
 
     
 class ObjectMoved(Packet):
@@ -2450,6 +2692,127 @@ class HardwareInfo(Packet):
             unknown2=unknown2)
 
     
+class NvStorageOpResult(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xcd
+
+    __slots__ = (
+        "_tag",
+        "_result",
+        "_op",
+        "_index",
+        "_data",
+    )
+
+    def __init__(self,
+                 tag=0,
+                 result=0,
+                 op=0,
+                 index=0,
+                 data=()):
+        self.tag = tag
+        self.result = result
+        self.op = op
+        self.index = index
+        self.data = data
+
+    @property
+    def tag(self):
+        return self._tag
+
+    @tag.setter
+    def tag(self, value):
+        self._tag = validate_integer("tag", value, 0, 4294967295)
+
+    @property
+    def result(self):
+        return self._result
+
+    @result.setter
+    def result(self, value):
+        self._result = validate_integer("result", value, 0, 4294967295)
+
+    @property
+    def op(self):
+        return self._op
+
+    @op.setter
+    def op(self, value):
+        self._op = validate_integer("op", value, 0, 255)
+
+    @property
+    def index(self):
+        return self._index
+
+    @index.setter
+    def index(self, value):
+        self._index = validate_integer("index", value, 0, 255)
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = validate_varray(
+            "data", value, 65536, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_varray_size(self._data, 'H', 'B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "tag={tag}, " \
+               "result={result}, " \
+               "op={op}, " \
+               "index={index}, " \
+               "data={data})".format(
+                type=type(self).__name__,
+                tag=self._tag,
+                result=self._result,
+                op=self._op,
+                index=self._index,
+                data=self._data)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._tag, "L")
+        writer.write(self._result, "L")
+        writer.write(self._op, "B")
+        writer.write(self._index, "B")
+        writer.write_varray(self._data, "B", "H")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        tag = reader.read("L")
+        result = reader.read("L")
+        op = reader.read("B")
+        index = reader.read("B")
+        data = reader.read_varray("B", "H")
+        return cls(
+            tag=tag,
+            result=result,
+            op=op,
+            index=index,
+            data=data)
+
+    
 class ObjectPowerLevel(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -2861,6 +3224,92 @@ class FallingStopped(Packet):
             unknown=unknown,
             duration_ms=duration_ms,
             impact_intensity=impact_intensity)
+
+    
+class BodyInfo(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xed
+
+    __slots__ = (
+        "_serial_number",
+        "_body_hw_version",
+        "_body_color",
+    )
+
+    def __init__(self,
+                 serial_number=0,
+                 body_hw_version=0,
+                 body_color=0):
+        self.serial_number = serial_number
+        self.body_hw_version = body_hw_version
+        self.body_color = body_color
+
+    @property
+    def serial_number(self):
+        return self._serial_number
+
+    @serial_number.setter
+    def serial_number(self, value):
+        self._serial_number = validate_integer("serial_number", value, 0, 4294967295)
+
+    @property
+    def body_hw_version(self):
+        return self._body_hw_version
+
+    @body_hw_version.setter
+    def body_hw_version(self, value):
+        self._body_hw_version = validate_integer("body_hw_version", value, 0, 4294967295)
+
+    @property
+    def body_color(self):
+        return self._body_color
+
+    @body_color.setter
+    def body_color(self, value):
+        self._body_color = validate_integer("body_color", value, 0, 4294967295)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('L')
+
+    def __repr__(self):
+        return "{type}(" \
+               "serial_number={serial_number}, " \
+               "body_hw_version={body_hw_version}, " \
+               "body_color={body_color})".format(
+                type=type(self).__name__,
+                serial_number=self._serial_number,
+                body_hw_version=self._body_hw_version,
+                body_color=self._body_color)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._serial_number, "L")
+        writer.write(self._body_hw_version, "L")
+        writer.write(self._body_color, "L")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        serial_number = reader.read("L")
+        body_hw_version = reader.read("L")
+        body_color = reader.read("L")
+        return cls(
+            serial_number=serial_number,
+            body_hw_version=body_hw_version,
+            body_color=body_color)
 
     
 class FirmwareSignature(Packet):
@@ -3910,9 +4359,11 @@ ACTION_BY_ID = {
     0x60: EnableStopOnCliff,  # 96
     0x64: SetRobotVolume,  # 100
     0x66: EnableColorImages,  # 102
+    0x81: NvStorageOp,  # 129
     0x8e: OutputAudio,  # 142
     0x8f: NextFrame,  # 143
     0x97: DisplayImage,  # 151
+    0xb0: UnknownB0,  # 176
     0xb4: ObjectMoved,  # 180
     0xb5: ObjectStoppedMoving,  # 181
     0xb6: ObjectTapped,  # 182
@@ -3921,11 +4372,13 @@ ACTION_BY_ID = {
     0xc3: RobotPoked,  # 195
     0xc4: AcknowledgeCommand,  # 196
     0xc9: HardwareInfo,  # 201
+    0xcd: NvStorageOpResult,  # 205
     0xce: ObjectPowerLevel,  # 206
     0xd0: ObjectConnectionState,  # 208
     0xd7: ObjectUpAxisChanged,  # 215
     0xdd: FallingStarted,  # 221
     0xde: FallingStopped,  # 222
+    0xed: BodyInfo,  # 237
     0xee: FirmwareSignature,  # 238
 }
 
