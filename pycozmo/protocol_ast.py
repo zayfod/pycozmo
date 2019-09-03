@@ -13,7 +13,7 @@ class FrameType(Enum):
     RESET = 1
     RESET_ACK = 2
     FIN = 3
-    UNKNOWN_04 = 4
+    ENGINE_ACT = 4
     ENGINE = 7
     ROBOT = 9
     PING = 0x0b

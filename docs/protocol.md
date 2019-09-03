@@ -66,7 +66,7 @@ Type            Source      Description
 0x01            engine      Reset
 0x02            robot       Reset ACK
 0x03            engine      Disconnect
-0x04            engine      Unknown
+0x04            engine      Engine action
 0x07            engine      Engine packets
 0x09            robot       Robot packets
 0x0b            engine      Out-of-band engine ping

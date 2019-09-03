@@ -157,7 +157,10 @@ class SendThread(Thread):
                 frame = Frame(FrameType.PING, 0, 0, self.last_ack, [pkt])
             else:
                 seq = self.window.put(pkt)
-                frame = Frame(FrameType.ENGINE, seq, seq, self.last_ack, [pkt])
+                if pkt.PACKET_ID == PacketType.ACTION:
+                    frame = Frame(FrameType.ENGINE_ACT, seq, seq, self.last_ack, [pkt])
+                else:
+                    frame = Frame(FrameType.ENGINE, seq, seq, self.last_ack, [pkt])
             raw_frame = frame.to_bytes()
 
             try:
