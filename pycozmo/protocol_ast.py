@@ -6,7 +6,7 @@ Protocol AST.
 
 from enum import Enum
 from abc import ABC
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Type
 
 
 class FrameType(Enum):
@@ -113,7 +113,7 @@ class FArrayArgument(Argument):
     """ Fixed-length array. """
 
     def __init__(self, name: str, description: Optional[str] = None,
-                 data_type: Union[Argument, str] = UInt8Argument, length: int = 0, default=()):
+                 data_type: Union[Type[Argument], str] = UInt8Argument, length: int = 0, default=()):
         super().__init__(name, description)
         self.data_type = data_type
         self.length = length
@@ -124,7 +124,7 @@ class VArrayArgument(Argument):
     """ Variable-length array. """
 
     def __init__(self, name: str, description: Optional[str] = None,
-                 data_type: Argument = UInt8Argument, length_type: Argument = UInt16Argument, default=()):
+                 data_type: Type[Argument] = UInt8Argument, length_type: Type[Argument] = UInt16Argument, default=()):
         super().__init__(name, description)
         self.data_type = data_type
         self.length_type = length_type
@@ -135,7 +135,7 @@ class StringArgument(Argument):
     """ String. """
 
     def __init__(self, name: str, description: Optional[str] = None,
-                 length_type: Argument = UInt16Argument, default=""):
+                 length_type: Type[Argument] = UInt16Argument, default=""):
         super().__init__(name, description)
         self.length_type = length_type
         self.default = str(default)
