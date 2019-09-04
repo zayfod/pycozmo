@@ -52,6 +52,7 @@ Documentation
 -------------
 
 - [Cozmo protocol](docs/protocol.md) description
+- [Cozmo function](docs/functions.md) description
 - [Capturing Cozmo communication](docs/capturing.md)
 
 
