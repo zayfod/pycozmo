@@ -5,7 +5,7 @@ PyCozmo
 a Cozmo robot directly, without having to go through a mobile device, running the Cozmo app.
 
 The library is loosely based on the [Anki Cozmo Python SDK](https://github.com/anki/cozmo-python-sdk) and the
-[cozmoclad](https://pypi.org/project/cozmoclad/) library.
+[cozmoclad](https://pypi.org/project/cozmoclad/) ("C-Like Abstract Data") library.
 
 This project is a tool for exploring the hardware and software of Anki Cozmo. It is unstable and heavily under
 development.
@@ -99,6 +99,9 @@ Actuators:
 Communication:
 - Wi-Fi AP - supported
 - Bluetooth LE - supported
+
+Storage:
+- NVRAM - supported
 
 
 Connecting to Cozmo over Wi-Fi
