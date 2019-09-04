@@ -209,12 +209,6 @@ class Ping(Packet):
         ])
 
 
-class Unknown0A(Packet):
-
-    def __init__(self):
-        super().__init__(PacketType.UNKNOWN_0A, "unknown_0a")
-
-
 class Protocol(object):
     """ Protocol declaration. """
 
