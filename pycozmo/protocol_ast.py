@@ -4,12 +4,12 @@ Protocol AST.
 
 """
 
-from enum import Enum
+import enum
 from abc import ABC
 from typing import List, Optional, Union, Type
 
 
-class FrameType(Enum):
+class FrameType(enum.Enum):
     RESET = 1
     RESET_ACK = 2
     FIN = 3
@@ -19,7 +19,7 @@ class FrameType(Enum):
     PING = 0x0b
 
 
-class PacketType(Enum):
+class PacketType(enum.Enum):
     UNKNOWN = -1
     CONNECT = 2
     DISCONNECT = 3
@@ -61,7 +61,11 @@ class BoolArgument(Argument):
         self.default = bool(default)
 
 
-class UInt8Argument(Argument):
+class UIntArgument(Argument, ABC):
+    """ Base class for unsigned integers. """
+
+
+class UInt8Argument(UIntArgument):
     """ 8-bit unsigned integer. """
 
     def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
@@ -69,7 +73,7 @@ class UInt8Argument(Argument):
         self.default = int(default)
 
 
-class UInt16Argument(Argument):
+class UInt16Argument(UIntArgument):
     """ 16-bit unsigned integer. """
 
     def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
@@ -77,7 +81,7 @@ class UInt16Argument(Argument):
         self.default = int(default)
 
 
-class UInt32Argument(Argument):
+class UInt32Argument(UIntArgument):
     """ 32-bit unsigned integer. """
 
     def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
@@ -85,7 +89,11 @@ class UInt32Argument(Argument):
         self.default = int(default)
 
 
-class Int8Argument(Argument):
+class IntArgument(Argument, ABC):
+    """ Base class for signed integers. """
+
+
+class Int8Argument(IntArgument):
     """ 8-bit signed integer. """
 
     def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
@@ -93,7 +101,7 @@ class Int8Argument(Argument):
         self.default = int(default)
 
 
-class Int16Argument(Argument):
+class Int16Argument(IntArgument):
     """ 16-bit signed integer. """
 
     def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
@@ -101,7 +109,7 @@ class Int16Argument(Argument):
         self.default = int(default)
 
 
-class Int32Argument(Argument):
+class Int32Argument(IntArgument):
     """ 32-bit signed integer. """
 
     def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
@@ -141,6 +149,37 @@ class StringArgument(Argument):
         self.default = str(default)
 
 
+class EnumMember(object):
+    """ Base class for enumeration members. """
+
+    def __init__(self, name: str, value: int, description: Optional[str] = None):
+        self.name = str(name)
+        self.description = str(description) if description else None
+        self.value = int(value)
+
+
+class Enum(object):
+    """ Base class for enumerations. """
+
+    def __init__(self, name: str, description: Optional[str] = None,
+                 members: Optional[List[EnumMember]] = None):
+        self.name = str(name)
+        self.description = str(description) if description else None
+        self.members = list(members) if members else []
+
+
+class EnumArgument(Argument):
+    """ Base class for enumeration arguments. """
+
+    def __init__(self, name: str, enum_type: Enum, description: Optional[str] = None,
+                 data_type: Union[Type[IntArgument], Type[UIntArgument]] = Int8Argument,
+                 default=0):
+        super().__init__(name, description)
+        self.enum_type = enum_type
+        self.data_type = data_type
+        self.default = default
+
+
 class Struct(ABC):
     """ Base class for structures. """
 
@@ -159,9 +198,6 @@ class Packet(Struct, ABC):
         super().__init__(name, description, arguments)
         # TODO: Rename to "type".
         self.packet_id = PacketType(packet_id)
-        self.name = str(name)
-        self.description = str(description) if description else None
-        self.arguments = list(arguments) if arguments else []
 
 
 class Connect(Packet):
@@ -212,6 +248,7 @@ class Ping(Packet):
 class Protocol(object):
     """ Protocol declaration. """
 
-    def __init__(self, structs: List[Struct], packets: List[Packet]):
+    def __init__(self, enums: List[Enum], structs: List[Struct], packets: List[Packet]):
+        self.enums = list(enums)
         self.structs = list(structs)
         self.packets = list(packets)

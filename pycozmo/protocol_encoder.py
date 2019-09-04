@@ -8,6 +8,8 @@ Do not modify.
 
 """
 
+import enum
+
 from .protocol_declaration import PacketType
 from .protocol_base import Struct, Packet
 from .protocol_utils import \
@@ -15,6 +17,15 @@ from .protocol_utils import \
     validate_farray, validate_varray, validate_string, \
     get_size, get_farray_size, get_varray_size, get_string_size, get_object_farray_size, \
     BinaryReader, BinaryWriter
+
+
+class BodyColor(enum.Enum):
+    UNKNOWN = -1
+    WHITE_v10 = 0
+    RESERVED = 1
+    WHITE_v15 = 2
+    CE_LM_v15 = 3
+    LE_BL_v16 = 4
 
 
 class LightState(Struct):
@@ -342,43 +353,6 @@ class Ping(Packet):
             counter=counter,
             last=last,
             unknown=unknown)
-
-    
-class Unknown0A(Packet):
-
-    PACKET_ID = PacketType.UNKNOWN_0A
-
-    __slots__ = (
-    )
-
-    def __init__(self):
-        pass
-
-    def __len__(self):
-        return 0
-
-    def __repr__(self):
-        return "{type}()".format(type=type(self).__name__)
-
-    def to_bytes(self):
-        writer = BinaryWriter()
-        self.to_writer(writer)
-        return writer.dumps()
-        
-    def to_writer(self, writer):
-        pass
-
-    @classmethod
-    def from_bytes(cls, buffer):
-        reader = BinaryReader(buffer)
-        obj = cls.from_reader(reader)
-        return obj
-        
-    @classmethod
-    def from_reader(cls, reader):
-        del reader
-        return cls(
-            )
 
     
 class LightStateCenter(Packet):
@@ -3240,10 +3214,10 @@ class BodyInfo(Packet):
     def __init__(self,
                  serial_number=0,
                  body_hw_version=0,
-                 body_color=0):
+                 body_color=-1):
         self.serial_number = serial_number
         self.body_hw_version = body_hw_version
-        self.body_color = body_color
+        self.body_color = BodyColor(body_color)
 
     @property
     def serial_number(self):
@@ -3262,18 +3236,19 @@ class BodyInfo(Packet):
         self._body_hw_version = validate_integer("body_hw_version", value, 0, 4294967295)
 
     @property
-    def body_color(self):
+    def body_color(self) -> BodyColor:
         return self._body_color
 
     @body_color.setter
-    def body_color(self, value):
-        self._body_color = validate_integer("body_color", value, 0, 4294967295)
+    def body_color(self, value: BodyColor):
+        self._body_color = value
+        validate_integer("body_color", value.value, -2147483648, 2147483647)
 
     def __len__(self):
         return \
             get_size('L') + \
             get_size('L') + \
-            get_size('L')
+            get_size('l')
 
     def __repr__(self):
         return "{type}(" \
@@ -3293,7 +3268,7 @@ class BodyInfo(Packet):
     def to_writer(self, writer):
         writer.write(self._serial_number, "L")
         writer.write(self._body_hw_version, "L")
-        writer.write(self._body_color, "L")
+        writer.write(self._body_color.value, "l")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -3305,7 +3280,7 @@ class BodyInfo(Packet):
     def from_reader(cls, reader):
         serial_number = reader.read("L")
         body_hw_version = reader.read("L")
-        body_color = reader.read("L")
+        body_color = reader.read("l")
         return cls(
             serial_number=serial_number,
             body_hw_version=body_hw_version,

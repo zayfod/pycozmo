@@ -11,7 +11,21 @@ FRAME_ID = b"COZ\x03RE\x01"
 MIN_FRAME_SIZE = len(FRAME_ID) + 1 + 2 + 2 + 2
 
 
+BODY_COLOR = Enum("body_color", members=[
+    EnumMember("UNKNOWN", -1),
+    EnumMember("WHITE_v10", 0),
+    EnumMember("RESERVED", 1),
+    EnumMember("WHITE_v15", 2),
+    EnumMember("CE_LM_v15", 3),
+    EnumMember("LE_BL_v16", 4),
+])
+
+
 PROTOCOL = Protocol(
+
+    enums=[
+        BODY_COLOR
+    ],
 
     structs=[
         Struct("light_state", arguments=[
@@ -193,7 +207,7 @@ PROTOCOL = Protocol(
         Command(0xed, "body_info", arguments=[
             UInt32Argument("serial_number"),
             UInt32Argument("body_hw_version"),
-            UInt32Argument("body_color"),
+            EnumArgument("body_color", BODY_COLOR, data_type=Int32Argument, default=-1),
         ]),
         Command(0xee, "firmware_signature", arguments=[
             UInt16Argument("unknown"),          # Last 2 bytes of head s/n?
