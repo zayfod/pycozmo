@@ -154,7 +154,7 @@ Limitations
 Requirements
 ------------
 
-- Python 3.5
+- Python 3.5.4
 
 
 Installation

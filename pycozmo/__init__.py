@@ -34,6 +34,6 @@ __all__ = [
     "run_program",
 ]
 
-if sys.version_info < (3, 5):
-    sys.exit("ERROR: PyCozmo requires Python 3.5 or newer.")
+if sys.version_info < (3, 5, 4):
+    sys.exit("ERROR: PyCozmo requires Python 3.5.4 or newer.")
 del sys
