@@ -45,6 +45,7 @@ PROTOCOL = Protocol(
         Connect(),
         Disconnect(),
         Ping(),
+        Unknown0A(),
 
         Command(0x03, "light_state_center", arguments=[
             FArrayArgument("states", data_type="LightState", length=3),     # top, middle, bottom

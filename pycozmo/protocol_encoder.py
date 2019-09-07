@@ -355,6 +355,43 @@ class Ping(Packet):
             unknown=unknown)
 
     
+class Unknown0A(Packet):
+
+    PACKET_ID = PacketType.UNKNOWN_0A
+
+    __slots__ = (
+    )
+
+    def __init__(self):
+        pass
+
+    def __len__(self):
+        return 0
+
+    def __repr__(self):
+        return "{type}()".format(type=type(self).__name__)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        pass
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        del reader
+        return cls(
+            )
+
+    
 class LightStateCenter(Packet):
 
     PACKET_ID = PacketType.ACTION
