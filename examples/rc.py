@@ -1,15 +1,20 @@
 #!/usr/bin/env python
 
+import sys
+import os
 import argparse
 import logging
-import os
 import time
 import threading
 from fcntl import ioctl
 from struct import unpack
 from select import select
 
-from evdev import ecodes, InputDevice
+try:
+    # noinspection PyPackageRequirements
+    from evdev import ecodes, InputDevice
+except ModuleNotFoundError:
+    sys.exit("ERROR: This application can only run on Linux with evdev installed. Do 'pip install evdev'.")
 
 import pycozmo
 
@@ -61,7 +66,8 @@ class XboxController(object):
                     logging.debug("%s: bus=0x%04x, vendor=0x%04x, product=0x%04x, version=0x%04x",
                                   spec, bus, vendor, product, version)
                 # Is this the right controller?
-                if vendor == cls.ID_VENDOR_MICROSOFT and product in (cls.ID_PRODUCT_XBOX360_PAD, cls.ID_PRODUCT_XBOX360_RECEIVER):
+                if vendor == cls.ID_VENDOR_MICROSOFT and product in (cls.ID_PRODUCT_XBOX360_PAD,
+                                                                     cls.ID_PRODUCT_XBOX360_RECEIVER):
                     logging.debug("Found Xbox 360 wireless controller: {}".format(spec))
                     res = spec
                     break
@@ -115,10 +121,10 @@ class InputThread(object):
 class RCApp(object):
     """ Application class. """
 
-    def __init__(self):
+    def __init__(self, event_device=None):
         logging.info("Initializing...")
         self._stop = False
-        self.controller = XboxController()
+        self.controller = XboxController(event_device)
         self.input_thread = InputThread(self.controller, self._handle_input)
         self.cli = pycozmo.Client()
         self.speed = 0.0        # -1.0 - 1.0
@@ -138,8 +144,7 @@ class RCApp(object):
         # Connect to Cozmo
         self.cli.start()
         self.cli.connect()
-        while self.cli.state != pycozmo.Client.CONNECTED:
-            time.sleep(0.2)
+        self.cli.wait_for_robot()
         # Raise head
         angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) * 0.1
         pkt = pycozmo.protocol_encoder.SetHeadAngle(angle_rad=angle)
@@ -318,6 +323,7 @@ def parse_args():
     """ Parse command-line arguments. """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-v', '--verbose', action='store_true', help='verbose')
+    parser.add_argument('-e', '--event-device', help='event device (autodetect if not specified)')
     args = parser.parse_args()
     return args
 
@@ -334,7 +340,7 @@ def main():
         level=level)
 
     # Create application object.
-    app = RCApp()
+    app = RCApp(args.event_device)
     res = app.init()
     if res:
         app.run()
