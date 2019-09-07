@@ -47,8 +47,10 @@ See [backpack_lights.py](../examples/backpack_lights.py) for example usage.
 Backpack Button
 ---------------
 
-Newer Cozmo models have a backpack button. It seems that it's state can be accessed through the
-`backpack_touch_sensor_raw` field of the `RobotState` message (unconfirmed).
+Newer Cozmo models have a backpack button. The `RobotState` message has a `backpack_touch_sensor_raw` field but
+it seems that it's value does not change as a result of button presses. 
+
+Currently it is not know how to detect button presses.
 
 
 Wheels
