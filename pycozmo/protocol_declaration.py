@@ -10,6 +10,8 @@ from .protocol_ast import *
 FRAME_ID = b"COZ\x03RE\x01"
 MIN_FRAME_SIZE = len(FRAME_ID) + 1 + 2 + 2 + 2
 
+FIRMWARE_VERSION = 2381
+
 
 BODY_COLOR = Enum("body_color", members=[
     EnumMember("UNKNOWN", -1),

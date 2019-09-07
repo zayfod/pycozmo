@@ -14,7 +14,7 @@ from PIL import Image
 
 from .logging import logger, logger_protocol
 from .frame import Frame
-from .protocol_declaration import FrameType
+from .protocol_declaration import FrameType, FIRMWARE_VERSION
 from .protocol_base import PacketType, Packet, UnknownCommand
 from .window import ReceiveWindow, SendWindow
 from . import protocol_encoder
@@ -23,6 +23,7 @@ from . import camera
 from . import object
 from . import util
 from . import robot
+from . import exception
 
 
 ROBOT_ADDR = ("172.31.1.1", 5551)
@@ -309,6 +310,9 @@ class Client(Thread, event.Dispatcher):
         self.robot_addr = robot_addr or ROBOT_ADDR
         self.serial_number_head = None
         self.robot_fw_sig = None
+        self.serial_number = None
+        self.body_hw_version = None
+        self.body_color = None
         # Robot state
         # Heading in X-Y plane.
         self.pose_angle = util.Angle(radians=0.0)
@@ -344,6 +348,7 @@ class Client(Thread, event.Dispatcher):
         self.add_handler(protocol_encoder.Connect, self._on_connect)
         self.add_handler(protocol_encoder.HardwareInfo, self._on_hardware_info)
         self.add_handler(protocol_encoder.FirmwareSignature, self._on_firmware_signature)
+        self.add_handler(protocol_encoder.BodyInfo, self._on_body_info)
         self.add_handler(protocol_encoder.Ping, self._on_ping)
         self.add_handler(protocol_encoder.ImageChunk, self._on_image_chunk)
         self.add_handler(protocol_encoder.RobotState, self._on_robot_state)
@@ -416,10 +421,13 @@ class Client(Thread, event.Dispatcher):
         self.state = Client.CONNECTED
         logger.debug("Connected.")
 
-    def _initialize_robot(self):
+    def _enable_robot(self):
         # Enable
         pkt = UnknownCommand(0x25)
         self.send(pkt)
+        self.send(pkt)  # This repetition seems to trigger BodyInfo
+
+    def _initialize_robot(self):
         # Enables RobotState and ObjectAvailable events - enables body ACC? Requires 0x25.
         pkt = UnknownCommand(0x4b, b"\xc4\xb69\x00\x00\x00\xa0\xc1")
         self.send(pkt)
@@ -442,13 +450,25 @@ class Client(Thread, event.Dispatcher):
     def _on_hardware_info(self, cli, pkt: protocol_encoder.HardwareInfo):
         del cli
         self.serial_number_head = pkt.serial_number_head
-        logger.info("Head S/N %s.", self.serial_number_head)
 
     def _on_firmware_signature(self, cli, pkt: protocol_encoder.FirmwareSignature):
         del cli
         self.robot_fw_sig = json.loads(pkt.signature)
         logger.info("Firmware version %s.", self.robot_fw_sig["version"])
-        self._initialize_robot()
+        self._enable_robot()
+
+    def _on_body_info(self, cli, pkt: protocol_encoder.BodyInfo):
+        del cli
+        self.serial_number = pkt.serial_number
+        self.body_hw_version = pkt.body_hw_version
+        self.body_color = pkt.body_color
+        logger.info("Body S/N %s.", self.serial_number)
+        supported = self.robot_fw_sig["version"] == FIRMWARE_VERSION
+        if supported:
+            self._initialize_robot()
+        else:
+            logger.error("Unsupported Cozmo firmware version %i. Only version %i is supported currently.",
+                         self.robot_fw_sig["version"], FIRMWARE_VERSION)
         self.dispatch(EvtRobotFound, self)
 
     @staticmethod
@@ -458,9 +478,17 @@ class Client(Thread, event.Dispatcher):
 
     def wait_for_robot(self, timeout: float = 5.0) -> None:
         e = Event()
+        self.add_handler(EvtRobotFound, lambda cli: e.set(), one_shot=True)
+        if not e.wait(timeout):
+            raise exception.ConnectionTimeout("Failed to connect to Cozmo.")
+
+        if self.robot_fw_sig["version"] != FIRMWARE_VERSION:
+            raise exception.UnsupportedFirmwareVersion("Unsupported Cozmo firmware version.")
+
+        e = Event()
         self.add_handler(EvtRobotReady, lambda cli: e.set(), one_shot=True)
         if not e.wait(timeout):
-            raise TimeoutError("Failed to connect and initialize Cozmo.")
+            raise exception.ConnectionTimeout("Failed to initialize Cozmo.")
 
     def _reset_partial_state(self):
         self._partial_image_timestamp = None

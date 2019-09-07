@@ -91,6 +91,8 @@ Type    OOB     Source      Description
 
 Out of band packets do not get assigned sequence IDs.
 
+Packet content is Cozmo firmware version specific.
+
 
 Connection Establishment
 ------------------------

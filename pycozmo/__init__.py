@@ -9,6 +9,7 @@ from .client import ROBOT_ADDR, Client, EvtRobotFound, EvtRobotReady
 from .robot import *
 from .event import *
 
+from . import exception
 from . import util
 from . import protocol_base
 from . import protocol_declaration
