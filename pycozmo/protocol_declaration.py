@@ -69,6 +69,7 @@ PROTOCOL = Protocol(
             FArrayArgument("states", data_type="LightState", length=2),     # left, right
             UInt8Argument("unknown"),
         ]),
+        Command(0x25, "enable"),
         Command(0x32, "drive_wheels", arguments=[
             FloatArgument("lwheel_speed_mmps"),
             FloatArgument("rwheel_speed_mmps"),

@@ -423,7 +423,7 @@ class Client(Thread, event.Dispatcher):
 
     def _enable_robot(self):
         # Enable
-        pkt = UnknownCommand(0x25)
+        pkt = protocol_encoder.Enable()
         self.send(pkt)
         self.send(pkt)  # This repetition seems to trigger BodyInfo
 

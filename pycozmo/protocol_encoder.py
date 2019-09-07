@@ -775,6 +775,44 @@ class LightStateSide(Packet):
             unknown=unknown)
 
     
+class Enable(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x25
+
+    __slots__ = (
+    )
+
+    def __init__(self):
+        pass
+
+    def __len__(self):
+        return 0
+
+    def __repr__(self):
+        return "{type}()".format(type=type(self).__name__)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        pass
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        del reader
+        return cls(
+            )
+
+    
 class DriveWheels(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -4359,6 +4397,7 @@ ACTION_BY_ID = {
     0x0b: SetHeadLight,  # 11
     0x10: CubeId,  # 16
     0x11: LightStateSide,  # 17
+    0x25: Enable,  # 37
     0x32: DriveWheels,  # 50
     0x33: TurnInPlace,  # 51
     0x34: DriveLift,  # 52
