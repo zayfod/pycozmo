@@ -477,18 +477,20 @@ class Client(Thread, event.Dispatcher):
         # TODO: Calculate round-trip time
 
     def wait_for_robot(self, timeout: float = 5.0) -> None:
-        e = Event()
-        self.add_handler(EvtRobotFound, lambda cli: e.set(), one_shot=True)
-        if not e.wait(timeout):
-            raise exception.ConnectionTimeout("Failed to connect to Cozmo.")
+        if not self.robot_fw_sig:
+            e = Event()
+            self.add_handler(EvtRobotFound, lambda cli: e.set(), one_shot=True)
+            if not e.wait(timeout):
+                raise exception.ConnectionTimeout("Failed to connect to Cozmo.")
 
         if self.robot_fw_sig["version"] != FIRMWARE_VERSION:
             raise exception.UnsupportedFirmwareVersion("Unsupported Cozmo firmware version.")
 
-        e = Event()
-        self.add_handler(EvtRobotReady, lambda cli: e.set(), one_shot=True)
-        if not e.wait(timeout):
-            raise exception.ConnectionTimeout("Failed to initialize Cozmo.")
+        if not self.serial_number:
+            e = Event()
+            self.add_handler(EvtRobotReady, lambda cli: e.set(), one_shot=True)
+            if not e.wait(timeout):
+                raise exception.ConnectionTimeout("Failed to initialize Cozmo.")
 
     def _reset_partial_state(self):
         self._partial_image_timestamp = None
