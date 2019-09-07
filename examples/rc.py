@@ -20,10 +20,14 @@ class XboxController(object):
     # Get device ID.
     EVIOCGID = 0x80084502
 
-    # Xbox 360 Wireless controller ID.
-    ID_VENDOR = 0x045e
-    ID_PRODUCT_PAD = 0x02a1
-    ID_PRODUCT_RECEIVER = 0x0719
+    # Xbox 360 Wireless
+    ID_VENDOR_MICROSOFT = 0x045e
+    ID_PRODUCT_XBOX360_PAD = 0x02a1
+    ID_PRODUCT_XBOX360_RECEIVER = 0x0719
+
+    # Logitech Gamepad F310
+    ID_VENDOR_LOGITECH = 0x046d
+    ID_PRODUCT_GAMEPAD_F310 = -15843
 
     def __init__(self, event_device=None):
         if not event_device:
@@ -57,8 +61,12 @@ class XboxController(object):
                     logging.debug("%s: bus=0x%04x, vendor=0x%04x, product=0x%04x, version=0x%04x",
                                   spec, bus, vendor, product, version)
                 # Is this the right controller?
-                if vendor == cls.ID_VENDOR and product in (cls.ID_PRODUCT_PAD, cls.ID_PRODUCT_RECEIVER):
+                if vendor == cls.ID_VENDOR_MICROSOFT and product in (cls.ID_PRODUCT_XBOX360_PAD, cls.ID_PRODUCT_XBOX360_RECEIVER):
                     logging.debug("Found Xbox 360 wireless controller: {}".format(spec))
+                    res = spec
+                    break
+                elif vendor == cls.ID_VENDOR_LOGITECH and product == cls.ID_PRODUCT_GAMEPAD_F310:
+                    logging.debug("Found Logitech Gamepad F310 controller: {}".format(spec))
                     res = spec
                     break
         return res
@@ -132,6 +140,11 @@ class RCApp(object):
         self.cli.connect()
         while self.cli.state != pycozmo.Client.CONNECTED:
             time.sleep(0.2)
+        # Raise head
+        angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) * 0.1
+        pkt = pycozmo.protocol_encoder.SetHeadAngle(angle_rad=angle)
+        self.cli.send(pkt)
+        time.sleep(0.5)
         return True
 
     def term(self):
@@ -211,23 +224,23 @@ class RCApp(object):
                 if e.value == 1:
                     self.stop()
             elif e.code == ecodes.BTN_TRIGGER_HAPPY3:
-                # Up
+                # XBox 360 Wireless - Up
                 if e.value == 1:
                     self._drive_lift(0.8)
                 else:
                     self._drive_lift(0.0)
             elif e.code == ecodes.BTN_TRIGGER_HAPPY4:
-                # Down
+                # XBox 360 Wireless - Down
                 if e.value == 1:
                     self._drive_lift(-0.8)
                 else:
                     self._drive_lift(0.0)
             elif e.code == ecodes.BTN_TRIGGER_HAPPY1:
-                # Left
+                # XBox 360 Wireless - Left
                 if e.value == 1:
                     self.lift = False
             elif e.code == ecodes.BTN_TRIGGER_HAPPY2:
-                # Right
+                # XBox 360 Wireless - Right
                 if e.value == 1:
                     self.lift = True
             else:
@@ -239,7 +252,7 @@ class RCApp(object):
                 # e.value = -32768 - full left
                 # e.value = 32768 - full right
                 self.steering = float(-e.value) / 32768.0
-                if -0.10 < self.steering < 0.10:
+                if -0.15 < self.steering < 0.15:
                     self.steering = 0
                 update = True
                 logging.debug("Steering: {:.02f}".format(self.steering))
@@ -247,7 +260,7 @@ class RCApp(object):
                 # e.value = -32768 - full forward
                 # e.value = 32768 - full reverse
                 self.speed = float(-e.value) / 32768.0
-                if -0.10 < self.speed < 0.10:
+                if -0.15 < self.speed < 0.15:
                     self.speed = 0
                 update = True
                 logging.debug("Speed: {:.02f}".format(self.speed))
@@ -261,6 +274,24 @@ class RCApp(object):
                 self.speed_right = float(e.value) / 255.0
                 update2 = True
                 logging.debug("MR: {:.02f}".format(self.speed_right))
+            elif e.code == ecodes.KEY_W:
+                if e.value == -1:
+                    # Logitech Gamepad F310 - Up
+                    self._drive_lift(0.8)
+                elif e.value == 1:
+                    # Logitech Gamepad F310 - Down
+                    self._drive_lift(-0.8)
+                else:
+                    self._drive_lift(0.0)
+            elif e.code == ecodes.KEY_Q:
+                if e.value == 1:
+                    # Logitech Gamepad F310 - Right
+                    self.lift = True
+                elif e.value == -1:
+                    # Logitech Gamepad F310 - Left
+                    self.lift = False
+                else:
+                    pass
             else:
                 # Do nothing.
                 pass

@@ -66,7 +66,8 @@ Tools
 Examples
 --------
 
-- [rc.py](examples/rc.py) - turns Cozmo into an RC tank that can be driven with an XBox 360 Wireless Controller
+- [rc.py](examples/rc.py) - turns Cozmo into an RC tank that can be driven with an XBox 360 Wireless controller or 
+    Logitech Gamepad F310
 - [extremes.py](examples/extremes.py) - demonstrates Cozmo lift and head control
 - [backpack_lights.py](examples/backpack_lights.py) - demonstrates Cozmo backpack LED control
 - [display.py](examples/display.py) - demonstrates low-level visualization of images on Cozmo's display
