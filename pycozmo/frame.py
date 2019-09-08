@@ -132,7 +132,11 @@ class Frame(object):
             while reader.tell() < len(reader):
                 pkt_type = PacketType(reader.read("B"))
                 pkt_len = reader.read("H")
+                expected_offset = reader.tell() + pkt_len
                 pkt = cls._decode_packet(pkt_type, pkt_len, reader)
+                if reader.tell() != expected_offset:
+                    # Packet length may change between protocol versions. This helps with dealing with shorter packets.
+                    reader.seek_set(expected_offset)
                 pkt.seq = pkt_seq
                 pkt.ack = ack
                 if not pkt.is_oob():

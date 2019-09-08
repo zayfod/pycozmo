@@ -1960,6 +1960,76 @@ class DisplayImage(Packet):
             image=image)
 
     
+class FirmwareUpdate(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xaf
+
+    __slots__ = (
+        "_chunk_id",
+        "_data",
+    )
+
+    def __init__(self,
+                 chunk_id=0,
+                 data=()):
+        self.chunk_id = chunk_id
+        self.data = data
+
+    @property
+    def chunk_id(self):
+        return self._chunk_id
+
+    @chunk_id.setter
+    def chunk_id(self, value):
+        self._chunk_id = validate_integer("chunk_id", value, 0, 65535)
+
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = validate_farray(
+            "data", value, 1024, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
+
+    def __len__(self):
+        return \
+            get_size('H') + \
+            get_farray_size('B', 1024)
+
+    def __repr__(self):
+        return "{type}(" \
+               "chunk_id={chunk_id}, " \
+               "data={data})".format(
+                type=type(self).__name__,
+                chunk_id=self._chunk_id,
+                data=self._data)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._chunk_id, "H")
+        writer.write_farray(self._data, "B", 1024)
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        chunk_id = reader.read("H")
+        data = reader.read_farray("B", 1024)
+        return cls(
+            chunk_id=chunk_id,
+            data=data)
+
+    
 class UnknownB0(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -3431,6 +3501,92 @@ class FirmwareSignature(Packet):
             signature=signature)
 
     
+class FirmwareUpdateResult(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xef
+
+    __slots__ = (
+        "_byte_count",
+        "_chunk_id",
+        "_status",
+    )
+
+    def __init__(self,
+                 byte_count=0,
+                 chunk_id=0,
+                 status=0):
+        self.byte_count = byte_count
+        self.chunk_id = chunk_id
+        self.status = status
+
+    @property
+    def byte_count(self):
+        return self._byte_count
+
+    @byte_count.setter
+    def byte_count(self, value):
+        self._byte_count = validate_integer("byte_count", value, 0, 4294967295)
+
+    @property
+    def chunk_id(self):
+        return self._chunk_id
+
+    @chunk_id.setter
+    def chunk_id(self, value):
+        self._chunk_id = validate_integer("chunk_id", value, 0, 65535)
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        self._status = validate_integer("status", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('H') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "byte_count={byte_count}, " \
+               "chunk_id={chunk_id}, " \
+               "status={status})".format(
+                type=type(self).__name__,
+                byte_count=self._byte_count,
+                chunk_id=self._chunk_id,
+                status=self._status)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._byte_count, "L")
+        writer.write(self._chunk_id, "H")
+        writer.write(self._status, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        byte_count = reader.read("L")
+        chunk_id = reader.read("H")
+        status = reader.read("B")
+        return cls(
+            byte_count=byte_count,
+            chunk_id=chunk_id,
+            status=status)
+
+    
 class RobotState(Packet):
 
     PACKET_ID = PacketType.EVENT
@@ -4414,6 +4570,7 @@ ACTION_BY_ID = {
     0x8e: OutputAudio,  # 142
     0x8f: NextFrame,  # 143
     0x97: DisplayImage,  # 151
+    0xaf: FirmwareUpdate,  # 175
     0xb0: UnknownB0,  # 176
     0xb4: ObjectMoved,  # 180
     0xb5: ObjectStoppedMoving,  # 181
@@ -4431,6 +4588,7 @@ ACTION_BY_ID = {
     0xde: FallingStopped,  # 222
     0xed: BodyInfo,  # 237
     0xee: FirmwareSignature,  # 238
+    0xef: FirmwareUpdateResult,  # 239
 }
 
 

@@ -174,6 +174,45 @@ NV RAM Storage
 `NvStorageOpResult`
 
 
+Firmware Updates
+----------------
+
+Cozmo firmware updates are distributed in "cozmo.safe" files that seem to contain firmware images for all three of
+Cozmos controllers - the Wi-Fi controller (Espressif ESP8266), the body controller (NXP Kinetis K02), and the Bluetooth
+LE controller (Nordic nRF51822).
+
+The "cozmo.safe" files start with a firmware signature in JSON format:
+
+```json
+{
+    "version": 2381,
+    "git-rev": "408d28a7f6e68cbb5b29c1dcd8c8db2b38f9c8ce",
+    "date": "Tue Jan  8 10:27:05 2019",
+    "time": 1546972025,
+    "messageEngineToRobotHash": "9e4a965ace4e09d86997b87ba14235d5",
+    "messageRobotToEngineHash": "a259247f16231db440957215baba12ab",
+    "build": "DEVELOPMENT",
+    "wifiSig": "69ca03352e42143d340f0f7fac02ed8ff96ef10b",
+    "rtipSig": "36574986d76144a70e9252ab633be4617a4bc661",
+    "bodySig": "695b59eff43664acd1a5a956d08c682b3f8bd2c8"
+}
+```
+
+This is the same signature, delivered with the `FirmwareSignature` message on initial connection establishment.
+
+See [versions.md](versions.md) for more examples.
+
+There seem to be individual signatures for each controller but the structure of the `cozmo.safe` files is not known.
+
+The firmware image is transferred as-is from the engine to the robot, using `FirmwareUpdate` messages. It is divided
+into 1024 B chunks that are numbered consecutively, starting with 0. Each chunk is confirmed by the robot with a
+`FirmwareUpdateResult` message with `status` field set to 0.
+
+Firmware transfer completion is indicated by the engine with e `FirmwareUpdate` message with chunk ID set to 0xFFFF and
+data set to all-zeros. The robot confirms firmware update completion by sending a `FirmwareUpdateResult` message that
+repeats the last chunk ID and has a `status` field set to 10.
+
+
 Bluetooth LE
 ------------
 

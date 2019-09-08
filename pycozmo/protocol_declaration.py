@@ -134,6 +134,10 @@ PROTOCOL = Protocol(
         Command(0x97, "display_image", arguments=[
             VArrayArgument("image"),
         ]),
+        Command(0xaf, "firmware_update", arguments=[
+            UInt16Argument("chunk_id"),
+            FArrayArgument("data", length=1024)
+        ]),
         Command(0xb0, "unknown_b0", arguments=[
             UInt16Argument("unknown0"),
             UInt16Argument("unknown1"),
@@ -216,6 +220,11 @@ PROTOCOL = Protocol(
         Command(0xee, "firmware_signature", arguments=[
             UInt16Argument("unknown"),          # Last 2 bytes of head s/n?
             StringArgument("signature"),
+        ]),
+        Command(0xef, "firmware_update_result", arguments=[
+            UInt32Argument("byte_count"),
+            UInt16Argument("chunk_id"),
+            UInt8Argument("status"),            # 0=OK; 0x0a=complete?
         ]),
 
         Event(0xf0, "robot_state", arguments=[
