@@ -13,7 +13,7 @@ from select import select
 try:
     # noinspection PyPackageRequirements
     from evdev import ecodes, InputDevice
-except ModuleNotFoundError:
+except ImportError:
     sys.exit("ERROR: This application can only run on Linux with evdev installed. Do 'pip install evdev'.")
 
 import pycozmo
