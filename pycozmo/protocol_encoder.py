@@ -35,8 +35,8 @@ class LightState(Struct):
         "_off_color",
         "_on_frames",
         "_off_frames",
-        "_transmission_on_frames",
-        "_transmission_off_frames",
+        "_transition_on_frames",
+        "_transition_off_frames",
         "_offset",
     )
 
@@ -45,15 +45,15 @@ class LightState(Struct):
                  off_color=0,
                  on_frames=0,
                  off_frames=0,
-                 transmission_on_frames=0,
-                 transmission_off_frames=0,
+                 transition_on_frames=0,
+                 transition_off_frames=0,
                  offset=0):
         self.on_color = on_color
         self.off_color = off_color
         self.on_frames = on_frames
         self.off_frames = off_frames
-        self.transmission_on_frames = transmission_on_frames
-        self.transmission_off_frames = transmission_off_frames
+        self.transition_on_frames = transition_on_frames
+        self.transition_off_frames = transition_off_frames
         self.offset = offset
 
     @property
@@ -89,20 +89,20 @@ class LightState(Struct):
         self._off_frames = validate_integer("off_frames", value, 0, 255)
 
     @property
-    def transmission_on_frames(self):
-        return self._transmission_on_frames
+    def transition_on_frames(self):
+        return self._transition_on_frames
 
-    @transmission_on_frames.setter
-    def transmission_on_frames(self, value):
-        self._transmission_on_frames = validate_integer("transmission_on_frames", value, 0, 255)
+    @transition_on_frames.setter
+    def transition_on_frames(self, value):
+        self._transition_on_frames = validate_integer("transition_on_frames", value, 0, 255)
 
     @property
-    def transmission_off_frames(self):
-        return self._transmission_off_frames
+    def transition_off_frames(self):
+        return self._transition_off_frames
 
-    @transmission_off_frames.setter
-    def transmission_off_frames(self, value):
-        self._transmission_off_frames = validate_integer("transmission_off_frames", value, 0, 255)
+    @transition_off_frames.setter
+    def transition_off_frames(self, value):
+        self._transition_off_frames = validate_integer("transition_off_frames", value, 0, 255)
 
     @property
     def offset(self):
@@ -128,16 +128,16 @@ class LightState(Struct):
                "off_color={off_color}, " \
                "on_frames={on_frames}, " \
                "off_frames={off_frames}, " \
-               "transmission_on_frames={transmission_on_frames}, " \
-               "transmission_off_frames={transmission_off_frames}, " \
+               "transition_on_frames={transition_on_frames}, " \
+               "transition_off_frames={transition_off_frames}, " \
                "offset={offset})".format(
                 type=type(self).__name__,
                 on_color=self._on_color,
                 off_color=self._off_color,
                 on_frames=self._on_frames,
                 off_frames=self._off_frames,
-                transmission_on_frames=self._transmission_on_frames,
-                transmission_off_frames=self._transmission_off_frames,
+                transition_on_frames=self._transition_on_frames,
+                transition_off_frames=self._transition_off_frames,
                 offset=self._offset)
 
     def to_bytes(self):
@@ -150,8 +150,8 @@ class LightState(Struct):
         writer.write(self._off_color, "H")
         writer.write(self._on_frames, "B")
         writer.write(self._off_frames, "B")
-        writer.write(self._transmission_on_frames, "B")
-        writer.write(self._transmission_off_frames, "B")
+        writer.write(self._transition_on_frames, "B")
+        writer.write(self._transition_off_frames, "B")
         writer.write(self._offset, "h")
 
     @classmethod
@@ -166,16 +166,16 @@ class LightState(Struct):
         off_color = reader.read("H")
         on_frames = reader.read("B")
         off_frames = reader.read("B")
-        transmission_on_frames = reader.read("B")
-        transmission_off_frames = reader.read("B")
+        transition_on_frames = reader.read("B")
+        transition_off_frames = reader.read("B")
         offset = reader.read("h")
         return cls(
             on_color=on_color,
             off_color=off_color,
             on_frames=on_frames,
             off_frames=off_frames,
-            transmission_on_frames=transmission_on_frames,
-            transmission_off_frames=transmission_off_frames,
+            transition_on_frames=transition_on_frames,
+            transition_off_frames=transition_off_frames,
             offset=offset)
 
     

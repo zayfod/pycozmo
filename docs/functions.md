@@ -22,7 +22,7 @@ Overview
 
 ### Charging Platform
 
-The charging platform (aka "pad") can be communicated with over Bluetooth LE. It contains 3 RGB LEDs that can be
+Some charging platforms (aka "pads") can be communicated with over Bluetooth LE. They contains 3 RGB LEDs that can be
 controlled, similar to cube LEDs.
 
 
@@ -236,6 +236,9 @@ Cubes have 4 RGB LEDs that can be controlled individually.
 
 A cube has to be "selected" first, using the `CubeId` message. A subsequent `CubeLights` message sets the state of all
 4 cube LEDs.
+
+Cubes can be programmed to perform simple LED light animations autonomously using the `LightState` structure and the
+`CubeId.rotation_period_frames` field.
 
 
 Cube Battery Voltage
