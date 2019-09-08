@@ -5,7 +5,7 @@ import time
 import pycozmo
 
 
-def pycozmo_program(cli):
+def pycozmo_program(cli: pycozmo.client.Client):
 
     angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) / 2.0
     pkt = pycozmo.protocol_encoder.SetHeadAngle(angle_rad=angle)

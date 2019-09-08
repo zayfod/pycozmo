@@ -94,7 +94,7 @@ class Color:
 green = Color(name="green", int_color=0x00ff00ff)
 red = Color(name="red", int_color=0xff0000ff)
 blue = Color(name="blue", int_color=0x0000ffff)
-white = Color(name="white", int_color=0xffffffff)
+white = Color(name="white", int_color=0xffffffff)       # Does not work well with cubes?
 off = Color(name="off")
 
 green_light = LightState(on_color=green.to_int16(), off_color=green.to_int16())

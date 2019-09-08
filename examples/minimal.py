@@ -5,7 +5,7 @@ import time
 import pycozmo
 
 
-def pycozmo_program(cli):
+def pycozmo_program(cli: pycozmo.client.Client):
     while True:
         time.sleep(0.1)
 

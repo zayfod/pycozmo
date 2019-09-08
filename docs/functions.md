@@ -18,9 +18,12 @@ Overview
 
 - LEDs
 - Accelerometers
-- BatteryVoltage
+- Battery voltage
 
 ### Charging Platform
+
+The charging platform can be communicated with over Bluetooth LE. It contains a single RGB LED that can be controlled,
+similar to cube LEDs.
 
 
 Wi-Fi
@@ -216,16 +219,23 @@ repeats the last chunk ID and has a `status` field set to 10.
 Bluetooth LE
 ------------
 
-`ObjectAvailable`
-`ObjectConnect`
-`ObjectConnectionState`
+"Objects", that can be connected to over Bluettoth LE announce their availability with an `ObjectAvailable` message
+periodically. The `ObjectAvailable` message contains the object type (e.g. light cube 1, 2, 3 or charging pad) and
+the object factory ID which identifies it uniquely.
+
+The `ObjectConnect` message is used to initiate or terminate a connection to objects, using their factory ID.
+
+Connection establishment and termination is announced with the `ObjectConnectionState` message. It contains a temporary
+"object ID" that is used to identify the object for the duration of the connection with it.
 
 
 Cube LEDs
 ---------
 
-`CibeId`
-`CubeLights`
+Cubes have 4 RGB LEDs that can be controlled individually.
+
+A cube has to be "selected" first, using the `CubeId` message. A subsequent `CubeLights` message sets the state of all
+4 cube LEDs.
 
 
 Cube Battery Voltage

@@ -5,7 +5,7 @@ import time
 import pycozmo
 
 
-def pycozmo_program(cli):
+def pycozmo_program(cli: pycozmo.client.Client):
 
     cli.send(pycozmo.protocol_encoder.SetHeadAngle(angle_rad=pycozmo.MAX_HEAD_ANGLE.radians))
     time.sleep(1)

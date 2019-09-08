@@ -6,7 +6,7 @@ import wave
 import pycozmo
 
 
-def pycozmo_program(cli):
+def pycozmo_program(cli: pycozmo.client.Client):
     f = wave.open("hello.wav", "rb")
     sampwidth = f.getsampwidth()
     print("Sample width: {} byte(s)".format(sampwidth))

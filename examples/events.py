@@ -55,7 +55,7 @@ def on_robot_wheels_moving(cli, state):
         print("Stopped moving.")
 
 
-def pycozmo_program(cli):
+def pycozmo_program(cli: pycozmo.client.Client):
 
     cli.add_handler(pycozmo.protocol_encoder.RobotState, on_robot_state, one_shot=True)
     cli.add_handler(pycozmo.protocol_encoder.RobotPoked, on_robot_poked)

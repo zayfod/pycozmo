@@ -333,7 +333,9 @@ class Client(Thread, event.Dispatcher):
         self.client_drop_count = 0
         # Camera state
         self.last_image_timestamp = None
+        # Object state
         self.available_objects = dict()
+        self.connected_objects = dict()
         self.state = self.IDLE
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setblocking(False)
@@ -354,6 +356,7 @@ class Client(Thread, event.Dispatcher):
         self.add_handler(protocol_encoder.RobotState, self._on_robot_state)
         self.add_handler(protocol_encoder.AnimationState, self._on_animation_state)
         self.add_handler(protocol_encoder.ObjectAvailable, self._on_object_available)
+        self.add_handler(protocol_encoder.ObjectConnectionState, self._on_object_connection_state)
         self.recv_thread.start()
         self.send_thread.start()
         super().start()
@@ -475,6 +478,12 @@ class Client(Thread, event.Dispatcher):
     def _on_ping(cli, pkt: protocol_encoder.Ping):
         del cli, pkt
         # TODO: Calculate round-trip time
+
+    def wait_for(self, event, timeout: float = None) -> None:
+        e = Event()
+        self.add_handler(event, lambda *args: e.set(), one_shot=True)
+        if not e.wait(timeout):
+            raise exception.Timeout("Failed to receive event in time.")
 
     def wait_for_robot(self, timeout: float = 5.0) -> None:
         if not self.robot_fw_sig:
@@ -607,3 +616,16 @@ class Client(Thread, event.Dispatcher):
         if factory_id not in self.available_objects:
             self.available_objects[factory_id] = obj
             logger.debug("Object of type %s with S/N %i available.", str(obj.object_type), obj.factory_id)
+
+    def _on_object_connection_state(self, cli, pkt: protocol_encoder.ObjectConnectionState):
+        del cli
+        if pkt.connected:
+            # Connected
+            self.connected_objects[pkt.object_id] = {
+                "factory_id": pkt.factory_id,
+                "object_type": pkt.object_type,
+            }
+        else:
+            # Disconnected
+            if pkt.object_id in self.connected_objects:
+                del self.connected_objects[pkt.object_id]

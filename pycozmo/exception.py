@@ -18,3 +18,7 @@ class ConnectionTimeout(PyCozmoConnectionError):
 
 class UnsupportedFirmwareVersion(PyCozmoConnectionError):
     """ Unsupported Cozmo firmware version. """
+
+
+class Timeout(PyCozmoException):
+    """ Timeout. """
