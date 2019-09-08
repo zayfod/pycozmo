@@ -22,8 +22,8 @@ Overview
 
 ### Charging Platform
 
-The charging platform can be communicated with over Bluetooth LE. It contains a single RGB LED that can be controlled,
-similar to cube LEDs.
+The charging platform (aka "pad") can be communicated with over Bluetooth LE. It contains 3 RGB LEDs that can be
+controlled, similar to cube LEDs.
 
 
 Wi-Fi

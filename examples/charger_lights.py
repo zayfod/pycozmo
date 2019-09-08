@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+import time
+
+import pycozmo
+
+
+def pycozmo_program(cli: pycozmo.client.Client):
+    print("Waiting for charger...")
+    charger_factory_id = None
+    while not charger_factory_id:
+        available_objects = dict(cli.available_objects)
+        for factory_id, obj in available_objects.items():
+            if obj.object_type == pycozmo.object.ObjectType.Charger_Basic:
+                charger_factory_id = factory_id
+                break
+    print("Charger with S/N {} available.".format(charger_factory_id))
+
+    print("Connecting to charger...")
+    pkt = pycozmo.protocol_encoder.ObjectConnect(factory_id=charger_factory_id, connect=True)
+    cli.send(pkt)
+    cli.wait_for(pycozmo.protocol_encoder.ObjectConnectionState)
+    charger_id = list(cli.connected_objects.keys())[0]
+    print("Charger connected - ID {}.".format(charger_id))
+
+    lights = [
+        pycozmo.lights.red_light,
+        pycozmo.lights.green_light,
+        pycozmo.lights.blue_light,
+        pycozmo.lights.off_light,
+    ]
+    for light in lights:
+        # Select
+        pkt = pycozmo.protocol_encoder.CubeId(object_id=charger_id)
+        cli.send(pkt)
+        # Set lights
+        pkt = pycozmo.protocol_encoder.CubeLights(states=(light, light, light, pycozmo.lights.off_light))
+        cli.send(pkt)
+
+        time.sleep(2)
+
+
+pycozmo.run_program(pycozmo_program)
