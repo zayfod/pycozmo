@@ -6,14 +6,31 @@ import dpkt
 import pycozmo
 
 
+packet_count = 0
+unknown_count = 0
+
+
 def decode_cozmo_frame(frame_count, ts, buffer):
+    global packet_count
+    global unknown_count
+
     frame = pycozmo.Frame.from_bytes(buffer)
+
+    # if frame.type == pycozmo.protocol_declaration.FrameType.PING:
+    #     return
 
     print("{:<12s}first_seq={:04x}, seq={:04x}, ack={:04x}, frame={:6d}, time={:.06f}".format(
         frame.type.name, frame.first_seq, frame.seq, frame.ack, frame_count, ts))
 
     for pkt in frame.pkts:
-        print("\t{}".format(pkt))
+        packet_count += 1
+        if isinstance(pkt, pycozmo.protocol_base.UnknownPacket):
+            unknown_count += 1
+        # if isinstance(pkt, pycozmo.protocol_encoder.Ping):
+        #     continue
+        print("\t{:<12s} time={:.06f} {}".format(frame.type.name, ts, pkt))
+        # if ts > 15:
+        #     sys.exit(1)
 
 
 def decode_pcap(fspec):
@@ -40,6 +57,12 @@ def decode_pcap(fspec):
             frame_count += 1
             # if frame_count > 100:
             #     break
+
+    print()
+    print("Frames: {}".format(frame_count))
+    print("Packets: {}".format(packet_count))
+    if packet_count:
+        print("Unknown packets: {} ({:.0f}%)".format(unknown_count, 100.0*unknown_count/packet_count))
 
 
 def main():
