@@ -465,7 +465,7 @@ class Client(Thread, event.Dispatcher):
         self.serial_number = pkt.serial_number
         self.body_hw_version = pkt.body_hw_version
         self.body_color = pkt.body_color
-        logger.info("Body S/N %s.", self.serial_number)
+        logger.info("Body S/N 0x%08x.", self.serial_number)
         supported = self.robot_fw_sig["version"] == FIRMWARE_VERSION
         if supported:
             self._initialize_robot()
@@ -615,7 +615,7 @@ class Client(Thread, event.Dispatcher):
         obj = object.Object(factory_id=factory_id, object_type=object_type)
         if factory_id not in self.available_objects:
             self.available_objects[factory_id] = obj
-            logger.debug("Object of type %s with S/N %i available.", str(obj.object_type), obj.factory_id)
+            logger.debug("Object of type %s with S/N 0x%08x available.", str(obj.object_type), obj.factory_id)
 
     def _on_object_connection_state(self, cli, pkt: protocol_encoder.ObjectConnectionState):
         del cli

@@ -14,7 +14,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
             if obj.object_type == pycozmo.object.ObjectType.Block_LIGHTCUBE1:
                 cube_factory_id = factory_id
                 break
-    print("Cube with S/N {} available.".format(cube_factory_id))
+    print("Cube with S/N 0x{:08x} available.".format(cube_factory_id))
 
     print("Connecting to cube...")
     pkt = pycozmo.protocol_encoder.ObjectConnect(factory_id=cube_factory_id, connect=True)

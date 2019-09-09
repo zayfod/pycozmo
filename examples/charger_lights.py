@@ -14,7 +14,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
             if obj.object_type == pycozmo.object.ObjectType.Charger_Basic:
                 charger_factory_id = factory_id
                 break
-    print("Charger with S/N {} available.".format(charger_factory_id))
+    print("Charger with S/N 0x{:08x} available.".format(charger_factory_id))
 
     print("Connecting to charger...")
     pkt = pycozmo.protocol_encoder.ObjectConnect(factory_id=charger_factory_id, connect=True)
