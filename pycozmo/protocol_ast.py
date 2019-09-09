@@ -204,14 +204,14 @@ class Connect(Packet):
     """ Connection acknowledgement packet. """
 
     def __init__(self):
-        super().__init__(PacketType.CONNECT, "connect")
+        super().__init__(PacketType.CONNECT, "Connect")
 
 
 class Disconnect(Packet):
     """ Disconnect packet. """
 
     def __init__(self):
-        super().__init__(PacketType.DISCONNECT, "disconnect")
+        super().__init__(PacketType.DISCONNECT, "Disconnect")
 
 
 # TODO: Rename to "Action".
@@ -237,7 +237,7 @@ class Ping(Packet):
     """ Ping packet. """
 
     def __init__(self):
-        super().__init__(PacketType.PING, "ping", arguments=[
+        super().__init__(PacketType.PING, "Ping", arguments=[
             DoubleArgument("time_sent_ms"),
             UInt32Argument("counter"),
             UInt32Argument("last"),

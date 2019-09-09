@@ -9,11 +9,6 @@ import os
 from . import protocol_declaration
 
 
-def to_pascal_case(name):
-    components = name.split('_')
-    return ''.join(x.title() for x in components)
-
-
 def get_fmt_by_type(t):
     if t == protocol_declaration.FloatArgument:
         fmt = "f"
@@ -84,7 +79,7 @@ class ProtocolGenerator(object):
         for packet in protocol_declaration.PROTOCOL.packets:
             if not isinstance(packet, protocol_declaration.Command):
                 continue
-            action_map[packet.id] = to_pascal_case(packet.name)
+            action_map[packet.id] = packet.name
 
         self.f.write('\n\nACTION_BY_ID = {\n')
         for k, v in sorted(action_map.items()):
@@ -96,7 +91,7 @@ class ProtocolGenerator(object):
         for packet in protocol_declaration.PROTOCOL.packets:
             if not isinstance(packet, protocol_declaration.Event):
                 continue
-            event_map[packet.id] = to_pascal_case(packet.name)
+            event_map[packet.id] = packet.name
 
         self.f.write('\n\nEVENT_BY_ID = {\n')
         for k, v in sorted(event_map.items()):
@@ -213,7 +208,7 @@ class ProtocolGenerator(object):
     @{name}.setter
     def {name}(self, value: {enum_type}):
         self._{name} = value
-        """.format(name=argument.name, enum_type=to_pascal_case(argument.enum_type.name)))
+        """.format(name=argument.name, enum_type=argument.enum_type.name))
                 self.generate_enum_validation(argument)
             else:
                 self.f.write(r"""
@@ -335,7 +330,7 @@ class ProtocolGenerator(object):
             for argument in packet.arguments:
                 if isinstance(argument, protocol_declaration.EnumArgument):
                     self.f.write("        self.{name} = {enum_type}({name})\n".format(
-                        name=argument.name, enum_type=to_pascal_case(argument.enum_type.name)))
+                        name=argument.name, enum_type=argument.enum_type.name))
                 else:
                     self.f.write("        self.{name} = {name}\n".format(name=argument.name))
         else:
@@ -466,7 +461,7 @@ class ProtocolGenerator(object):
         self.f.write(r"""
 
 class {name}(enum.Enum):
-""".format(name=to_pascal_case(enum_type.name)))
+""".format(name=enum_type.name))
         for member in enum_type.members:
             self.f.write('    {name} = {value}\n'.format(name=member.name, value=member.value))
 
@@ -474,7 +469,7 @@ class {name}(enum.Enum):
         self.f.write(r"""
 
 class {name}(Struct):
-""".format(name=to_pascal_case(struct_type.name)))
+""".format(name=struct_type.name))
         self.f.write("\n    __slots__ = (\n")
         self.generate_packet_slots(struct_type)
         self.f.write("    )\n\n    def __init__(self")
@@ -493,7 +488,7 @@ class {name}(Struct):
 class {name}(Packet):
 
     PACKET_ID = {packet_id}
-""".format(name=to_pascal_case(packet.name), packet_id=packet.packet_id))
+""".format(name=packet.name, packet_id=packet.packet_id))
         if isinstance(packet, protocol_declaration.Command) or isinstance(packet, protocol_declaration.Event):
             self.f.write("    ID = 0x{:02x}\n".format(packet.id))
         self.f.write("\n    __slots__ = (\n")

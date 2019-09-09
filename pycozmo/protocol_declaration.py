@@ -13,7 +13,7 @@ MIN_FRAME_SIZE = len(FRAME_ID) + 1 + 2 + 2 + 2
 FIRMWARE_VERSION = 2381
 
 
-BODY_COLOR = Enum("body_color", members=[
+BODY_COLOR = Enum("BodyColor", members=[
     EnumMember("UNKNOWN", -1),
     EnumMember("WHITE_v10", 0),
     EnumMember("RESERVED", 1),
@@ -21,7 +21,7 @@ BODY_COLOR = Enum("body_color", members=[
     EnumMember("CE_LM_v15", 3),
     EnumMember("LE_BL_v16", 4),
 ])
-NV_ENTRY_TAG = Enum("nv_entry_tag", members=[
+NV_ENTRY_TAG = Enum("NvEntryTag", members=[
     EnumMember("NVEntry_Invalid", 0xffffffff),
     EnumMember("NVEntry_GameSkillLevels", 0x180000),
     EnumMember("NVEntry_OnboardingData", 0x181000),
@@ -61,13 +61,13 @@ NV_ENTRY_TAG = Enum("nv_entry_tag", members=[
     EnumMember("NVEntry_FactoryBaseTag", 0xde000),
     EnumMember("NVEntry_FactoryBaseTagWithBCOffset", 0xde030),
 ])
-NV_OPERATION = Enum("nv_operation", members=[
+NV_OPERATION = Enum("NvOperation", members=[
     EnumMember("NVOP_READ", 0),
     EnumMember("NVOP_WRITE", 1),
     EnumMember("NVOP_ERASE", 2),
     EnumMember("NVOP_WIPEALL", 3),
 ])
-NV_RESULT = Enum("nv_result", members=[
+NV_RESULT = Enum("NvResult", members=[
     EnumMember("NV_OKAY", 0),
     EnumMember("NV_SCHEDULED", 1),
     EnumMember("NV_NO_DO", 2),
@@ -87,7 +87,7 @@ NV_RESULT = Enum("nv_result", members=[
     EnumMember("NV_LOOP", -8),
     EnumMember("NV_CORRUPT", -9),
 ])
-UP_AXIS = Enum("up_axis", members=[
+UP_AXIS = Enum("UpAxis", members=[
     EnumMember("XNegative", 0),
     EnumMember("XPositive", 1),
     EnumMember("YNegative", 2),
@@ -97,7 +97,7 @@ UP_AXIS = Enum("up_axis", members=[
     EnumMember("NumAxes", 6),
     EnumMember("UnknownAxis", 7),
 ])
-OBJECT_TYPE = Enum("object_type", members=[
+OBJECT_TYPE = Enum("ObjectType", members=[
     EnumMember("InvalidObject", -1),
     EnumMember("UnknownObject", 0),
     EnumMember("Block_LIGHTCUBE1", 1),
@@ -138,7 +138,7 @@ OBJECT_TYPE = Enum("object_type", members=[
     EnumMember("CustomType19", 36),
     EnumMember("CustomFixedObstacle", 37),
 ])
-IMAGE_ENCODING = Enum("image_encoding", members=[
+IMAGE_ENCODING = Enum("ImageEncoding", members=[
     EnumMember("NoneImageEncoding", 0),
     EnumMember("RawGray", 1),
     EnumMember("RawRGB", 2),
@@ -150,7 +150,7 @@ IMAGE_ENCODING = Enum("image_encoding", members=[
     EnumMember("JPEGMinimizedGray", 8),
     EnumMember("JPEGMinimizedColor", 9),
 ])
-IMAGE_RESOLUTION = Enum("image_resolution", members=[
+IMAGE_RESOLUTION = Enum("ImageResolution", members=[
     EnumMember("VerificationSnapshot", 0),
     EnumMember("QQQQVGA", 1),
     EnumMember("QQQVGA", 2),
@@ -183,7 +183,7 @@ PROTOCOL = Protocol(
     ],
 
     structs=[
-        Struct("light_state", arguments=[
+        Struct("LightState", arguments=[
             UInt16Argument("on_color"),
             UInt16Argument("off_color"),
             UInt8Argument("on_frames"),
@@ -200,105 +200,105 @@ PROTOCOL = Protocol(
         Ping(),
         Unknown0A(),
 
-        Command(0x03, "light_state_center", arguments=[
+        Command(0x03, "LightStateCenter", arguments=[
             FArrayArgument("states", data_type="LightState", length=3),     # top, middle, bottom
             UInt8Argument("unknown"),
         ]),
-        Command(0x04, "cube_lights", arguments=[
+        Command(0x04, "CubeLights", arguments=[
             FArrayArgument("states", data_type="LightState", length=4)
         ]),
-        Command(0x05, "object_connect", arguments=[
+        Command(0x05, "ObjectConnect", arguments=[
             UInt32Argument("factory_id"),
             BoolArgument("connect"),
         ]),
-        Command(0x0b, "set_head_light", arguments=[
+        Command(0x0b, "SetHeadLight", arguments=[
             BoolArgument("enable")
         ]),
-        Command(0x10, "cube_id", arguments=[
+        Command(0x10, "CubeId", arguments=[
             UInt32Argument("object_id"),
             UInt8Argument("rotation_period_frames"),
         ]),
-        Command(0x11, "light_state_side", arguments=[
+        Command(0x11, "LightStateSide", arguments=[
             FArrayArgument("states", data_type="LightState", length=2),     # left, right
             UInt8Argument("unknown"),
         ]),
-        Command(0x25, "enable"),
-        Command(0x32, "drive_wheels", arguments=[
+        Command(0x25, "Enable"),
+        Command(0x32, "DriveWheels", arguments=[
             FloatArgument("lwheel_speed_mmps"),
             FloatArgument("rwheel_speed_mmps"),
             FloatArgument("lwheel_accel_mmps2"),
             FloatArgument("rwheel_accel_mmps2"),
         ]),
-        Command(0x33, "turn_in_place", arguments=[
+        Command(0x33, "TurnInPlace", arguments=[
             FloatArgument("wheel_speed_mmps"),
             FloatArgument("wheel_accel_mmps2"),
             Int16Argument("direction"),
         ]),
-        Command(0x34, "drive_lift", arguments=[
+        Command(0x34, "DriveLift", arguments=[
             FloatArgument("speed"),
         ]),
-        Command(0x35, "drive_head", arguments=[
+        Command(0x35, "DriveHead", arguments=[
             FloatArgument("speed"),
         ]),
-        Command(0x36, "set_lift_height", arguments=[
+        Command(0x36, "SetLiftHeight", arguments=[
             FloatArgument("height_mm"),
             FloatArgument("max_speed_rad_per_sec", default=3.0),
             FloatArgument("accel_rad_per_sec2", default=20.0),
             FloatArgument("duration_sec"),
             UInt8Argument("action_id"),
         ]),
-        Command(0x37, "set_head_angle", arguments=[
+        Command(0x37, "SetHeadAngle", arguments=[
             FloatArgument("angle_rad"),
             FloatArgument("max_speed_rad_per_sec", default=15.0),
             FloatArgument("accel_rad_per_sec2", default=20.0),
             FloatArgument("duration_sec"),
             UInt8Argument("action_id"),
         ]),
-        Command(0x3b, "stop_all_motors"),
-        Command(0x4c, "enable_camera", arguments=[
+        Command(0x3b, "StopAllMotors"),
+        Command(0x4c, "EnableCamera", arguments=[
             BoolArgument("enable"),
             UInt8Argument("unknown", default=4)     # resolution but ignored?
         ]),
-        Command(0x57, "set_camera_params", arguments=[
+        Command(0x57, "SetCameraParams", arguments=[
             FloatArgument("gain"),
             UInt16Argument("exposure_ms"),
             BoolArgument("auto_exposure_enabled"),
         ]),
-        Command(0x60, "enable_stop_on_cliff", arguments=[
+        Command(0x60, "EnableStopOnCliff", arguments=[
             BoolArgument("enable"),
         ]),
-        Command(0x64, "set_robot_volume", arguments=[
+        Command(0x64, "SetRobotVolume", arguments=[
             UInt16Argument("level"),
         ]),
-        Command(0x66, "enable_color_images", arguments=[
+        Command(0x66, "EnableColorImages", arguments=[
             BoolArgument("enable"),
         ]),
-        Command(0x81, "nv_storage_op", arguments=[
+        Command(0x81, "NvStorageOp", arguments=[
             EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument, default=0xffffffff),
             Int32Argument("index"),
             EnumArgument("op", NV_OPERATION, data_type=UInt8Argument),
             UInt8Argument("unknown"),
             VArrayArgument("data"),
         ]),
-        Command(0x8e, "output_audio", arguments=[
+        Command(0x8e, "OutputAudio", arguments=[
             FArrayArgument("samples", length=744),
         ]),
-        Command(0x8f, "next_frame"),
-        Command(0x97, "display_image", arguments=[
+        Command(0x8f, "NextFrame"),
+        Command(0x97, "DisplayImage", arguments=[
             VArrayArgument("image"),
         ]),
-        Command(0xaf, "firmware_update", arguments=[
+        Command(0xaf, "FirmwareUpdate", arguments=[
             UInt16Argument("chunk_id"),
             FArrayArgument("data", length=1024)
         ]),
-        Command(0xb0, "unknown_b0", arguments=[
+        Command(0xb0, "UnknownB0", arguments=[
             UInt16Argument("unknown0"),
             UInt16Argument("unknown1"),
             UInt16Argument("unknown2"),
             Int8Argument("unknown3"),
             VArrayArgument("unknown4", data_type=UInt32Argument, length_type=UInt8Argument)
         ]),
-        Command(0xb4, "object_moved", arguments=[
+        Command(0xb4, "ObjectMoved", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("object_id"),
             FloatArgument("active_accel_x"),
@@ -306,11 +306,11 @@ PROTOCOL = Protocol(
             FloatArgument("active_accel_z"),
             EnumArgument("axis_of_accel", UP_AXIS, data_type=UInt8Argument, default=7),
         ]),
-        Command(0xb5, "object_stopped_moving", arguments=[
+        Command(0xb5, "ObjectStoppedMoving", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("object_id"),
         ]),
-        Command(0xb6, "object_tapped", arguments=[
+        Command(0xb6, "ObjectTapped", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("object_id"),
             UInt8Argument("num_taps"),
@@ -318,69 +318,69 @@ PROTOCOL = Protocol(
             Int8Argument("tap_neg"),
             Int8Argument("tap_pos"),
         ]),
-        Command(0xb9, "object_tap_filtered", arguments=[
+        Command(0xb9, "ObjectTapFiltered", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("object_id"),
             UInt8Argument("time"),
             UInt8Argument("intensity"),
         ]),
-        Command(0xc4, "acknowledge_command", arguments=[
+        Command(0xc4, "AcknowledgeCommand", arguments=[
             UInt8Argument("action_id"),
         ]),
-        Command(0xc2, "robot_delocalized"),
-        Command(0xc3, "robot_poked"),
-        Command(0xc9, "hardware_info", arguments=[
+        Command(0xc2, "RobotDelocalized"),
+        Command(0xc3, "RobotPoked"),
+        Command(0xc9, "HardwareInfo", arguments=[
             UInt32Argument("serial_number_head"),
             UInt8Argument("unknown1"),
             UInt8Argument("unknown2"),
         ]),
-        Command(0xcd, "nv_storage_op_result", arguments=[
+        Command(0xcd, "NvStorageOpResult", arguments=[
             EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument, default=0xffffffff),
             Int32Argument("index"),
             EnumArgument("op", NV_OPERATION, data_type=UInt8Argument),
             EnumArgument("result", NV_RESULT, data_type=Int8Argument),
             VArrayArgument("data"),
         ]),
-        Command(0xce, "object_power_level", arguments=[
+        Command(0xce, "ObjectPowerLevel", arguments=[
             UInt32Argument("object_id"),
             UInt32Argument("missed_packets"),
             UInt8Argument("battery_level"),
         ]),
-        Command(0xd0, "object_connection_state", arguments=[
+        Command(0xd0, "ObjectConnectionState", arguments=[
             UInt32Argument("object_id"),
             UInt32Argument("factory_id"),
             EnumArgument("object_type", OBJECT_TYPE, data_type=Int32Argument, default=-1),
             BoolArgument("connected"),
         ]),
-        Command(0xd7, "object_up_axis_changed", arguments=[
+        Command(0xd7, "ObjectUpAxisChanged", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("object_id"),
             EnumArgument("axis", UP_AXIS, data_type=UInt8Argument, default=7),
         ]),
-        Command(0xdd, "falling_started", arguments=[
+        Command(0xdd, "FallingStarted", arguments=[
             UInt32Argument("unknown"),
         ]),
-        Command(0xde, "falling_stopped", arguments=[
+        Command(0xde, "FallingStopped", arguments=[
             UInt32Argument("unknown"),
             UInt32Argument("duration_ms"),
             FloatArgument("impact_intensity"),
         ]),
-        Command(0xed, "body_info", arguments=[
+        Command(0xed, "BodyInfo", arguments=[
             UInt32Argument("serial_number"),
             UInt32Argument("body_hw_version"),
             EnumArgument("body_color", BODY_COLOR, data_type=Int32Argument, default=-1),
         ]),
-        Command(0xee, "firmware_signature", arguments=[
+        Command(0xee, "FirmwareSignature", arguments=[
             UInt16Argument("unknown"),          # Last 2 bytes of head s/n?
             StringArgument("signature"),
         ]),
-        Command(0xef, "firmware_update_result", arguments=[
+        Command(0xef, "FirmwareUpdateResult", arguments=[
             UInt32Argument("byte_count"),
             UInt16Argument("chunk_id"),
             UInt8Argument("status"),            # 0=OK; 0x0a=complete?
         ]),
 
-        Event(0xf0, "robot_state", arguments=[
+        Event(0xf0, "RobotState", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("pose_frame_id"),
             UInt32Argument("pose_origin_id"),
@@ -405,7 +405,7 @@ PROTOCOL = Protocol(
             UInt16Argument("backpack_touch_sensor_raw"),
             UInt8Argument("curr_path_segment"),
         ]),
-        Event(0xf1, "animation_state", arguments=[
+        Event(0xf1, "AnimationState", arguments=[
             UInt32Argument("timestamp"),
             Int32Argument("num_anim_bytes_played"),
             Int32Argument("num_audio_frames_played"),
@@ -413,7 +413,7 @@ PROTOCOL = Protocol(
             UInt8Argument("tag"),
             UInt8Argument("client_drop_count"),
         ]),
-        Event(0xf2, "image_chunk", arguments=[
+        Event(0xf2, "ImageChunk", arguments=[
             UInt32Argument("frame_timestamp"),
             UInt32Argument("image_id"),
             UInt32Argument("chunk_debug"),
@@ -424,12 +424,12 @@ PROTOCOL = Protocol(
             UInt16Argument("status"),
             VArrayArgument("data"),
         ]),
-        Event(0xf3, "object_available", arguments=[
+        Event(0xf3, "ObjectAvailable", arguments=[
             UInt32Argument("factory_id"),
             EnumArgument("object_type", OBJECT_TYPE, data_type=Int32Argument, default=-1),
             Int8Argument("rssi"),
         ]),
-        Event(0xf4, "image_imu_data", arguments=[
+        Event(0xf4, "ImageImuData", arguments=[
             UInt32Argument("image_id"),
             FloatArgument("rate_x"),
             FloatArgument("rate_y"),
