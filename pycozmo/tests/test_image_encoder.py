@@ -6,6 +6,7 @@ from pycozmo.image_encoder import ImageDecoder, image_to_str
 from pycozmo.util import hex_load
 
 
+# noinspection PyPep8
 class TestImageDecoder(unittest.TestCase):
 
     @staticmethod

@@ -14,12 +14,14 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
 
+# noinspection PyPep8
 import pycozmo
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'PyCozmo'
+# noinspection PyShadowingBuiltins
 copyright = '2019, Kaloyan Tenchov'
 author = 'Kaloyan Tenchov'
 
@@ -49,11 +51,6 @@ master_doc = 'index'
 
 
 # -- Options for HTML output -------------------------------------------------
-
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
-#html_theme = 'alabaster'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

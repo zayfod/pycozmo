@@ -6,6 +6,7 @@ import pycozmo
 
 
 def pycozmo_program(cli: pycozmo.client.Client):
+    del cli
     while True:
         time.sleep(0.1)
 
