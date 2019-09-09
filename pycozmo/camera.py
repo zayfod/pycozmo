@@ -1,54 +1,23 @@
 
-from enum import Enum
-
 import numpy as np
 
-
-class ImageEncoding(Enum):
-    NoneImageEncoding = 0
-    RawGray = 1
-    RawRGB = 2
-    YUYV = 3
-    BAYER = 4
-    JPEGGray = 5
-    JPEGColor = 6
-    JPEGColorHalfWidth = 7
-    JPEGMinimizedGray = 8
-    JPEGMinimizedColor = 9
-
-
-class ImageResolution(Enum):
-    VerificationSnapshot = 0
-    QQQQVGA = 1
-    QQQVGA = 2
-    QQVGA = 3
-    QVGA = 4
-    CVGA = 5
-    VGA = 6
-    SVGA = 7
-    XGA = 8
-    SXGA = 9
-    UXGA = 10
-    QXGA = 11
-    QUXGA = 12
-    ImageResolutionCount = 13
-    ImageResolutionNone = 14
+from . import protocol_encoder
 
 
 RESOLUTIONS = {
-    ImageResolution.VerificationSnapshot: (16, 16),
-    ImageResolution.QQQQVGA: (40, 30),
-    ImageResolution.QQQVGA: (80, 60),
-    ImageResolution.QQVGA: (160, 120),
-    ImageResolution.QVGA: (320, 240),
-    ImageResolution.CVGA: (400, 296),
-    ImageResolution.VGA: (640, 480),
-    ImageResolution.SVGA: (800, 600),
-    ImageResolution.XGA: (1024, 768),
-    ImageResolution.SXGA: (1280, 960),
-    ImageResolution.UXGA: (1600, 1200),
-    ImageResolution.QXGA: (2048, 1536),
-    ImageResolution.QUXGA: (3200, 2400)
+    protocol_encoder.ImageResolution.VerificationSnapshot: (16, 16),
+    protocol_encoder.ImageResolution.QQQQVGA: (40, 30),
+    protocol_encoder.ImageResolution.QQQVGA: (80, 60),
+    protocol_encoder.ImageResolution.QQVGA: (160, 120),
+    protocol_encoder.ImageResolution.QVGA: (320, 240),
+    protocol_encoder.ImageResolution.CVGA: (400, 296),
+    protocol_encoder.ImageResolution.VGA: (640, 480),
+    protocol_encoder.ImageResolution.SVGA: (800, 600),
+    protocol_encoder.ImageResolution.XGA: (1024, 768),
+    protocol_encoder.ImageResolution.SXGA: (1280, 960),
+    protocol_encoder.ImageResolution.UXGA: (1600, 1200),
+    protocol_encoder.ImageResolution.QXGA: (2048, 1536),
+    protocol_encoder.ImageResolution.QUXGA: (3200, 2400)
 }
 
 

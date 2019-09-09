@@ -28,6 +28,159 @@ class BodyColor(enum.Enum):
     LE_BL_v16 = 4
 
 
+class NvEntryTag(enum.Enum):
+    NVEntry_Invalid = 4294967295
+    NVEntry_GameSkillLevels = 1572864
+    NVEntry_OnboardingData = 1576960
+    NVEntry_GameUnlocks = 1581056
+    NVEntry_FaceEnrollData = 1585152
+    NVEntry_FaceAlbumData = 1589248
+    NVEntry_NurtureGameData = 1654784
+    NVEntry_InventoryData = 1658880
+    NVEntry_LabAssignments = 1662976
+    NVEntry_SavedCubeIDs = 1667072
+    NVEntry_NEXT_SLOT = 1671168
+    NVEntry_FACTORY_RESERVED1 = 1835008
+    NVEntry_FACTORY_RESERVED2 = 1957888
+    NVEntry_BirthCertificate = 2147483648
+    NVEntry_CameraCalib = 2147483649
+    NVEntry_ToolCodeInfo = 2147483650
+    NVEntry_CalibPose = 2147483651
+    NVEntry_CalibMetaInfo = 2147483652
+    NVEntry_ObservedCubePose = 2147483653
+    NVEntry_IMUInfo = 2147483654
+    NVEntry_CliffValOnDrop = 2147483655
+    NVEntry_CliffValOnGround = 2147483656
+    NVEntry_PlaypenTestResults = 2147483664
+    NVEntry_FactoryLock = 2147483665
+    NVEntry_VersionMagic = 2147483666
+    NVEntry_CalibImage1 = 2147549184
+    NVEntry_CalibImage2 = 2147614720
+    NVEntry_CalibImage3 = 2147680256
+    NVEntry_CalibImage4 = 2147745792
+    NVEntry_CalibImage5 = 2147811328
+    NVEntry_CalibImage6 = 2147876864
+    NVEntry_ToolCodeImageLeft = 2148532224
+    NVEntry_ToolCodeImageRight = 2148597760
+    NVEntry_PrePlaypenResults = 3221225472
+    NVEntry_PrePlaypenCentroids = 3221225473
+    NVEntry_IMUAverages = 3221225476
+    NVEntry_FactoryBaseTag = 909312
+    NVEntry_FactoryBaseTagWithBCOffset = 909360
+
+
+class NvOperation(enum.Enum):
+    NVOP_READ = 0
+    NVOP_WRITE = 1
+    NVOP_ERASE = 2
+    NVOP_WIPEALL = 3
+
+
+class NvResult(enum.Enum):
+    NV_OKAY = 0
+    NV_SCHEDULED = 1
+    NV_NO_DO = 2
+    NV_MORE = 3
+    NV_UNKNOWN_4 = 4
+    NV_UNKNOWN_5 = 5
+    NV_UNKNOWN_6 = 6
+    NV_UNKNOWN_7 = 7
+    NV_UNKNOWN_8 = 8
+    NV_NOT_FOUND = -1
+    NV_NO_ROOM = -2
+    NV_ERROR = -3
+    NV_TIMEOUT = -4
+    NV_BUSY = -5
+    NV_BAD_ARGS = -6
+    NV_NO_MEM = -7
+    NV_LOOP = -8
+    NV_CORRUPT = -9
+
+
+class UpAxis(enum.Enum):
+    XNegative = 0
+    XPositive = 1
+    YNegative = 2
+    YPositive = 3
+    ZNegative = 4
+    ZPositive = 5
+    NumAxes = 6
+    UnknownAxis = 7
+
+
+class ObjectType(enum.Enum):
+    InvalidObject = -1
+    UnknownObject = 0
+    Block_LIGHTCUBE1 = 1
+    Block_LIGHTCUBE2 = 2
+    Block_LIGHTCUBE3 = 3
+    Block_LIGHTCUBE_GHOST = 4
+    FlatMat_GEARS_4x4 = 5
+    FlatMat_LETTERS_4x4 = 6
+    FlatMat_ANKI_LOGO_8BIT = 7
+    FlatMat_LAVA_PLAYTEST = 8
+    Platform_LARGE = 9
+    Bridge_LONG = 10
+    Bridge_SHORT = 11
+    Ramp_Basic = 12
+    Charger_Basic = 13
+    ProxObstacle = 14
+    CliffDetection = 15
+    CollisionObstacle = 16
+    CustomType00 = 17
+    CustomType01 = 18
+    CustomType02 = 19
+    CustomType03 = 20
+    CustomType04 = 21
+    CustomType05 = 22
+    CustomType06 = 23
+    CustomType07 = 24
+    CustomType08 = 25
+    CustomType09 = 26
+    CustomType10 = 27
+    CustomType11 = 28
+    CustomType12 = 29
+    CustomType13 = 30
+    CustomType14 = 31
+    CustomType15 = 32
+    CustomType16 = 33
+    CustomType17 = 34
+    CustomType18 = 35
+    CustomType19 = 36
+    CustomFixedObstacle = 37
+
+
+class ImageEncoding(enum.Enum):
+    NoneImageEncoding = 0
+    RawGray = 1
+    RawRGB = 2
+    YUYV = 3
+    BAYER = 4
+    JPEGGray = 5
+    JPEGColor = 6
+    JPEGColorHalfWidth = 7
+    JPEGMinimizedGray = 8
+    JPEGMinimizedColor = 9
+
+
+class ImageResolution(enum.Enum):
+    VerificationSnapshot = 0
+    QQQQVGA = 1
+    QQQVGA = 2
+    QQVGA = 3
+    QVGA = 4
+    CVGA = 5
+    VGA = 6
+    SVGA = 7
+    XGA = 8
+    SXGA = 9
+    UXGA = 10
+    QXGA = 11
+    QUXGA = 12
+    ImageResolutionCount = 13
+    ImageResolutionNone = 14
+
+
 class LightState(Struct):
 
     __slots__ = (
@@ -1702,47 +1855,32 @@ class NvStorageOp(Packet):
 
     __slots__ = (
         "_tag",
-        "_unknown",
-        "_op",
         "_index",
+        "_op",
+        "_unknown",
         "_data",
     )
 
     def __init__(self,
-                 tag=0,
-                 unknown=0,
-                 op=0,
+                 tag=4294967295,
                  index=0,
+                 op=0,
+                 unknown=0,
                  data=()):
-        self.tag = tag
-        self.unknown = unknown
-        self.op = op
+        self.tag = NvEntryTag(tag)
         self.index = index
+        self.op = NvOperation(op)
+        self.unknown = unknown
         self.data = data
 
     @property
-    def tag(self):
+    def tag(self) -> NvEntryTag:
         return self._tag
 
     @tag.setter
-    def tag(self, value):
-        self._tag = validate_integer("tag", value, 0, 4294967295)
-
-    @property
-    def unknown(self):
-        return self._unknown
-
-    @unknown.setter
-    def unknown(self, value):
-        self._unknown = validate_integer("unknown", value, 0, 4294967295)
-
-    @property
-    def op(self):
-        return self._op
-
-    @op.setter
-    def op(self, value):
-        self._op = validate_integer("op", value, 0, 255)
+    def tag(self, value: NvEntryTag):
+        self._tag = value
+        validate_integer("tag", value.value, 0, 4294967295)
 
     @property
     def index(self):
@@ -1750,7 +1888,24 @@ class NvStorageOp(Packet):
 
     @index.setter
     def index(self, value):
-        self._index = validate_integer("index", value, 0, 255)
+        self._index = validate_integer("index", value, -2147483648, 2147483647)
+
+    @property
+    def op(self) -> NvOperation:
+        return self._op
+
+    @op.setter
+    def op(self, value: NvOperation):
+        self._op = value
+        validate_integer("op", value.value, 0, 255)
+
+    @property
+    def unknown(self):
+        return self._unknown
+
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_integer("unknown", value, 0, 255)
 
     @property
     def data(self):
@@ -1764,7 +1919,7 @@ class NvStorageOp(Packet):
     def __len__(self):
         return \
             get_size('L') + \
-            get_size('L') + \
+            get_size('l') + \
             get_size('B') + \
             get_size('B') + \
             get_varray_size(self._data, 'H', 'B')
@@ -1772,15 +1927,15 @@ class NvStorageOp(Packet):
     def __repr__(self):
         return "{type}(" \
                "tag={tag}, " \
-               "unknown={unknown}, " \
-               "op={op}, " \
                "index={index}, " \
+               "op={op}, " \
+               "unknown={unknown}, " \
                "data={data})".format(
                 type=type(self).__name__,
                 tag=self._tag,
-                unknown=self._unknown,
-                op=self._op,
                 index=self._index,
+                op=self._op,
+                unknown=self._unknown,
                 data=self._data)
 
     def to_bytes(self):
@@ -1789,10 +1944,10 @@ class NvStorageOp(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(self._tag, "L")
-        writer.write(self._unknown, "L")
-        writer.write(self._op, "B")
-        writer.write(self._index, "B")
+        writer.write(self._tag.value, "L")
+        writer.write(self._index, "l")
+        writer.write(self._op.value, "B")
+        writer.write(self._unknown, "B")
         writer.write_varray(self._data, "B", "H")
 
     @classmethod
@@ -1804,15 +1959,15 @@ class NvStorageOp(Packet):
     @classmethod
     def from_reader(cls, reader):
         tag = reader.read("L")
-        unknown = reader.read("L")
+        index = reader.read("l")
         op = reader.read("B")
-        index = reader.read("B")
+        unknown = reader.read("B")
         data = reader.read_varray("B", "H")
         return cls(
             tag=tag,
-            unknown=unknown,
-            op=op,
             index=index,
+            op=op,
+            unknown=unknown,
             data=data)
 
     
@@ -2171,13 +2326,13 @@ class ObjectMoved(Packet):
                  active_accel_x=0.0,
                  active_accel_y=0.0,
                  active_accel_z=0.0,
-                 axis_of_accel=0):
+                 axis_of_accel=7):
         self.timestamp = timestamp
         self.object_id = object_id
         self.active_accel_x = active_accel_x
         self.active_accel_y = active_accel_y
         self.active_accel_z = active_accel_z
-        self.axis_of_accel = axis_of_accel
+        self.axis_of_accel = UpAxis(axis_of_accel)
 
     @property
     def timestamp(self):
@@ -2220,12 +2375,13 @@ class ObjectMoved(Packet):
         self._active_accel_z = validate_float("active_accel_z", value)
 
     @property
-    def axis_of_accel(self):
+    def axis_of_accel(self) -> UpAxis:
         return self._axis_of_accel
 
     @axis_of_accel.setter
-    def axis_of_accel(self, value):
-        self._axis_of_accel = validate_integer("axis_of_accel", value, 0, 255)
+    def axis_of_accel(self, value: UpAxis):
+        self._axis_of_accel = value
+        validate_integer("axis_of_accel", value.value, 0, 255)
 
     def __len__(self):
         return \
@@ -2263,7 +2419,7 @@ class ObjectMoved(Packet):
         writer.write(self._active_accel_x, "f")
         writer.write(self._active_accel_y, "f")
         writer.write(self._active_accel_z, "f")
-        writer.write(self._axis_of_accel, "B")
+        writer.write(self._axis_of_accel.value, "B")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -2818,47 +2974,32 @@ class NvStorageOpResult(Packet):
 
     __slots__ = (
         "_tag",
-        "_result",
-        "_op",
         "_index",
+        "_op",
+        "_result",
         "_data",
     )
 
     def __init__(self,
-                 tag=0,
-                 result=0,
-                 op=0,
+                 tag=4294967295,
                  index=0,
+                 op=0,
+                 result=0,
                  data=()):
-        self.tag = tag
-        self.result = result
-        self.op = op
+        self.tag = NvEntryTag(tag)
         self.index = index
+        self.op = NvOperation(op)
+        self.result = NvResult(result)
         self.data = data
 
     @property
-    def tag(self):
+    def tag(self) -> NvEntryTag:
         return self._tag
 
     @tag.setter
-    def tag(self, value):
-        self._tag = validate_integer("tag", value, 0, 4294967295)
-
-    @property
-    def result(self):
-        return self._result
-
-    @result.setter
-    def result(self, value):
-        self._result = validate_integer("result", value, -2147483648, 2147483647)
-
-    @property
-    def op(self):
-        return self._op
-
-    @op.setter
-    def op(self, value):
-        self._op = validate_integer("op", value, 0, 255)
+    def tag(self, value: NvEntryTag):
+        self._tag = value
+        validate_integer("tag", value.value, 0, 4294967295)
 
     @property
     def index(self):
@@ -2866,7 +3007,25 @@ class NvStorageOpResult(Packet):
 
     @index.setter
     def index(self, value):
-        self._index = validate_integer("index", value, 0, 255)
+        self._index = validate_integer("index", value, -2147483648, 2147483647)
+
+    @property
+    def op(self) -> NvOperation:
+        return self._op
+
+    @op.setter
+    def op(self, value: NvOperation):
+        self._op = value
+        validate_integer("op", value.value, 0, 255)
+
+    @property
+    def result(self) -> NvResult:
+        return self._result
+
+    @result.setter
+    def result(self, value: NvResult):
+        self._result = value
+        validate_integer("result", value.value, -128, 127)
 
     @property
     def data(self):
@@ -2882,21 +3041,21 @@ class NvStorageOpResult(Packet):
             get_size('L') + \
             get_size('l') + \
             get_size('B') + \
-            get_size('B') + \
+            get_size('b') + \
             get_varray_size(self._data, 'H', 'B')
 
     def __repr__(self):
         return "{type}(" \
                "tag={tag}, " \
-               "result={result}, " \
-               "op={op}, " \
                "index={index}, " \
+               "op={op}, " \
+               "result={result}, " \
                "data={data})".format(
                 type=type(self).__name__,
                 tag=self._tag,
-                result=self._result,
-                op=self._op,
                 index=self._index,
+                op=self._op,
+                result=self._result,
                 data=self._data)
 
     def to_bytes(self):
@@ -2905,10 +3064,10 @@ class NvStorageOpResult(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(self._tag, "L")
-        writer.write(self._result, "l")
-        writer.write(self._op, "B")
-        writer.write(self._index, "B")
+        writer.write(self._tag.value, "L")
+        writer.write(self._index, "l")
+        writer.write(self._op.value, "B")
+        writer.write(self._result.value, "b")
         writer.write_varray(self._data, "B", "H")
 
     @classmethod
@@ -2920,15 +3079,15 @@ class NvStorageOpResult(Packet):
     @classmethod
     def from_reader(cls, reader):
         tag = reader.read("L")
-        result = reader.read("l")
+        index = reader.read("l")
         op = reader.read("B")
-        index = reader.read("B")
+        result = reader.read("b")
         data = reader.read_varray("B", "H")
         return cls(
             tag=tag,
-            result=result,
-            op=op,
             index=index,
+            op=op,
+            result=result,
             data=data)
 
     
@@ -3033,11 +3192,11 @@ class ObjectConnectionState(Packet):
     def __init__(self,
                  object_id=0,
                  factory_id=0,
-                 object_type=0,
+                 object_type=-1,
                  connected=False):
         self.object_id = object_id
         self.factory_id = factory_id
-        self.object_type = object_type
+        self.object_type = ObjectType(object_type)
         self.connected = connected
 
     @property
@@ -3057,12 +3216,13 @@ class ObjectConnectionState(Packet):
         self._factory_id = validate_integer("factory_id", value, 0, 4294967295)
 
     @property
-    def object_type(self):
+    def object_type(self) -> ObjectType:
         return self._object_type
 
     @object_type.setter
-    def object_type(self, value):
-        self._object_type = validate_integer("object_type", value, 0, 4294967295)
+    def object_type(self, value: ObjectType):
+        self._object_type = value
+        validate_integer("object_type", value.value, -2147483648, 2147483647)
 
     @property
     def connected(self):
@@ -3076,7 +3236,7 @@ class ObjectConnectionState(Packet):
         return \
             get_size('L') + \
             get_size('L') + \
-            get_size('L') + \
+            get_size('l') + \
             get_size('b')
 
     def __repr__(self):
@@ -3099,7 +3259,7 @@ class ObjectConnectionState(Packet):
     def to_writer(self, writer):
         writer.write(self._object_id, "L")
         writer.write(self._factory_id, "L")
-        writer.write(self._object_type, "L")
+        writer.write(self._object_type.value, "l")
         writer.write(int(self._connected), "b")
 
     @classmethod
@@ -3112,7 +3272,7 @@ class ObjectConnectionState(Packet):
     def from_reader(cls, reader):
         object_id = reader.read("L")
         factory_id = reader.read("L")
-        object_type = reader.read("L")
+        object_type = reader.read("l")
         connected = bool(reader.read("b"))
         return cls(
             object_id=object_id,
@@ -3135,10 +3295,10 @@ class ObjectUpAxisChanged(Packet):
     def __init__(self,
                  timestamp=0,
                  object_id=0,
-                 axis=0):
+                 axis=7):
         self.timestamp = timestamp
         self.object_id = object_id
-        self.axis = axis
+        self.axis = UpAxis(axis)
 
     @property
     def timestamp(self):
@@ -3157,12 +3317,13 @@ class ObjectUpAxisChanged(Packet):
         self._object_id = validate_integer("object_id", value, 0, 4294967295)
 
     @property
-    def axis(self):
+    def axis(self) -> UpAxis:
         return self._axis
 
     @axis.setter
-    def axis(self, value):
-        self._axis = validate_integer("axis", value, 0, 255)
+    def axis(self, value: UpAxis):
+        self._axis = value
+        validate_integer("axis", value.value, 0, 255)
 
     def __len__(self):
         return \
@@ -3188,7 +3349,7 @@ class ObjectUpAxisChanged(Packet):
     def to_writer(self, writer):
         writer.write(self._timestamp, "L")
         writer.write(self._object_id, "L")
-        writer.write(self._axis, "B")
+        writer.write(self._axis.value, "B")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -4181,8 +4342,8 @@ class ImageChunk(Packet):
         self.frame_timestamp = frame_timestamp
         self.image_id = image_id
         self.chunk_debug = chunk_debug
-        self.image_encoding = image_encoding
-        self.image_resolution = image_resolution
+        self.image_encoding = ImageEncoding(image_encoding)
+        self.image_resolution = ImageResolution(image_resolution)
         self.image_chunk_count = image_chunk_count
         self.chunk_id = chunk_id
         self.status = status
@@ -4213,20 +4374,22 @@ class ImageChunk(Packet):
         self._chunk_debug = validate_integer("chunk_debug", value, 0, 4294967295)
 
     @property
-    def image_encoding(self):
+    def image_encoding(self) -> ImageEncoding:
         return self._image_encoding
 
     @image_encoding.setter
-    def image_encoding(self, value):
-        self._image_encoding = validate_integer("image_encoding", value, 0, 255)
+    def image_encoding(self, value: ImageEncoding):
+        self._image_encoding = value
+        validate_integer("image_encoding", value.value, -128, 127)
 
     @property
-    def image_resolution(self):
+    def image_resolution(self) -> ImageResolution:
         return self._image_resolution
 
     @image_resolution.setter
-    def image_resolution(self, value):
-        self._image_resolution = validate_integer("image_resolution", value, 0, 255)
+    def image_resolution(self, value: ImageResolution):
+        self._image_resolution = value
+        validate_integer("image_resolution", value.value, -128, 127)
 
     @property
     def image_chunk_count(self):
@@ -4266,8 +4429,8 @@ class ImageChunk(Packet):
             get_size('L') + \
             get_size('L') + \
             get_size('L') + \
-            get_size('B') + \
-            get_size('B') + \
+            get_size('b') + \
+            get_size('b') + \
             get_size('B') + \
             get_size('B') + \
             get_size('H') + \
@@ -4304,8 +4467,8 @@ class ImageChunk(Packet):
         writer.write(self._frame_timestamp, "L")
         writer.write(self._image_id, "L")
         writer.write(self._chunk_debug, "L")
-        writer.write(self._image_encoding, "B")
-        writer.write(self._image_resolution, "B")
+        writer.write(self._image_encoding.value, "b")
+        writer.write(self._image_resolution.value, "b")
         writer.write(self._image_chunk_count, "B")
         writer.write(self._chunk_id, "B")
         writer.write(self._status, "H")
@@ -4322,8 +4485,8 @@ class ImageChunk(Packet):
         frame_timestamp = reader.read("L")
         image_id = reader.read("L")
         chunk_debug = reader.read("L")
-        image_encoding = reader.read("B")
-        image_resolution = reader.read("B")
+        image_encoding = reader.read("b")
+        image_resolution = reader.read("b")
         image_chunk_count = reader.read("B")
         chunk_id = reader.read("B")
         status = reader.read("H")
@@ -4353,10 +4516,10 @@ class ObjectAvailable(Packet):
 
     def __init__(self,
                  factory_id=0,
-                 object_type=0,
+                 object_type=-1,
                  rssi=0):
         self.factory_id = factory_id
-        self.object_type = object_type
+        self.object_type = ObjectType(object_type)
         self.rssi = rssi
 
     @property
@@ -4368,12 +4531,13 @@ class ObjectAvailable(Packet):
         self._factory_id = validate_integer("factory_id", value, 0, 4294967295)
 
     @property
-    def object_type(self):
+    def object_type(self) -> ObjectType:
         return self._object_type
 
     @object_type.setter
-    def object_type(self, value):
-        self._object_type = validate_integer("object_type", value, 0, 4294967295)
+    def object_type(self, value: ObjectType):
+        self._object_type = value
+        validate_integer("object_type", value.value, -2147483648, 2147483647)
 
     @property
     def rssi(self):
@@ -4386,7 +4550,7 @@ class ObjectAvailable(Packet):
     def __len__(self):
         return \
             get_size('L') + \
-            get_size('L') + \
+            get_size('l') + \
             get_size('b')
 
     def __repr__(self):
@@ -4406,7 +4570,7 @@ class ObjectAvailable(Packet):
         
     def to_writer(self, writer):
         writer.write(self._factory_id, "L")
-        writer.write(self._object_type, "L")
+        writer.write(self._object_type.value, "l")
         writer.write(self._rssi, "b")
 
     @classmethod
@@ -4418,7 +4582,7 @@ class ObjectAvailable(Packet):
     @classmethod
     def from_reader(cls, reader):
         factory_id = reader.read("L")
-        object_type = reader.read("L")
+        object_type = reader.read("l")
         rssi = reader.read("b")
         return cls(
             factory_id=factory_id,

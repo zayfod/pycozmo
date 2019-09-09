@@ -11,7 +11,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
     while not charger_factory_id:
         available_objects = dict(cli.available_objects)
         for factory_id, obj in available_objects.items():
-            if obj.object_type == pycozmo.object.ObjectType.Charger_Basic:
+            if obj.object_type == pycozmo.protocol_encoder.ObjectType.Charger_Basic:
                 charger_factory_id = factory_id
                 break
     print("Charger with S/N 0x{:08x} available.".format(charger_factory_id))

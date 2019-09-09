@@ -1,8 +1,8 @@
 
-from enum import Enum
 import math
 
 from . import util
+from . import protocol_encoder
 
 
 MIN_HEAD_ANGLE = util.Angle(degrees=-25)
@@ -58,20 +58,12 @@ RobotStatusFlagNames = {
 }
 
 
-class BodyColor(Enum):
-    WHITE_v10 = 0
-    RESERVED  = 1
-    WHITE_v15 = 2
-    CE_LM_v15 = 3
-    LE_BL_v16 = 4
-
-
 BODY_COLOR_NAMES = {
-    BodyColor.WHITE_v10: "Original",
-    BodyColor.RESERVED: "Reserved",
-    BodyColor.WHITE_v15: "White",
-    BodyColor.CE_LM_v15: "CE_LM",
-    BodyColor.LE_BL_v16: "LE_BL",
+    protocol_encoder.BodyColor.WHITE_v10: "Original",
+    protocol_encoder.BodyColor.RESERVED: "Reserved",
+    protocol_encoder.BodyColor.WHITE_v15: "White",
+    protocol_encoder.BodyColor.CE_LM_v15: "CE_LM",
+    protocol_encoder.BodyColor.LE_BL_v16: "LE_BL",
 }
 
 

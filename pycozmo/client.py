@@ -528,10 +528,10 @@ class Client(Thread, event.Dispatcher):
             self._reset_partial_state()
             self._partial_image_timestamp = pkt.frame_timestamp
             self._partial_image_id = pkt.image_id
-            self._partial_image_encoding = camera.ImageEncoding(pkt.image_encoding)
-            self._partial_image_resolution = camera.ImageResolution(pkt.image_resolution)
+            self._partial_image_encoding = protocol_encoder.ImageEncoding(pkt.image_encoding)
+            self._partial_image_resolution = protocol_encoder.ImageResolution(pkt.image_resolution)
 
-            image_resolution = camera.ImageResolution(pkt.image_resolution)
+            image_resolution = protocol_encoder.ImageResolution(pkt.image_resolution)
             width, height = camera.RESOLUTIONS[image_resolution]
             max_size = width * height * 3  # 3 bytes per pixel (RGB)
             self._partial_data = np.empty(max_size, dtype=np.uint8)
@@ -558,7 +558,7 @@ class Client(Thread, event.Dispatcher):
         # The first byte of the image is whether or not it is in color
         is_color_image = data[0] != 0
 
-        if self._partial_image_encoding == camera.ImageEncoding.JPEGMinimizedGray:
+        if self._partial_image_encoding == protocol_encoder.ImageEncoding.JPEGMinimizedGray:
             width, height = camera.RESOLUTIONS[self._partial_image_resolution]
 
             if is_color_image:
@@ -611,7 +611,7 @@ class Client(Thread, event.Dispatcher):
     def _on_object_available(self, cli, pkt: protocol_encoder.ObjectAvailable):
         del cli
         factory_id = pkt.factory_id
-        object_type = object.ObjectType(pkt.object_type)
+        object_type = protocol_encoder.ObjectType(pkt.object_type)
         obj = object.Object(factory_id=factory_id, object_type=object_type)
         if factory_id not in self.available_objects:
             self.available_objects[factory_id] = obj

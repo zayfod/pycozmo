@@ -11,7 +11,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
     while not cube_factory_id:
         available_objects = dict(cli.available_objects)
         for factory_id, obj in available_objects.items():
-            if obj.object_type == pycozmo.object.ObjectType.Block_LIGHTCUBE1:
+            if obj.object_type == pycozmo.protocol_encoder.ObjectType.Block_LIGHTCUBE1:
                 cube_factory_id = factory_id
                 break
     print("Cube with S/N 0x{:08x} available.".format(cube_factory_id))
