@@ -53,7 +53,8 @@ Backpack Button
 Newer Cozmo models have a backpack button. The `RobotState` message has a `backpack_touch_sensor_raw` field but
 it seems that it's value does not change as a result of button presses. 
 
-Currently it is not know how to detect button presses.
+Button press and release events are communicated bu the `ButtonPressed` message. It is immediately available on
+connection and does not require `Enable` to be used.
 
 
 Wheels

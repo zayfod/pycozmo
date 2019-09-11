@@ -3368,6 +3368,58 @@ class ObjectUpAxisChanged(Packet):
             axis=axis)
 
     
+class ButtonPressed(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0xdb
+
+    __slots__ = (
+        "_pressed",
+    )
+
+    def __init__(self,
+                 pressed=False):
+        self.pressed = pressed
+
+    @property
+    def pressed(self):
+        return self._pressed
+
+    @pressed.setter
+    def pressed(self, value):
+        self._pressed = validate_bool("pressed", value)
+
+    def __len__(self):
+        return \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "pressed={pressed})".format(
+                type=type(self).__name__,
+                pressed=self._pressed)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(int(self._pressed), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        pressed = bool(reader.read("b"))
+        return cls(
+            pressed=pressed)
+
+    
 class FallingStarted(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -4748,6 +4800,7 @@ ACTION_BY_ID = {
     0xce: ObjectPowerLevel,  # 206
     0xd0: ObjectConnectionState,  # 208
     0xd7: ObjectUpAxisChanged,  # 215
+    0xdb: ButtonPressed,  # 219
     0xdd: FallingStarted,  # 221
     0xde: FallingStopped,  # 222
     0xed: BodyInfo,  # 237

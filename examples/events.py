@@ -25,6 +25,14 @@ def on_robot_falling_stopped(cli, pkt: pycozmo.protocol_encoder.FallingStopped):
     print("Falling stopped after {} ms. Impact intensity {:.01f}.".format(pkt.duration_ms, pkt.impact_intensity))
 
 
+def on_button_pressed(cli, pkt: pycozmo.protocol_encoder.ButtonPressed):
+    del cli
+    if pkt.pressed:
+        print("Button pressed.")
+    else:
+        print("Button released.")
+
+
 def on_robot_picked_up(cli, state):
     del cli
     if state:
@@ -61,6 +69,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
     cli.add_handler(pycozmo.protocol_encoder.RobotPoked, on_robot_poked)
     cli.add_handler(pycozmo.protocol_encoder.FallingStarted, on_robot_falling_started)
     cli.add_handler(pycozmo.protocol_encoder.FallingStopped, on_robot_falling_stopped)
+    cli.add_handler(pycozmo.protocol_encoder.ButtonPressed, on_button_pressed)
     cli.add_handler(pycozmo.client.EvtRobotPickedUpChange, on_robot_picked_up)
     cli.add_handler(pycozmo.client.EvtRobotChargingChange, on_robot_charging)
     cli.add_handler(pycozmo.client.EvtCliffDetectedChange, on_cliff_detected)

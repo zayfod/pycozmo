@@ -357,6 +357,9 @@ PROTOCOL = Protocol(
             UInt32Argument("object_id"),
             EnumArgument("axis", UP_AXIS, data_type=UInt8Argument, default=7),
         ]),
+        Command(0xdb, "ButtonPressed", arguments=[
+            BoolArgument("pressed"),
+        ]),
         Command(0xdd, "FallingStarted", arguments=[
             UInt32Argument("unknown"),
         ]),
