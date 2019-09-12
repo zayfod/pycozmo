@@ -1069,7 +1069,7 @@ class DriveWheels(Packet):
             rwheel_accel_mmps2=rwheel_accel_mmps2)
 
     
-class TurnInPlace(Packet):
+class TurnInPlaceAtSpeed(Packet):
 
     PACKET_ID = PacketType.ACTION
     ID = 0x33
@@ -1499,6 +1499,177 @@ class SetHeadAngle(Packet):
             action_id=action_id)
 
     
+class TurnInPlace(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x39
+
+    __slots__ = (
+        "_angle_rad",
+        "_speed_rad_per_sec",
+        "_accel_rad_per_sec2",
+        "_angle_tolerance_rad",
+        "_unknown4",
+        "_unknown5",
+        "_is_absolute",
+        "_action_id",
+    )
+
+    def __init__(self,
+                 angle_rad=0.0,
+                 speed_rad_per_sec=0.0,
+                 accel_rad_per_sec2=0.0,
+                 angle_tolerance_rad=0.0,
+                 unknown4=0,
+                 unknown5=0,
+                 is_absolute=False,
+                 action_id=0):
+        self.angle_rad = angle_rad
+        self.speed_rad_per_sec = speed_rad_per_sec
+        self.accel_rad_per_sec2 = accel_rad_per_sec2
+        self.angle_tolerance_rad = angle_tolerance_rad
+        self.unknown4 = unknown4
+        self.unknown5 = unknown5
+        self.is_absolute = is_absolute
+        self.action_id = action_id
+
+    @property
+    def angle_rad(self):
+        return self._angle_rad
+
+    @angle_rad.setter
+    def angle_rad(self, value):
+        self._angle_rad = validate_float("angle_rad", value)
+
+    @property
+    def speed_rad_per_sec(self):
+        return self._speed_rad_per_sec
+
+    @speed_rad_per_sec.setter
+    def speed_rad_per_sec(self, value):
+        self._speed_rad_per_sec = validate_float("speed_rad_per_sec", value)
+
+    @property
+    def accel_rad_per_sec2(self):
+        return self._accel_rad_per_sec2
+
+    @accel_rad_per_sec2.setter
+    def accel_rad_per_sec2(self, value):
+        self._accel_rad_per_sec2 = validate_float("accel_rad_per_sec2", value)
+
+    @property
+    def angle_tolerance_rad(self):
+        return self._angle_tolerance_rad
+
+    @angle_tolerance_rad.setter
+    def angle_tolerance_rad(self, value):
+        self._angle_tolerance_rad = validate_float("angle_tolerance_rad", value)
+
+    @property
+    def unknown4(self):
+        return self._unknown4
+
+    @unknown4.setter
+    def unknown4(self, value):
+        self._unknown4 = validate_integer("unknown4", value, 0, 255)
+
+    @property
+    def unknown5(self):
+        return self._unknown5
+
+    @unknown5.setter
+    def unknown5(self, value):
+        self._unknown5 = validate_integer("unknown5", value, 0, 255)
+
+    @property
+    def is_absolute(self):
+        return self._is_absolute
+
+    @is_absolute.setter
+    def is_absolute(self, value):
+        self._is_absolute = validate_bool("is_absolute", value)
+
+    @property
+    def action_id(self):
+        return self._action_id
+
+    @action_id.setter
+    def action_id(self, value):
+        self._action_id = validate_integer("action_id", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('b') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "angle_rad={angle_rad}, " \
+               "speed_rad_per_sec={speed_rad_per_sec}, " \
+               "accel_rad_per_sec2={accel_rad_per_sec2}, " \
+               "angle_tolerance_rad={angle_tolerance_rad}, " \
+               "unknown4={unknown4}, " \
+               "unknown5={unknown5}, " \
+               "is_absolute={is_absolute}, " \
+               "action_id={action_id})".format(
+                type=type(self).__name__,
+                angle_rad=self._angle_rad,
+                speed_rad_per_sec=self._speed_rad_per_sec,
+                accel_rad_per_sec2=self._accel_rad_per_sec2,
+                angle_tolerance_rad=self._angle_tolerance_rad,
+                unknown4=self._unknown4,
+                unknown5=self._unknown5,
+                is_absolute=self._is_absolute,
+                action_id=self._action_id)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._angle_rad, "f")
+        writer.write(self._speed_rad_per_sec, "f")
+        writer.write(self._accel_rad_per_sec2, "f")
+        writer.write(self._angle_tolerance_rad, "f")
+        writer.write(self._unknown4, "B")
+        writer.write(self._unknown5, "B")
+        writer.write(int(self._is_absolute), "b")
+        writer.write(self._action_id, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        angle_rad = reader.read("f")
+        speed_rad_per_sec = reader.read("f")
+        accel_rad_per_sec2 = reader.read("f")
+        angle_tolerance_rad = reader.read("f")
+        unknown4 = reader.read("B")
+        unknown5 = reader.read("B")
+        is_absolute = bool(reader.read("b"))
+        action_id = reader.read("B")
+        return cls(
+            angle_rad=angle_rad,
+            speed_rad_per_sec=speed_rad_per_sec,
+            accel_rad_per_sec2=accel_rad_per_sec2,
+            angle_tolerance_rad=angle_tolerance_rad,
+            unknown4=unknown4,
+            unknown5=unknown5,
+            is_absolute=is_absolute,
+            action_id=action_id)
+
+    
 class StopAllMotors(Packet):
 
     PACKET_ID = PacketType.ACTION
@@ -1535,6 +1706,160 @@ class StopAllMotors(Packet):
         del reader
         return cls(
             )
+
+    
+class DriveStraight(Packet):
+
+    PACKET_ID = PacketType.ACTION
+    ID = 0x3d
+
+    __slots__ = (
+        "_f0",
+        "_f1",
+        "_dist_mm",
+        "_f3",
+        "_speed_mmps",
+        "_f5",
+        "_f6",
+    )
+
+    def __init__(self,
+                 f0=0.0,
+                 f1=0.0,
+                 dist_mm=0.0,
+                 f3=0.0,
+                 speed_mmps=0.0,
+                 f5=0.0,
+                 f6=0.0):
+        self.f0 = f0
+        self.f1 = f1
+        self.dist_mm = dist_mm
+        self.f3 = f3
+        self.speed_mmps = speed_mmps
+        self.f5 = f5
+        self.f6 = f6
+
+    @property
+    def f0(self):
+        return self._f0
+
+    @f0.setter
+    def f0(self, value):
+        self._f0 = validate_float("f0", value)
+
+    @property
+    def f1(self):
+        return self._f1
+
+    @f1.setter
+    def f1(self, value):
+        self._f1 = validate_float("f1", value)
+
+    @property
+    def dist_mm(self):
+        return self._dist_mm
+
+    @dist_mm.setter
+    def dist_mm(self, value):
+        self._dist_mm = validate_float("dist_mm", value)
+
+    @property
+    def f3(self):
+        return self._f3
+
+    @f3.setter
+    def f3(self, value):
+        self._f3 = validate_float("f3", value)
+
+    @property
+    def speed_mmps(self):
+        return self._speed_mmps
+
+    @speed_mmps.setter
+    def speed_mmps(self, value):
+        self._speed_mmps = validate_float("speed_mmps", value)
+
+    @property
+    def f5(self):
+        return self._f5
+
+    @f5.setter
+    def f5(self, value):
+        self._f5 = validate_float("f5", value)
+
+    @property
+    def f6(self):
+        return self._f6
+
+    @f6.setter
+    def f6(self, value):
+        self._f6 = validate_float("f6", value)
+
+    def __len__(self):
+        return \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f')
+
+    def __repr__(self):
+        return "{type}(" \
+               "f0={f0}, " \
+               "f1={f1}, " \
+               "dist_mm={dist_mm}, " \
+               "f3={f3}, " \
+               "speed_mmps={speed_mmps}, " \
+               "f5={f5}, " \
+               "f6={f6})".format(
+                type=type(self).__name__,
+                f0=self._f0,
+                f1=self._f1,
+                dist_mm=self._dist_mm,
+                f3=self._f3,
+                speed_mmps=self._speed_mmps,
+                f5=self._f5,
+                f6=self._f6)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._f0, "f")
+        writer.write(self._f1, "f")
+        writer.write(self._dist_mm, "f")
+        writer.write(self._f3, "f")
+        writer.write(self._speed_mmps, "f")
+        writer.write(self._f5, "f")
+        writer.write(self._f6, "f")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        f0 = reader.read("f")
+        f1 = reader.read("f")
+        dist_mm = reader.read("f")
+        f3 = reader.read("f")
+        speed_mmps = reader.read("f")
+        f5 = reader.read("f")
+        f6 = reader.read("f")
+        return cls(
+            f0=f0,
+            f1=f1,
+            dist_mm=dist_mm,
+            f3=f3,
+            speed_mmps=speed_mmps,
+            f5=f5,
+            f6=f6)
 
     
 class EnableCamera(Packet):
@@ -2753,7 +3078,7 @@ class ObjectTapFiltered(Packet):
             intensity=intensity)
 
     
-class AcknowledgeCommand(Packet):
+class AcknowledgeAction(Packet):
 
     PACKET_ID = PacketType.ACTION
     ID = 0xc4
@@ -4771,12 +5096,14 @@ ACTION_BY_ID = {
     0x11: LightStateSide,  # 17
     0x25: Enable,  # 37
     0x32: DriveWheels,  # 50
-    0x33: TurnInPlace,  # 51
+    0x33: TurnInPlaceAtSpeed,  # 51
     0x34: DriveLift,  # 52
     0x35: DriveHead,  # 53
     0x36: SetLiftHeight,  # 54
     0x37: SetHeadAngle,  # 55
+    0x39: TurnInPlace,  # 57
     0x3b: StopAllMotors,  # 59
+    0x3d: DriveStraight,  # 61
     0x4c: EnableCamera,  # 76
     0x57: SetCameraParams,  # 87
     0x60: EnableStopOnCliff,  # 96
@@ -4794,7 +5121,7 @@ ACTION_BY_ID = {
     0xb9: ObjectTapFiltered,  # 185
     0xc2: RobotDelocalized,  # 194
     0xc3: RobotPoked,  # 195
-    0xc4: AcknowledgeCommand,  # 196
+    0xc4: AcknowledgeAction,  # 196
     0xc9: HardwareInfo,  # 201
     0xcd: NvStorageOpResult,  # 205
     0xce: ObjectPowerLevel,  # 206

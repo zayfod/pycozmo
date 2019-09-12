@@ -111,13 +111,14 @@ ID                 Min     Max      Name
 0x11	     	    21	    21		LightStateSide                
 0x25	     	     0	     0		Enable                        
 0x32	     	    16	    16		DriveWheels                   
-0x33	     	    10	    10		TurnInPlace                   
+0x33	     	    10	    10		TurnInPlaceAtSpeed                   
 0x34	     	     4	     4		DriveLift                     
 0x35	     	     4	     4		DriveHead                     
 0x36	     	    17	    17		SetLiftHeight                 
 0x37	     	    17	    17		SetHeadAngle                  
-0x39	     	    20	    20		                              
-0x3b	     	     0	     0		StopAllMotors                 
+0x39	     	    20	    20		TurnInPlace                 
+0x3b	     	     0	     0		StopAllMotors
+0x3d                                DriveStraight             
 0x45	     	    24	    24		                              
 0x4b	     	     8	     8		                              
 0x4c	     	     2	     2		EnableCamera                  
@@ -152,7 +153,7 @@ ID                 Min     Max      Name
 0xb9	     	    10	    10		ObjectTapFiltered             
 0xc2	     	     0	     0		RobotDelocalized              
 0xc3	     	     0	     0		RobotPoked                    
-0xc4	     	     1	     1		AcknowledgeCommand            
+0xc4	     	     1	     1		AcknowledgeAction            
 0xc8	     	    29	    29		                              
 0xc9	     	     6	     6		HardwareInfo                  
 0xca	     	     1	     1		                              

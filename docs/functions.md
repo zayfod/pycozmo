@@ -60,12 +60,16 @@ connection and does not require `Enable` to be used.
 Wheels
 ------
 
-The left and the right motor speeds can be controlled directly using the `DriveWheels` and `TurnInPlace` messages.
+The left and the right motor speeds can be controlled directly using the `DriveWheels` and `TurnInPlaceAtSpeed`
+messages.
 
 In addition, the motors can be stopped using the `StopAllMotors` message.
 
 The actual speed of wheels is measured with Hall magnetic sensors. The values for each wheel can be
 read through the `lwheel_speed_mmps` and `rwheel_speed_mmps` fields of the `RobotState` message.
+
+`TurnInPlace`
+`DriveStraight`
 
 
 Localization
@@ -86,7 +90,7 @@ The actual head angle can be read through the `head_angle_rad` field of the `Rob
 
 See [extremes.py](../examples/extremes.py) for example usage.
 
-`AcknowledgeCommand`
+`AcknowledgeAction`
 
 
 Lift
@@ -100,7 +104,7 @@ The actual lift height can be read through the `lift_height_mm` field of the `Ro
 
 See [extremes.py](../examples/extremes.py) for example usage.
 
-`AcknowledgeCommand`
+`AcknowledgeAction`
 
 
 OLED display

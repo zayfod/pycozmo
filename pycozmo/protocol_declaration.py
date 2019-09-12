@@ -229,7 +229,7 @@ PROTOCOL = Protocol(
             FloatArgument("lwheel_accel_mmps2"),
             FloatArgument("rwheel_accel_mmps2"),
         ]),
-        Command(0x33, "TurnInPlace", arguments=[
+        Command(0x33, "TurnInPlaceAtSpeed", arguments=[
             FloatArgument("wheel_speed_mmps"),
             FloatArgument("wheel_accel_mmps2"),
             Int16Argument("direction"),
@@ -254,7 +254,26 @@ PROTOCOL = Protocol(
             FloatArgument("duration_sec"),
             UInt8Argument("action_id"),
         ]),
+        Command(0x39, "TurnInPlace", arguments=[
+            FloatArgument("angle_rad"),
+            FloatArgument("speed_rad_per_sec"),
+            FloatArgument("accel_rad_per_sec2"),
+            FloatArgument("angle_tolerance_rad"),
+            UInt8Argument("unknown4"),
+            UInt8Argument("unknown5"),
+            BoolArgument("is_absolute"),
+            UInt8Argument("action_id"),
+        ]),
         Command(0x3b, "StopAllMotors"),
+        Command(0x3d, "DriveStraight", arguments=[
+            FloatArgument("f0"),
+            FloatArgument("f1"),
+            FloatArgument("dist_mm"),               # minus ~20.3 mm?
+            FloatArgument("f3"),
+            FloatArgument("speed_mmps"),
+            FloatArgument("f5"),
+            FloatArgument("f6"),
+        ]),
         Command(0x4c, "EnableCamera", arguments=[
             BoolArgument("enable"),
             UInt8Argument("unknown", default=4)     # resolution but ignored?
@@ -324,7 +343,7 @@ PROTOCOL = Protocol(
             UInt8Argument("time"),
             UInt8Argument("intensity"),
         ]),
-        Command(0xc4, "AcknowledgeCommand", arguments=[
+        Command(0xc4, "AcknowledgeAction", arguments=[
             UInt8Argument("action_id"),
         ]),
         Command(0xc2, "RobotDelocalized"),
