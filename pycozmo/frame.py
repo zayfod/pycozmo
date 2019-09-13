@@ -34,7 +34,7 @@ class Frame(object):
         writer.write(pkt.type.value, "B")
         if pkt.type == PacketType.ACTION or pkt.type == PacketType.EVENT:
             writer.write(len(pkt) + 1, "H")
-            writer.write(pkt.ID, "B")
+            writer.write(pkt.id, "B")
         else:
             writer.write(len(pkt), "H")
         writer.write_object(pkt)
@@ -57,7 +57,7 @@ class Frame(object):
             assert len(self.pkts) == 1
             pkt = self.pkts[0]
             assert pkt.type == PacketType.ACTION
-            writer.write(pkt.ID, "B")
+            writer.write(pkt.id, "B")
             writer.write_object(pkt)
         elif self.type == FrameType.RESET:
             # No packets

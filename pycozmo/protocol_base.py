@@ -1,4 +1,5 @@
 
+from typing import Optional
 from abc import ABC, abstractmethod
 
 from .protocol_declaration import PacketType
@@ -38,15 +39,33 @@ class Struct(ABC):
 class Packet(Struct, ABC):
 
     __slots__ = (
-        "type",
+        "_type",
+        "_id",
         "seq",
         "ack",
     )
 
-    def __init__(self, packet_type: PacketType):
+    def __init__(self, packet_type: PacketType, packet_id: Optional[int] = None):
         self.type = packet_type
+        self.id = packet_id
         self.seq = 0
         self.ack = 0
+
+    @property
+    def type(self) -> PacketType:
+        return self._type
+
+    @type.setter
+    def type(self, value: PacketType):
+        self._type = PacketType(value)
+
+    @property
+    def id(self) -> Optional[int]:
+        return self._id
+
+    @id.setter
+    def id(self, value: Optional[int]):
+        self._id = value
 
     def is_oob(self) -> bool:
         res = self.type.value >= PacketType.EVENT.value
@@ -59,16 +78,16 @@ class UnknownPacket(Packet):
         "_data",
     )
 
-    def __init__(self, packet_type: PacketType, data: bytes):
-        super().__init__(packet_type)
+    def __init__(self, packet_type: PacketType, data: bytes, packet_id: Optional[int] = None):
+        super().__init__(packet_type, packet_id)
         self.data = data
 
     @property
-    def data(self):
+    def data(self) -> bytes:
         return self._data
 
     @data.setter
-    def data(self, value):
+    def data(self, value: bytes):
         self._data = bytes(value)
 
     def __len__(self):
@@ -99,21 +118,8 @@ class UnknownPacket(Packet):
 
 class UnknownCommand(UnknownPacket):
 
-    __slots__ = (
-        "_ID",
-    )
-
-    def __init__(self, cmd_id: int, data: bytes = b""):
-        super().__init__(PacketType.ACTION, data)
-        self.ID = cmd_id
-
-    @property
-    def ID(self):
-        return self._ID
-
-    @ID.setter
-    def ID(self, value):
-        self._ID = int(value)
+    def __init__(self, packet_id: int, data: bytes = b""):
+        super().__init__(PacketType.ACTION, data, packet_id=packet_id)
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -127,26 +133,13 @@ class UnknownCommand(UnknownPacket):
 
     def __repr__(self):
         return "{type}({id:02x}, {data})".format(
-            id=self._ID, type=type(self).__name__, data=hex_dump(data=self._data))
+            id=self.id, type=type(self).__name__, data=hex_dump(data=self._data))
 
 
 class UnknownEvent(UnknownPacket):
 
-    __slots__ = (
-        "_ID",
-    )
-
-    def __init__(self, cmd_id: int, data: bytes = b""):
-        super().__init__(PacketType.EVENT, data)
-        self.ID = cmd_id
-
-    @property
-    def ID(self):
-        return self._ID
-
-    @ID.setter
-    def ID(self, value):
-        self._ID = int(value)
+    def __init__(self, packet_id: int, data: bytes = b""):
+        super().__init__(PacketType.EVENT, data, packet_id=packet_id)
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -160,4 +153,4 @@ class UnknownEvent(UnknownPacket):
 
     def __repr__(self):
         return "{type}({id:02x}, {data})".format(
-            id=self._ID, type=type(self).__name__, data=hex_dump(data=self._data))
+            id=self.id, type=type(self).__name__, data=hex_dump(data=self._data))
