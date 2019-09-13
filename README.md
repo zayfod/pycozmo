@@ -54,7 +54,6 @@ Documentation
 - [Cozmo protocol](docs/protocol.md) description
 - [Cozmo function](docs/functions.md) description
 - [Capturing Cozmo communication](docs/capturing.md)
-
 - API documentation: http://pycozmo.readthedocs.io/
 
 
@@ -77,9 +76,11 @@ Examples
 Tools
 -----
 
-- `pycozmo_dump.py` - a command-line application that can read and annotate Cozmo communication from
-    [pcap files](https://en.wikipedia.org/wiki/Pcap)
-- `pycozmo_replay.py` - a basic command-line application that can replay .pcap files back to Cozmo.
+- [pycozmo_dump.py](tools/pycozmo_dump.py) - a command-line application that can read and annotate Cozmo communication
+    from [pcap files](https://en.wikipedia.org/wiki/Pcap) or capture it live using
+    [pypcap](https://github.com/pynetwork/pypcap).
+- [pycozmo_replay.py](tools/pycozmo_replay.py) - a basic command-line application that can replay .pcap files back to
+    Cozmo.
 
 
 Robot Support
@@ -134,12 +135,12 @@ In contrast, an application using PyCozmo basically replaces the Cozmo app and a
 the low-level UDP communication with Cozmo.
    
 ```
-+------------------+                      +------------------+                      +------------------+
-|     SDK app      |      Cozmo SDK       |    Cozmo app     |       PyCozmo        |      Cozmo       |
-|      "game"      |      cozmoclad       |     "engine"     |                      |     "robot"      |
-|                  | +------------------> |   Wi-Fi client   | +------------------> |     Wi-Fi AP     |
-|                  |         USB          |    UDP client    |      UDP/Wi-Fi       |    UDP Server    |
-+------------------+                      +------------------+                      +------------------+
++------------------+                     +------------------+                     +------------------+
+|     SDK app      |      Cozmo SDK      |    Cozmo app     |       PyCozmo       |      Cozmo       |
+|      "game"      |      cozmoclad      |     "engine"     |                     |     "robot"      |
+|                  | ------------------> |   Wi-Fi client   | ------------------> |     Wi-Fi AP     |
+|                  |         USB         |    UDP client    |      UDP/Wi-Fi      |    UDP Server    |
++------------------+                     +------------------+                     +------------------+
 ```
 
 

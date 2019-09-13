@@ -37,7 +37,7 @@ The app acts as a client and initiates connections. It will only accept packets 
 +--------------------+                        +--------------------+
 |     Cozmo app      |                        |       Cozmo        |
 |      "engine"      |        UDP/Wi-Fi       |      "robot"       |
-|    Wi-Fi client    | +--------------------> |      Wi-Fi AP      |
+|    Wi-Fi client    | ---------------------> |      Wi-Fi AP      |
 |     UDP client     |                        |     UDP Server     |
 +--------------------+                        +--------------------+
     172.31.1.0/24                                 172.31.1.1:5551
@@ -68,9 +68,9 @@ Type            Source      Description
 0x01            engine      Reset
 0x02            robot       Reset ACK
 0x03            engine      Disconnect
-0x04            engine      Engine action
-0x07            engine      Engine packets
-0x09            robot       Robot packets
+0x04            engine      Engine packet - single
+0x07            engine      Engine packets - zero or more
+0x09            robot       Robot packets - zero or more
 0x0b            engine      Out-of-band engine ping
 ```
 
@@ -85,7 +85,7 @@ Type    OOB     Source      Description
 ---------------------------------------------------------------------------------
 0x02    n       robot       Connect
 0x03    n       engine      Disconnect
-0x04    n       both        Action
+0x04    n       both        Command/action
 0x05    y       robot       Event
 0x0a    y       engine      Unknown
 0x0b    y       engine      Ping
