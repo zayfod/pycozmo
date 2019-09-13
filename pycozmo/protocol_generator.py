@@ -11,23 +11,23 @@ from . import protocol_declaration
 
 
 def get_fmt_by_type(t):
-    if t == protocol_declaration.FloatArgument:
+    if isinstance(t, protocol_declaration.FloatArgument):
         fmt = "f"
-    elif t == protocol_declaration.DoubleArgument:
+    elif isinstance(t, protocol_declaration.DoubleArgument):
         fmt = "d"
-    elif t == protocol_declaration.BoolArgument:
+    elif isinstance(t, protocol_declaration.BoolArgument):
         fmt = "b"
-    elif t == protocol_declaration.UInt8Argument:
+    elif isinstance(t, protocol_declaration.UInt8Argument):
         fmt = "B"
-    elif t == protocol_declaration.UInt16Argument:
+    elif isinstance(t, protocol_declaration.UInt16Argument):
         fmt = "H"
-    elif t == protocol_declaration.UInt32Argument:
+    elif isinstance(t, protocol_declaration.UInt32Argument):
         fmt = "L"
-    elif t == protocol_declaration.Int8Argument:
+    elif isinstance(t, protocol_declaration.Int8Argument):
         fmt = "b"
-    elif t == protocol_declaration.Int16Argument:
+    elif isinstance(t, protocol_declaration.Int16Argument):
         fmt = "h"
-    elif t == protocol_declaration.Int32Argument:
+    elif isinstance(t, protocol_declaration.Int32Argument):
         fmt = "l"
     else:
         fmt = None
@@ -38,7 +38,7 @@ def get_farray_fmt(argument: protocol_declaration.FArrayArgument):
     data_fmt = get_fmt_by_type(argument.data_type)
     if not data_fmt:
         raise NotImplementedError("Unexpected farray data type '{}' for '{}'".format(
-            argument.data_type, argument.name))
+            argument.data_type.__class__.__name__, argument.name))
     return data_fmt
 
 
@@ -46,11 +46,11 @@ def get_varray_fmts(argument: protocol_declaration.VArrayArgument):
     length_fmt = get_fmt_by_type(argument.length_type)
     if not length_fmt:
         raise NotImplementedError("Unexpected varray length type '{}' for '{}'".format(
-            argument.length_type, argument.name))
+            argument.length_type.__class__.__name__, argument.name))
     data_fmt = get_fmt_by_type(argument.data_type)
     if not data_fmt:
         raise NotImplementedError("Unexpected varray data type '{}' for '{}'".format(
-            argument.data_type, argument.name))
+            argument.data_type.__class__.__name__, argument.name))
     return length_fmt, data_fmt
 
 
@@ -58,7 +58,7 @@ def get_string_fmt(argument: protocol_declaration.StringArgument):
     length_fmt = get_fmt_by_type(argument.length_type)
     if not length_fmt:
         raise NotImplementedError("Unexpected string length type '{}' for '{}'".format(
-            argument.length_type, argument.name))
+            argument.length_type.__class__.__name__, argument.name))
     return length_fmt
 
 
@@ -66,7 +66,7 @@ def get_enum_fmt(argument: protocol_declaration.EnumArgument):
     data_fmt = get_fmt_by_type(argument.data_type)
     if not data_fmt:
         raise NotImplementedError("Unexpected enum data type '{}' for '{}'".format(
-            argument.data_type, argument.name))
+            argument.data_type.__class__.__name__, argument.name))
     return data_fmt
 
 
@@ -85,23 +85,23 @@ class ProtocolGenerator(object):
             self.f.write('        "_{name}",{type_hint}\n'.format(name=argument.name, type_hint=type_hint))
 
     def generate_farray_validation(self, argument: protocol_declaration.FArrayArgument):
-        if argument.data_type == protocol_declaration.FloatArgument:
+        if isinstance(argument.data_type, protocol_declaration.FloatArgument):
             element_validation = "lambda name, value_inner: validate_float(name, value_inner)"
-        elif argument.data_type == protocol_declaration.DoubleArgument:
+        elif isinstance(argument.data_type, protocol_declaration.DoubleArgument):
             element_validation = "lambda name, value_inner: validate_float(name, value_inner)"
-        elif argument.data_type == protocol_declaration.BoolArgument:
+        elif isinstance(argument.data_type, protocol_declaration.BoolArgument):
             element_validation = "lambda name, value_inner: validate_bool(name, value_inner)"
-        elif argument.data_type == protocol_declaration.UInt8Argument:
+        elif isinstance(argument.data_type, protocol_declaration.UInt8Argument):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 255)"
-        elif argument.data_type == protocol_declaration.UInt16Argument:
+        elif isinstance(argument.data_type, protocol_declaration.UInt16Argument):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 65535)"
-        elif argument.data_type == protocol_declaration.UInt32Argument:
+        elif isinstance(argument.data_type, protocol_declaration.UInt32Argument):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295)"
-        elif argument.data_type == protocol_declaration.Int8Argument:
+        elif isinstance(argument.data_type, protocol_declaration.Int8Argument):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, -128, 127)"
-        elif argument.data_type == protocol_declaration.Int16Argument:
+        elif isinstance(argument.data_type, protocol_declaration.Int16Argument):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, -32768, 32767)"
-        elif argument.data_type == protocol_declaration.Int32Argument:
+        elif isinstance(argument.data_type, protocol_declaration.Int32Argument):
             element_validation = \
                 "lambda name, value_inner: validate_integer(name, value_inner, -2147483648, 2147483647)"
         elif isinstance(argument.data_type, protocol_declaration.Struct):
@@ -109,75 +109,75 @@ class ProtocolGenerator(object):
                 argument.data_type.name)
         else:
             raise NotImplementedError("Unexpected farray data type '{}' for '{}'".format(
-                argument.data_type, argument.name))
+                argument.data_type.__class__.__name__, argument.name))
 
         self.f.write('validate_farray(\n            "{name}", value, {length}, {element_validation})\n'.format(
             name=argument.name, length=argument.length, element_validation=element_validation))
 
     def generate_varray_validation(self, argument: protocol_declaration.VArrayArgument):
-        if argument.length_type == protocol_declaration.UInt8Argument:
+        if isinstance(argument.length_type, protocol_declaration.UInt8Argument):
             maximum_length = 255
-        elif argument.length_type == protocol_declaration.UInt16Argument:
+        elif isinstance(argument.length_type, protocol_declaration.UInt16Argument):
             maximum_length = 65535
         else:
             raise NotImplementedError("Unexpected varray length type '{}' for '{}'".format(
-                argument.length_type, argument.name))
+                argument.length_type.__class__.__name__, argument.name))
 
-        if argument.data_type == protocol_declaration.FloatArgument:
+        if isinstance(argument.data_type, protocol_declaration.FloatArgument):
             element_validation = "lambda name, value_inner: validate_float(name, value_inner)"
-        elif argument.data_type == protocol_declaration.DoubleArgument:
+        elif isinstance(argument.data_type, protocol_declaration.DoubleArgument):
             element_validation = "lambda name, value_inner: validate_float(name, value_inner)"
-        elif argument.data_type == protocol_declaration.BoolArgument:
+        elif isinstance(argument.data_type, protocol_declaration.BoolArgument):
             element_validation = "lambda name, value_inner: validate_bool(name, value_inner)"
-        elif argument.data_type == protocol_declaration.UInt8Argument:
+        elif isinstance(argument.data_type, protocol_declaration.UInt8Argument):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 255)"
-        elif argument.data_type == protocol_declaration.UInt16Argument:
+        elif isinstance(argument.data_type, protocol_declaration.UInt16Argument):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 65535)"
-        elif argument.data_type == protocol_declaration.UInt32Argument:
+        elif isinstance(argument.data_type, protocol_declaration.UInt32Argument):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295)"
-        elif argument.data_type == protocol_declaration.Int8Argument:
+        elif isinstance(argument.data_type, protocol_declaration.Int8Argument):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, -128, 127)"
-        elif argument.data_type == protocol_declaration.Int16Argument:
+        elif isinstance(argument.data_type, protocol_declaration.Int16Argument):
             element_validation = "lambda name, value_inner: validate_integer(name, value_inner, -32768, 32767)"
-        elif argument.data_type == protocol_declaration.Int32Argument:
+        elif isinstance(argument.data_type, protocol_declaration.Int32Argument):
             element_validation = \
                 "lambda name, value_inner: validate_integer(name, value_inner, -2147483648, 2147483647)"
         else:
             raise NotImplementedError("Unexpected varray data type '{}' for '{}'".format(
-                argument.data_type, argument.name))
+                argument.data_type.__class__.__name__, argument.name))
 
         self.f.write('validate_varray(\n            "{name}", value, {maximum_length}, {element_validation})\n'.format(
             name=argument.name, maximum_length=maximum_length, element_validation=element_validation))
 
     def generate_string_validation(self, argument: protocol_declaration.StringArgument):
-        if argument.length_type == protocol_declaration.UInt8Argument:
+        if isinstance(argument.length_type, protocol_declaration.UInt8Argument):
             maximum_length = 255
-        elif argument.length_type == protocol_declaration.UInt16Argument:
+        elif isinstance(argument.length_type, protocol_declaration.UInt16Argument):
             maximum_length = 65535
         else:
             raise NotImplementedError("Unexpected string length type '{}' for '{}'".format(
-                argument.length_type, argument.name))
+                argument.length_type.__class__.__name__, argument.name))
 
         self.f.write('validate_string("{name}", value, {maximum_length})\n'.format(
             name=argument.name, maximum_length=maximum_length))
 
     def generate_enum_validation(self, argument: protocol_declaration.EnumArgument):
-        if argument.data_type == protocol_declaration.UInt8Argument:
+        if isinstance(argument.data_type, protocol_declaration.UInt8Argument):
             self.f.write('validate_integer("{name}", value.value, 0, 255)\n'.format(name=argument.name))
-        elif argument.data_type == protocol_declaration.UInt16Argument:
+        elif isinstance(argument.data_type, protocol_declaration.UInt16Argument):
             self.f.write('validate_integer("{name}", value.value, 0, 65535)\n'.format(name=argument.name))
-        elif argument.data_type == protocol_declaration.UInt32Argument:
+        elif isinstance(argument.data_type, protocol_declaration.UInt32Argument):
             self.f.write('validate_integer("{name}", value.value, 0, 4294967295)\n'.format(name=argument.name))
-        elif argument.data_type == protocol_declaration.Int8Argument:
+        elif isinstance(argument.data_type, protocol_declaration.Int8Argument):
             self.f.write('validate_integer("{name}", value.value, -128, 127)\n'.format(name=argument.name))
-        elif argument.data_type == protocol_declaration.Int16Argument:
+        elif isinstance(argument.data_type, protocol_declaration.Int16Argument):
             self.f.write('validate_integer("{name}", value.value, -32768, 32767)\n'.format(name=argument.name))
-        elif argument.data_type == protocol_declaration.Int32Argument:
+        elif isinstance(argument.data_type, protocol_declaration.Int32Argument):
             self.f.write(
                 'validate_integer("{name}", value.value, -2147483648, 2147483647)\n'.format(name=argument.name))
         else:
             raise NotImplementedError("Unexpected enum data type '{}' for '{}'".format(
-                argument.data_type, argument.name))
+                argument.data_type.__class__.__name__, argument.name))
 
     def generate_argument_methods(self, struct: protocol_declaration.Struct):
         for argument in struct.arguments:
@@ -228,7 +228,7 @@ class ProtocolGenerator(object):
                     self.generate_string_validation(argument)
                 else:
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
-                        type(argument), argument.name))
+                        argument.__class__.__name__, argument.name))
 
     def generate_len_method(self, struct: protocol_declaration.Struct):
         self.f.write("\n    def __len__(self):\n")
@@ -277,7 +277,7 @@ class ProtocolGenerator(object):
                     statements.append("get_size('{}')".format(data_fmt))
                 else:
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
-                        type(argument), argument.name))
+                        argument.__class__.__name__, argument.name))
             self.f.write("            ")
             self.f.write(" + \\\n            ".join(statements))
             self.f.write("\n")
@@ -373,7 +373,7 @@ class ProtocolGenerator(object):
                         name=argument.name, data_fmt=data_fmt))
                 else:
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
-                        type(argument), argument.name))
+                        argument.__class__.__name__, argument.name))
         else:
             self.f.write("        pass\n")
 
@@ -431,7 +431,7 @@ class ProtocolGenerator(object):
                         name=argument.name, data_fmt=data_fmt))
                 else:
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
-                        type(argument), argument.name))
+                        argument.__class__.__name__, argument.name))
         else:
             self.f.write("        del reader\n")
         self.f.write("        return cls(\n")
@@ -505,7 +505,7 @@ class {name}(Packet):
         self.f.write('\n\nPACKETS_BY_GROUP = {\n')
         for group, pkt_set in sorted(packet_map.items()):
             self.f.write('    "{group}": {{\n'.format(group=group))
-            for pkt in sorted(pkt_set, key=lambda pkt: pkt.id):
+            for pkt in sorted(pkt_set, key=lambda pkt2: pkt2.id):
                 self.f.write('        0x{id:02x},  # {name}\n'.format(id=pkt.id, name=pkt.name))
             self.f.write('    },\n')
         self.f.write('}\n')

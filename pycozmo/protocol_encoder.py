@@ -1829,7 +1829,7 @@ class DriveStraight(Packet):
 class EnableBodyACC(Packet):
 
     __slots__ = (
-        "_unknown",
+        "_unknown",  # uint8[8]
     )
 
     def __init__(self,
@@ -2185,7 +2185,7 @@ class NvStorageOp(Packet):
         "_index",  # int32
         "_op",  # NvOperation
         "_unknown",  # uint8
-        "_data",
+        "_data",  # uint8[uint16]
     )
 
     def __init__(self,
@@ -2302,7 +2302,7 @@ class NvStorageOp(Packet):
 class OutputAudio(Packet):
 
     __slots__ = (
-        "_samples",
+        "_samples",  # uint8[744]
     )
 
     def __init__(self,
@@ -2389,7 +2389,7 @@ class NextFrame(Packet):
 class DisplayImage(Packet):
 
     __slots__ = (
-        "_image",
+        "_image",  # uint8[uint16]
     )
 
     def __init__(self,
@@ -2477,7 +2477,7 @@ class FirmwareUpdate(Packet):
 
     __slots__ = (
         "_chunk_id",  # uint16
-        "_data",
+        "_data",  # uint8[1024]
     )
 
     def __init__(self,
@@ -2548,7 +2548,7 @@ class UnknownB0(Packet):
         "_unknown1",  # uint16
         "_unknown2",  # uint16
         "_unknown3",  # int8
-        "_unknown4",
+        "_unknown4",  # uint32[uint8]
     )
 
     def __init__(self,
@@ -3312,7 +3312,7 @@ class NvStorageOpResult(Packet):
         "_index",  # int32
         "_op",  # NvOperation
         "_result",  # NvResult
-        "_data",
+        "_data",  # uint8[uint16]
     )
 
     def __init__(self,
@@ -4141,7 +4141,7 @@ class RobotState(Packet):
         "_gyro_z",  # float
         "_battery_voltage",  # float
         "_status",  # uint32
-        "_cliff_data_raw",
+        "_cliff_data_raw",  # uint16[4]
         "_backpack_touch_sensor_raw",  # uint16
         "_curr_path_segment",  # uint8
     )
@@ -4689,7 +4689,7 @@ class ImageChunk(Packet):
         "_image_chunk_count",  # uint8
         "_chunk_id",  # uint8
         "_status",  # uint16
-        "_data",
+        "_data",  # uint8[uint16]
     )
 
     def __init__(self,

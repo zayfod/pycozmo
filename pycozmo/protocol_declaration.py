@@ -300,9 +300,9 @@ PROTOCOL = Protocol(
             BoolArgument("enable"),
         ]),
         Command(0x81, "NvStorageOp", group="nv", arguments=[
-            EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument, default=0xffffffff),
+            EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument(), default=0xffffffff),
             Int32Argument("index"),
-            EnumArgument("op", NV_OPERATION, data_type=UInt8Argument),
+            EnumArgument("op", NV_OPERATION, data_type=UInt8Argument()),
             UInt8Argument("unknown"),
             VArrayArgument("data"),
         ]),
@@ -324,7 +324,7 @@ PROTOCOL = Protocol(
             UInt16Argument("unknown1"),
             UInt16Argument("unknown2"),
             Int8Argument("unknown3"),
-            VArrayArgument("unknown4", data_type=UInt32Argument, length_type=UInt8Argument)
+            VArrayArgument("unknown4", data_type=UInt32Argument(), length_type=UInt8Argument())
         ]),
         Command(0xb4, "ObjectMoved", group="objects", arguments=[
             UInt32Argument("timestamp"),
@@ -332,7 +332,7 @@ PROTOCOL = Protocol(
             FloatArgument("active_accel_x"),
             FloatArgument("active_accel_y"),
             FloatArgument("active_accel_z"),
-            EnumArgument("axis_of_accel", UP_AXIS, data_type=UInt8Argument, default=7),
+            EnumArgument("axis_of_accel", UP_AXIS, data_type=UInt8Argument(), default=7),
         ]),
         Command(0xb5, "ObjectStoppedMoving", group="objects", arguments=[
             UInt32Argument("timestamp"),
@@ -363,10 +363,10 @@ PROTOCOL = Protocol(
             UInt8Argument("unknown2"),
         ]),
         Command(0xcd, "NvStorageOpResult", group="nv", arguments=[
-            EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument, default=0xffffffff),
+            EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument(), default=0xffffffff),
             Int32Argument("index"),
-            EnumArgument("op", NV_OPERATION, data_type=UInt8Argument),
-            EnumArgument("result", NV_RESULT, data_type=Int8Argument),
+            EnumArgument("op", NV_OPERATION, data_type=UInt8Argument()),
+            EnumArgument("result", NV_RESULT, data_type=Int8Argument()),
             VArrayArgument("data"),
         ]),
         Command(0xce, "ObjectPowerLevel", group="objects", arguments=[
@@ -377,13 +377,13 @@ PROTOCOL = Protocol(
         Command(0xd0, "ObjectConnectionState", group="objects", arguments=[
             UInt32Argument("object_id"),
             UInt32Argument("factory_id"),
-            EnumArgument("object_type", OBJECT_TYPE, data_type=Int32Argument, default=-1),
+            EnumArgument("object_type", OBJECT_TYPE, data_type=Int32Argument(), default=-1),
             BoolArgument("connected"),
         ]),
         Command(0xd7, "ObjectUpAxisChanged", group="objects", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("object_id"),
-            EnumArgument("axis", UP_AXIS, data_type=UInt8Argument, default=7),
+            EnumArgument("axis", UP_AXIS, data_type=UInt8Argument(), default=7),
         ]),
         Command(0xdb, "ButtonPressed", group="system", arguments=[
             BoolArgument("pressed"),
@@ -399,7 +399,7 @@ PROTOCOL = Protocol(
         Command(0xed, "BodyInfo", group="system", arguments=[
             UInt32Argument("serial_number"),
             UInt32Argument("body_hw_version"),
-            EnumArgument("body_color", BODY_COLOR, data_type=Int32Argument, default=-1),
+            EnumArgument("body_color", BODY_COLOR, data_type=Int32Argument(), default=-1),
         ]),
         Command(0xee, "FirmwareSignature", group="system", arguments=[
             UInt16Argument("unknown"),          # Last 2 bytes of head s/n?
@@ -432,7 +432,7 @@ PROTOCOL = Protocol(
             FloatArgument("gyro_z"),
             FloatArgument("battery_voltage"),
             UInt32Argument("status"),
-            FArrayArgument("cliff_data_raw", data_type=UInt16Argument, length=4),
+            FArrayArgument("cliff_data_raw", data_type=UInt16Argument(), length=4),
             UInt16Argument("backpack_touch_sensor_raw"),
             UInt8Argument("curr_path_segment"),
         ]),
@@ -457,7 +457,7 @@ PROTOCOL = Protocol(
         ]),
         Event(0xf3, "ObjectAvailable", group="state", arguments=[
             UInt32Argument("factory_id"),
-            EnumArgument("object_type", OBJECT_TYPE, data_type=Int32Argument, default=-1),
+            EnumArgument("object_type", OBJECT_TYPE, data_type=Int32Argument(), default=-1),
             Int8Argument("rssi"),
         ]),
         Event(0xf4, "ImageImuData", group="state", arguments=[
