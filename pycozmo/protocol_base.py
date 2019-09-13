@@ -129,7 +129,7 @@ class UnknownPacket(Packet):
 class UnknownCommand(UnknownPacket):
 
     def __init__(self, packet_id: int, data: bytes = b""):
-        super().__init__(PacketType.ACTION, data, packet_id=packet_id)
+        super().__init__(PacketType.COMMAND, data, packet_id=packet_id)
 
     @classmethod
     def from_bytes(cls, buffer):

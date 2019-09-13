@@ -4,7 +4,7 @@ from typing import List
 from .protocol_declaration import FRAME_ID, MIN_FRAME_SIZE, FrameType, PacketType
 from .protocol_base import Packet, UnknownCommand, UnknownEvent
 from .protocol_utils import BinaryReader, BinaryWriter
-from .protocol_encoder import Connect, Disconnect, Ping, Unknown0A, ACTION_BY_ID, EVENT_BY_ID
+from .protocol_encoder import Connect, Disconnect, Ping, Unknown0A, PACKETS_BY_ID
 
 
 class Frame(object):
@@ -32,7 +32,7 @@ class Frame(object):
     @staticmethod
     def _encode_packet(pkt, writer) -> None:
         writer.write(pkt.type.value, "B")
-        if pkt.type == PacketType.ACTION or pkt.type == PacketType.EVENT:
+        if pkt.type == PacketType.COMMAND or pkt.type == PacketType.EVENT:
             writer.write(len(pkt) + 1, "H")
             writer.write(pkt.id, "B")
         else:
@@ -56,7 +56,7 @@ class Frame(object):
         elif self.type == FrameType.ENGINE_ACT:
             assert len(self.pkts) == 1
             pkt = self.pkts[0]
-            assert pkt.type == PacketType.ACTION
+            assert pkt.type == PacketType.COMMAND
             writer.write(pkt.id, "B")
             writer.write_object(pkt)
         elif self.type == FrameType.RESET:
@@ -75,31 +75,16 @@ class Frame(object):
         return obj
 
     @classmethod
-    def _decode_action(cls, action_id, action_len, reader):
-        pkt_class = ACTION_BY_ID.get(action_id)
-        if pkt_class:
-            res = pkt_class.from_reader(reader)
-        else:
-            res = UnknownCommand(action_id, reader.read_farray("B", action_len))
-        return res
-
-    @classmethod
-    def _decode_event(cls, event_id, event_len, reader):
-        pkt_class = EVENT_BY_ID.get(event_id)
-        if pkt_class:
-            res = pkt_class.from_reader(reader)
-        else:
-            res = UnknownEvent(event_id, reader.read_farray("B", event_len))
-        return res
-
-    @classmethod
     def _decode_packet(cls, pkt_type, pkt_len, reader):
-        if pkt_type == PacketType.ACTION:
-            action_id = reader.read("B")
-            res = cls._decode_action(action_id, pkt_len - 1, reader)
-        elif pkt_type == PacketType.EVENT:
-            event_id = reader.read("B")
-            res = cls._decode_event(event_id, pkt_len - 1, reader)
+        if pkt_type == PacketType.COMMAND or pkt_type == PacketType.EVENT:
+            pkt_id = reader.read("B")
+            pkt_class = PACKETS_BY_ID.get(pkt_id)
+            if pkt_class:
+                res = pkt_class.from_reader(reader)
+            elif pkt_type == PacketType.COMMAND:
+                res = UnknownCommand(pkt_id, reader.read_farray("B", pkt_len - 1))
+            else:
+                res = UnknownEvent(pkt_id, reader.read_farray("B", pkt_len - 1))
         elif pkt_type == PacketType.PING:
             res = Ping.from_reader(reader)
         elif pkt_type == PacketType.UNKNOWN_0A:
@@ -148,7 +133,7 @@ class Frame(object):
             pkts.append(pkt)
         elif frame_type == FrameType.ENGINE_ACT:
             pkt_seq = first_seq
-            pkt_type = PacketType.ACTION
+            pkt_type = PacketType.COMMAND
             pkt_len = len(reader) - reader.tell()
             pkt = cls._decode_packet(pkt_type, pkt_len, reader)
             pkt.seq = pkt_seq

@@ -23,7 +23,7 @@ class PacketType(enum.Enum):
     UNKNOWN = -1
     CONNECT = 2
     DISCONNECT = 3
-    ACTION = 4
+    COMMAND = 4
     EVENT = 5
     UNKNOWN_0A = 0x0a
     PING = 0x0b
@@ -216,13 +216,12 @@ class Disconnect(Packet):
         super().__init__(PacketType.DISCONNECT, "Disconnect")
 
 
-# TODO: Rename to "Action".
 class Command(Packet):
     """ Command packet. """
 
     def __init__(self, packet_id: int, name: str, group: Optional[str] = None,  description: Optional[str] = None,
                  arguments: Optional[List[Argument]] = None):
-        super().__init__(PacketType.ACTION, name, packet_id=packet_id, group=group, description=description,
+        super().__init__(PacketType.COMMAND, name, packet_id=packet_id, group=group, description=description,
                          arguments=arguments)
 
 

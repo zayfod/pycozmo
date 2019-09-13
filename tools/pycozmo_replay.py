@@ -34,7 +34,7 @@ def load_engine_pkts(fspec):
                 # Skip non-engine frames
                 continue
             for pkt in frame.pkts:
-                if pkt.type not in [pycozmo.protocol_declaration.PacketType.ACTION,
+                if pkt.type not in [pycozmo.protocol_declaration.PacketType.COMMAND,
                                     pycozmo.protocol_declaration.PacketType.UNKNOWN_0A]:
                     continue
                 pkts.append(pkt)

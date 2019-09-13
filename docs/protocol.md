@@ -85,7 +85,7 @@ Type    OOB     Source      Description
 ---------------------------------------------------------------------------------
 0x02    n       robot       Connect
 0x03    n       engine      Disconnect
-0x04    n       both        Command/action
+0x04    n       both        Command
 0x05    y       robot       Event
 0x0a    y       engine      Unknown
 0x0b    y       engine      Ping
@@ -100,10 +100,6 @@ Commands and events are identified by an 8-bit ID. IDs in the range 0-0xaf are s
 
 IDs in the range 0xf0-0xff are used for out-of-band updates. These are packets that are not tracked by a sequence ID
 and thus not retransmitted. Only their latest received value is considered important. 
-
-
-Commands
---------
 
 ```
 ID                 Min     Max      Name
@@ -175,15 +171,6 @@ ID                 Min     Max      Name
 0xed	     	    12	    12		BodyInfo                      
 0xee	     	   449	   449		FirmwareSignature             
 0xef	     	     7	     7		FirmwareUpdateResult          
-```
-
-
-Events
-------
-
-```
-ID                 Min     Max      Name
----------------------------------------------------------------------------------
 0xf0	    	    91	    91		RobotState                    
 0xf1	    	    15	    15		AnimationState                
 0xf2	    	    24	  1172	*	ImageChunk                    

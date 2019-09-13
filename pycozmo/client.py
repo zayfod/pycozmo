@@ -158,7 +158,7 @@ class SendThread(Thread):
                 frame = Frame(FrameType.PING, 0, 0, self.last_ack, [pkt])
             else:
                 seq = self.window.put(pkt)
-                if pkt.type == PacketType.ACTION:
+                if pkt.type == PacketType.COMMAND:
                     frame = Frame(FrameType.ENGINE_ACT, seq, seq, self.last_ack, [pkt])
                 else:
                     frame = Frame(FrameType.ENGINE, seq, seq, self.last_ack, [pkt])

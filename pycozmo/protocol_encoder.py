@@ -551,7 +551,7 @@ class LightStateCenter(Packet):
     def __init__(self,
                  states=(),
                  unknown=0):
-        super().__init__(PacketType.ACTION, packet_id=3)
+        super().__init__(PacketType.COMMAND, packet_id=3)
         self.states = states
         self.unknown = unknown
 
@@ -617,7 +617,7 @@ class CubeLights(Packet):
 
     def __init__(self,
                  states=()):
-        super().__init__(PacketType.ACTION, packet_id=4)
+        super().__init__(PacketType.COMMAND, packet_id=4)
         self.states = states
 
     @property
@@ -670,7 +670,7 @@ class ObjectConnect(Packet):
     def __init__(self,
                  factory_id=0,
                  connect=False):
-        super().__init__(PacketType.ACTION, packet_id=5)
+        super().__init__(PacketType.COMMAND, packet_id=5)
         self.factory_id = factory_id
         self.connect = connect
 
@@ -735,7 +735,7 @@ class SetHeadLight(Packet):
 
     def __init__(self,
                  enable=False):
-        super().__init__(PacketType.ACTION, packet_id=11)
+        super().__init__(PacketType.COMMAND, packet_id=11)
         self.enable = enable
 
     @property
@@ -787,7 +787,7 @@ class CubeId(Packet):
     def __init__(self,
                  object_id=0,
                  rotation_period_frames=0):
-        super().__init__(PacketType.ACTION, packet_id=16)
+        super().__init__(PacketType.COMMAND, packet_id=16)
         self.object_id = object_id
         self.rotation_period_frames = rotation_period_frames
 
@@ -854,7 +854,7 @@ class LightStateSide(Packet):
     def __init__(self,
                  states=(),
                  unknown=0):
-        super().__init__(PacketType.ACTION, packet_id=17)
+        super().__init__(PacketType.COMMAND, packet_id=17)
         self.states = states
         self.unknown = unknown
 
@@ -918,7 +918,7 @@ class Enable(Packet):
     )
 
     def __init__(self):
-        super().__init__(PacketType.ACTION, packet_id=37)
+        super().__init__(PacketType.COMMAND, packet_id=37)
         pass
 
     def __len__(self):
@@ -962,7 +962,7 @@ class DriveWheels(Packet):
                  rwheel_speed_mmps=0.0,
                  lwheel_accel_mmps2=0.0,
                  rwheel_accel_mmps2=0.0):
-        super().__init__(PacketType.ACTION, packet_id=50)
+        super().__init__(PacketType.COMMAND, packet_id=50)
         self.lwheel_speed_mmps = lwheel_speed_mmps
         self.rwheel_speed_mmps = rwheel_speed_mmps
         self.lwheel_accel_mmps2 = lwheel_accel_mmps2
@@ -1061,7 +1061,7 @@ class TurnInPlaceAtSpeed(Packet):
                  wheel_speed_mmps=0.0,
                  wheel_accel_mmps2=0.0,
                  direction=0):
-        super().__init__(PacketType.ACTION, packet_id=51)
+        super().__init__(PacketType.COMMAND, packet_id=51)
         self.wheel_speed_mmps = wheel_speed_mmps
         self.wheel_accel_mmps2 = wheel_accel_mmps2
         self.direction = direction
@@ -1141,7 +1141,7 @@ class DriveLift(Packet):
 
     def __init__(self,
                  speed=0.0):
-        super().__init__(PacketType.ACTION, packet_id=52)
+        super().__init__(PacketType.COMMAND, packet_id=52)
         self.speed = speed
 
     @property
@@ -1191,7 +1191,7 @@ class DriveHead(Packet):
 
     def __init__(self,
                  speed=0.0):
-        super().__init__(PacketType.ACTION, packet_id=53)
+        super().__init__(PacketType.COMMAND, packet_id=53)
         self.speed = speed
 
     @property
@@ -1249,7 +1249,7 @@ class SetLiftHeight(Packet):
                  accel_rad_per_sec2=20.0,
                  duration_sec=0.0,
                  action_id=0):
-        super().__init__(PacketType.ACTION, packet_id=54)
+        super().__init__(PacketType.COMMAND, packet_id=54)
         self.height_mm = height_mm
         self.max_speed_rad_per_sec = max_speed_rad_per_sec
         self.accel_rad_per_sec2 = accel_rad_per_sec2
@@ -1367,7 +1367,7 @@ class SetHeadAngle(Packet):
                  accel_rad_per_sec2=20.0,
                  duration_sec=0.0,
                  action_id=0):
-        super().__init__(PacketType.ACTION, packet_id=55)
+        super().__init__(PacketType.COMMAND, packet_id=55)
         self.angle_rad = angle_rad
         self.max_speed_rad_per_sec = max_speed_rad_per_sec
         self.accel_rad_per_sec2 = accel_rad_per_sec2
@@ -1491,7 +1491,7 @@ class TurnInPlace(Packet):
                  unknown5=0,
                  is_absolute=False,
                  action_id=0):
-        super().__init__(PacketType.ACTION, packet_id=57)
+        super().__init__(PacketType.COMMAND, packet_id=57)
         self.angle_rad = angle_rad
         self.speed_rad_per_sec = speed_rad_per_sec
         self.accel_rad_per_sec2 = accel_rad_per_sec2
@@ -1644,7 +1644,7 @@ class StopAllMotors(Packet):
     )
 
     def __init__(self):
-        super().__init__(PacketType.ACTION, packet_id=59)
+        super().__init__(PacketType.COMMAND, packet_id=59)
         pass
 
     def __len__(self):
@@ -1694,7 +1694,7 @@ class DriveStraight(Packet):
                  speed_mmps=0.0,
                  f5=0.0,
                  f6=0.0):
-        super().__init__(PacketType.ACTION, packet_id=61)
+        super().__init__(PacketType.COMMAND, packet_id=61)
         self.f0 = f0
         self.f1 = f1
         self.dist_mm = dist_mm
@@ -1836,7 +1836,7 @@ class EnableCamera(Packet):
     def __init__(self,
                  enable=False,
                  unknown=4):
-        super().__init__(PacketType.ACTION, packet_id=76)
+        super().__init__(PacketType.COMMAND, packet_id=76)
         self.enable = enable
         self.unknown = unknown
 
@@ -1905,7 +1905,7 @@ class SetCameraParams(Packet):
                  gain=0.0,
                  exposure_ms=0,
                  auto_exposure_enabled=False):
-        super().__init__(PacketType.ACTION, packet_id=87)
+        super().__init__(PacketType.COMMAND, packet_id=87)
         self.gain = gain
         self.exposure_ms = exposure_ms
         self.auto_exposure_enabled = auto_exposure_enabled
@@ -1985,7 +1985,7 @@ class EnableStopOnCliff(Packet):
 
     def __init__(self,
                  enable=False):
-        super().__init__(PacketType.ACTION, packet_id=96)
+        super().__init__(PacketType.COMMAND, packet_id=96)
         self.enable = enable
 
     @property
@@ -2035,7 +2035,7 @@ class SetRobotVolume(Packet):
 
     def __init__(self,
                  level=0):
-        super().__init__(PacketType.ACTION, packet_id=100)
+        super().__init__(PacketType.COMMAND, packet_id=100)
         self.level = level
 
     @property
@@ -2085,7 +2085,7 @@ class EnableColorImages(Packet):
 
     def __init__(self,
                  enable=False):
-        super().__init__(PacketType.ACTION, packet_id=102)
+        super().__init__(PacketType.COMMAND, packet_id=102)
         self.enable = enable
 
     @property
@@ -2143,7 +2143,7 @@ class NvStorageOp(Packet):
                  op=0,
                  unknown=0,
                  data=()):
-        super().__init__(PacketType.ACTION, packet_id=129)
+        super().__init__(PacketType.COMMAND, packet_id=129)
         self.tag = NvEntryTag(tag)
         self.index = index
         self.op = NvOperation(op)
@@ -2256,7 +2256,7 @@ class OutputAudio(Packet):
 
     def __init__(self,
                  samples=()):
-        super().__init__(PacketType.ACTION, packet_id=142)
+        super().__init__(PacketType.COMMAND, packet_id=142)
         self.samples = samples
 
     @property
@@ -2305,7 +2305,7 @@ class NextFrame(Packet):
     )
 
     def __init__(self):
-        super().__init__(PacketType.ACTION, packet_id=143)
+        super().__init__(PacketType.COMMAND, packet_id=143)
         pass
 
     def __len__(self):
@@ -2343,7 +2343,7 @@ class DisplayImage(Packet):
 
     def __init__(self,
                  image=()):
-        super().__init__(PacketType.ACTION, packet_id=151)
+        super().__init__(PacketType.COMMAND, packet_id=151)
         self.image = image
 
     @property
@@ -2396,7 +2396,7 @@ class FirmwareUpdate(Packet):
     def __init__(self,
                  chunk_id=0,
                  data=()):
-        super().__init__(PacketType.ACTION, packet_id=175)
+        super().__init__(PacketType.COMMAND, packet_id=175)
         self.chunk_id = chunk_id
         self.data = data
 
@@ -2470,7 +2470,7 @@ class UnknownB0(Packet):
                  unknown2=0,
                  unknown3=0,
                  unknown4=()):
-        super().__init__(PacketType.ACTION, packet_id=176)
+        super().__init__(PacketType.COMMAND, packet_id=176)
         self.unknown0 = unknown0
         self.unknown1 = unknown1
         self.unknown2 = unknown2
@@ -2591,7 +2591,7 @@ class ObjectMoved(Packet):
                  active_accel_y=0.0,
                  active_accel_z=0.0,
                  axis_of_accel=7):
-        super().__init__(PacketType.ACTION, packet_id=180)
+        super().__init__(PacketType.COMMAND, packet_id=180)
         self.timestamp = timestamp
         self.object_id = object_id
         self.active_accel_x = active_accel_x
@@ -2719,7 +2719,7 @@ class ObjectStoppedMoving(Packet):
     def __init__(self,
                  timestamp=0,
                  object_id=0):
-        super().__init__(PacketType.ACTION, packet_id=181)
+        super().__init__(PacketType.COMMAND, packet_id=181)
         self.timestamp = timestamp
         self.object_id = object_id
 
@@ -2794,7 +2794,7 @@ class ObjectTapped(Packet):
                  tap_time=0,
                  tap_neg=0,
                  tap_pos=0):
-        super().__init__(PacketType.ACTION, packet_id=182)
+        super().__init__(PacketType.COMMAND, packet_id=182)
         self.timestamp = timestamp
         self.object_id = object_id
         self.num_taps = num_taps
@@ -2925,7 +2925,7 @@ class ObjectTapFiltered(Packet):
                  object_id=0,
                  time=0,
                  intensity=0):
-        super().__init__(PacketType.ACTION, packet_id=185)
+        super().__init__(PacketType.COMMAND, packet_id=185)
         self.timestamp = timestamp
         self.object_id = object_id
         self.time = time
@@ -3020,7 +3020,7 @@ class AcknowledgeAction(Packet):
 
     def __init__(self,
                  action_id=0):
-        super().__init__(PacketType.ACTION, packet_id=196)
+        super().__init__(PacketType.COMMAND, packet_id=196)
         self.action_id = action_id
 
     @property
@@ -3068,7 +3068,7 @@ class RobotDelocalized(Packet):
     )
 
     def __init__(self):
-        super().__init__(PacketType.ACTION, packet_id=194)
+        super().__init__(PacketType.COMMAND, packet_id=194)
         pass
 
     def __len__(self):
@@ -3104,7 +3104,7 @@ class RobotPoked(Packet):
     )
 
     def __init__(self):
-        super().__init__(PacketType.ACTION, packet_id=195)
+        super().__init__(PacketType.COMMAND, packet_id=195)
         pass
 
     def __len__(self):
@@ -3146,7 +3146,7 @@ class HardwareInfo(Packet):
                  serial_number_head=0,
                  unknown1=0,
                  unknown2=0):
-        super().__init__(PacketType.ACTION, packet_id=201)
+        super().__init__(PacketType.COMMAND, packet_id=201)
         self.serial_number_head = serial_number_head
         self.unknown1 = unknown1
         self.unknown2 = unknown2
@@ -3234,7 +3234,7 @@ class NvStorageOpResult(Packet):
                  op=0,
                  result=0,
                  data=()):
-        super().__init__(PacketType.ACTION, packet_id=205)
+        super().__init__(PacketType.COMMAND, packet_id=205)
         self.tag = NvEntryTag(tag)
         self.index = index
         self.op = NvOperation(op)
@@ -3352,7 +3352,7 @@ class ObjectPowerLevel(Packet):
                  object_id=0,
                  missed_packets=0,
                  battery_level=0):
-        super().__init__(PacketType.ACTION, packet_id=206)
+        super().__init__(PacketType.COMMAND, packet_id=206)
         self.object_id = object_id
         self.missed_packets = missed_packets
         self.battery_level = battery_level
@@ -3438,7 +3438,7 @@ class ObjectConnectionState(Packet):
                  factory_id=0,
                  object_type=-1,
                  connected=False):
-        super().__init__(PacketType.ACTION, packet_id=208)
+        super().__init__(PacketType.COMMAND, packet_id=208)
         self.object_id = object_id
         self.factory_id = factory_id
         self.object_type = ObjectType(object_type)
@@ -3538,7 +3538,7 @@ class ObjectUpAxisChanged(Packet):
                  timestamp=0,
                  object_id=0,
                  axis=7):
-        super().__init__(PacketType.ACTION, packet_id=215)
+        super().__init__(PacketType.COMMAND, packet_id=215)
         self.timestamp = timestamp
         self.object_id = object_id
         self.axis = UpAxis(axis)
@@ -3619,7 +3619,7 @@ class ButtonPressed(Packet):
 
     def __init__(self,
                  pressed=False):
-        super().__init__(PacketType.ACTION, packet_id=219)
+        super().__init__(PacketType.COMMAND, packet_id=219)
         self.pressed = pressed
 
     @property
@@ -3669,7 +3669,7 @@ class FallingStarted(Packet):
 
     def __init__(self,
                  unknown=0):
-        super().__init__(PacketType.ACTION, packet_id=221)
+        super().__init__(PacketType.COMMAND, packet_id=221)
         self.unknown = unknown
 
     @property
@@ -3723,7 +3723,7 @@ class FallingStopped(Packet):
                  unknown=0,
                  duration_ms=0,
                  impact_intensity=0.0):
-        super().__init__(PacketType.ACTION, packet_id=222)
+        super().__init__(PacketType.COMMAND, packet_id=222)
         self.unknown = unknown
         self.duration_ms = duration_ms
         self.impact_intensity = impact_intensity
@@ -3807,7 +3807,7 @@ class BodyInfo(Packet):
                  serial_number=0,
                  body_hw_version=0,
                  body_color=-1):
-        super().__init__(PacketType.ACTION, packet_id=237)
+        super().__init__(PacketType.COMMAND, packet_id=237)
         self.serial_number = serial_number
         self.body_hw_version = body_hw_version
         self.body_color = BodyColor(body_color)
@@ -3890,7 +3890,7 @@ class FirmwareSignature(Packet):
     def __init__(self,
                  unknown=0,
                  signature=''):
-        super().__init__(PacketType.ACTION, packet_id=238)
+        super().__init__(PacketType.COMMAND, packet_id=238)
         self.unknown = unknown
         self.signature = signature
 
@@ -3959,7 +3959,7 @@ class FirmwareUpdateResult(Packet):
                  byte_count=0,
                  chunk_id=0,
                  status=0):
-        super().__init__(PacketType.ACTION, packet_id=239)
+        super().__init__(PacketType.COMMAND, packet_id=239)
         self.byte_count = byte_count
         self.chunk_id = chunk_id
         self.status = status
@@ -4983,7 +4983,7 @@ class ImageImuData(Packet):
             line_2_number=line_2_number)
 
 
-ACTION_BY_ID = {
+PACKETS_BY_ID = {
     0x03: LightStateCenter,  # 3
     0x04: CubeLights,  # 4
     0x05: ObjectConnect,  # 5
@@ -5029,10 +5029,6 @@ ACTION_BY_ID = {
     0xed: BodyInfo,  # 237
     0xee: FirmwareSignature,  # 238
     0xef: FirmwareUpdateResult,  # 239
-}
-
-
-EVENT_BY_ID = {
     0xf0: RobotState,  # 240
     0xf1: AnimationState,  # 241
     0xf2: ImageChunk,  # 242

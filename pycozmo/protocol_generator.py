@@ -480,31 +480,18 @@ class {name}(Packet):
         self.generate_packet_encoding(packet)
         self.generate_packet_decoding(packet)
 
-    def generate_action_map(self):
-        action_map = {}
-        for packet in protocol_declaration.PROTOCOL.packets:
-            if not isinstance(packet, protocol_declaration.Command):
-                continue
-            action_map[packet.id] = packet.name
+    def generate_id_map(self):
+        packet_map = {}
+        for pkt in protocol_declaration.PROTOCOL.packets:
+            if pkt.id:
+                packet_map[pkt.id] = pkt.name
 
-        self.f.write('\n\nACTION_BY_ID = {\n')
-        for k, v in sorted(action_map.items()):
+        self.f.write('\n\nPACKETS_BY_ID = {\n')
+        for k, v in sorted(packet_map.items()):
             self.f.write('    0x{id:02x}: {name},  # {id}\n'.format(id=k, name=v))
         self.f.write('}\n')
 
-    def generate_event_map(self):
-        event_map = {}
-        for packet in protocol_declaration.PROTOCOL.packets:
-            if not isinstance(packet, protocol_declaration.Event):
-                continue
-            event_map[packet.id] = packet.name
-
-        self.f.write('\n\nEVENT_BY_ID = {\n')
-        for k, v in sorted(event_map.items()):
-            self.f.write('    0x{id:02x}: {name},  # {id}\n'.format(id=k, name=v))
-        self.f.write('}\n')
-
-    def generate_packet_map(self):
+    def generate_group_map(self):
         packet_map = defaultdict(set)
         for pkt in protocol_declaration.PROTOCOL.packets:
             if pkt.group and pkt.id:
@@ -513,7 +500,7 @@ class {name}(Packet):
         self.f.write('\n\nPACKETS_BY_GROUP = {\n')
         for group, pkt_set in sorted(packet_map.items()):
             self.f.write('    "{group}": {{\n'.format(group=group))
-            for pkt in sorted(pkt_set):
+            for pkt in sorted(pkt_set, key=lambda pkt: pkt.id):
                 self.f.write('        0x{id:02x},  # {name}\n'.format(id=pkt.id, name=pkt.name))
             self.f.write('    },\n')
         self.f.write('}\n')
@@ -550,6 +537,5 @@ from .protocol_utils import \
         for packet in protocol_declaration.PROTOCOL.packets:
             self.generate_packet(packet)
 
-        self.generate_action_map()
-        self.generate_event_map()
-        self.generate_packet_map()
+        self.generate_id_map()
+        self.generate_group_map()
