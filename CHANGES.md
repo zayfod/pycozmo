@@ -1,14 +1,19 @@
 Revision History
 ================
 
-v0.4.0
-------
-- Improved robot state.
-- Added stop-on-cliff command.
-- Added head serial number access.
-- Added object availability access.
-- Added animation state.
-- Added image IMU data event access.
+v0.4.0 (Sep 13, 2019)
+---------------------
+- New commands: Enable, TurnInPlace, DriveStraight, ButtonPressed, HardwareInfo, BodyInfo, EnableColorImages,
+    EnableStopOnCliff, NvStorageOp, NvStorageOpResult, FirmwareUpdate, FirmwareUpdateResult.
+- New events: AnimationState, ObjectAvailable, ImageIMUData.
+- New examples: cube_lights.py, charger_lights.py, cube_light_animation.py.
+- Improved handling of 0x04 frames
+- Added support for Int8, Int32, and enumeration packet fields.
+- Improved robot state access.
+- Added object availability and animation state access.
+- Added initial pycozmo_replay.py tool for replaying .pcap files to Cozmo.
+- Added OLED display initial image encoder code. 
+- Added initial function description.
 
 v0.3.0 (Sep 1, 2019)
 --------------------

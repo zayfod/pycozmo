@@ -55,12 +55,7 @@ Documentation
 - [Cozmo function](docs/functions.md) description
 - [Capturing Cozmo communication](docs/capturing.md)
 
-
-Tools
------
-
-- `pycozmo_dump.py` - a command-line application that can read and annotate Cozmo communication from
-    [pcap files](https://en.wikipedia.org/wiki/Pcap)
+- API documentation: http://pycozmo.readthedocs.io/
 
 
 Examples
@@ -70,10 +65,21 @@ Examples
     Logitech Gamepad F310
 - [extremes.py](examples/extremes.py) - demonstrates Cozmo lift and head control
 - [backpack_lights.py](examples/backpack_lights.py) - demonstrates Cozmo backpack LED control
+- [cube_lights.py](examples/cube_lights.py) - demonstrates cube connection and LED control
+- [cube_light_animation.py](examples/cube_light_animation.py) - demonstrates cube LED animation control
+- [charger_lights.py](examples/charger_lights.py) - demonstrates Cozmo charging platform LED control
 - [display.py](examples/display.py) - demonstrates low-level visualization of images on Cozmo's display
 - [audio.py](examples/audio.py) - demonstrates 22 kHz, 8-bit, mono WAVE file playback through Cozmo's speaker 
 - [events.py](examples/events.py) - demonstrates event handling
 - [camera.py](examples/camera.py) - demonstrates capturing a camera image 
+
+
+Tools
+-----
+
+- `pycozmo_dump.py` - a command-line application that can read and annotate Cozmo communication from
+    [pcap files](https://en.wikipedia.org/wiki/Pcap)
+- `pycozmo_replay.py` - a basic command-line application that can replay .pcap files back to Cozmo.
 
 
 Robot Support
@@ -104,6 +110,7 @@ Communication:
 
 Storage:
 - NVRAM - supported
+- Firmware update - supported
 
 
 Connecting to Cozmo over Wi-Fi
