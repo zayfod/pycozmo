@@ -95,6 +95,12 @@ Out of band packets do not get assigned sequence IDs.
 
 Packet content is Cozmo firmware version specific.
 
+Commands and events are identified by an 8-bit ID. IDs in the range 0-0xaf are sent by the engine. IDs in the range
+0xb0-0xff are sent by the robot.
+
+IDs in the range 0xf0-0xff are used for out-of-band updates. These are packets that are not tracked by a sequence ID
+and thus not retransmitted. Only their latest received value is considered important. 
+
 
 Commands
 --------

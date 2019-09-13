@@ -2,7 +2,7 @@
 from typing import Optional
 from abc import ABC, abstractmethod
 
-from .protocol_declaration import PacketType
+from .protocol_declaration import PacketType, FIRST_ROBOT_PACKET_ID
 from .protocol_utils import BinaryReader, BinaryWriter
 from .util import hex_dump
 
@@ -70,6 +70,16 @@ class Packet(Struct, ABC):
     def is_oob(self) -> bool:
         res = self.type.value >= PacketType.EVENT.value
         return res
+
+    def is_from_robot(self) -> bool:
+        if self.id is not None:
+            res =  self.id >= FIRST_ROBOT_PACKET_ID
+        else:
+            res = self.type == PacketType.CONNECT or (self.type == PacketType.PING and self.seq > 0)
+        return res
+
+    def is_from_engine(self) -> bool:
+        return not self.is_from_robot()
 
 
 class UnknownPacket(Packet):

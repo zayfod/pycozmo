@@ -36,7 +36,8 @@ def decode_cozmo_frame(ts, buffer):
             unknown_count += 1
         # if isinstance(pkt, pycozmo.protocol_encoder.Ping):
         #     continue
-        print("\t{:<12s} time={:.06f} {}".format(frame.type.name, ts, pkt))
+        direction = "->" if pkt.is_from_robot() else "<-"
+        print("\t{} time={:.06f} {}".format(direction, ts, pkt))
         # if ts > 15:
         #     sys.exit(1)
 
