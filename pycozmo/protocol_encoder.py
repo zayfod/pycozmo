@@ -5039,3 +5039,81 @@ EVENT_BY_ID = {
     0xf3: ObjectAvailable,  # 243
     0xf4: ImageImuData,  # 244
 }
+
+
+PACKETS_BY_GROUP = {
+    "audio": {
+        0x64,  # SetRobotVolume
+        0x8e,  # OutputAudio
+    },
+    "camera": {
+        0x0b,  # SetHeadLight
+        0x4c,  # EnableCamera
+        0x57,  # SetCameraParams
+        0x66,  # EnableColorImages
+    },
+    "display": {
+        0x8f,  # NextFrame
+        0x97,  # DisplayImage
+    },
+    "firmware": {
+        0xaf,  # FirmwareUpdate
+        0xef,  # FirmwareUpdateResult
+    },
+    "lights": {
+        0x03,  # LightStateCenter
+        0x11,  # LightStateSide
+    },
+    "localization": {
+        0xc2,  # RobotDelocalized
+        0xc3,  # RobotPoked
+        0xdd,  # FallingStarted
+        0xde,  # FallingStopped
+    },
+    "motors": {
+        0x32,  # DriveWheels
+        0x33,  # TurnInPlaceAtSpeed
+        0x34,  # DriveLift
+        0x35,  # DriveHead
+        0x36,  # SetLiftHeight
+        0x37,  # SetHeadAngle
+        0x39,  # TurnInPlace
+        0x3b,  # StopAllMotors
+        0x3d,  # DriveStraight
+        0x60,  # EnableStopOnCliff
+        0xc4,  # AcknowledgeAction
+    },
+    "nv": {
+        0x81,  # NvStorageOp
+        0xcd,  # NvStorageOpResult
+    },
+    "objects": {
+        0x04,  # CubeLights
+        0x05,  # ObjectConnect
+        0x10,  # CubeId
+        0xb4,  # ObjectMoved
+        0xb5,  # ObjectStoppedMoving
+        0xb6,  # ObjectTapped
+        0xb9,  # ObjectTapFiltered
+        0xce,  # ObjectPowerLevel
+        0xd0,  # ObjectConnectionState
+        0xd7,  # ObjectUpAxisChanged
+    },
+    "state": {
+        0xf0,  # RobotState
+        0xf1,  # AnimationState
+        0xf2,  # ImageChunk
+        0xf3,  # ObjectAvailable
+        0xf4,  # ImageImuData
+    },
+    "system": {
+        0x25,  # Enable
+        0xc9,  # HardwareInfo
+        0xdb,  # ButtonPressed
+        0xed,  # BodyInfo
+        0xee,  # FirmwareSignature
+    },
+    "unknown": {
+        0xb0,  # UnknownB0
+    },
+}

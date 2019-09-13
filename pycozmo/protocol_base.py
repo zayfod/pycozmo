@@ -73,7 +73,7 @@ class Packet(Struct, ABC):
 
     def is_from_robot(self) -> bool:
         if self.id is not None:
-            res =  self.id >= FIRST_ROBOT_PACKET_ID
+            res = self.id >= FIRST_ROBOT_PACKET_ID
         else:
             res = self.type == PacketType.CONNECT or (self.type == PacketType.PING and self.seq > 0)
         return res

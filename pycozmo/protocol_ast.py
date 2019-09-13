@@ -194,10 +194,12 @@ class Packet(Struct, ABC):
     """ Base class for packets. """
 
     def __init__(self, packet_type: PacketType, name: str, packet_id: Optional[int] = None,
-                 description: Optional[str] = None, arguments: Optional[List[Argument]] = None):
+                 group: Optional[str] = None, description: Optional[str] = None,
+                 arguments: Optional[List[Argument]] = None):
         super().__init__(name, description, arguments)
         self.type = PacketType(packet_type)
         self.id = packet_id
+        self.group = group
 
 
 class Connect(Packet):
@@ -218,17 +220,19 @@ class Disconnect(Packet):
 class Command(Packet):
     """ Command packet. """
 
-    def __init__(self, packet_id: int, name: str, description: Optional[str] = None,
+    def __init__(self, packet_id: int, name: str, group: Optional[str] = None,  description: Optional[str] = None,
                  arguments: Optional[List[Argument]] = None):
-        super().__init__(PacketType.ACTION, name, packet_id=packet_id, description=description, arguments=arguments)
+        super().__init__(PacketType.ACTION, name, packet_id=packet_id, group=group, description=description,
+                         arguments=arguments)
 
 
 class Event(Packet):
     """ Event packet. """
 
-    def __init__(self, packet_id: int, name: str, description: Optional[str] = None,
+    def __init__(self, packet_id: int, name: str, group: Optional[str] = None, description: Optional[str] = None,
                  arguments: Optional[List[Argument]] = None):
-        super().__init__(PacketType.EVENT, name, packet_id=packet_id, description=description, arguments=arguments)
+        super().__init__(PacketType.EVENT, name, packet_id=packet_id, group=group, description=description,
+                         arguments=arguments)
 
 
 class Ping(Packet):

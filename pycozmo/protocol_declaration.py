@@ -204,61 +204,61 @@ PROTOCOL = Protocol(
         Ping(),
         Unknown0A(),
 
-        Command(0x03, "LightStateCenter", arguments=[
+        Command(0x03, "LightStateCenter", group="lights", arguments=[
             FArrayArgument("states", data_type=LIGHT_STATE, length=3),      # top, middle, bottom
             UInt8Argument("unknown"),
         ]),
-        Command(0x04, "CubeLights", arguments=[
+        Command(0x04, "CubeLights", group="objects", arguments=[
             FArrayArgument("states", data_type=LIGHT_STATE, length=4)
         ]),
-        Command(0x05, "ObjectConnect", arguments=[
+        Command(0x05, "ObjectConnect", group="objects", arguments=[
             UInt32Argument("factory_id"),
             BoolArgument("connect"),
         ]),
-        Command(0x0b, "SetHeadLight", arguments=[
+        Command(0x0b, "SetHeadLight", group="camera", arguments=[
             BoolArgument("enable")
         ]),
-        Command(0x10, "CubeId", arguments=[
+        Command(0x10, "CubeId", group="objects", arguments=[
             UInt32Argument("object_id"),
             UInt8Argument("rotation_period_frames"),
         ]),
-        Command(0x11, "LightStateSide", arguments=[
+        Command(0x11, "LightStateSide", group="lights", arguments=[
             FArrayArgument("states", data_type=LIGHT_STATE, length=2),      # left, right
             UInt8Argument("unknown"),
         ]),
-        Command(0x25, "Enable"),
-        Command(0x32, "DriveWheels", arguments=[
+        Command(0x25, "Enable", group="system"),
+        Command(0x32, "DriveWheels", group="motors", arguments=[
             FloatArgument("lwheel_speed_mmps"),
             FloatArgument("rwheel_speed_mmps"),
             FloatArgument("lwheel_accel_mmps2"),
             FloatArgument("rwheel_accel_mmps2"),
         ]),
-        Command(0x33, "TurnInPlaceAtSpeed", arguments=[
+        Command(0x33, "TurnInPlaceAtSpeed", group="motors", arguments=[
             FloatArgument("wheel_speed_mmps"),
             FloatArgument("wheel_accel_mmps2"),
             Int16Argument("direction"),
         ]),
-        Command(0x34, "DriveLift", arguments=[
+        Command(0x34, "DriveLift", group="motors", arguments=[
             FloatArgument("speed"),
         ]),
-        Command(0x35, "DriveHead", arguments=[
+        Command(0x35, "DriveHead", group="motors", arguments=[
             FloatArgument("speed"),
         ]),
-        Command(0x36, "SetLiftHeight", arguments=[
+        Command(0x36, "SetLiftHeight", group="motors", arguments=[
             FloatArgument("height_mm"),
             FloatArgument("max_speed_rad_per_sec", default=3.0),
             FloatArgument("accel_rad_per_sec2", default=20.0),
             FloatArgument("duration_sec"),
             UInt8Argument("action_id"),
         ]),
-        Command(0x37, "SetHeadAngle", arguments=[
+        Command(0x37, "SetHeadAngle", group="motors", arguments=[
             FloatArgument("angle_rad"),
             FloatArgument("max_speed_rad_per_sec", default=15.0),
             FloatArgument("accel_rad_per_sec2", default=20.0),
             FloatArgument("duration_sec"),
             UInt8Argument("action_id"),
         ]),
-        Command(0x39, "TurnInPlace", arguments=[
+        Command(0x39, "TurnInPlace", group="motors", arguments=[
             FloatArgument("angle_rad"),
             FloatArgument("speed_rad_per_sec"),
             FloatArgument("accel_rad_per_sec2"),
@@ -268,8 +268,8 @@ PROTOCOL = Protocol(
             BoolArgument("is_absolute"),
             UInt8Argument("action_id"),
         ]),
-        Command(0x3b, "StopAllMotors"),
-        Command(0x3d, "DriveStraight", arguments=[
+        Command(0x3b, "StopAllMotors", group="motors"),
+        Command(0x3d, "DriveStraight", group="motors", arguments=[
             FloatArgument("f0"),
             FloatArgument("f1"),
             FloatArgument("dist_mm"),               # minus ~20.3 mm?
@@ -278,50 +278,50 @@ PROTOCOL = Protocol(
             FloatArgument("f5"),
             FloatArgument("f6"),
         ]),
-        Command(0x4c, "EnableCamera", arguments=[
+        Command(0x4c, "EnableCamera", group="camera", arguments=[
             BoolArgument("enable"),
             UInt8Argument("unknown", default=4)     # resolution but ignored?
         ]),
-        Command(0x57, "SetCameraParams", arguments=[
+        Command(0x57, "SetCameraParams", group="camera", arguments=[
             FloatArgument("gain"),
             UInt16Argument("exposure_ms"),
             BoolArgument("auto_exposure_enabled"),
         ]),
-        Command(0x60, "EnableStopOnCliff", arguments=[
+        Command(0x60, "EnableStopOnCliff", group="motors", arguments=[
             BoolArgument("enable"),
         ]),
-        Command(0x64, "SetRobotVolume", arguments=[
+        Command(0x64, "SetRobotVolume", group="audio", arguments=[
             UInt16Argument("level"),
         ]),
-        Command(0x66, "EnableColorImages", arguments=[
+        Command(0x66, "EnableColorImages", group="camera", arguments=[
             BoolArgument("enable"),
         ]),
-        Command(0x81, "NvStorageOp", arguments=[
+        Command(0x81, "NvStorageOp", group="nv", arguments=[
             EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument, default=0xffffffff),
             Int32Argument("index"),
             EnumArgument("op", NV_OPERATION, data_type=UInt8Argument),
             UInt8Argument("unknown"),
             VArrayArgument("data"),
         ]),
-        Command(0x8e, "OutputAudio", arguments=[
+        Command(0x8e, "OutputAudio", group="audio", arguments=[
             FArrayArgument("samples", length=744),
         ]),
-        Command(0x8f, "NextFrame"),
-        Command(0x97, "DisplayImage", arguments=[
+        Command(0x8f, "NextFrame", group="display"),
+        Command(0x97, "DisplayImage", group="display", arguments=[
             VArrayArgument("image"),
         ]),
-        Command(0xaf, "FirmwareUpdate", arguments=[
+        Command(0xaf, "FirmwareUpdate", group="firmware", arguments=[
             UInt16Argument("chunk_id"),
             FArrayArgument("data", length=1024)
         ]),
-        Command(0xb0, "UnknownB0", arguments=[
+        Command(0xb0, "UnknownB0", group="unknown", arguments=[
             UInt16Argument("unknown0"),
             UInt16Argument("unknown1"),
             UInt16Argument("unknown2"),
             Int8Argument("unknown3"),
             VArrayArgument("unknown4", data_type=UInt32Argument, length_type=UInt8Argument)
         ]),
-        Command(0xb4, "ObjectMoved", arguments=[
+        Command(0xb4, "ObjectMoved", group="objects", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("object_id"),
             FloatArgument("active_accel_x"),
@@ -329,11 +329,11 @@ PROTOCOL = Protocol(
             FloatArgument("active_accel_z"),
             EnumArgument("axis_of_accel", UP_AXIS, data_type=UInt8Argument, default=7),
         ]),
-        Command(0xb5, "ObjectStoppedMoving", arguments=[
+        Command(0xb5, "ObjectStoppedMoving", group="objects", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("object_id"),
         ]),
-        Command(0xb6, "ObjectTapped", arguments=[
+        Command(0xb6, "ObjectTapped", group="objects", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("object_id"),
             UInt8Argument("num_taps"),
@@ -341,72 +341,72 @@ PROTOCOL = Protocol(
             Int8Argument("tap_neg"),
             Int8Argument("tap_pos"),
         ]),
-        Command(0xb9, "ObjectTapFiltered", arguments=[
+        Command(0xb9, "ObjectTapFiltered", group="objects", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("object_id"),
             UInt8Argument("time"),
             UInt8Argument("intensity"),
         ]),
-        Command(0xc4, "AcknowledgeAction", arguments=[
+        Command(0xc4, "AcknowledgeAction", group="motors", arguments=[
             UInt8Argument("action_id"),
         ]),
-        Command(0xc2, "RobotDelocalized"),
-        Command(0xc3, "RobotPoked"),
-        Command(0xc9, "HardwareInfo", arguments=[
+        Command(0xc2, "RobotDelocalized", group="localization"),
+        Command(0xc3, "RobotPoked", group="localization"),
+        Command(0xc9, "HardwareInfo", group="system", arguments=[
             UInt32Argument("serial_number_head"),
             UInt8Argument("unknown1"),
             UInt8Argument("unknown2"),
         ]),
-        Command(0xcd, "NvStorageOpResult", arguments=[
+        Command(0xcd, "NvStorageOpResult", group="nv", arguments=[
             EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument, default=0xffffffff),
             Int32Argument("index"),
             EnumArgument("op", NV_OPERATION, data_type=UInt8Argument),
             EnumArgument("result", NV_RESULT, data_type=Int8Argument),
             VArrayArgument("data"),
         ]),
-        Command(0xce, "ObjectPowerLevel", arguments=[
+        Command(0xce, "ObjectPowerLevel", group="objects", arguments=[
             UInt32Argument("object_id"),
             UInt32Argument("missed_packets"),
             UInt8Argument("battery_level"),
         ]),
-        Command(0xd0, "ObjectConnectionState", arguments=[
+        Command(0xd0, "ObjectConnectionState", group="objects", arguments=[
             UInt32Argument("object_id"),
             UInt32Argument("factory_id"),
             EnumArgument("object_type", OBJECT_TYPE, data_type=Int32Argument, default=-1),
             BoolArgument("connected"),
         ]),
-        Command(0xd7, "ObjectUpAxisChanged", arguments=[
+        Command(0xd7, "ObjectUpAxisChanged", group="objects", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("object_id"),
             EnumArgument("axis", UP_AXIS, data_type=UInt8Argument, default=7),
         ]),
-        Command(0xdb, "ButtonPressed", arguments=[
+        Command(0xdb, "ButtonPressed", group="system", arguments=[
             BoolArgument("pressed"),
         ]),
-        Command(0xdd, "FallingStarted", arguments=[
+        Command(0xdd, "FallingStarted", group="localization", arguments=[
             UInt32Argument("unknown"),
         ]),
-        Command(0xde, "FallingStopped", arguments=[
+        Command(0xde, "FallingStopped", group="localization", arguments=[
             UInt32Argument("unknown"),
             UInt32Argument("duration_ms"),
             FloatArgument("impact_intensity"),
         ]),
-        Command(0xed, "BodyInfo", arguments=[
+        Command(0xed, "BodyInfo", group="system", arguments=[
             UInt32Argument("serial_number"),
             UInt32Argument("body_hw_version"),
             EnumArgument("body_color", BODY_COLOR, data_type=Int32Argument, default=-1),
         ]),
-        Command(0xee, "FirmwareSignature", arguments=[
+        Command(0xee, "FirmwareSignature", group="system", arguments=[
             UInt16Argument("unknown"),          # Last 2 bytes of head s/n?
             StringArgument("signature"),
         ]),
-        Command(0xef, "FirmwareUpdateResult", arguments=[
+        Command(0xef, "FirmwareUpdateResult", group="firmware", arguments=[
             UInt32Argument("byte_count"),
             UInt16Argument("chunk_id"),
             UInt8Argument("status"),            # 0=OK; 0x0a=complete?
         ]),
 
-        Event(0xf0, "RobotState", arguments=[
+        Event(0xf0, "RobotState", group="state", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("pose_frame_id"),
             UInt32Argument("pose_origin_id"),
@@ -431,7 +431,7 @@ PROTOCOL = Protocol(
             UInt16Argument("backpack_touch_sensor_raw"),
             UInt8Argument("curr_path_segment"),
         ]),
-        Event(0xf1, "AnimationState", arguments=[
+        Event(0xf1, "AnimationState", group="state", arguments=[
             UInt32Argument("timestamp"),
             Int32Argument("num_anim_bytes_played"),
             Int32Argument("num_audio_frames_played"),
@@ -439,7 +439,7 @@ PROTOCOL = Protocol(
             UInt8Argument("tag"),
             UInt8Argument("client_drop_count"),
         ]),
-        Event(0xf2, "ImageChunk", arguments=[
+        Event(0xf2, "ImageChunk", group="state", arguments=[
             UInt32Argument("frame_timestamp"),
             UInt32Argument("image_id"),
             UInt32Argument("chunk_debug"),
@@ -450,12 +450,12 @@ PROTOCOL = Protocol(
             UInt16Argument("status"),
             VArrayArgument("data"),
         ]),
-        Event(0xf3, "ObjectAvailable", arguments=[
+        Event(0xf3, "ObjectAvailable", group="state", arguments=[
             UInt32Argument("factory_id"),
             EnumArgument("object_type", OBJECT_TYPE, data_type=Int32Argument, default=-1),
             Int8Argument("rssi"),
         ]),
-        Event(0xf4, "ImageImuData", arguments=[
+        Event(0xf4, "ImageImuData", group="state", arguments=[
             UInt32Argument("image_id"),
             FloatArgument("rate_x"),
             FloatArgument("rate_y"),
