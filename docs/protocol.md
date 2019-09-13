@@ -122,7 +122,7 @@ ID                 Min     Max      Name
 0x3b	     	     0	     0		StopAllMotors
 0x3d                                DriveStraight             
 0x45	     	    24	    24		                              
-0x4b	     	     8	     8		                              
+0x4b	     	     8	     8      EnableBodyACC		                              
 0x4c	     	     2	     2		EnableCamera                  
 0x50	     	     2	     2		                              
 0x54	     	     2	     2		                              
@@ -144,7 +144,7 @@ ID                 Min     Max      Name
 0x9b	     	     1	     1		                              
 0x9d	     	     1	     1		                              
 0x9e	     	     1	     1		                              
-0x9f	     	     0	     0		                              
+0x9f	     	     0	     0      EnableAnimationState		                              
 0xa0	     	    16	    16		                              
 0xaf	     	  1026	  1026		FirmwareUpdate                
 0xb0	     	     8	    40	*	UnknownB0                     

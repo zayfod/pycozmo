@@ -278,6 +278,9 @@ PROTOCOL = Protocol(
             FloatArgument("f5"),
             FloatArgument("f6"),
         ]),
+        Command(0x4b, "EnableBodyACC", group="system", arguments=[
+            FArrayArgument("unknown", length=8, default=b"\xc4\xb6\x39\x00\x00\x00\xa0\xc1"),
+        ]),
         Command(0x4c, "EnableCamera", group="camera", arguments=[
             BoolArgument("enable"),
             UInt8Argument("unknown", default=4)     # resolution but ignored?
@@ -310,10 +313,12 @@ PROTOCOL = Protocol(
         Command(0x97, "DisplayImage", group="display", arguments=[
             VArrayArgument("image"),
         ]),
+        Command(0x9f, "EnableAnimationState", group="system"),
         Command(0xaf, "FirmwareUpdate", group="firmware", arguments=[
             UInt16Argument("chunk_id"),
             FArrayArgument("data", length=1024)
         ]),
+
         Command(0xb0, "UnknownB0", group="unknown", arguments=[
             UInt16Argument("unknown0"),
             UInt16Argument("unknown1"),

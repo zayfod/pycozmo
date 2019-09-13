@@ -1826,6 +1826,57 @@ class DriveStraight(Packet):
             f6=f6)
 
     
+class EnableBodyACC(Packet):
+
+    __slots__ = (
+        "_unknown",
+    )
+
+    def __init__(self,
+                 unknown=(196, 182, 57, 0, 0, 0, 160, 193)):
+        super().__init__(PacketType.COMMAND, packet_id=75)
+        self.unknown = unknown
+
+    @property
+    def unknown(self):
+        return self._unknown
+
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_farray(
+            "unknown", value, 8, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
+
+    def __len__(self):
+        return \
+            get_farray_size('B', 8)
+
+    def __repr__(self):
+        return "{type}(" \
+               "unknown={unknown})".format(
+                type=type(self).__name__,
+                unknown=self._unknown)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write_farray(self._unknown, "B", 8)
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        unknown = reader.read_farray("B", 8)
+        return cls(
+            unknown=unknown)
+
+    
 class EnableCamera(Packet):
 
     __slots__ = (
@@ -2384,6 +2435,42 @@ class DisplayImage(Packet):
         image = reader.read_varray("B", "H")
         return cls(
             image=image)
+
+    
+class EnableAnimationState(Packet):
+
+    __slots__ = (
+    )
+
+    def __init__(self):
+        super().__init__(PacketType.COMMAND, packet_id=159)
+        pass
+
+    def __len__(self):
+        return 0
+
+    def __repr__(self):
+        return "{type}()".format(type=type(self).__name__)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        pass
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        del reader
+        return cls(
+            )
 
     
 class FirmwareUpdate(Packet):
@@ -5000,6 +5087,7 @@ PACKETS_BY_ID = {
     0x39: TurnInPlace,  # 57
     0x3b: StopAllMotors,  # 59
     0x3d: DriveStraight,  # 61
+    0x4b: EnableBodyACC,  # 75
     0x4c: EnableCamera,  # 76
     0x57: SetCameraParams,  # 87
     0x60: EnableStopOnCliff,  # 96
@@ -5009,6 +5097,7 @@ PACKETS_BY_ID = {
     0x8e: OutputAudio,  # 142
     0x8f: NextFrame,  # 143
     0x97: DisplayImage,  # 151
+    0x9f: EnableAnimationState,  # 159
     0xaf: FirmwareUpdate,  # 175
     0xb0: UnknownB0,  # 176
     0xb4: ObjectMoved,  # 180
@@ -5104,6 +5193,8 @@ PACKETS_BY_GROUP = {
     },
     "system": {
         0x25,  # Enable
+        0x4b,  # EnableBodyACC
+        0x9f,  # EnableAnimationState
         0xc9,  # HardwareInfo
         0xdb,  # ButtonPressed
         0xed,  # BodyInfo

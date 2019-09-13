@@ -15,7 +15,7 @@ from PIL import Image
 from .logging import logger, logger_protocol
 from .frame import Frame
 from .protocol_declaration import FrameType, FIRMWARE_VERSION
-from .protocol_base import PacketType, Packet, UnknownCommand
+from .protocol_base import PacketType, Packet
 from .window import ReceiveWindow, SendWindow
 from . import protocol_encoder
 from . import event
@@ -432,10 +432,10 @@ class Client(Thread, event.Dispatcher):
 
     def _initialize_robot(self):
         # Enables RobotState and ObjectAvailable events - enables body ACC? Requires 0x25.
-        pkt = UnknownCommand(0x4b, b"\xc4\xb69\x00\x00\x00\xa0\xc1")
+        pkt = protocol_encoder.EnableBodyACC()
         self.send(pkt)
         # Enables AnimationState events. Requires 0x25.
-        pkt = UnknownCommand(0x9f)
+        pkt = protocol_encoder.EnableAnimationState()
         self.send(pkt)
 
         # Initialize display.
