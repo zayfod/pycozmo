@@ -117,38 +117,6 @@ class Int32Argument(IntArgument):
         self.default = int(default)
 
 
-class FArrayArgument(Argument):
-    """ Fixed-length array. """
-
-    def __init__(self, name: str, description: Optional[str] = None,
-                 data_type: Union[Type[Argument], str] = UInt8Argument, length: int = 0, default=()):
-        super().__init__(name, description)
-        self.data_type = data_type
-        self.length = length
-        self.default = tuple(default)
-
-
-class VArrayArgument(Argument):
-    """ Variable-length array. """
-
-    def __init__(self, name: str, description: Optional[str] = None,
-                 data_type: Type[Argument] = UInt8Argument, length_type: Type[Argument] = UInt16Argument, default=()):
-        super().__init__(name, description)
-        self.data_type = data_type
-        self.length_type = length_type
-        self.default = tuple(default)
-
-
-class StringArgument(Argument):
-    """ String. """
-
-    def __init__(self, name: str, description: Optional[str] = None,
-                 length_type: Type[Argument] = UInt16Argument, default=""):
-        super().__init__(name, description)
-        self.length_type = length_type
-        self.default = str(default)
-
-
 class EnumMember(object):
     """ Base class for enumeration members. """
 
@@ -180,7 +148,7 @@ class EnumArgument(Argument):
         self.default = default
 
 
-class Struct(ABC):
+class Struct(object):
     """ Base class for structures. """
 
     def __init__(self, name: str, description: Optional[str] = None,
@@ -188,6 +156,38 @@ class Struct(ABC):
         self.name = str(name)
         self.description = str(description) if description else None
         self.arguments = list(arguments) if arguments else []
+
+
+class FArrayArgument(Argument):
+    """ Fixed-length array. """
+
+    def __init__(self, name: str, description: Optional[str] = None,
+                 data_type: Union[Type[Argument], Struct] = UInt8Argument, length: int = 0, default=()):
+        super().__init__(name, description)
+        self.data_type = data_type
+        self.length = length
+        self.default = tuple(default)
+
+
+class VArrayArgument(Argument):
+    """ Variable-length array. """
+
+    def __init__(self, name: str, description: Optional[str] = None,
+                 data_type: Type[Argument] = UInt8Argument, length_type: Type[Argument] = UInt16Argument, default=()):
+        super().__init__(name, description)
+        self.data_type = data_type
+        self.length_type = length_type
+        self.default = tuple(default)
+
+
+class StringArgument(Argument):
+    """ String. """
+
+    def __init__(self, name: str, description: Optional[str] = None,
+                 length_type: Type[Argument] = UInt16Argument, default=""):
+        super().__init__(name, description)
+        self.length_type = length_type
+        self.default = str(default)
 
 
 class Packet(Struct, ABC):

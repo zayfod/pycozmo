@@ -122,9 +122,9 @@ class ProtocolGenerator(object):
         elif argument.data_type == protocol_declaration.Int32Argument:
             element_validation = \
                 "lambda name, value_inner: validate_integer(name, value_inner, -2147483648, 2147483647)"
-        elif isinstance(argument.data_type, str):
+        elif isinstance(argument.data_type, protocol_declaration.Struct):
             element_validation = "lambda name, value_inner: validate_object(name, value_inner, {})".format(
-                argument.data_type)
+                argument.data_type.name)
         else:
             raise NotImplementedError("Unexpected farray data type '{}' for '{}'".format(
                 argument.data_type, argument.name))
@@ -275,7 +275,7 @@ class ProtocolGenerator(object):
                 elif isinstance(argument, protocol_declaration.Int32Argument):
                     statements.append("get_size('l')")
                 elif isinstance(argument, protocol_declaration.FArrayArgument):
-                    if isinstance(argument.data_type, str):
+                    if isinstance(argument.data_type, protocol_declaration.Struct):
                         statements.append("get_object_farray_size(self._{name}, {length})".format(
                             name=argument.name, length=argument.length))
                     else:
@@ -370,7 +370,7 @@ class ProtocolGenerator(object):
                 elif isinstance(argument, protocol_declaration.Int32Argument):
                     self.f.write('        writer.write(self._{name}, "l")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.FArrayArgument):
-                    if isinstance(argument.data_type, str):
+                    if isinstance(argument.data_type, protocol_declaration.Struct):
                         self.f.write('        writer.write_object_farray(self._{name}, {length})\n'.format(
                             name=argument.name, length=argument.length))
                     else:
@@ -427,10 +427,10 @@ class ProtocolGenerator(object):
                 elif isinstance(argument, protocol_declaration.Int32Argument):
                     self.f.write('        {name} = reader.read("l")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.FArrayArgument):
-                    if isinstance(argument.data_type, str):
+                    if isinstance(argument.data_type, protocol_declaration.Struct):
                         self.f.write(
                             '        {name} = reader.read_object_farray({data_type}.from_reader, {length})\n'.format(
-                                name=argument.name, data_type=argument.data_type, length=argument.length))
+                                name=argument.name, data_type=argument.data_type.name, length=argument.length))
                     else:
                         data_fmt = get_farray_fmt(argument)
                         self.f.write('        {name} = reader.read_farray("{data_fmt}", {length})\n'.format(

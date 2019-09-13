@@ -170,6 +170,16 @@ IMAGE_RESOLUTION = Enum("ImageResolution", members=[
     EnumMember("ImageResolutionNone", 14),
 ])
 
+LIGHT_STATE = Struct("LightState", arguments=[
+    UInt16Argument("on_color"),
+    UInt16Argument("off_color"),
+    UInt8Argument("on_frames"),
+    UInt8Argument("off_frames"),
+    UInt8Argument("transition_on_frames"),
+    UInt8Argument("transition_off_frames"),
+    Int16Argument("offset"),
+])
+
 
 PROTOCOL = Protocol(
 
@@ -185,15 +195,7 @@ PROTOCOL = Protocol(
     ],
 
     structs=[
-        Struct("LightState", arguments=[
-            UInt16Argument("on_color"),
-            UInt16Argument("off_color"),
-            UInt8Argument("on_frames"),
-            UInt8Argument("off_frames"),
-            UInt8Argument("transition_on_frames"),
-            UInt8Argument("transition_off_frames"),
-            Int16Argument("offset"),
-        ]),
+        LIGHT_STATE,
     ],
 
     packets=[
@@ -203,11 +205,11 @@ PROTOCOL = Protocol(
         Unknown0A(),
 
         Command(0x03, "LightStateCenter", arguments=[
-            FArrayArgument("states", data_type="LightState", length=3),     # top, middle, bottom
+            FArrayArgument("states", data_type=LIGHT_STATE, length=3),      # top, middle, bottom
             UInt8Argument("unknown"),
         ]),
         Command(0x04, "CubeLights", arguments=[
-            FArrayArgument("states", data_type="LightState", length=4)
+            FArrayArgument("states", data_type=LIGHT_STATE, length=4)
         ]),
         Command(0x05, "ObjectConnect", arguments=[
             UInt32Argument("factory_id"),
@@ -221,7 +223,7 @@ PROTOCOL = Protocol(
             UInt8Argument("rotation_period_frames"),
         ]),
         Command(0x11, "LightStateSide", arguments=[
-            FArrayArgument("states", data_type="LightState", length=2),     # left, right
+            FArrayArgument("states", data_type=LIGHT_STATE, length=2),      # left, right
             UInt8Argument("unknown"),
         ]),
         Command(0x25, "Enable"),
