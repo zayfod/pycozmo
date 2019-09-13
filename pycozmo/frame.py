@@ -2,7 +2,7 @@
 from typing import List
 
 from .protocol_declaration import FRAME_ID, MIN_FRAME_SIZE, FrameType, PacketType
-from .protocol_base import Packet, UnknownPacket, UnknownCommand, UnknownEvent
+from .protocol_base import Packet, UnknownCommand, UnknownEvent
 from .protocol_utils import BinaryReader, BinaryWriter
 from .protocol_encoder import Connect, Disconnect, Ping, Unknown0A, ACTION_BY_ID, EVENT_BY_ID
 
@@ -53,10 +53,11 @@ class Frame(object):
             pkt = self.pkts[0]
             assert pkt.PACKET_ID == PacketType.PING
             writer.write_object(pkt)
-        elif self.type == FrameType.UNKNOWN_04:
+        elif self.type == FrameType.ENGINE_ACT:
             assert len(self.pkts) == 1
             pkt = self.pkts[0]
-            assert pkt.PACKET_ID == PacketType.UNKNOWN
+            assert pkt.PACKET_ID == PacketType.ACTION
+            writer.write(pkt.ID, "B")
             writer.write_object(pkt)
         elif self.type == FrameType.RESET:
             # No packets
@@ -131,7 +132,11 @@ class Frame(object):
             while reader.tell() < len(reader):
                 pkt_type = PacketType(reader.read("B"))
                 pkt_len = reader.read("H")
+                expected_offset = reader.tell() + pkt_len
                 pkt = cls._decode_packet(pkt_type, pkt_len, reader)
+                if reader.tell() != expected_offset:
+                    # Packet length may change between protocol versions. This helps with dealing with shorter packets.
+                    reader.seek_set(expected_offset)
                 pkt.seq = pkt_seq
                 pkt.ack = ack
                 if not pkt.is_oob():
@@ -141,9 +146,17 @@ class Frame(object):
         elif frame_type == FrameType.PING:
             pkt = Ping.from_reader(reader)
             pkts.append(pkt)
-        elif frame_type == FrameType.UNKNOWN_04:
-            pkt = UnknownPacket(PacketType.UNKNOWN, reader.buffer[14:])
+        elif frame_type == FrameType.ENGINE_ACT:
+            pkt_seq = first_seq
+            pkt_type = PacketType.ACTION
+            pkt_len = len(reader) - reader.tell()
+            pkt = cls._decode_packet(pkt_type, pkt_len, reader)
+            pkt.seq = pkt_seq
+            pkt.ack = ack
+            if not pkt.is_oob():
+                pkt_seq += 1
             pkts.append(pkt)
+            assert not seq or seq + 1 == pkt_seq
         elif frame_type == FrameType.RESET:
             # No packets
             assert reader.tell() == len(reader)

@@ -42,8 +42,8 @@ setuptools.setup(
     author="Kaloyan Tenchov",
     author_email="zayfod@gmail.com",
     url="https://github.com/zayfod/pycozmo/",
-    python_requires=">=3.5",
-    install_requires=["dpkt"],
+    python_requires=">=3.5.4",
+    install_requires=["dpkt", "numpy", "Pillow"],
     keywords=["anki", "cozmo", "robot", "robotics"],
     classifiers=[
         "Development Status :: 3 - Alpha",

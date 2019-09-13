@@ -5,7 +5,7 @@ import time
 import pycozmo
 
 
-def pycozmo_program(cli):
+def pycozmo_program(cli: pycozmo.client.Client):
     lights = [
         pycozmo.lights.red_light,
         pycozmo.lights.green_light,

@@ -5,7 +5,7 @@ PyCozmo
 a Cozmo robot directly, without having to go through a mobile device, running the Cozmo app.
 
 The library is loosely based on the [Anki Cozmo Python SDK](https://github.com/anki/cozmo-python-sdk) and the
-[cozmoclad](https://pypi.org/project/cozmoclad/) library.
+[cozmoclad](https://pypi.org/project/cozmoclad/) ("C-Like Abstract Data") library.
 
 This project is a tool for exploring the hardware and software of Anki Cozmo. It is unstable and heavily under
 development.
@@ -52,7 +52,26 @@ Documentation
 -------------
 
 - [Cozmo protocol](docs/protocol.md) description
+- [Cozmo function](docs/functions.md) description
 - [Capturing Cozmo communication](docs/capturing.md)
+
+- API documentation: http://pycozmo.readthedocs.io/
+
+
+Examples
+--------
+
+- [rc.py](examples/rc.py) - turns Cozmo into an RC tank that can be driven with an XBox 360 Wireless controller or 
+    Logitech Gamepad F310
+- [extremes.py](examples/extremes.py) - demonstrates Cozmo lift and head control
+- [backpack_lights.py](examples/backpack_lights.py) - demonstrates Cozmo backpack LED control
+- [cube_lights.py](examples/cube_lights.py) - demonstrates cube connection and LED control
+- [cube_light_animation.py](examples/cube_light_animation.py) - demonstrates cube LED animation control
+- [charger_lights.py](examples/charger_lights.py) - demonstrates Cozmo charging platform LED control
+- [display.py](examples/display.py) - demonstrates low-level visualization of images on Cozmo's display
+- [audio.py](examples/audio.py) - demonstrates 22 kHz, 8-bit, mono WAVE file playback through Cozmo's speaker 
+- [events.py](examples/events.py) - demonstrates event handling
+- [camera.py](examples/camera.py) - demonstrates capturing a camera image 
 
 
 Tools
@@ -60,18 +79,7 @@ Tools
 
 - `pycozmo_dump.py` - a command-line application that can read and annotate Cozmo communication from
     [pcap files](https://en.wikipedia.org/wiki/Pcap)
-
-
-Examples
---------
-
-- [rc.py](examples/rc.py) - turns Cozmo into an RC tank that can be driven with an XBox 360 Wireless Controller
-- [extremes.py](examples/extremes.py) - demonstrates Cozmo lift and head control
-- [backpack_lights.py](examples/backpack_lights.py) - demonstrates Cozmo backpack LED control
-- [display.py](examples/display.py) - demonstrates low-level visualization of images on Cozmo's display
-- [audio.py](examples/audio.py) - demonstrates 22 kHz, 8-bit, mono WAVE file playback through Cozmo's speaker 
-- [events.py](examples/events.py) - demonstrates event handling
-- [camera.py](examples/camera.py) - demonstrates capturing a camera image 
+- `pycozmo_replay.py` - a basic command-line application that can replay .pcap files back to Cozmo.
 
 
 Robot Support
@@ -79,9 +87,9 @@ Robot Support
 
 Sensors:
 - Camera - supported
-- Cliff sensor - not supported
-- Accelerometers - work in progress
-- Gyro - work in progress
+- Cliff sensor - supported
+- Accelerometers - supported
+- Gyro - supported
 - Battery voltage - supported
 - Cube battery voltage - supported
 - Cube accelerometers - supported
@@ -93,12 +101,16 @@ Actuators:
 - Backpack LEDs - supported
 - IR LED - supported
 - OLED display - work in progress
-- Speaker - supported
+- Speaker - work in progress
 - Cube LEDs - supported
 
 Communication:
 - Wi-Fi AP - supported
 - Bluetooth LE - supported
+
+Storage:
+- NVRAM - supported
+- Firmware update - supported
 
 
 Connecting to Cozmo over Wi-Fi
@@ -134,10 +146,12 @@ the low-level UDP communication with Cozmo.
 Limitations
 -----------
 
-- some high-level Cozmo SDK features are implemented in the Cozmo app and have no equivalent in PyCozmo:
+- some high-level Cozmo SDK features are implemented in the Cozmo app and have no equivalent in PyCozmo, today:
     - personality engine
     - behaviors
     - motion detection
+    - face detection
+    - facial expression estimation
     - text-to-speech
     - songs
 - there is no Wi-Fi control. The library assumes a Wi-Fi connection to Cozmo, established in advance.
@@ -148,7 +162,7 @@ Limitations
 Requirements
 ------------
 
-- Python 3.5
+- Python 3.5.4
 
 
 Installation
