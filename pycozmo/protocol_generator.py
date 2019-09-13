@@ -77,7 +77,12 @@ class ProtocolGenerator(object):
 
     def generate_packet_slots(self, struct: protocol_declaration.Struct):
         for argument in struct.arguments:
-            self.f.write('        "_{name}",\n'.format(name=argument.name))
+            type_hint = argument.type_hint()
+            if type_hint:
+                type_hint = "  # {}".format(type_hint)
+            else:
+                type_hint = ""
+            self.f.write('        "_{name}",{type_hint}\n'.format(name=argument.name, type_hint=type_hint))
 
     def generate_farray_validation(self, argument: protocol_declaration.FArrayArgument):
         if argument.data_type == protocol_declaration.FloatArgument:

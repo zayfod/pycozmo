@@ -184,13 +184,13 @@ class ImageResolution(enum.Enum):
 class LightState(Struct):
 
     __slots__ = (
-        "_on_color",
-        "_off_color",
-        "_on_frames",
-        "_off_frames",
-        "_transition_on_frames",
-        "_transition_off_frames",
-        "_offset",
+        "_on_color",  # uint16
+        "_off_color",  # uint16
+        "_on_frames",  # uint8
+        "_off_frames",  # uint8
+        "_transition_on_frames",  # uint8
+        "_transition_off_frames",  # uint8
+        "_offset",  # int16
     )
 
     def __init__(self,
@@ -407,10 +407,10 @@ class Disconnect(Packet):
 class Ping(Packet):
 
     __slots__ = (
-        "_time_sent_ms",
-        "_counter",
-        "_last",
-        "_unknown",
+        "_time_sent_ms",  # double
+        "_counter",  # uint32
+        "_last",  # uint32
+        "_unknown",  # uint8
     )
 
     def __init__(self,
@@ -544,8 +544,8 @@ class Unknown0A(Packet):
 class LightStateCenter(Packet):
 
     __slots__ = (
-        "_states",
-        "_unknown",
+        "_states",  # LightState[3]
+        "_unknown",  # uint8
     )
 
     def __init__(self,
@@ -612,7 +612,7 @@ class LightStateCenter(Packet):
 class CubeLights(Packet):
 
     __slots__ = (
-        "_states",
+        "_states",  # LightState[4]
     )
 
     def __init__(self,
@@ -663,8 +663,8 @@ class CubeLights(Packet):
 class ObjectConnect(Packet):
 
     __slots__ = (
-        "_factory_id",
-        "_connect",
+        "_factory_id",  # uint32
+        "_connect",  # bool
     )
 
     def __init__(self,
@@ -730,7 +730,7 @@ class ObjectConnect(Packet):
 class SetHeadLight(Packet):
 
     __slots__ = (
-        "_enable",
+        "_enable",  # bool
     )
 
     def __init__(self,
@@ -780,8 +780,8 @@ class SetHeadLight(Packet):
 class CubeId(Packet):
 
     __slots__ = (
-        "_object_id",
-        "_rotation_period_frames",
+        "_object_id",  # uint32
+        "_rotation_period_frames",  # uint8
     )
 
     def __init__(self,
@@ -847,8 +847,8 @@ class CubeId(Packet):
 class LightStateSide(Packet):
 
     __slots__ = (
-        "_states",
-        "_unknown",
+        "_states",  # LightState[2]
+        "_unknown",  # uint8
     )
 
     def __init__(self,
@@ -951,10 +951,10 @@ class Enable(Packet):
 class DriveWheels(Packet):
 
     __slots__ = (
-        "_lwheel_speed_mmps",
-        "_rwheel_speed_mmps",
-        "_lwheel_accel_mmps2",
-        "_rwheel_accel_mmps2",
+        "_lwheel_speed_mmps",  # float
+        "_rwheel_speed_mmps",  # float
+        "_lwheel_accel_mmps2",  # float
+        "_rwheel_accel_mmps2",  # float
     )
 
     def __init__(self,
@@ -1052,9 +1052,9 @@ class DriveWheels(Packet):
 class TurnInPlaceAtSpeed(Packet):
 
     __slots__ = (
-        "_wheel_speed_mmps",
-        "_wheel_accel_mmps2",
-        "_direction",
+        "_wheel_speed_mmps",  # float
+        "_wheel_accel_mmps2",  # float
+        "_direction",  # int16
     )
 
     def __init__(self,
@@ -1136,7 +1136,7 @@ class TurnInPlaceAtSpeed(Packet):
 class DriveLift(Packet):
 
     __slots__ = (
-        "_speed",
+        "_speed",  # float
     )
 
     def __init__(self,
@@ -1186,7 +1186,7 @@ class DriveLift(Packet):
 class DriveHead(Packet):
 
     __slots__ = (
-        "_speed",
+        "_speed",  # float
     )
 
     def __init__(self,
@@ -1236,11 +1236,11 @@ class DriveHead(Packet):
 class SetLiftHeight(Packet):
 
     __slots__ = (
-        "_height_mm",
-        "_max_speed_rad_per_sec",
-        "_accel_rad_per_sec2",
-        "_duration_sec",
-        "_action_id",
+        "_height_mm",  # float
+        "_max_speed_rad_per_sec",  # float
+        "_accel_rad_per_sec2",  # float
+        "_duration_sec",  # float
+        "_action_id",  # uint8
     )
 
     def __init__(self,
@@ -1354,11 +1354,11 @@ class SetLiftHeight(Packet):
 class SetHeadAngle(Packet):
 
     __slots__ = (
-        "_angle_rad",
-        "_max_speed_rad_per_sec",
-        "_accel_rad_per_sec2",
-        "_duration_sec",
-        "_action_id",
+        "_angle_rad",  # float
+        "_max_speed_rad_per_sec",  # float
+        "_accel_rad_per_sec2",  # float
+        "_duration_sec",  # float
+        "_action_id",  # uint8
     )
 
     def __init__(self,
@@ -1472,14 +1472,14 @@ class SetHeadAngle(Packet):
 class TurnInPlace(Packet):
 
     __slots__ = (
-        "_angle_rad",
-        "_speed_rad_per_sec",
-        "_accel_rad_per_sec2",
-        "_angle_tolerance_rad",
-        "_unknown4",
-        "_unknown5",
-        "_is_absolute",
-        "_action_id",
+        "_angle_rad",  # float
+        "_speed_rad_per_sec",  # float
+        "_accel_rad_per_sec2",  # float
+        "_angle_tolerance_rad",  # float
+        "_unknown4",  # uint8
+        "_unknown5",  # uint8
+        "_is_absolute",  # bool
+        "_action_id",  # uint8
     )
 
     def __init__(self,
@@ -1677,13 +1677,13 @@ class StopAllMotors(Packet):
 class DriveStraight(Packet):
 
     __slots__ = (
-        "_f0",
-        "_f1",
-        "_dist_mm",
-        "_f3",
-        "_speed_mmps",
-        "_f5",
-        "_f6",
+        "_f0",  # float
+        "_f1",  # float
+        "_dist_mm",  # float
+        "_f3",  # float
+        "_speed_mmps",  # float
+        "_f5",  # float
+        "_f6",  # float
     )
 
     def __init__(self,
@@ -1880,8 +1880,8 @@ class EnableBodyACC(Packet):
 class EnableCamera(Packet):
 
     __slots__ = (
-        "_enable",
-        "_unknown",
+        "_enable",  # bool
+        "_unknown",  # uint8
     )
 
     def __init__(self,
@@ -1947,9 +1947,9 @@ class EnableCamera(Packet):
 class SetCameraParams(Packet):
 
     __slots__ = (
-        "_gain",
-        "_exposure_ms",
-        "_auto_exposure_enabled",
+        "_gain",  # float
+        "_exposure_ms",  # uint16
+        "_auto_exposure_enabled",  # bool
     )
 
     def __init__(self,
@@ -2031,7 +2031,7 @@ class SetCameraParams(Packet):
 class EnableStopOnCliff(Packet):
 
     __slots__ = (
-        "_enable",
+        "_enable",  # bool
     )
 
     def __init__(self,
@@ -2081,7 +2081,7 @@ class EnableStopOnCliff(Packet):
 class SetRobotVolume(Packet):
 
     __slots__ = (
-        "_level",
+        "_level",  # uint16
     )
 
     def __init__(self,
@@ -2131,7 +2131,7 @@ class SetRobotVolume(Packet):
 class EnableColorImages(Packet):
 
     __slots__ = (
-        "_enable",
+        "_enable",  # bool
     )
 
     def __init__(self,
@@ -2181,10 +2181,10 @@ class EnableColorImages(Packet):
 class NvStorageOp(Packet):
 
     __slots__ = (
-        "_tag",
-        "_index",
-        "_op",
-        "_unknown",
+        "_tag",  # NvEntryTag
+        "_index",  # int32
+        "_op",  # NvOperation
+        "_unknown",  # uint8
         "_data",
     )
 
@@ -2476,7 +2476,7 @@ class EnableAnimationState(Packet):
 class FirmwareUpdate(Packet):
 
     __slots__ = (
-        "_chunk_id",
+        "_chunk_id",  # uint16
         "_data",
     )
 
@@ -2544,10 +2544,10 @@ class FirmwareUpdate(Packet):
 class UnknownB0(Packet):
 
     __slots__ = (
-        "_unknown0",
-        "_unknown1",
-        "_unknown2",
-        "_unknown3",
+        "_unknown0",  # uint16
+        "_unknown1",  # uint16
+        "_unknown2",  # uint16
+        "_unknown3",  # int8
         "_unknown4",
     )
 
@@ -2663,12 +2663,12 @@ class UnknownB0(Packet):
 class ObjectMoved(Packet):
 
     __slots__ = (
-        "_timestamp",
-        "_object_id",
-        "_active_accel_x",
-        "_active_accel_y",
-        "_active_accel_z",
-        "_axis_of_accel",
+        "_timestamp",  # uint32
+        "_object_id",  # uint32
+        "_active_accel_x",  # float
+        "_active_accel_y",  # float
+        "_active_accel_z",  # float
+        "_axis_of_accel",  # UpAxis
     )
 
     def __init__(self,
@@ -2799,8 +2799,8 @@ class ObjectMoved(Packet):
 class ObjectStoppedMoving(Packet):
 
     __slots__ = (
-        "_timestamp",
-        "_object_id",
+        "_timestamp",  # uint32
+        "_object_id",  # uint32
     )
 
     def __init__(self,
@@ -2866,12 +2866,12 @@ class ObjectStoppedMoving(Packet):
 class ObjectTapped(Packet):
 
     __slots__ = (
-        "_timestamp",
-        "_object_id",
-        "_num_taps",
-        "_tap_time",
-        "_tap_neg",
-        "_tap_pos",
+        "_timestamp",  # uint32
+        "_object_id",  # uint32
+        "_num_taps",  # uint8
+        "_tap_time",  # uint8
+        "_tap_neg",  # int8
+        "_tap_pos",  # int8
     )
 
     def __init__(self,
@@ -3001,10 +3001,10 @@ class ObjectTapped(Packet):
 class ObjectTapFiltered(Packet):
 
     __slots__ = (
-        "_timestamp",
-        "_object_id",
-        "_time",
-        "_intensity",
+        "_timestamp",  # uint32
+        "_object_id",  # uint32
+        "_time",  # uint8
+        "_intensity",  # uint8
     )
 
     def __init__(self,
@@ -3102,7 +3102,7 @@ class ObjectTapFiltered(Packet):
 class AcknowledgeAction(Packet):
 
     __slots__ = (
-        "_action_id",
+        "_action_id",  # uint8
     )
 
     def __init__(self,
@@ -3224,9 +3224,9 @@ class RobotPoked(Packet):
 class HardwareInfo(Packet):
 
     __slots__ = (
-        "_serial_number_head",
-        "_unknown1",
-        "_unknown2",
+        "_serial_number_head",  # uint32
+        "_unknown1",  # uint8
+        "_unknown2",  # uint8
     )
 
     def __init__(self,
@@ -3308,10 +3308,10 @@ class HardwareInfo(Packet):
 class NvStorageOpResult(Packet):
 
     __slots__ = (
-        "_tag",
-        "_index",
-        "_op",
-        "_result",
+        "_tag",  # NvEntryTag
+        "_index",  # int32
+        "_op",  # NvOperation
+        "_result",  # NvResult
         "_data",
     )
 
@@ -3430,9 +3430,9 @@ class NvStorageOpResult(Packet):
 class ObjectPowerLevel(Packet):
 
     __slots__ = (
-        "_object_id",
-        "_missed_packets",
-        "_battery_level",
+        "_object_id",  # uint32
+        "_missed_packets",  # uint32
+        "_battery_level",  # uint8
     )
 
     def __init__(self,
@@ -3514,10 +3514,10 @@ class ObjectPowerLevel(Packet):
 class ObjectConnectionState(Packet):
 
     __slots__ = (
-        "_object_id",
-        "_factory_id",
-        "_object_type",
-        "_connected",
+        "_object_id",  # uint32
+        "_factory_id",  # uint32
+        "_object_type",  # ObjectType
+        "_connected",  # bool
     )
 
     def __init__(self,
@@ -3616,9 +3616,9 @@ class ObjectConnectionState(Packet):
 class ObjectUpAxisChanged(Packet):
 
     __slots__ = (
-        "_timestamp",
-        "_object_id",
-        "_axis",
+        "_timestamp",  # uint32
+        "_object_id",  # uint32
+        "_axis",  # UpAxis
     )
 
     def __init__(self,
@@ -3701,7 +3701,7 @@ class ObjectUpAxisChanged(Packet):
 class ButtonPressed(Packet):
 
     __slots__ = (
-        "_pressed",
+        "_pressed",  # bool
     )
 
     def __init__(self,
@@ -3751,7 +3751,7 @@ class ButtonPressed(Packet):
 class FallingStarted(Packet):
 
     __slots__ = (
-        "_unknown",
+        "_unknown",  # uint32
     )
 
     def __init__(self,
@@ -3801,9 +3801,9 @@ class FallingStarted(Packet):
 class FallingStopped(Packet):
 
     __slots__ = (
-        "_unknown",
-        "_duration_ms",
-        "_impact_intensity",
+        "_unknown",  # uint32
+        "_duration_ms",  # uint32
+        "_impact_intensity",  # float
     )
 
     def __init__(self,
@@ -3885,9 +3885,9 @@ class FallingStopped(Packet):
 class BodyInfo(Packet):
 
     __slots__ = (
-        "_serial_number",
-        "_body_hw_version",
-        "_body_color",
+        "_serial_number",  # uint32
+        "_body_hw_version",  # uint32
+        "_body_color",  # BodyColor
     )
 
     def __init__(self,
@@ -3970,8 +3970,8 @@ class BodyInfo(Packet):
 class FirmwareSignature(Packet):
 
     __slots__ = (
-        "_unknown",
-        "_signature",
+        "_unknown",  # uint16
+        "_signature",  # str
     )
 
     def __init__(self,
@@ -4037,9 +4037,9 @@ class FirmwareSignature(Packet):
 class FirmwareUpdateResult(Packet):
 
     __slots__ = (
-        "_byte_count",
-        "_chunk_id",
-        "_status",
+        "_byte_count",  # uint32
+        "_chunk_id",  # uint16
+        "_status",  # uint8
     )
 
     def __init__(self,
@@ -4121,29 +4121,29 @@ class FirmwareUpdateResult(Packet):
 class RobotState(Packet):
 
     __slots__ = (
-        "_timestamp",
-        "_pose_frame_id",
-        "_pose_origin_id",
-        "_pose_x",
-        "_pose_y",
-        "_pose_z",
-        "_pose_angle_rad",
-        "_pose_pitch_rad",
-        "_lwheel_speed_mmps",
-        "_rwheel_speed_mmps",
-        "_head_angle_rad",
-        "_lift_height_mm",
-        "_accel_x",
-        "_accel_y",
-        "_accel_z",
-        "_gyro_x",
-        "_gyro_y",
-        "_gyro_z",
-        "_battery_voltage",
-        "_status",
+        "_timestamp",  # uint32
+        "_pose_frame_id",  # uint32
+        "_pose_origin_id",  # uint32
+        "_pose_x",  # float
+        "_pose_y",  # float
+        "_pose_z",  # float
+        "_pose_angle_rad",  # float
+        "_pose_pitch_rad",  # float
+        "_lwheel_speed_mmps",  # float
+        "_rwheel_speed_mmps",  # float
+        "_head_angle_rad",  # float
+        "_lift_height_mm",  # float
+        "_accel_x",  # float
+        "_accel_y",  # float
+        "_accel_z",  # float
+        "_gyro_x",  # float
+        "_gyro_y",  # float
+        "_gyro_z",  # float
+        "_battery_voltage",  # float
+        "_status",  # uint32
         "_cliff_data_raw",
-        "_backpack_touch_sensor_raw",
-        "_curr_path_segment",
+        "_backpack_touch_sensor_raw",  # uint16
+        "_curr_path_segment",  # uint8
     )
 
     def __init__(self,
@@ -4546,12 +4546,12 @@ class RobotState(Packet):
 class AnimationState(Packet):
 
     __slots__ = (
-        "_timestamp",
-        "_num_anim_bytes_played",
-        "_num_audio_frames_played",
-        "_enabled_anim_tracks",
-        "_tag",
-        "_client_drop_count",
+        "_timestamp",  # uint32
+        "_num_anim_bytes_played",  # int32
+        "_num_audio_frames_played",  # int32
+        "_enabled_anim_tracks",  # uint8
+        "_tag",  # uint8
+        "_client_drop_count",  # uint8
     )
 
     def __init__(self,
@@ -4681,14 +4681,14 @@ class AnimationState(Packet):
 class ImageChunk(Packet):
 
     __slots__ = (
-        "_frame_timestamp",
-        "_image_id",
-        "_chunk_debug",
-        "_image_encoding",
-        "_image_resolution",
-        "_image_chunk_count",
-        "_chunk_id",
-        "_status",
+        "_frame_timestamp",  # uint32
+        "_image_id",  # uint32
+        "_chunk_debug",  # uint32
+        "_image_encoding",  # ImageEncoding
+        "_image_resolution",  # ImageResolution
+        "_image_chunk_count",  # uint8
+        "_chunk_id",  # uint8
+        "_status",  # uint16
         "_data",
     )
 
@@ -4870,9 +4870,9 @@ class ImageChunk(Packet):
 class ObjectAvailable(Packet):
 
     __slots__ = (
-        "_factory_id",
-        "_object_type",
-        "_rssi",
+        "_factory_id",  # uint32
+        "_object_type",  # ObjectType
+        "_rssi",  # int8
     )
 
     def __init__(self,
@@ -4955,11 +4955,11 @@ class ObjectAvailable(Packet):
 class ImageImuData(Packet):
 
     __slots__ = (
-        "_image_id",
-        "_rate_x",
-        "_rate_y",
-        "_rate_z",
-        "_line_2_number",
+        "_image_id",  # uint32
+        "_rate_x",  # float
+        "_rate_y",  # float
+        "_rate_z",  # float
+        "_line_2_number",  # uint8
     )
 
     def __init__(self,
