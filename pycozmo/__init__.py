@@ -19,9 +19,10 @@ from . import protocol_utils
 from . import lights
 from . import camera
 from . import object
+from . import filter
 
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = [
     "logger",
