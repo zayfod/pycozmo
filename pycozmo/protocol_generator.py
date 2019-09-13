@@ -98,8 +98,8 @@ class ProtocolGenerator(object):
             self.f.write('    0x{id:02x}: {name},  # {id}\n'.format(id=k, name=v))
         self.f.write('}\n')
 
-    def generate_packet_slots(self, packet):
-        for argument in packet.arguments:
+    def generate_packet_slots(self, struct: protocol_declaration.Struct):
+        for argument in struct.arguments:
             self.f.write('        "_{name}",\n'.format(name=argument.name))
 
     def generate_farray_validation(self, argument: protocol_declaration.FArrayArgument):
@@ -197,8 +197,8 @@ class ProtocolGenerator(object):
             raise NotImplementedError("Unexpected enum data type '{}' for '{}'".format(
                 argument.data_type, argument.name))
 
-    def generate_argument_methods(self, packet):
-        for argument in packet.arguments:
+    def generate_argument_methods(self, struct: protocol_declaration.Struct):
+        for argument in struct.arguments:
             if isinstance(argument, protocol_declaration.EnumArgument):
                 self.f.write(r"""
     @property
@@ -248,14 +248,14 @@ class ProtocolGenerator(object):
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
                         type(argument), argument.name))
 
-    def generate_len_method(self, packet):
+    def generate_len_method(self, struct: protocol_declaration.Struct):
         self.f.write("\n    def __len__(self):\n")
-        if not packet.arguments:
+        if not struct.arguments:
             self.f.write("        return 0\n")
         else:
             self.f.write("        return \\\n")
             statements = []
-            for argument in packet.arguments:
+            for argument in struct.arguments:
                 if isinstance(argument, protocol_declaration.FloatArgument):
                     statements.append("get_size('f')")
                 elif isinstance(argument, protocol_declaration.DoubleArgument):
@@ -300,13 +300,13 @@ class ProtocolGenerator(object):
             self.f.write(" + \\\n            ".join(statements))
             self.f.write("\n")
 
-    def generate_repr_method(self, packet):
+    def generate_repr_method(self, struct: protocol_declaration.Struct):
         self.f.write("\n    def __repr__(self):\n")
-        if packet.arguments:
+        if struct.arguments:
             argument_strs = []
             arguments = ["type=type(self).__name__"]
-            if packet.arguments:
-                for argument in packet.arguments:
+            if struct.arguments:
+                for argument in struct.arguments:
                     argument_strs.append('"{name}={{{name}}}'.format(name=argument.name))
                     arguments.append("{name}=self._{name}".format(name=argument.name))
             self.f.write('        return "{type}(" \\\n               ')
@@ -316,8 +316,8 @@ class ProtocolGenerator(object):
         else:
             self.f.write('        return "{type}()".format(type=type(self).__name__)\n')
 
-    def generate_argument_defaults(self, packet):
-        for argument in packet.arguments:
+    def generate_argument_defaults(self, struct: protocol_declaration.Struct):
+        for argument in struct.arguments:
             if isinstance(argument.default, str):
                 self.f.write(
                     ",\n                 {name}='{default}'".format(name=argument.name, default=argument.default))
@@ -325,9 +325,9 @@ class ProtocolGenerator(object):
                 self.f.write(
                     ",\n                 {name}={default}".format(name=argument.name, default=argument.default))
 
-    def generate_arugment_assignments(self, packet):
-        if packet.arguments:
-            for argument in packet.arguments:
+    def generate_arugment_assignments(self, struct: protocol_declaration.Struct):
+        if struct.arguments:
+            for argument in struct.arguments:
                 if isinstance(argument, protocol_declaration.EnumArgument):
                     self.f.write("        self.{name} = {enum_type}({name})\n".format(
                         name=argument.name, enum_type=argument.enum_type.name))
@@ -336,7 +336,11 @@ class ProtocolGenerator(object):
         else:
             self.f.write("        pass\n")
 
-    def generate_packet_encoding(self, packet):
+    def generate_packet_arugment_assignments(self, packet: protocol_declaration.Packet):
+        self.f.write("        super().__init__({type})\n".format(type=packet.type))
+        self.generate_arugment_assignments(packet)
+
+    def generate_packet_encoding(self, struct: protocol_declaration.Struct):
         self.f.write(r"""
     def to_bytes(self):
         writer = BinaryWriter()
@@ -345,8 +349,8 @@ class ProtocolGenerator(object):
         
     def to_writer(self, writer):
 """)
-        if packet.arguments:
-            for argument in packet.arguments:
+        if struct.arguments:
+            for argument in struct.arguments:
                 if isinstance(argument, protocol_declaration.FloatArgument):
                     self.f.write('        writer.write(self._{name}, "f")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.DoubleArgument):
@@ -391,7 +395,7 @@ class ProtocolGenerator(object):
         else:
             self.f.write("        pass\n")
 
-    def generate_packet_decoding(self, packet):
+    def generate_packet_decoding(self, struct: protocol_declaration.Struct):
         self.f.write(r"""
     @classmethod
     def from_bytes(cls, buffer):
@@ -402,8 +406,8 @@ class ProtocolGenerator(object):
     @classmethod
     def from_reader(cls, reader):
 """)
-        if packet.arguments:
-            for argument in packet.arguments:
+        if struct.arguments:
+            for argument in struct.arguments:
                 if isinstance(argument, protocol_declaration.FloatArgument):
                     self.f.write('        {name} = reader.read("f")\n'.format(name=argument.name))
                 elif isinstance(argument, protocol_declaration.DoubleArgument):
@@ -450,7 +454,7 @@ class ProtocolGenerator(object):
             self.f.write("        del reader\n")
         self.f.write("        return cls(\n")
         arguments = []
-        for argument in packet.arguments:
+        for argument in struct.arguments:
             arguments.append("{name}={name}".format(name=argument.name))
         self.f.write("            ")
         self.f.write(",\n            ".join(arguments))
@@ -465,30 +469,28 @@ class {name}(enum.Enum):
         for member in enum_type.members:
             self.f.write('    {name} = {value}\n'.format(name=member.name, value=member.value))
 
-    def generate_struct(self, struct_type: protocol_declaration.Struct):
+    def generate_struct(self, struct: protocol_declaration.Struct):
         self.f.write(r"""
 
 class {name}(Struct):
-""".format(name=struct_type.name))
+""".format(name=struct.name))
         self.f.write("\n    __slots__ = (\n")
-        self.generate_packet_slots(struct_type)
+        self.generate_packet_slots(struct)
         self.f.write("    )\n\n    def __init__(self")
-        self.generate_argument_defaults(struct_type)
+        self.generate_argument_defaults(struct)
         self.f.write("):\n")
-        self.generate_arugment_assignments(struct_type)
-        self.generate_argument_methods(struct_type)
-        self.generate_len_method(struct_type)
-        self.generate_repr_method(struct_type)
-        self.generate_packet_encoding(struct_type)
-        self.generate_packet_decoding(struct_type)
+        self.generate_arugment_assignments(struct)
+        self.generate_argument_methods(struct)
+        self.generate_len_method(struct)
+        self.generate_repr_method(struct)
+        self.generate_packet_encoding(struct)
+        self.generate_packet_decoding(struct)
 
     def generate_packet(self, packet):
         self.f.write(r"""
     
 class {name}(Packet):
-
-    PACKET_ID = {packet_id}
-""".format(name=packet.name, packet_id=packet.packet_id))
+""".format(name=packet.name))
         if isinstance(packet, protocol_declaration.Command) or isinstance(packet, protocol_declaration.Event):
             self.f.write("    ID = 0x{:02x}\n".format(packet.id))
         self.f.write("\n    __slots__ = (\n")
@@ -496,7 +498,7 @@ class {name}(Packet):
         self.f.write("    )\n\n    def __init__(self")
         self.generate_argument_defaults(packet)
         self.f.write("):\n")
-        self.generate_arugment_assignments(packet)
+        self.generate_packet_arugment_assignments(packet)
         self.generate_argument_methods(packet)
         self.generate_len_method(packet)
         self.generate_repr_method(packet)

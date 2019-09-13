@@ -34,8 +34,8 @@ def load_engine_pkts(fspec):
                 # Skip non-engine frames
                 continue
             for pkt in frame.pkts:
-                if pkt.PACKET_ID not in [pycozmo.protocol_declaration.PacketType.ACTION,
-                                         pycozmo.protocol_declaration.PacketType.UNKNOWN_0A]:
+                if pkt.type not in [pycozmo.protocol_declaration.PacketType.ACTION,
+                                    pycozmo.protocol_declaration.PacketType.UNKNOWN_0A]:
                     continue
                 pkts.append(pkt)
             frame_count += 1

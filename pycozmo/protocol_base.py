@@ -37,35 +37,31 @@ class Struct(ABC):
 
 class Packet(Struct, ABC):
 
-    # TODO: Rename to "PACKET_TYPE".
-    PACKET_ID = None
-    # TODO: Remove.
-    seq = 0
-    ack = 0
+    __slots__ = (
+        "type",
+        "seq",
+        "ack",
+    )
+
+    def __init__(self, packet_type: PacketType):
+        self.type = packet_type
+        self.seq = 0
+        self.ack = 0
 
     def is_oob(self) -> bool:
-        res = self.PACKET_ID.value >= PacketType.EVENT.value
+        res = self.type.value >= PacketType.EVENT.value
         return res
 
 
 class UnknownPacket(Packet):
 
     __slots__ = (
-        "_PACKET_ID",
         "_data",
     )
 
-    def __init__(self, packet_id: PacketType, data: bytes):
-        self.PACKET_ID = packet_id
+    def __init__(self, packet_type: PacketType, data: bytes):
+        super().__init__(packet_type)
         self.data = data
-
-    @property
-    def PACKET_ID(self):
-        return self._PACKET_ID
-
-    @PACKET_ID.setter
-    def PACKET_ID(self, value):
-        self._PACKET_ID = PacketType(value)
 
     @property
     def data(self):
@@ -79,8 +75,8 @@ class UnknownPacket(Packet):
         return len(self._data)
 
     def __repr__(self):
-        return "{type}({id:02x}, {data})".format(
-            id=self._PACKET_ID.value, type=type(self).__name__, data=hex_dump(data=self._data))
+        return "{type_name}({type:02x}, {data})".format(
+            type=self.type.value, type_name=type(self).__name__, data=hex_dump(data=self._data))
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -104,9 +100,7 @@ class UnknownPacket(Packet):
 class UnknownCommand(UnknownPacket):
 
     __slots__ = (
-        "_PACKET_ID",
         "_ID",
-        "_data",
     )
 
     def __init__(self, cmd_id: int, data: bytes = b""):
@@ -139,9 +133,7 @@ class UnknownCommand(UnknownPacket):
 class UnknownEvent(UnknownPacket):
 
     __slots__ = (
-        "_PACKET_ID",
         "_ID",
-        "_data",
     )
 
     def __init__(self, cmd_id: int, data: bytes = b""):

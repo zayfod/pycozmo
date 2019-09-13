@@ -158,7 +158,7 @@ class SendThread(Thread):
                 frame = Frame(FrameType.PING, 0, 0, self.last_ack, [pkt])
             else:
                 seq = self.window.put(pkt)
-                if pkt.PACKET_ID == PacketType.ACTION:
+                if pkt.type == PacketType.ACTION:
                     frame = Frame(FrameType.ENGINE_ACT, seq, seq, self.last_ack, [pkt])
                 else:
                     frame = Frame(FrameType.ENGINE, seq, seq, self.last_ack, [pkt])
@@ -386,7 +386,7 @@ class Client(Thread, event.Dispatcher):
                 if now - self.send_last > timedelta(seconds=PING_INTERVAL):
                     self._send_ping()
 
-            if pkt is not None and pkt.PACKET_ID not in (PacketType.PING, ):
+            if pkt is not None and pkt.type not in (PacketType.PING, ):
                 logger_protocol.debug("Got  %s", pkt)
 
             self.dispatch(pkt.__class__, self, pkt)

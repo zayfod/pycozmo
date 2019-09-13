@@ -193,11 +193,10 @@ class Struct(ABC):
 class Packet(Struct, ABC):
     """ Base class for packets. """
 
-    def __init__(self, packet_id: PacketType, name: str, description: Optional[str] = None,
+    def __init__(self, packet_type: PacketType, name: str, description: Optional[str] = None,
                  arguments: Optional[List[Argument]] = None):
         super().__init__(name, description, arguments)
-        # TODO: Rename to "type".
-        self.packet_id = PacketType(packet_id)
+        self.type = PacketType(packet_type)
 
 
 class Connect(Packet):

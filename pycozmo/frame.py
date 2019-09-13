@@ -31,8 +31,8 @@ class Frame(object):
 
     @staticmethod
     def _encode_packet(pkt, writer) -> None:
-        writer.write(pkt.PACKET_ID.value, "B")
-        if pkt.PACKET_ID == PacketType.ACTION or pkt.PACKET_ID == PacketType.EVENT:
+        writer.write(pkt.type.value, "B")
+        if pkt.type == PacketType.ACTION or pkt.type == PacketType.EVENT:
             writer.write(len(pkt) + 1, "H")
             writer.write(pkt.ID, "B")
         else:
@@ -51,12 +51,12 @@ class Frame(object):
         elif self.type == FrameType.PING:
             assert len(self.pkts) == 1
             pkt = self.pkts[0]
-            assert pkt.PACKET_ID == PacketType.PING
+            assert pkt.type == PacketType.PING
             writer.write_object(pkt)
         elif self.type == FrameType.ENGINE_ACT:
             assert len(self.pkts) == 1
             pkt = self.pkts[0]
-            assert pkt.PACKET_ID == PacketType.ACTION
+            assert pkt.type == PacketType.ACTION
             writer.write(pkt.ID, "B")
             writer.write_object(pkt)
         elif self.type == FrameType.RESET:
