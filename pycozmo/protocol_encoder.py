@@ -181,6 +181,10 @@ class ImageResolution(enum.Enum):
     ImageResolutionNone = 14
 
 
+class DebugDataID(enum.Enum):
+    MAC_ADDRESS = 5490
+
+
 class LightState(Struct):
 
     __slots__ = (
@@ -2541,44 +2545,44 @@ class FirmwareUpdate(Packet):
             data=data)
 
     
-class UnknownB0(Packet):
+class DebugData(Packet):
 
     __slots__ = (
-        "_unknown0",  # uint16
-        "_unknown1",  # uint16
+        "_debug_id",  # uint16
+        "_unused",  # uint16
         "_unknown2",  # uint16
         "_unknown3",  # int8
-        "_unknown4",  # uint32[uint8]
+        "_data",  # uint32[uint8]
     )
 
     def __init__(self,
-                 unknown0=0,
-                 unknown1=0,
+                 debug_id=0,
+                 unused=0,
                  unknown2=0,
                  unknown3=0,
-                 unknown4=()):
+                 data=()):
         super().__init__(PacketType.COMMAND, packet_id=176)
-        self.unknown0 = unknown0
-        self.unknown1 = unknown1
+        self.debug_id = debug_id
+        self.unused = unused
         self.unknown2 = unknown2
         self.unknown3 = unknown3
-        self.unknown4 = unknown4
+        self.data = data
 
     @property
-    def unknown0(self):
-        return self._unknown0
+    def debug_id(self):
+        return self._debug_id
 
-    @unknown0.setter
-    def unknown0(self, value):
-        self._unknown0 = validate_integer("unknown0", value, 0, 65535)
+    @debug_id.setter
+    def debug_id(self, value):
+        self._debug_id = validate_integer("debug_id", value, 0, 65535)
 
     @property
-    def unknown1(self):
-        return self._unknown1
+    def unused(self):
+        return self._unused
 
-    @unknown1.setter
-    def unknown1(self, value):
-        self._unknown1 = validate_integer("unknown1", value, 0, 65535)
+    @unused.setter
+    def unused(self, value):
+        self._unused = validate_integer("unused", value, 0, 65535)
 
     @property
     def unknown2(self):
@@ -2597,13 +2601,13 @@ class UnknownB0(Packet):
         self._unknown3 = validate_integer("unknown3", value, -128, 127)
 
     @property
-    def unknown4(self):
-        return self._unknown4
+    def data(self):
+        return self._data
 
-    @unknown4.setter
-    def unknown4(self, value):
-        self._unknown4 = validate_varray(
-            "unknown4", value, 255, lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295))
+    @data.setter
+    def data(self, value):
+        self._data = validate_varray(
+            "data", value, 255, lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295))
 
     def __len__(self):
         return \
@@ -2611,21 +2615,21 @@ class UnknownB0(Packet):
             get_size('H') + \
             get_size('H') + \
             get_size('b') + \
-            get_varray_size(self._unknown4, 'B', 'L')
+            get_varray_size(self._data, 'B', 'L')
 
     def __repr__(self):
         return "{type}(" \
-               "unknown0={unknown0}, " \
-               "unknown1={unknown1}, " \
+               "debug_id={debug_id}, " \
+               "unused={unused}, " \
                "unknown2={unknown2}, " \
                "unknown3={unknown3}, " \
-               "unknown4={unknown4})".format(
+               "data={data})".format(
                 type=type(self).__name__,
-                unknown0=self._unknown0,
-                unknown1=self._unknown1,
+                debug_id=self._debug_id,
+                unused=self._unused,
                 unknown2=self._unknown2,
                 unknown3=self._unknown3,
-                unknown4=self._unknown4)
+                data=self._data)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -2633,11 +2637,11 @@ class UnknownB0(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(self._unknown0, "H")
-        writer.write(self._unknown1, "H")
+        writer.write(self._debug_id, "H")
+        writer.write(self._unused, "H")
         writer.write(self._unknown2, "H")
         writer.write(self._unknown3, "b")
-        writer.write_varray(self._unknown4, "L", "B")
+        writer.write_varray(self._data, "L", "B")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -2647,17 +2651,17 @@ class UnknownB0(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        unknown0 = reader.read("H")
-        unknown1 = reader.read("H")
+        debug_id = reader.read("H")
+        unused = reader.read("H")
         unknown2 = reader.read("H")
         unknown3 = reader.read("b")
-        unknown4 = reader.read_varray("L", "B")
+        data = reader.read_varray("L", "B")
         return cls(
-            unknown0=unknown0,
-            unknown1=unknown1,
+            debug_id=debug_id,
+            unused=unused,
             unknown2=unknown2,
             unknown3=unknown3,
-            unknown4=unknown4)
+            data=data)
 
     
 class ObjectMoved(Packet):
@@ -5099,7 +5103,7 @@ PACKETS_BY_ID = {
     0x97: DisplayImage,  # 151
     0x9f: EnableAnimationState,  # 159
     0xaf: FirmwareUpdate,  # 175
-    0xb0: UnknownB0,  # 176
+    0xb0: DebugData,  # 176
     0xb4: ObjectMoved,  # 180
     0xb5: ObjectStoppedMoving,  # 181
     0xb6: ObjectTapped,  # 182
@@ -5136,6 +5140,9 @@ PACKETS_BY_GROUP = {
         0x4c,  # EnableCamera
         0x57,  # SetCameraParams
         0x66,  # EnableColorImages
+    },
+    "debug": {
+        0xb0,  # DebugData
     },
     "display": {
         0x8f,  # NextFrame
@@ -5199,8 +5206,5 @@ PACKETS_BY_GROUP = {
         0xdb,  # ButtonPressed
         0xed,  # BodyInfo
         0xee,  # FirmwareSignature
-    },
-    "unknown": {
-        0xb0,  # UnknownB0
     },
 }

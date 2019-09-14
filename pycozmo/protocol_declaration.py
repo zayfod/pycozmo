@@ -169,6 +169,9 @@ IMAGE_RESOLUTION = Enum("ImageResolution", members=[
     EnumMember("ImageResolutionCount", 13),
     EnumMember("ImageResolutionNone", 14),
 ])
+DEBUG_DATA_ID = Enum("DebugDataID", members=[
+    EnumMember("MAC_ADDRESS", 0x1572),              # 624
+])
 
 LIGHT_STATE = Struct("LightState", arguments=[
     UInt16Argument("on_color"),
@@ -192,6 +195,7 @@ PROTOCOL = Protocol(
         OBJECT_TYPE,
         IMAGE_ENCODING,
         IMAGE_RESOLUTION,
+        DEBUG_DATA_ID,
     ],
 
     structs=[
@@ -319,12 +323,12 @@ PROTOCOL = Protocol(
             FArrayArgument("data", length=1024)
         ]),
 
-        Command(0xb0, "UnknownB0", group="unknown", arguments=[
-            UInt16Argument("unknown0"),
-            UInt16Argument("unknown1"),
-            UInt16Argument("unknown2"),
-            Int8Argument("unknown3"),
-            VArrayArgument("unknown4", data_type=UInt32Argument(), length_type=UInt8Argument())
+        Command(0xb0, "DebugData", group="debug", arguments=[
+            UInt16Argument("debug_id"),             # See DebugDataID
+            UInt16Argument("unused"),               # Always 0
+            UInt16Argument("unknown2"),             # Source? Observed: 1, 100, 110, 1203, 1204, 1213, 169, 171, 172, 228, 247, 249, 252, 282, 330, 341, 368, 372, 374, 391, 394, 398, 40, 405, 409, 411, 413, 414, 417, 52, 57
+            Int8Argument("unknown3"),               # Level? Observed: -1, 1, 2, 3, 5
+            VArrayArgument("data", data_type=UInt32Argument(), length_type=UInt8Argument())
         ]),
         Command(0xb4, "ObjectMoved", group="objects", arguments=[
             UInt32Argument("timestamp"),
