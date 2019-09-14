@@ -20,6 +20,7 @@ from . import lights
 from . import camera
 from . import object
 from . import filter
+from . import anim
 
 
 __version__ = "0.5.0"
