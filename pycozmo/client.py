@@ -14,7 +14,6 @@ from PIL import Image
 
 from .logging import logger, logger_protocol
 from .frame import Frame
-from .protocol_declaration import FrameType, FIRMWARE_VERSION
 from .protocol_base import PacketType, Packet
 from .window import ReceiveWindow, SendWindow
 from . import protocol_encoder
@@ -24,6 +23,8 @@ from . import object
 from . import util
 from . import robot
 from . import exception
+from . import filter
+from . import protocol_declaration
 
 
 ROBOT_ADDR = ("172.31.1.1", 5551)
@@ -155,13 +156,13 @@ class SendThread(Thread):
 
             # Construct frame
             if isinstance(pkt, protocol_encoder.Ping):
-                frame = Frame(FrameType.PING, 0, 0, self.last_ack, [pkt])
+                frame = Frame(protocol_declaration.FrameType.PING, 0, 0, self.last_ack, [pkt])
             else:
                 seq = self.window.put(pkt)
                 if pkt.type == PacketType.COMMAND:
-                    frame = Frame(FrameType.ENGINE_ACT, seq, seq, self.last_ack, [pkt])
+                    frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, seq, seq, self.last_ack, [pkt])
                 else:
-                    frame = Frame(FrameType.ENGINE, seq, seq, self.last_ack, [pkt])
+                    frame = Frame(protocol_declaration.FrameType.ENGINE, seq, seq, self.last_ack, [pkt])
             raw_frame = frame.to_bytes()
 
             try:
@@ -170,8 +171,6 @@ class SendThread(Thread):
                 continue
 
             self.last_send_timestamp = datetime.now()
-            if frame.type != FrameType.PING:
-                logger_protocol.debug("Sent %s", pkt)
 
     def send(self, data: Any) -> None:
         self.queue.put(data)
@@ -303,7 +302,8 @@ class Client(Thread, event.Dispatcher):
     CONNECTING = 2
     CONNECTED = 3
 
-    def __init__(self, robot_addr: Optional[Tuple[str, int]] = None) -> None:
+    def __init__(self, robot_addr: Optional[Tuple[str, int]] = None,
+                 protocol_log_messages: Optional[list] = None) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         # Thread is an old-style class and does not propagate initialization.
         event.Dispatcher.__init__(self)
@@ -336,6 +336,13 @@ class Client(Thread, event.Dispatcher):
         # Object state
         self.available_objects = dict()
         self.connected_objects = dict()
+        # Filters
+        self.packet_type_filter = filter.Filter()
+        self.packet_type_filter.deny_ids({protocol_declaration.PacketType.PING.value})
+        self.packet_id_filter = filter.Filter()
+        if protocol_log_messages:
+            for i in protocol_log_messages:
+                self.packet_id_filter.deny_ids(protocol_encoder.PACKETS_BY_GROUP[i])
         self.state = self.IDLE
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setblocking(False)
@@ -386,8 +393,9 @@ class Client(Thread, event.Dispatcher):
                 if now - self.send_last > timedelta(seconds=PING_INTERVAL):
                     self._send_ping()
 
-            if pkt is not None and pkt.type not in (PacketType.PING, ):
-                logger_protocol.debug("Got  %s", pkt)
+            if pkt is not None:
+                if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
+                    logger_protocol.debug("Got  %s", pkt)
 
             self.dispatch(pkt.__class__, self, pkt)
 
@@ -397,7 +405,7 @@ class Client(Thread, event.Dispatcher):
 
         self.send_thread.reset()
 
-        frame = Frame(FrameType.RESET, 1, 1, 0, [])
+        frame = Frame(protocol_declaration.FrameType.RESET, 1, 1, 0, [])
         raw_frame = frame.to_bytes()
         try:
             self.sock.sendto(raw_frame, self.robot_addr)
@@ -407,6 +415,8 @@ class Client(Thread, event.Dispatcher):
     def send(self, pkt: Packet) -> None:
         self.send_last = datetime.now()
         self.send_thread.send(pkt)
+        if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
+            logger_protocol.debug("Sent %s", pkt)
 
     def disconnect(self) -> None:
         logger.debug("Disconnecting...")
@@ -466,12 +476,12 @@ class Client(Thread, event.Dispatcher):
         self.body_hw_version = pkt.body_hw_version
         self.body_color = pkt.body_color
         logger.info("Body S/N 0x%08x.", self.serial_number)
-        supported = self.robot_fw_sig["version"] == FIRMWARE_VERSION
+        supported = self.robot_fw_sig["version"] == protocol_declaration.FIRMWARE_VERSION
         if supported:
             self._initialize_robot()
         else:
             logger.error("Unsupported Cozmo firmware version %i. Only version %i is supported currently.",
-                         self.robot_fw_sig["version"], FIRMWARE_VERSION)
+                         self.robot_fw_sig["version"], protocol_declaration.FIRMWARE_VERSION)
         self.dispatch(EvtRobotFound, self)
 
     @staticmethod
@@ -492,7 +502,7 @@ class Client(Thread, event.Dispatcher):
             if not e.wait(timeout):
                 raise exception.ConnectionTimeout("Failed to connect to Cozmo.")
 
-        if self.robot_fw_sig["version"] != FIRMWARE_VERSION:
+        if self.robot_fw_sig["version"] != protocol_declaration.FIRMWARE_VERSION:
             raise exception.UnsupportedFirmwareVersion("Unsupported Cozmo firmware version.")
 
         if not self.serial_number:

@@ -31,10 +31,11 @@ def setup_basic_logging(log_level: Optional[str] = None, protocol_log_level: Opt
     logger_protocol.setLevel(protocol_log_level)
 
 
-def run_program(f: callable, log_level: Optional[str] = None, protocol_log_level: Optional[str] = None) -> None:
+def run_program(f: callable, log_level: Optional[str] = None, protocol_log_level: Optional[str] = None,
+                protocol_log_messages: Optional[list] = None) -> None:
     setup_basic_logging(log_level=log_level, protocol_log_level=protocol_log_level)
 
-    cli = client.Client()
+    cli = client.Client(protocol_log_messages=protocol_log_messages)
     cli.start()
     cli.connect()
     cli.wait_for_robot()
