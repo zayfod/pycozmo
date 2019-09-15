@@ -125,9 +125,9 @@ class Frame(object):
                 pkt.seq = pkt_seq
                 pkt.ack = ack
                 if not pkt.is_oob():
-                    pkt_seq += 1
+                    pkt_seq = (pkt_seq + 1) % 0xffff
                 pkts.append(pkt)
-            assert not seq or seq + 1 == pkt_seq
+            assert not seq or seq == 2 or seq + 1 == pkt_seq
         elif frame_type == FrameType.PING:
             pkt = Ping.from_reader(reader)
             pkts.append(pkt)
@@ -139,9 +139,9 @@ class Frame(object):
             pkt.seq = pkt_seq
             pkt.ack = ack
             if not pkt.is_oob():
-                pkt_seq += 1
+                pkt_seq = (pkt_seq + 1) % 0xffff
             pkts.append(pkt)
-            assert not seq or seq + 1 == pkt_seq
+            assert not seq or seq == 2 or seq + 1 == pkt_seq
         elif frame_type == FrameType.RESET:
             # No packets
             assert reader.tell() == len(reader)
