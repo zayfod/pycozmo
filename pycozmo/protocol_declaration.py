@@ -243,10 +243,10 @@ PROTOCOL = Protocol(
             Int16Argument("direction"),
         ]),
         Command(0x34, "DriveLift", group="motors", arguments=[
-            FloatArgument("speed"),
+            FloatArgument("speed_rad_per_sec"),
         ]),
         Command(0x35, "DriveHead", group="motors", arguments=[
-            FloatArgument("speed"),
+            FloatArgument("speed_rad_per_sec"),
         ]),
         Command(0x36, "SetLiftHeight", group="motors", arguments=[
             FloatArgument("height_mm"),
@@ -314,8 +314,26 @@ PROTOCOL = Protocol(
             FArrayArgument("samples", length=744),
         ]),
         Command(0x8f, "NextFrame", group="display"),
+        Command(0x93, "AnimHead", group="anim", arguments=[
+            UInt8Argument("duration_ms"),
+            UInt8Argument("variability_deg"),
+            Int8Argument("angle_deg"),
+        ]),
+        Command(0x94, "AnimLift", group="anim", arguments=[
+            UInt8Argument("duration_ms"),
+            UInt8Argument("variability_mm"),
+            UInt8Argument("height_mm"),
+        ]),
         Command(0x97, "DisplayImage", group="display", arguments=[
             VArrayArgument("image"),
+        ]),
+        Command(0x99, "AnimUnknown99", group="anim", arguments=[
+            UInt16Argument("unknown0"),
+            UInt16Argument("unknown1"),
+        ]),
+        Command(0x9a, "EndAnimation", group="anim"),
+        Command(0x9b, "StartAnimation", group="anim", arguments=[
+            UInt8Argument("anim_id")
         ]),
         Command(0x9f, "EnableAnimationState", group="system"),
         Command(0xaf, "FirmwareUpdate", group="firmware", arguments=[
@@ -365,6 +383,12 @@ PROTOCOL = Protocol(
             UInt32Argument("serial_number_head"),
             UInt8Argument("unknown1"),
             UInt8Argument("unknown2"),
+        ]),
+        Command(0xca, "AnimationStarted", group="anim", arguments=[
+            UInt8Argument("anim_id")
+        ]),
+        Command(0xcb, "AnimationEnded", group="anim", arguments=[
+            UInt8Argument("anim_id")
         ]),
         Command(0xcd, "NvStorageOpResult", group="nv", arguments=[
             EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument(), default=0xffffffff),

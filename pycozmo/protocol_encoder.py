@@ -1140,21 +1140,21 @@ class TurnInPlaceAtSpeed(Packet):
 class DriveLift(Packet):
 
     __slots__ = (
-        "_speed",  # float
+        "_speed_rad_per_sec",  # float
     )
 
     def __init__(self,
-                 speed=0.0):
+                 speed_rad_per_sec=0.0):
         super().__init__(PacketType.COMMAND, packet_id=52)
-        self.speed = speed
+        self.speed_rad_per_sec = speed_rad_per_sec
 
     @property
-    def speed(self):
-        return self._speed
+    def speed_rad_per_sec(self):
+        return self._speed_rad_per_sec
 
-    @speed.setter
-    def speed(self, value):
-        self._speed = validate_float("speed", value)
+    @speed_rad_per_sec.setter
+    def speed_rad_per_sec(self, value):
+        self._speed_rad_per_sec = validate_float("speed_rad_per_sec", value)
 
     def __len__(self):
         return \
@@ -1162,9 +1162,9 @@ class DriveLift(Packet):
 
     def __repr__(self):
         return "{type}(" \
-               "speed={speed})".format(
+               "speed_rad_per_sec={speed_rad_per_sec})".format(
                 type=type(self).__name__,
-                speed=self._speed)
+                speed_rad_per_sec=self._speed_rad_per_sec)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -1172,7 +1172,7 @@ class DriveLift(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(self._speed, "f")
+        writer.write(self._speed_rad_per_sec, "f")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -1182,29 +1182,29 @@ class DriveLift(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        speed = reader.read("f")
+        speed_rad_per_sec = reader.read("f")
         return cls(
-            speed=speed)
+            speed_rad_per_sec=speed_rad_per_sec)
 
     
 class DriveHead(Packet):
 
     __slots__ = (
-        "_speed",  # float
+        "_speed_rad_per_sec",  # float
     )
 
     def __init__(self,
-                 speed=0.0):
+                 speed_rad_per_sec=0.0):
         super().__init__(PacketType.COMMAND, packet_id=53)
-        self.speed = speed
+        self.speed_rad_per_sec = speed_rad_per_sec
 
     @property
-    def speed(self):
-        return self._speed
+    def speed_rad_per_sec(self):
+        return self._speed_rad_per_sec
 
-    @speed.setter
-    def speed(self, value):
-        self._speed = validate_float("speed", value)
+    @speed_rad_per_sec.setter
+    def speed_rad_per_sec(self, value):
+        self._speed_rad_per_sec = validate_float("speed_rad_per_sec", value)
 
     def __len__(self):
         return \
@@ -1212,9 +1212,9 @@ class DriveHead(Packet):
 
     def __repr__(self):
         return "{type}(" \
-               "speed={speed})".format(
+               "speed_rad_per_sec={speed_rad_per_sec})".format(
                 type=type(self).__name__,
-                speed=self._speed)
+                speed_rad_per_sec=self._speed_rad_per_sec)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -1222,7 +1222,7 @@ class DriveHead(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(self._speed, "f")
+        writer.write(self._speed_rad_per_sec, "f")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -1232,9 +1232,9 @@ class DriveHead(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        speed = reader.read("f")
+        speed_rad_per_sec = reader.read("f")
         return cls(
-            speed=speed)
+            speed_rad_per_sec=speed_rad_per_sec)
 
     
 class SetLiftHeight(Packet):
@@ -2390,6 +2390,174 @@ class NextFrame(Packet):
             )
 
     
+class AnimHead(Packet):
+
+    __slots__ = (
+        "_duration_ms",  # uint8
+        "_variability_deg",  # uint8
+        "_angle_deg",  # int8
+    )
+
+    def __init__(self,
+                 duration_ms=0,
+                 variability_deg=0,
+                 angle_deg=0):
+        super().__init__(PacketType.COMMAND, packet_id=147)
+        self.duration_ms = duration_ms
+        self.variability_deg = variability_deg
+        self.angle_deg = angle_deg
+
+    @property
+    def duration_ms(self):
+        return self._duration_ms
+
+    @duration_ms.setter
+    def duration_ms(self, value):
+        self._duration_ms = validate_integer("duration_ms", value, 0, 255)
+
+    @property
+    def variability_deg(self):
+        return self._variability_deg
+
+    @variability_deg.setter
+    def variability_deg(self, value):
+        self._variability_deg = validate_integer("variability_deg", value, 0, 255)
+
+    @property
+    def angle_deg(self):
+        return self._angle_deg
+
+    @angle_deg.setter
+    def angle_deg(self, value):
+        self._angle_deg = validate_integer("angle_deg", value, -128, 127)
+
+    def __len__(self):
+        return \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "duration_ms={duration_ms}, " \
+               "variability_deg={variability_deg}, " \
+               "angle_deg={angle_deg})".format(
+                type=type(self).__name__,
+                duration_ms=self._duration_ms,
+                variability_deg=self._variability_deg,
+                angle_deg=self._angle_deg)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._duration_ms, "B")
+        writer.write(self._variability_deg, "B")
+        writer.write(self._angle_deg, "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        duration_ms = reader.read("B")
+        variability_deg = reader.read("B")
+        angle_deg = reader.read("b")
+        return cls(
+            duration_ms=duration_ms,
+            variability_deg=variability_deg,
+            angle_deg=angle_deg)
+
+    
+class AnimLift(Packet):
+
+    __slots__ = (
+        "_duration_ms",  # uint8
+        "_variability_mm",  # uint8
+        "_height_mm",  # uint8
+    )
+
+    def __init__(self,
+                 duration_ms=0,
+                 variability_mm=0,
+                 height_mm=0):
+        super().__init__(PacketType.COMMAND, packet_id=148)
+        self.duration_ms = duration_ms
+        self.variability_mm = variability_mm
+        self.height_mm = height_mm
+
+    @property
+    def duration_ms(self):
+        return self._duration_ms
+
+    @duration_ms.setter
+    def duration_ms(self, value):
+        self._duration_ms = validate_integer("duration_ms", value, 0, 255)
+
+    @property
+    def variability_mm(self):
+        return self._variability_mm
+
+    @variability_mm.setter
+    def variability_mm(self, value):
+        self._variability_mm = validate_integer("variability_mm", value, 0, 255)
+
+    @property
+    def height_mm(self):
+        return self._height_mm
+
+    @height_mm.setter
+    def height_mm(self, value):
+        self._height_mm = validate_integer("height_mm", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('B') + \
+            get_size('B') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "duration_ms={duration_ms}, " \
+               "variability_mm={variability_mm}, " \
+               "height_mm={height_mm})".format(
+                type=type(self).__name__,
+                duration_ms=self._duration_ms,
+                variability_mm=self._variability_mm,
+                height_mm=self._height_mm)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._duration_ms, "B")
+        writer.write(self._variability_mm, "B")
+        writer.write(self._height_mm, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        duration_ms = reader.read("B")
+        variability_mm = reader.read("B")
+        height_mm = reader.read("B")
+        return cls(
+            duration_ms=duration_ms,
+            variability_mm=variability_mm,
+            height_mm=height_mm)
+
+    
 class DisplayImage(Packet):
 
     __slots__ = (
@@ -2439,6 +2607,159 @@ class DisplayImage(Packet):
         image = reader.read_varray("B", "H")
         return cls(
             image=image)
+
+    
+class AnimUnknown99(Packet):
+
+    __slots__ = (
+        "_unknown0",  # uint16
+        "_unknown1",  # uint16
+    )
+
+    def __init__(self,
+                 unknown0=0,
+                 unknown1=0):
+        super().__init__(PacketType.COMMAND, packet_id=153)
+        self.unknown0 = unknown0
+        self.unknown1 = unknown1
+
+    @property
+    def unknown0(self):
+        return self._unknown0
+
+    @unknown0.setter
+    def unknown0(self, value):
+        self._unknown0 = validate_integer("unknown0", value, 0, 65535)
+
+    @property
+    def unknown1(self):
+        return self._unknown1
+
+    @unknown1.setter
+    def unknown1(self, value):
+        self._unknown1 = validate_integer("unknown1", value, 0, 65535)
+
+    def __len__(self):
+        return \
+            get_size('H') + \
+            get_size('H')
+
+    def __repr__(self):
+        return "{type}(" \
+               "unknown0={unknown0}, " \
+               "unknown1={unknown1})".format(
+                type=type(self).__name__,
+                unknown0=self._unknown0,
+                unknown1=self._unknown1)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._unknown0, "H")
+        writer.write(self._unknown1, "H")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        unknown0 = reader.read("H")
+        unknown1 = reader.read("H")
+        return cls(
+            unknown0=unknown0,
+            unknown1=unknown1)
+
+    
+class EndAnimation(Packet):
+
+    __slots__ = (
+    )
+
+    def __init__(self):
+        super().__init__(PacketType.COMMAND, packet_id=154)
+        pass
+
+    def __len__(self):
+        return 0
+
+    def __repr__(self):
+        return "{type}()".format(type=type(self).__name__)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        pass
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        del reader
+        return cls(
+            )
+
+    
+class StartAnimation(Packet):
+
+    __slots__ = (
+        "_anim_id",  # uint8
+    )
+
+    def __init__(self,
+                 anim_id=0):
+        super().__init__(PacketType.COMMAND, packet_id=155)
+        self.anim_id = anim_id
+
+    @property
+    def anim_id(self):
+        return self._anim_id
+
+    @anim_id.setter
+    def anim_id(self, value):
+        self._anim_id = validate_integer("anim_id", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "anim_id={anim_id})".format(
+                type=type(self).__name__,
+                anim_id=self._anim_id)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._anim_id, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        anim_id = reader.read("B")
+        return cls(
+            anim_id=anim_id)
 
     
 class EnableAnimationState(Packet):
@@ -3307,6 +3628,106 @@ class HardwareInfo(Packet):
             serial_number_head=serial_number_head,
             unknown1=unknown1,
             unknown2=unknown2)
+
+    
+class AnimationStarted(Packet):
+
+    __slots__ = (
+        "_anim_id",  # uint8
+    )
+
+    def __init__(self,
+                 anim_id=0):
+        super().__init__(PacketType.COMMAND, packet_id=202)
+        self.anim_id = anim_id
+
+    @property
+    def anim_id(self):
+        return self._anim_id
+
+    @anim_id.setter
+    def anim_id(self, value):
+        self._anim_id = validate_integer("anim_id", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "anim_id={anim_id})".format(
+                type=type(self).__name__,
+                anim_id=self._anim_id)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._anim_id, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        anim_id = reader.read("B")
+        return cls(
+            anim_id=anim_id)
+
+    
+class AnimationEnded(Packet):
+
+    __slots__ = (
+        "_anim_id",  # uint8
+    )
+
+    def __init__(self,
+                 anim_id=0):
+        super().__init__(PacketType.COMMAND, packet_id=203)
+        self.anim_id = anim_id
+
+    @property
+    def anim_id(self):
+        return self._anim_id
+
+    @anim_id.setter
+    def anim_id(self, value):
+        self._anim_id = validate_integer("anim_id", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "anim_id={anim_id})".format(
+                type=type(self).__name__,
+                anim_id=self._anim_id)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._anim_id, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        anim_id = reader.read("B")
+        return cls(
+            anim_id=anim_id)
 
     
 class NvStorageOpResult(Packet):
@@ -5100,7 +5521,12 @@ PACKETS_BY_ID = {
     0x81: NvStorageOp,  # 129
     0x8e: OutputAudio,  # 142
     0x8f: NextFrame,  # 143
+    0x93: AnimHead,  # 147
+    0x94: AnimLift,  # 148
     0x97: DisplayImage,  # 151
+    0x99: AnimUnknown99,  # 153
+    0x9a: EndAnimation,  # 154
+    0x9b: StartAnimation,  # 155
     0x9f: EnableAnimationState,  # 159
     0xaf: FirmwareUpdate,  # 175
     0xb0: DebugData,  # 176
@@ -5112,6 +5538,8 @@ PACKETS_BY_ID = {
     0xc3: RobotPoked,  # 195
     0xc4: AcknowledgeAction,  # 196
     0xc9: HardwareInfo,  # 201
+    0xca: AnimationStarted,  # 202
+    0xcb: AnimationEnded,  # 203
     0xcd: NvStorageOpResult,  # 205
     0xce: ObjectPowerLevel,  # 206
     0xd0: ObjectConnectionState,  # 208
@@ -5131,6 +5559,15 @@ PACKETS_BY_ID = {
 
 
 PACKETS_BY_GROUP = {
+    "anim": {
+        0x93,  # AnimHead
+        0x94,  # AnimLift
+        0x99,  # AnimUnknown99
+        0x9a,  # EndAnimation
+        0x9b,  # StartAnimation
+        0xca,  # AnimationStarted
+        0xcb,  # AnimationEnded
+    },
     "audio": {
         0x64,  # SetRobotVolume
         0x8e,  # OutputAudio
