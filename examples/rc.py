@@ -148,7 +148,7 @@ class RCApp(object):
         # Raise head
         angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) * 0.1
         pkt = pycozmo.protocol_encoder.SetHeadAngle(angle_rad=angle)
-        self.cli.send(pkt)
+        self.cli.conn.send(pkt)
         time.sleep(0.5)
         return True
 
@@ -156,7 +156,7 @@ class RCApp(object):
         """ Terminate application. """
         logging.info("Terminating...")
 
-        self.cli.send(pycozmo.protocol_encoder.StopAllMotors())
+        self.cli.conn.send(pycozmo.protocol_encoder.StopAllMotors())
         self.cli.disconnect()
         self.cli.stop()
 
@@ -182,14 +182,14 @@ class RCApp(object):
 
     def _drive_lift(self, speed):
         if self.lift:
-            self.cli.send(pycozmo.protocol_encoder.DriveLift(speed))
+            self.cli.conn.send(pycozmo.protocol_encoder.DriveLift(speed))
         else:
-            self.cli.send(pycozmo.protocol_encoder.DriveHead(speed))
+            self.cli.conn.send(pycozmo.protocol_encoder.DriveHead(speed))
 
     def _drive_wheels(self, speed_left, speed_right):
         lw = int(speed_left * pycozmo.MAX_WHEEL_SPEED.mmps)
         rw = int(speed_right * pycozmo.MAX_WHEEL_SPEED.mmps)
-        self.cli.send(pycozmo.protocol_encoder.DriveWheels(lwheel_speed_mmps=lw, rwheel_speed_mmps=rw))
+        self.cli.conn.send(pycozmo.protocol_encoder.DriveWheels(lwheel_speed_mmps=lw, rwheel_speed_mmps=rw))
 
     @staticmethod
     def _get_motor_thrust(r, theta):

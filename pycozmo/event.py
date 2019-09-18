@@ -1,5 +1,8 @@
 
 import collections
+import threading
+
+from . import exception
 
 
 __all__ = [
@@ -51,3 +54,9 @@ class Dispatcher(object):
 
         for handler in handlers:
             handler.f(*args, **kwargs)
+
+    def wait_for(self, evt, timeout: float = None) -> None:
+        e = threading.Event()
+        self.add_handler(evt, lambda *args: e.set(), one_shot=True)
+        if not e.wait(timeout):
+            raise exception.Timeout("Failed to receive event in time.")

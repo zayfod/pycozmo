@@ -76,7 +76,7 @@ class ReplayApp(object):
                     continue
                 input()
                 print("{}, time={:.06f}".format(i, ts - self.first_ts))
-                cli.send(pkt)
+                cli.conn.send(pkt)
         except KeyboardInterrupt:
             pass
 

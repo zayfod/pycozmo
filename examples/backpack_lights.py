@@ -15,10 +15,10 @@ def pycozmo_program(cli: pycozmo.client.Client):
     ]
     for light in lights:
         pkt = pycozmo.protocol_encoder.LightStateCenter(states=(light, light, light))
-        cli.send(pkt)
+        cli.conn.send(pkt)
 
         pkt = pycozmo.protocol_encoder.LightStateSide(states=(light, light))
-        cli.send(pkt)
+        cli.conn.send(pkt)
 
         time.sleep(2)
 

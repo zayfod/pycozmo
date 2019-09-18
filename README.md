@@ -21,7 +21,7 @@ import pycozmo
 
 def pycozmo_program(cli):
     pkt = pycozmo.protocol_encoder.SetHeadAngle(angle_rad=0.6)
-    cli.send(pkt)
+    cli.conn.send(pkt)
     time.sleep(1)
 
 pycozmo.run_program(pycozmo_program)
@@ -38,10 +38,10 @@ cli.connect()
 cli.wait_for_robot()
 
 pkt = pycozmo.protocol_encoder.DriveWheels(lwheel_speed_mmps=50.0, rwheel_speed_mmps=50.0) 
-cli.send(pkt)
+cli.conn.send(pkt)
 time.sleep(2.0)
 pkt = pycozmo.protocol_encoder.StopAllMotors()
-cli.send(pkt)
+cli.conn.send(pkt)
 
 cli.disconnect()
 cli.stop()
