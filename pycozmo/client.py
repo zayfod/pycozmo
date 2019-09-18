@@ -21,111 +21,6 @@ from . import protocol_declaration
 from . import conn
 
 
-class EvtRobotFound(event.Event):
-    """ Triggered when the robot has been first connected. """
-
-
-class EvtRobotReady(event.Event):
-    """ Triggered when the robot has been initialized and is ready for commands. """
-
-
-class EvtNewRawCameraImage(event.Event):
-    """ Triggered when a new raw image is received from the robot's camera. """
-
-
-class EvtRobotMovingChange(event.Event):
-    pass
-
-
-class EvtRobotCarryingBlockChange(event.Event):
-    pass
-
-
-class EvtRobotPickingOrPlacingChange(event.Event):
-    pass
-
-
-class EvtRobotPickedUpChange(event.Event):
-    pass
-
-
-class EvtRobotBodyAccModeChange(event.Event):
-    pass
-
-
-class EvtRobotFallingChange(event.Event):
-    pass
-
-
-class EvtRobotAnimatingChange(event.Event):
-    pass
-
-
-class EvtRobotPathingChange(event.Event):
-    pass
-
-
-class EvtRobotLiftInPositionChange(event.Event):
-    pass
-
-
-class EvtRobotHeadInPositionChange(event.Event):
-    pass
-
-
-class EvtRobotAnimBufferFullChange(event.Event):
-    pass
-
-
-class EvtRobotAnimatingIdleChange(event.Event):
-    pass
-
-
-class EvtRobotOnChargerChange(event.Event):
-    pass
-
-
-class EvtRobotChargingChange(event.Event):
-    pass
-
-
-class EvtCliffDetectedChange(event.Event):
-    pass
-
-
-class EvtRobotWheelsMovingChange(event.Event):
-    pass
-
-
-class EvtChargerOOSChange(event.Event):
-    pass
-
-
-STATUS_EVTS = {
-    robot.RobotStatusFlag.IS_MOVING: EvtRobotMovingChange,
-    robot.RobotStatusFlag.IS_CARRYING_BLOCK: EvtRobotCarryingBlockChange,
-    robot.RobotStatusFlag.IS_PICKING_OR_PLACING: EvtRobotPickingOrPlacingChange,
-    robot.RobotStatusFlag.IS_PICKED_UP: EvtRobotPickedUpChange,
-    robot.RobotStatusFlag.IS_BODY_ACC_MODE: EvtRobotBodyAccModeChange,
-    robot.RobotStatusFlag.IS_FALLING: EvtRobotFallingChange,
-    robot.RobotStatusFlag.IS_ANIMATING: EvtRobotAnimatingChange,
-    robot.RobotStatusFlag.IS_PATHING: EvtRobotPathingChange,
-    robot.RobotStatusFlag.LIFT_IN_POS: EvtRobotLiftInPositionChange,
-    robot.RobotStatusFlag.HEAD_IN_POS: EvtRobotHeadInPositionChange,
-    robot.RobotStatusFlag.IS_ANIM_BUFFER_FULL: EvtRobotAnimBufferFullChange,
-    robot.RobotStatusFlag.IS_ANIMATING_IDLE: EvtRobotAnimatingChange,
-    robot.RobotStatusFlag.IS_ON_CHARGER: EvtRobotOnChargerChange,
-    robot.RobotStatusFlag.IS_CHARGING: EvtRobotChargingChange,
-    robot.RobotStatusFlag.CLIFF_DETECTED: EvtCliffDetectedChange,
-    robot.RobotStatusFlag.ARE_WHEELS_MOVING: EvtRobotWheelsMovingChange,
-    robot.RobotStatusFlag.IS_CHARGER_OOS: EvtChargerOOSChange,
-}
-
-
-class EvtRobotStateUpdated(event.Event):
-    """ Triggered when a new robot state is received. """
-
-
 class Client(event.Dispatcher):
 
     def __init__(self, robot_addr: Optional[Tuple[str, int]] = None,
@@ -215,7 +110,7 @@ class Client(event.Dispatcher):
         # TODO: This should not be necessary.
         time.sleep(0.5)
 
-        self.dispatch(EvtRobotReady, self)
+        self.dispatch(event.EvtRobotReady, self)
 
     def _on_hardware_info(self, cli, pkt: protocol_encoder.HardwareInfo):
         del cli
@@ -239,12 +134,12 @@ class Client(event.Dispatcher):
         else:
             logger.error("Unsupported Cozmo firmware version %i. Only version %i is supported currently.",
                          self.robot_fw_sig["version"], protocol_declaration.FIRMWARE_VERSION)
-        self.dispatch(EvtRobotFound, self)
+        self.dispatch(event.EvtRobotFound, self)
 
     def wait_for_robot(self, timeout: float = 5.0) -> None:
         if not self.robot_fw_sig:
             e = Event()
-            self.add_handler(EvtRobotFound, lambda cli: e.set(), one_shot=True)
+            self.add_handler(event.EvtRobotFound, lambda cli: e.set(), one_shot=True)
             if not e.wait(timeout):
                 raise exception.ConnectionTimeout("Failed to connect to Cozmo.")
 
@@ -253,7 +148,7 @@ class Client(event.Dispatcher):
 
         if not self.serial_number:
             e = Event()
-            self.add_handler(EvtRobotReady, lambda cli: e.set(), one_shot=True)
+            self.add_handler(event.EvtRobotReady, lambda cli: e.set(), one_shot=True)
             if not e.wait(timeout):
                 raise exception.ConnectionTimeout("Failed to initialize Cozmo.")
 
@@ -333,7 +228,7 @@ class Client(event.Dispatcher):
 
         self._latest_image = image
         self.last_image_timestamp = self._partial_image_timestamp
-        self.dispatch(EvtNewRawCameraImage, self, image)
+        self.dispatch(event.EvtNewRawCameraImage, self, image)
 
     def _on_robot_state(self, cli, pkt: protocol_encoder.RobotState):
         del cli
@@ -348,9 +243,9 @@ class Client(event.Dispatcher):
         self.gyro = util.Vector3(pkt.gyro_x, pkt.gyro_y, pkt.gyro_z)
         old_status = self.robot_status
         self.robot_status = pkt.status
-        self.dispatch(EvtRobotStateUpdated, self)
+        self.dispatch(event.EvtRobotStateUpdated, self)
         # Dispatch status flag change events.
-        for flag, evt in STATUS_EVTS.items():
+        for flag, evt in event.STATUS_EVENTS.items():
             if (old_status & flag) != (pkt.status & flag):
                 state = (pkt.status & flag) != 0
                 logger.debug("%s: %i", robot.RobotStatusFlagNames[flag], state)

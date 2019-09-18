@@ -70,10 +70,10 @@ def pycozmo_program(cli: pycozmo.client.Client):
     cli.conn.add_handler(pycozmo.protocol_encoder.FallingStarted, on_robot_falling_started)
     cli.conn.add_handler(pycozmo.protocol_encoder.FallingStopped, on_robot_falling_stopped)
     cli.conn.add_handler(pycozmo.protocol_encoder.ButtonPressed, on_button_pressed)
-    cli.add_handler(pycozmo.client.EvtRobotPickedUpChange, on_robot_picked_up)
-    cli.add_handler(pycozmo.client.EvtRobotChargingChange, on_robot_charging)
-    cli.add_handler(pycozmo.client.EvtCliffDetectedChange, on_cliff_detected)
-    cli.add_handler(pycozmo.client.EvtRobotWheelsMovingChange, on_robot_wheels_moving)
+    cli.add_handler(pycozmo.event.EvtRobotPickedUpChange, on_robot_picked_up)
+    cli.add_handler(pycozmo.event.EvtRobotChargingChange, on_robot_charging)
+    cli.add_handler(pycozmo.event.EvtCliffDetectedChange, on_cliff_detected)
+    cli.add_handler(pycozmo.event.EvtRobotWheelsMovingChange, on_robot_wheels_moving)
 
     while True:
         try:
