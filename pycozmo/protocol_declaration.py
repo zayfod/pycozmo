@@ -242,10 +242,10 @@ PROTOCOL = Protocol(
             FloatArgument("wheel_accel_mmps2"),
             Int16Argument("direction"),
         ]),
-        Command(0x34, "DriveLift", group="motors", arguments=[
+        Command(0x34, "MoveLift", group="motors", arguments=[
             FloatArgument("speed_rad_per_sec"),
         ]),
-        Command(0x35, "DriveHead", group="motors", arguments=[
+        Command(0x35, "MoveHead", group="motors", arguments=[
             FloatArgument("speed_rad_per_sec"),
         ]),
         Command(0x36, "SetLiftHeight", group="motors", arguments=[

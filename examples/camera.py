@@ -13,8 +13,7 @@ def on_camera_image(cli, image):
 def pycozmo_program(cli: pycozmo.client.Client):
 
     angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) / 2.0
-    pkt = pycozmo.protocol_encoder.SetHeadAngle(angle_rad=angle)
-    cli.conn.send(pkt)
+    cli.set_head_angle(angle)
 
     pkt = pycozmo.protocol_encoder.EnableCamera(enable=True)
     cli.conn.send(pkt)

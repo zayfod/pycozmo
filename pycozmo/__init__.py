@@ -6,7 +6,7 @@ from .run import *
 
 from .frame import Frame
 from .conn import ROBOT_ADDR
-from .client import Client, EvtRobotFound, EvtRobotReady
+from .client import Client
 from .robot import *
 from .event import *
 

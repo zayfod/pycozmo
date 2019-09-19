@@ -14,12 +14,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
         pycozmo.lights.off_light,
     ]
     for light in lights:
-        pkt = pycozmo.protocol_encoder.LightStateCenter(states=(light, light, light))
-        cli.conn.send(pkt)
-
-        pkt = pycozmo.protocol_encoder.LightStateSide(states=(light, light))
-        cli.conn.send(pkt)
-
+        cli.set_all_backpack_lights(light)
         time.sleep(2)
 
 

@@ -1137,7 +1137,7 @@ class TurnInPlaceAtSpeed(Packet):
             direction=direction)
 
     
-class DriveLift(Packet):
+class MoveLift(Packet):
 
     __slots__ = (
         "_speed_rad_per_sec",  # float
@@ -1187,7 +1187,7 @@ class DriveLift(Packet):
             speed_rad_per_sec=speed_rad_per_sec)
 
     
-class DriveHead(Packet):
+class MoveHead(Packet):
 
     __slots__ = (
         "_speed_rad_per_sec",  # float
@@ -5505,8 +5505,8 @@ PACKETS_BY_ID = {
     0x25: Enable,  # 37
     0x32: DriveWheels,  # 50
     0x33: TurnInPlaceAtSpeed,  # 51
-    0x34: DriveLift,  # 52
-    0x35: DriveHead,  # 53
+    0x34: MoveLift,  # 52
+    0x35: MoveHead,  # 53
     0x36: SetLiftHeight,  # 54
     0x37: SetHeadAngle,  # 55
     0x39: TurnInPlace,  # 57
@@ -5602,8 +5602,8 @@ PACKETS_BY_GROUP = {
     "motors": {
         0x32,  # DriveWheels
         0x33,  # TurnInPlaceAtSpeed
-        0x34,  # DriveLift
-        0x35,  # DriveHead
+        0x34,  # MoveLift
+        0x35,  # MoveHead
         0x36,  # SetLiftHeight
         0x37,  # SetHeadAngle
         0x39,  # TurnInPlace

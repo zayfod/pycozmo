@@ -19,6 +19,7 @@ from . import exception
 from . import filter
 from . import protocol_declaration
 from . import conn
+from . import lights
 
 
 class Client(event.Dispatcher):
@@ -280,3 +281,57 @@ class Client(event.Dispatcher):
             # Disconnected
             if pkt.object_id in self.connected_objects:
                 del self.connected_objects[pkt.object_id]
+
+    def set_head_angle(self, angle: float, accel: float = 10.0, max_speed: float = 10.0,
+                       duration: float = 0.0):
+        pkt = protocol_encoder.SetHeadAngle(angle_rad=angle, accel_rad_per_sec2=accel,
+                                            max_speed_rad_per_sec=max_speed, duration_sec=duration)
+        self.conn.send(pkt)
+
+    def move_head(self, speed: float) -> None   :
+        pkt = protocol_encoder.MoveHead(speed_rad_per_sec=speed)
+        self.conn.send(pkt)
+
+    def set_lift_height(self, height: float, accel: float = 10.0, max_speed: float = 10.0,
+                        duration: float = 0.0):
+        pkt = protocol_encoder.SetLiftHeight(height_mm=height, accel_rad_per_sec2=accel,
+                                             max_speed_rad_per_sec=max_speed, duration_sec=duration)
+        self.conn.send(pkt)
+
+    def move_lift(self, speed: float) -> None:
+        pkt = protocol_encoder.MoveLift(speed_rad_per_sec=speed)
+        self.conn.send(pkt)
+
+    def drive_wheels(self, lwheel_speed: float, rwheel_speed: float,
+                     lwheel_acc: Optional[float] = None, rwheel_acc: Optional[float] = None,
+                     duration: Optional[float] = None) -> None:
+        pkt = protocol_encoder.DriveWheels(lwheel_speed_mmps=lwheel_speed, rwheel_speed_mmps=rwheel_speed,
+                                           lwheel_accel_mmps2=lwheel_acc, rwheel_accel_mmps2=rwheel_acc)
+        self.conn.send(pkt)
+        if duration is not None:
+            time.sleep(duration)
+            self.stop_all_motors()
+
+    def stop_all_motors(self) -> None:
+        pkt = protocol_encoder.StopAllMotors()
+        self.conn.send(pkt)
+
+    def set_backpack_lights(self, left_light, front_light, center_light, rear_light, right_light) -> None:
+        pkt = protocol_encoder.LightStateCenter(states=(front_light, center_light, rear_light))
+        self.conn.send(pkt)
+        pkt = protocol_encoder.LightStateSide(states=(left_light, right_light))
+        self.conn.send(pkt)
+
+    def set_center_backpack_lights(self, light) -> None:
+        self.set_backpack_lights(lights.off_light, light, light, light, lights.off_light)
+
+    def set_all_backpack_lights(self, light) -> None:
+        self.set_backpack_lights(light, light, light, light, light)
+
+    def set_backpack_lights_off(self) -> None:
+        self.set_backpack_lights(lights.off_light, lights.off_light, lights.off_light,
+                                 lights.off_light, lights.off_light)
+
+    def set_head_light(self, enable: bool) -> None:
+        pkt = protocol_encoder.SetHeadLight(enable=enable)
+        self.conn.send(pkt)
