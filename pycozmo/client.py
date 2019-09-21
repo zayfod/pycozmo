@@ -20,6 +20,7 @@ from . import filter
 from . import protocol_declaration
 from . import conn
 from . import lights
+from . import anim
 
 
 class Client(event.Dispatcher):
@@ -288,7 +289,7 @@ class Client(event.Dispatcher):
                                             max_speed_rad_per_sec=max_speed, duration_sec=duration)
         self.conn.send(pkt)
 
-    def move_head(self, speed: float) -> None   :
+    def move_head(self, speed: float) -> None:
         pkt = protocol_encoder.MoveHead(speed_rad_per_sec=speed)
         self.conn.send(pkt)
 
@@ -335,3 +336,22 @@ class Client(event.Dispatcher):
     def set_head_light(self, enable: bool) -> None:
         pkt = protocol_encoder.SetHeadLight(enable=enable)
         self.conn.send(pkt)
+
+    def play_anim(self, clip: anim.AnimClip) -> None:
+        self.conn.send(protocol_encoder.StartAnimation(anim_id=1))
+
+        frames = list(sorted(clip.keyframes.keys()))
+        num_frames = len(frames)
+        for i in range(num_frames):
+            keyframe = clip.keyframes[frames[i]]
+            for pkt in keyframe:
+                self.conn.send(pkt)
+
+            # Play keyframe
+            self.conn.send(protocol_encoder.OutputAudio(samples=[0] * 744))
+
+            if i < num_frames - 1:
+                delay_ms = (frames[i + 1] - frames[i]) / 1000.0
+                time.sleep(delay_ms)
+
+        self.conn.send(protocol_encoder.EndAnimation())

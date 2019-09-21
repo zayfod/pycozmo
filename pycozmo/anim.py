@@ -4,151 +4,193 @@ Experimental code for reading Cozmo animations in .bin format.
 
 Cozmo animations are stored in files/cozmo/cozmo_resources/assets/animations inside the Cozmo mobile application.
 
-Declarations of the animation data structure seem to be available in files/cozmo/cozmo_resources/config/cozmo_anim.fbs
+Animation data structures are declared in FlatBuffers format in files/cozmo/cozmo_resources/config/cozmo_anim.fbs .
 
 """
 
-from . import protocol_utils
-from . import util
+from typing import List
+
+from . import CozmoAnim
+from . import protocol_encoder
+from . import lights
 
 
 __all__ = [
     "AnimClip",
-    "AnimBinReader",
+    "load_anim_clips",
 ]
+
+
+class AnimKeyframe(object):
+
+    def __init__(self):
+        self.pkts = []
+        self.record_heading = False
+        self.face_animation = None
+        self.event_id = None    # DEVICE_AUDIO_TRIGGER / ENERGY_DRAINCUBE_END / TAPPED_BLOCK
 
 
 class AnimClip(object):
 
     def __init__(self, name: str):
         self.name = name
+        self.keyframes = {}
+
+    def add_message(self, trigger_time: int, pkt: protocol_encoder.Packet) -> None:
+        if trigger_time not in self.keyframes:
+            self.keyframes[trigger_time] = []
+        self.keyframes[trigger_time].append(pkt)
+
+    def record_heading(self, trigger_time: int) -> None:
+        # TODO
+        pass
+
+    def face_animation(self, trigger_time: int, name: str) -> None:
+        # TODO
+        pass
+
+    def event(self, trigger_time: int, event_id: str) -> None:
+        # TODO
+        pass
 
 
-class AnimBinReader(object):
+def load_anim_clip(fbclip: CozmoAnim.AnimClip) -> AnimClip:
+    """ Convert a single Cozmo FlatBuggers animation clip into a PyCozmo AnimClip object. """
+    clip = AnimClip(fbclip.Name().decode("utf-8"))
+    fbkfs = fbclip.Keyframes()
 
-    def __init__(self):
-        self.anim_clips = []
+    # Convert HeadAngle key frames to messages
+    for i in range(fbkfs.HeadAngleKeyFrameLength()):
+        fbkf = fbkfs.HeadAngleKeyFrame(i)
+        # FIXME: Why can duration be larger than 255?
+        pkt = protocol_encoder.AnimHead(duration_ms=min(fbkf.DurationTimeMs(), 255),
+                                        variability_deg=fbkf.AngleVariabilityDeg(),
+                                        angle_deg=fbkf.AngleDeg())
+        trigger_time = fbkf.TriggerTimeMs()
+        clip.add_message(trigger_time, pkt)
 
-    def read_keyframes(self, buf):
-        reader = protocol_utils.BinaryReader(buf)
+    # Convert LiftHeight key frames to messages
+    for i in range(fbkfs.LiftHeightKeyFrameLength()):
+        fbkf = fbkfs.LiftHeightKeyFrame(i)
+        # FIXME: Why can duration be larger than 255?
+        pkt = protocol_encoder.AnimLift(duration_ms=min(fbkf.DurationTimeMs(), 255),
+                                        variability_mm=fbkf.HeightVariabilityMm(),
+                                        height_mm=fbkf.HeightMm())
+        trigger_time = fbkf.TriggerTimeMs()
+        clip.add_message(trigger_time, pkt)
 
-        buf2_len = reader.read("L")
-        assert buf2_len == 36
-        buf2 = reader.read_farray("B", buf2_len)
-        # print(util.hex_dump(bytes(buf2)))
-        # print(util.hex_dump(reader.buffer[reader.tell():]))
+    # Convert RecordHeading key frames to messages
+    for i in range(fbkfs.RecordHeadingKeyFrameLength()):
+        fbkf = fbkfs.RecordHeadingKeyFrame(i)
+        trigger_time = fbkf.TriggerTimeMs()
+        clip.record_heading(trigger_time)
 
-    def read_sub_anim_data(self, name, buf):
-        """ Read sub animation data. """
-        reader = protocol_utils.BinaryReader(buf)
+    # Convert TurnToRecordedHeading key frames to messages
+    for i in range(fbkfs.TurnToRecordedHeadingKeyFrameLength()):
+        fbkf = fbkfs.TurnToRecordedHeadingKeyFrame(i)
+        # TODO
+        trigger_time = fbkf.TriggerTimeMs()
+        duration_ms = fbkf.DurationTimeMs()
+        offset_deg = fbkf.OffsetDeg()
+        speed_degPerSec = fbkf.SpeedDegPerSec()
+        accel_degPerSec2 = fbkf.AccelDegPerSec2()
+        decel_degPerSec2 = fbkf.DecelDegPerSec2()
+        tolerance_deg = fbkf.ToleranceDeg()
+        numHalfRevs = fbkf.NumHalfRevs()
+        useShortestDir = fbkf.UseShortestDir()
 
-        # What is this?
-        buf2_len = reader.read("L")
-        assert buf2_len == 4
-        cnt = reader.read("L")
-        # print("{:08x}".format(cnt))
-
-        # Keyframes?
-        buf2_len = reader.read("L")
-        # print(buf2_len)
-        buf2 = reader.read_farray("B", buf2_len)
-        # print(util.hex_dump(bytes(buf2)))
-        self.read_keyframes(bytes(buf2))
-
-        # ???
-        buf2_len = reader.read("L")
-        # print("{:08x}".format(buf2_len))
-        buf2 = reader.read_farray("B", buf2_len)
-        # print(util.hex_dump(bytes(buf2)))
-
-        # 0-16 B remain. What are these?
-
-        anim_clip = AnimClip(name)
-        self.anim_clips.append(anim_clip)
-
-    def read_sub_anim(self, buf, cnt):
-        """ Read sub animation. """
-        reader = protocol_utils.BinaryReader(buf)
-
-        # Sub animations
-        buf2_len = reader.read("L")
-        buf2 = reader.read_farray("B", buf2_len)
-        if cnt > 1:
-            self.read_sub_anim(bytes(buf2), cnt - 1)
-        else:
-            # What is this?
+    # Convert BodyMotion key frames to messages
+    for i in range(fbkfs.BodyMotionKeyFrameLength()):
+        fbkf = fbkfs.BodyMotionKeyFrame(i)
+        trigger_time = fbkf.TriggerTimeMs()
+        # FIXME: What to do with duration?
+        duration_ms = fbkf.DurationTimeMs()
+        radius_mm = fbkf.RadiusMm().decode("utf-8")
+        try:
+            radius_mm = float(radius_mm)
+        except ValueError:
             pass
+        pkt = protocol_encoder.AnimBody(speed=fbkf.Speed(), unknown1=32767)
+        clip.add_message(trigger_time, pkt)
 
-        # Animation data
-        buf2_len = reader.read("L")
-        buf2 = reader.read_farray("B", buf2_len - 4)  # The -4 is weird but otherwise the name length is eaten up
+    # Convert BackpackLights key frames to messages
+    for i in range(fbkfs.BackpackLightsKeyFrameLength()):
+        fbkf = fbkfs.BackpackLightsKeyFrame(i)
+        trigger_time = fbkf.TriggerTimeMs()
+        # FIXME: What to do with duration?
+        duration_ms = fbkf.DurationTimeMs()
+        assert fbkf.LeftLength() == 4
+        left = lights.Color(rgb=(fbkf.Left(0), fbkf.Left(1), fbkf.Left(2)))
+        assert fbkf.FrontLength() == 4
+        front = lights.Color(rgb=(fbkf.Front(0), fbkf.Front(1), fbkf.Front(2)))
+        assert fbkf.MiddleLength() == 4
+        middle = lights.Color(rgb=(fbkf.Middle(0), fbkf.Middle(1), fbkf.Middle(2)))
+        assert fbkf.BackLength() == 4
+        back = lights.Color(rgb=(fbkf.Back(0), fbkf.Back(1), fbkf.Back(2)))
+        assert fbkf.RightLength() == 4
+        right = lights.Color(rgb=(fbkf.Right(0), fbkf.Right(1), fbkf.Right(2)))
+        pkt = protocol_encoder.AnimBackpackLights(colors=(left.to_int16(),
+                                                          front.to_int16(), middle.to_int16(), back.to_int16(),
+                                                          right.to_int16()))
+        clip.add_message(trigger_time, pkt)
 
-        # Animation name
-        buf2_len = reader.read("L")
-        name = bytes(reader.read_farray("B", buf2_len)).decode("utf-8")
+    # Convert FaceAnimation key frames to messages
+    for i in range(fbkfs.FaceAnimationKeyFrameLength()):
+        fbkf = fbkfs.FaceAnimationKeyFrame(i)
+        trigger_time = fbkf.TriggerTimeMs()
+        name = fbkf.AnimName().decode("utf-8")
+        clip.face_animation(trigger_time, name)
 
-        self.read_sub_anim_data(name, bytes(buf2))
+    # Convert ProceduralFace key frames to messages
+    for i in range(fbkfs.ProceduralFaceKeyFrameLength()):
+        fbkf = fbkfs.ProceduralFaceKeyFrame(i)
+        # TODO
+        trigger_time = fbkf.TriggerTimeMs()
+        face_angle = fbkf.FaceAngle()
+        face_center_x = fbkf.FaceCenterX()
+        face_center_y = fbkf.FaceCenterY()
+        face_scale_x = fbkf.FaceScaleX()
+        face_scale_y = fbkf.FaceScaleY()
+        left_eye = []
+        for j in range(fbkf.LeftEyeLength()):
+            left_eye.append(fbkf.LeftEye(j))
+        right_eye = []
+        for j in range(fbkf.RightEyeLength()):
+            right_eye.append(fbkf.RightEye(j))
 
-    def read_main_anim_data(self, name, buf):
-        """ Read main animation data. """
-        reader = protocol_utils.BinaryReader(buf)
+    # Convert RobotAudio key frames to messages
+    for i in range(fbkfs.RobotAudioKeyFrameLength()):
+        fbkf = fbkfs.RobotAudioKeyFrame(i)
+        # TODO
+        trigger_time = fbkf.TriggerTimeMs()
+        audio_event_ids = []
+        for j in range(fbkf.AudioEventIdLength()):
+            audio_event_ids.append(fbkf.AudioEventId(j))
+        volume = fbkf.Volume()
+        probabilities = []
+        for j in range(fbkf.ProbabilityLength()):
+            probabilities.append(fbkf.Probability(j))
+        has_alts = fbkf.HasAlts()
 
-        # Always 28 B.
-        buf2_len = reader.read("L")
-        assert buf2_len == 28
-        buf2 = reader.read_farray("B", buf2_len)
+    # Convert Event key frames to messages
+    for i in range(fbkfs.EventKeyFrameLength()):
+        fbkf = fbkfs.EventKeyFrame(i)
+        trigger_time = fbkf.TriggerTimeMs()
+        event_id = fbkf.EventId().decode("utf-8")
+        clip.event(trigger_time, event_id)
 
-        # Keyframes?
-        buf2_len = reader.read("L")
-        buf2 = reader.read_farray("B", buf2_len)
-        # print(util.hex_dump(bytes(buf2)))
-        self.read_keyframes(bytes(buf2))
+    return clip
 
-        # ???
-        buf2_len = reader.read("L")
-        buf2 = reader.read_farray("B", buf2_len)
-        # print(util.hex_dump(bytes(buf2)))
 
-        # 0-16 B remain. What are these?
+def load_anim_clips(fspec: str) -> List[AnimClip]:
+    """ Load one or more animation clips from a .bin file in Cozmo FlatBuffers format. """
+    with open(fspec, "rb") as f:
+        buf = f.read()
 
-        anim_clip = AnimClip(name)
-        self.anim_clips.append(anim_clip)
+    fbclips = CozmoAnim.AnimClips.AnimClips.GetRootAsAnimClips(buf, 0)
+    clips = []
+    for i in range(fbclips.ClipsLength()):
+        clip = load_anim_clip(fbclips.Clips(i))
+        clips.append(clip)
 
-    def read_file(self, fspec):
-        """ Read an animation .bin file. """
-        with open(fspec, "rb") as f:
-            buf = f.read()
-            reader = protocol_utils.BinaryReader(buf)
-
-            # Header?
-            buf2_len = reader.read("L")
-            buf2 = reader.read_farray("B", buf2_len)
-            assert buf2 == (0, 0, 0, 0, 0, 0, 6, 0, 8, 0, 4, 0, 6, 0, 0, 0) or \
-                buf2 == (0, 0, 6, 0, 8, 0, 4, 0, 6, 0, 0, 0)
-
-            # Count of animations
-            buf2_len = reader.read("L")
-            assert buf2_len == 4
-            cnt = reader.read("L")
-            # print(cnt)
-
-            # Sub animations
-            buf2_len = reader.read("L")
-            buf2 = reader.read_farray("B", buf2_len)
-            if cnt > 1:
-                self.read_sub_anim(bytes(buf2), cnt - 1)
-            else:
-                # What is this?
-                pass
-
-            # Main animation
-            buf2_len = reader.read("L")
-            buf2 = reader.read_farray("B", buf2_len - 4)  # The -4 is weird but otherwise the name length is eaten up
-
-            # Main animation name
-            buf2_len = reader.read("L")
-            name = bytes(reader.read_farray("B", buf2_len)).decode("utf-8")
-
-            self.read_main_anim_data(name, bytes(buf2))
-
-        return self.anim_clips
+    return clips

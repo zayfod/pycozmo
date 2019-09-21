@@ -113,6 +113,9 @@ Storage:
 - NVRAM - supported
 - Firmware update - supported
 
+Other:
+- Animations - work in progress
+
 
 Connecting to Cozmo over Wi-Fi
 ------------------------------
