@@ -25,7 +25,7 @@ class PacketType(enum.Enum):
     DISCONNECT = 3
     COMMAND = 4
     EVENT = 5
-    UNKNOWN_0A = 0x0a
+    KEYFRAME = 0x0a
     PING = 0x0b
 
 
@@ -294,10 +294,10 @@ class Ping(Packet):
         ])
 
 
-class Unknown0A(Packet):
+class Keyframe(Packet):
 
     def __init__(self):
-        super().__init__(PacketType.UNKNOWN_0A, "Unknown0A")
+        super().__init__(PacketType.KEYFRAME, "Keyframe")
 
 
 class Protocol(object):

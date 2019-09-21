@@ -206,7 +206,7 @@ PROTOCOL = Protocol(
         Connect(),
         Disconnect(),
         Ping(),
-        Unknown0A(),
+        Keyframe(),
 
         Command(0x03, "LightStateCenter", group="lights", arguments=[
             FArrayArgument("states", data_type=LIGHT_STATE, length=3),      # top, middle, bottom
@@ -316,7 +316,7 @@ PROTOCOL = Protocol(
         Command(0x8f, "NextFrame", group="display"),
         Command(0x93, "AnimHead", group="anim", arguments=[
             UInt8Argument("duration_ms"),
-            UInt8Argument("variability_deg"),
+            Int8Argument("variability_deg"),
             Int8Argument("angle_deg"),
         ]),
         Command(0x94, "AnimLift", group="anim", arguments=[
@@ -327,9 +327,12 @@ PROTOCOL = Protocol(
         Command(0x97, "DisplayImage", group="display", arguments=[
             VArrayArgument("image"),
         ]),
-        Command(0x99, "AnimUnknown99", group="anim", arguments=[
-            UInt16Argument("unknown0"),
-            UInt16Argument("unknown1"),
+        Command(0x98, "AnimBackpackLights", group="anim", arguments=[
+            FArrayArgument("colors", data_type=UInt16Argument(), length=5),  # left, front, middle, back, right
+        ]),
+        Command(0x99, "AnimBody", group="anim", arguments=[
+            Int16Argument("speed"),
+            Int16Argument("unknown1"),
         ]),
         Command(0x9a, "EndAnimation", group="anim"),
         Command(0x9b, "StartAnimation", group="anim", arguments=[

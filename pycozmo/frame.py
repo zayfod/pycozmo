@@ -4,7 +4,7 @@ from typing import List
 from .protocol_declaration import FRAME_ID, MIN_FRAME_SIZE, FrameType, PacketType
 from .protocol_base import Packet, UnknownCommand, UnknownEvent
 from .protocol_utils import BinaryReader, BinaryWriter
-from .protocol_encoder import Connect, Disconnect, Ping, Unknown0A, PACKETS_BY_ID
+from .protocol_encoder import Connect, Disconnect, Ping, Keyframe, PACKETS_BY_ID
 
 
 class Frame(object):
@@ -87,8 +87,8 @@ class Frame(object):
                 res = UnknownEvent(pkt_id, reader.read_farray("B", pkt_len - 1))
         elif pkt_type == PacketType.PING:
             res = Ping.from_reader(reader)
-        elif pkt_type == PacketType.UNKNOWN_0A:
-            res = Unknown0A.from_reader(reader)
+        elif pkt_type == PacketType.KEYFRAME:
+            res = Keyframe.from_reader(reader)
         elif pkt_type == PacketType.CONNECT:
             res = Connect.from_reader(reader)
         elif pkt_type == PacketType.DISCONNECT:

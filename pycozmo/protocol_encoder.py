@@ -509,13 +509,13 @@ class Ping(Packet):
             unknown=unknown)
 
     
-class Unknown0A(Packet):
+class Keyframe(Packet):
 
     __slots__ = (
     )
 
     def __init__(self):
-        super().__init__(PacketType.UNKNOWN_0A, packet_id=None)
+        super().__init__(PacketType.KEYFRAME, packet_id=None)
         pass
 
     def __len__(self):
@@ -2394,7 +2394,7 @@ class AnimHead(Packet):
 
     __slots__ = (
         "_duration_ms",  # uint8
-        "_variability_deg",  # uint8
+        "_variability_deg",  # int8
         "_angle_deg",  # int8
     )
 
@@ -2421,7 +2421,7 @@ class AnimHead(Packet):
 
     @variability_deg.setter
     def variability_deg(self, value):
-        self._variability_deg = validate_integer("variability_deg", value, 0, 255)
+        self._variability_deg = validate_integer("variability_deg", value, -128, 127)
 
     @property
     def angle_deg(self):
@@ -2434,7 +2434,7 @@ class AnimHead(Packet):
     def __len__(self):
         return \
             get_size('B') + \
-            get_size('B') + \
+            get_size('b') + \
             get_size('b')
 
     def __repr__(self):
@@ -2454,7 +2454,7 @@ class AnimHead(Packet):
         
     def to_writer(self, writer):
         writer.write(self._duration_ms, "B")
-        writer.write(self._variability_deg, "B")
+        writer.write(self._variability_deg, "b")
         writer.write(self._angle_deg, "b")
 
     @classmethod
@@ -2466,7 +2466,7 @@ class AnimHead(Packet):
     @classmethod
     def from_reader(cls, reader):
         duration_ms = reader.read("B")
-        variability_deg = reader.read("B")
+        variability_deg = reader.read("b")
         angle_deg = reader.read("b")
         return cls(
             duration_ms=duration_ms,
@@ -2609,48 +2609,35 @@ class DisplayImage(Packet):
             image=image)
 
     
-class AnimUnknown99(Packet):
+class AnimBackpackLights(Packet):
 
     __slots__ = (
-        "_unknown0",  # uint16
-        "_unknown1",  # uint16
+        "_colors",  # uint16[5]
     )
 
     def __init__(self,
-                 unknown0=0,
-                 unknown1=0):
-        super().__init__(PacketType.COMMAND, packet_id=153)
-        self.unknown0 = unknown0
-        self.unknown1 = unknown1
+                 colors=()):
+        super().__init__(PacketType.COMMAND, packet_id=152)
+        self.colors = colors
 
     @property
-    def unknown0(self):
-        return self._unknown0
+    def colors(self):
+        return self._colors
 
-    @unknown0.setter
-    def unknown0(self, value):
-        self._unknown0 = validate_integer("unknown0", value, 0, 65535)
-
-    @property
-    def unknown1(self):
-        return self._unknown1
-
-    @unknown1.setter
-    def unknown1(self, value):
-        self._unknown1 = validate_integer("unknown1", value, 0, 65535)
+    @colors.setter
+    def colors(self, value):
+        self._colors = validate_farray(
+            "colors", value, 5, lambda name, value_inner: validate_integer(name, value_inner, 0, 65535))
 
     def __len__(self):
         return \
-            get_size('H') + \
-            get_size('H')
+            get_farray_size('H', 5)
 
     def __repr__(self):
         return "{type}(" \
-               "unknown0={unknown0}, " \
-               "unknown1={unknown1})".format(
+               "colors={colors})".format(
                 type=type(self).__name__,
-                unknown0=self._unknown0,
-                unknown1=self._unknown1)
+                colors=self._colors)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -2658,8 +2645,7 @@ class AnimUnknown99(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(self._unknown0, "H")
-        writer.write(self._unknown1, "H")
+        writer.write_farray(self._colors, "H", 5)
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -2669,10 +2655,75 @@ class AnimUnknown99(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        unknown0 = reader.read("H")
-        unknown1 = reader.read("H")
+        colors = reader.read_farray("H", 5)
         return cls(
-            unknown0=unknown0,
+            colors=colors)
+
+    
+class AnimBody(Packet):
+
+    __slots__ = (
+        "_speed",  # int16
+        "_unknown1",  # int16
+    )
+
+    def __init__(self,
+                 speed=0,
+                 unknown1=0):
+        super().__init__(PacketType.COMMAND, packet_id=153)
+        self.speed = speed
+        self.unknown1 = unknown1
+
+    @property
+    def speed(self):
+        return self._speed
+
+    @speed.setter
+    def speed(self, value):
+        self._speed = validate_integer("speed", value, -32768, 32767)
+
+    @property
+    def unknown1(self):
+        return self._unknown1
+
+    @unknown1.setter
+    def unknown1(self, value):
+        self._unknown1 = validate_integer("unknown1", value, -32768, 32767)
+
+    def __len__(self):
+        return \
+            get_size('h') + \
+            get_size('h')
+
+    def __repr__(self):
+        return "{type}(" \
+               "speed={speed}, " \
+               "unknown1={unknown1})".format(
+                type=type(self).__name__,
+                speed=self._speed,
+                unknown1=self._unknown1)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._speed, "h")
+        writer.write(self._unknown1, "h")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        speed = reader.read("h")
+        unknown1 = reader.read("h")
+        return cls(
+            speed=speed,
             unknown1=unknown1)
 
     
@@ -5524,7 +5575,8 @@ PACKETS_BY_ID = {
     0x93: AnimHead,  # 147
     0x94: AnimLift,  # 148
     0x97: DisplayImage,  # 151
-    0x99: AnimUnknown99,  # 153
+    0x98: AnimBackpackLights,  # 152
+    0x99: AnimBody,  # 153
     0x9a: EndAnimation,  # 154
     0x9b: StartAnimation,  # 155
     0x9f: EnableAnimationState,  # 159
@@ -5562,7 +5614,8 @@ PACKETS_BY_GROUP = {
     "anim": {
         0x93,  # AnimHead
         0x94,  # AnimLift
-        0x99,  # AnimUnknown99
+        0x98,  # AnimBackpackLights
+        0x99,  # AnimBody
         0x9a,  # EndAnimation
         0x9b,  # StartAnimation
         0xca,  # AnimationStarted

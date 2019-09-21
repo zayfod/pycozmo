@@ -57,9 +57,9 @@ class Color:
                  name: str = None) -> None:
         self.name = name
         if int_color is not None:
-            self._int_color = int_color | 0xff
+            self._int_color = int(int_color) | 0xff
         elif rgb is not None:
-            self._int_color = (rgb[0] << 24) | (rgb[1] << 16) | (rgb[2] << 8) | 0xff
+            self._int_color = (int(rgb[0]) << 24) | (int(rgb[1]) << 16) | (int(rgb[2]) << 8) | 0xff
         else:
             self._int_color = 0
 
