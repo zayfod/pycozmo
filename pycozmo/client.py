@@ -304,7 +304,7 @@ class Client(event.Dispatcher):
         self.conn.send(pkt)
 
     def drive_wheels(self, lwheel_speed: float, rwheel_speed: float,
-                     lwheel_acc: Optional[float] = None, rwheel_acc: Optional[float] = None,
+                     lwheel_acc: Optional[float] = 0.0, rwheel_acc: Optional[float] = 0.0,
                      duration: Optional[float] = None) -> None:
         pkt = protocol_encoder.DriveWheels(lwheel_speed_mmps=lwheel_speed, rwheel_speed_mmps=rwheel_speed,
                                            lwheel_accel_mmps2=lwheel_acc, rwheel_accel_mmps2=rwheel_acc)
