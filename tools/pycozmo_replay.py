@@ -49,7 +49,7 @@ class ReplayApp(object):
                     continue
                 for pkt in frame.pkts:
                     if pkt.type not in [pycozmo.protocol_declaration.PacketType.COMMAND,
-                                        pycozmo.protocol_declaration.PacketType.UNKNOWN_0A]:
+                                        pycozmo.protocol_declaration.PacketType.KEYFRAME]:
                         # Skip non-command packets
                         continue
                     self.pkts.append((ts, pkt))
