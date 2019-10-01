@@ -2,6 +2,8 @@
 import sys
 from io import StringIO
 
+from PIL import Image
+
 
 def render(image: bytes) -> None:
     for y in range(32):
@@ -139,3 +141,55 @@ class ImageDecoder(object):
                 sys.stdout.write("{}: ".format(i))
             self._execute(b)
         return self.image
+
+
+class ImageEncoder(object):
+
+    def __init__(self, im: Image):
+        if im.size[0] != 128 or im.size[1] != 32:
+            raise ValueError("Invalid image dimensions. Only 128x32 images are supported.")
+        if im.mode != "1":
+            raise ValueError("Invalid pixel format. Only binary images are supported.")
+        self.px = im.load()
+        self.buffer = bytearray()
+        self.x = 0
+        self.y = 0
+
+    def _encode_seq(self, color: int, cnt: int) -> None:
+        print(color % 2, cnt)
+        cnt -= 1
+        if color:
+            # Draw
+            if cnt < 16:
+                cmd = 0x80 + (cnt << 2) + 0x01
+            else:
+                assert 16 <= cnt <= 32
+                cmd = 0xc0 + ((cnt - 16) << 2) + 0x01
+        else:
+            # Skip
+            if cnt < 16:
+                cmd = 0x80 + (cnt << 2)
+            elif cnt < 32:
+                cmd = 0xc0 + ((cnt - 16) << 2)
+            else:
+                # Skip column
+                assert cnt == 32
+                cmd = 0x00 + cnt
+        self.buffer.append(cmd)
+
+    def encode(self) -> bytearray:
+        color = self.px[self.x, self.y]
+        cnt = 0
+        while self.x < 128 and self.y < 32:
+            cnt += 1
+            self.y += 1
+            while self.px[self.x, self.y] == color:
+                cnt += 1
+                self.y += 1
+                if self.y > 31:
+                    self.x += 1
+                    self.y = 0
+                    break
+            self._encode_seq(color, cnt)
+            cnt = 0
+        return self.buffer
