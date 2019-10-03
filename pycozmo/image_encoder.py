@@ -27,6 +27,23 @@ def image_to_str(image):
     return s.getvalue()
 
 
+def str_to_image(sim: str) -> Image:
+    s = StringIO(sim)
+    im = Image.new("1", (128, 32), color=0)
+    px = im.load()
+    for y in range(32):
+        while True:
+            line = s.readline().strip()
+            if line:
+                break
+        print(y, len(line))
+        x = 0
+        for c in line:
+            px[x, y] = 1 if c and c != "." else 0
+            x += 1
+    return im
+
+
 class ImageDecoder(object):
 
     def __init__(self, buffer: bytes):
@@ -156,7 +173,7 @@ class ImageEncoder(object):
         self.y = 0
 
     def _encode_seq(self, color: int, cnt: int) -> None:
-        print(color % 2, cnt)
+        # print(color % 2, cnt)
         cnt -= 1
         if color:
             # Draw
