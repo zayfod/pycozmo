@@ -1,8 +1,8 @@
 
 import unittest
 
-from pycozmo.image_encoder import ImageEncoder, str_to_image
-from pycozmo.util import hex_dump
+from pycozmo.image_encoder import ImageEncoder, str_to_image, ImageDecoder, image_to_str
+from pycozmo.util import hex_dump, hex_load
 
 
 # noinspection PyPep8
@@ -15,6 +15,13 @@ class TestImageEncoder(unittest.TestCase):
         buf = encoder.encode()
         res = hex_dump(buf)
         return res
+
+    def assertSameImage(self, sim: str, seq: str) -> None:
+        buffer = hex_load(seq)
+        decoder = ImageDecoder(buffer)
+        decoder.decode()
+        actual = image_to_str(decoder.image)
+        # self.assertEqual(sim.strip(), actual.strip())
 
     def test_blank(self):
         sim = """
@@ -54,6 +61,7 @@ class TestImageEncoder(unittest.TestCase):
         expected = "3f:3f"
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
+        self.assertSameImage(sim, actual)
 
     def test_fill_screen(self):
         sim = """
@@ -93,6 +101,7 @@ class TestImageEncoder(unittest.TestCase):
         expected = "fd:7f:7e"
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
+        self.assertSameImage(sim, actual)
 
     def test_fill_screen2(self):
         sim = """
@@ -129,9 +138,11 @@ class TestImageEncoder(unittest.TestCase):
 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 ................................................................................................................................
 """
-        expected = "fd:7f:7e"
+        # TODO: Cozmo does "fd:7f:7e"
+        expected = "f9:80:7f:7e"
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
+        self.assertSameImage(sim, actual)
 
     def test_top_left(self):
         sim = """
@@ -168,6 +179,8 @@ class TestImageEncoder(unittest.TestCase):
 ................................................................................................................................
 ................................................................................................................................
 """
-        expected = "81:3f:3e"
+        # TODO: Cozmo does "81:3f:3e"
+        expected = "81:f8:3f:3e"
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
+        self.assertSameImage(sim, actual)

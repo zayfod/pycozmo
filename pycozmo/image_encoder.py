@@ -36,7 +36,6 @@ def str_to_image(sim: str) -> Image:
             line = s.readline().strip()
             if line:
                 break
-        print(y, len(line))
         x = 0
         for c in line:
             px[x, y] = 1 if c and c != "." else 0
@@ -201,13 +200,17 @@ class ImageEncoder(object):
     def _count_color(self, color: int):
         """ Count pixels with the same color, down a column. """
         cnt = 0
-        while self.px[self.x, self.y] == color:
-            cnt += 1
-            self.y += 1
-            if self.y > 31:
-                self.x += 1
-                self.y = 0
-                break
+        if self.y < 31:
+            while self.px[self.x, self.y] == color:
+                cnt += 1
+                self.y += 1
+                if self.y > 31:
+                    self.x += 1
+                    self.y = 0
+                    break
+        else:
+            self.x += 1
+            self.y = 0
         return cnt
 
     def _skip_cols(self) -> None:
@@ -241,14 +244,15 @@ class ImageEncoder(object):
                 self._skip_cols()
                 self.cur_col.append(cmd)
             # Handle column repetition
-            if not self.skip_cols:
-                if self.cur_col == self.last_col:
-                    self.repeat_cols += 1
-                else:
-                    self._repeat_cols()
-                    self.buffer.extend(self.cur_col)
-                    self.last_col = self.cur_col
-            self.cur_col = bytearray()
+            if self.y == 0:
+                if not self.skip_cols:
+                    if self.cur_col == self.last_col:
+                        self.repeat_cols += 1
+                    else:
+                        self._repeat_cols()
+                        self.buffer.extend(self.cur_col)
+                        self.last_col = self.cur_col
+                self.cur_col = bytearray()
         self._skip_cols()
         self._repeat_cols()
         return self.buffer
