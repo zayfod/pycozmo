@@ -244,8 +244,13 @@ class ImageEncoder(object):
             cnt = self._count_color(color)
             cmd = self._encode_seq(color, cnt)
             if cmd is not None:
-                self._skip_cols()
-                self.cur_col.append(cmd)
+                if self.y == 0:
+                    self._skip_cols()
+                    # Optimization: Don't do skip commands at the end of a column.
+                    if (cmd & 0x83 != 0x80) and (cmd & 0xc3 != 0xc0):
+                        self.cur_col.append(cmd)
+                else:
+                    self.cur_col.append(cmd)
             # Handle column repetition
             if self.y == 0:
                 if not self.skip_cols:
@@ -258,6 +263,7 @@ class ImageEncoder(object):
                 else:
                     self._repeat_cols()
                 self.cur_col = bytearray()
-        self._skip_cols()
-        self._repeat_cols()
+        if self.y == 0:
+            self._skip_cols()
+            self._repeat_cols()
         return self.buffer
