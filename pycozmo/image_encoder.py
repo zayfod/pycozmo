@@ -215,6 +215,9 @@ class ImageEncoder(object):
 
     def _skip_cols(self) -> None:
         """ Handle columns skipping. """
+        if self.skip_cols:
+            self.repeat_cols = 0
+            self.last_col = bytearray()
         while self.skip_cols >= 64:
             self.buffer.append(63)
             self.skip_cols -= 64
@@ -252,6 +255,8 @@ class ImageEncoder(object):
                         self._repeat_cols()
                         self.buffer.extend(self.cur_col)
                         self.last_col = self.cur_col
+                else:
+                    self._repeat_cols()
                 self.cur_col = bytearray()
         self._skip_cols()
         self._repeat_cols()
