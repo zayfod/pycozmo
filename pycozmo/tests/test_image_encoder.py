@@ -53,7 +53,7 @@ class TestImageEncoder(unittest.TestCase):
 """
         expected = "3f:3f"
         actual = self._encode(sim)
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_fill_screen(self):
         sim = """
@@ -92,7 +92,7 @@ class TestImageEncoder(unittest.TestCase):
 """
         expected = "fd:7f:7e"
         actual = self._encode(sim)
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_fill_screen2(self):
         sim = """
@@ -131,7 +131,7 @@ class TestImageEncoder(unittest.TestCase):
 """
         expected = "fd:7f:7e"
         actual = self._encode(sim)
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)
 
     def test_top_left(self):
         sim = """
@@ -170,4 +170,4 @@ class TestImageEncoder(unittest.TestCase):
 """
         expected = "81:3f:3e"
         actual = self._encode(sim)
-        self.assertEqual(actual, expected)
+        self.assertEqual(expected, actual)

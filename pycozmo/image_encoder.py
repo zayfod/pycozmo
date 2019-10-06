@@ -169,44 +169,86 @@ class ImageEncoder(object):
             raise ValueError("Invalid pixel format. Only binary images are supported.")
         self.px = im.load()
         self.buffer = bytearray()
+        self.last_col = bytearray()
+        self.cur_col = bytearray()
+        self.skip_cols = 0
+        self.repeat_cols = 0
         self.x = 0
         self.y = 0
 
-    def _encode_seq(self, color: int, cnt: int) -> None:
-        # print(color % 2, cnt)
-        cnt -= 1
+    def _encode_seq(self, color: int, cnt: int) -> int:
+        """ Encode a sequence of pixels with the same color. """
         if color:
             # Draw
-            if cnt < 16:
+            if cnt <= 15:
                 cmd = 0x80 + (cnt << 2) + 0x01
             else:
-                assert 16 <= cnt <= 32
+                assert 15 <= cnt <= 31
                 cmd = 0xc0 + ((cnt - 16) << 2) + 0x01
         else:
             # Skip
-            if cnt < 16:
+            if cnt <= 15:
                 cmd = 0x80 + (cnt << 2)
-            elif cnt < 32:
+            elif cnt < 31:
                 cmd = 0xc0 + ((cnt - 16) << 2)
             else:
                 # Skip column
-                assert cnt == 32
-                cmd = 0x00 + cnt
-        self.buffer.append(cmd)
+                assert cnt == 31
+                self.skip_cols += 1
+                cmd = None
+        return cmd
 
-    def encode(self) -> bytearray:
-        color = self.px[self.x, self.y]
+    def _count_color(self, color: int):
+        """ Count pixels with the same color, down a column. """
         cnt = 0
-        while self.x < 128 and self.y < 32:
+        while self.px[self.x, self.y] == color:
             cnt += 1
             self.y += 1
-            while self.px[self.x, self.y] == color:
-                cnt += 1
-                self.y += 1
-                if self.y > 31:
-                    self.x += 1
-                    self.y = 0
-                    break
-            self._encode_seq(color, cnt)
-            cnt = 0
+            if self.y > 31:
+                self.x += 1
+                self.y = 0
+                break
+        return cnt
+
+    def _skip_cols(self) -> None:
+        """ Handle columns skipping. """
+        while self.skip_cols >= 64:
+            self.buffer.append(63)
+            self.skip_cols -= 64
+        if self.skip_cols:
+            cmd = self.skip_cols - 1
+            self.buffer.append(cmd)
+            self.skip_cols = 0
+
+    def _repeat_cols(self) -> None:
+        """ Handle column repetition. """
+        while self.repeat_cols >= 64:
+            cmd = 0x40 + 0x3f
+            self.buffer.append(cmd)
+            self.repeat_cols -= 64
+        if self.repeat_cols:
+            cmd = 0x40 + self.repeat_cols - 1
+            self.buffer.append(cmd)
+            self.repeat_cols = 0
+
+    def encode(self) -> bytearray:
+        while self.x < 128 and self.y < 32:
+            color = self.px[self.x, self.y]
+            self.y += 1
+            cnt = self._count_color(color)
+            cmd = self._encode_seq(color, cnt)
+            if cmd is not None:
+                self._skip_cols()
+                self.cur_col.append(cmd)
+            # Handle column repetition
+            if not self.skip_cols:
+                if self.cur_col == self.last_col:
+                    self.repeat_cols += 1
+                else:
+                    self._repeat_cols()
+                    self.buffer.extend(self.cur_col)
+                    self.last_col = self.cur_col
+            self.cur_col = bytearray()
+        self._skip_cols()
+        self._repeat_cols()
         return self.buffer
