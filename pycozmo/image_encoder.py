@@ -180,7 +180,7 @@ class ImageEncoder(object):
         if color:
             # Draw
             if cnt <= 15:
-                cmd = 0x80 + (cnt << 2) + 0x01
+                cmd = 0x80 + (cnt << 2) + 0x02
             else:
                 assert 15 <= cnt <= 31
                 cmd = 0xc0 + ((cnt - 16) << 2) + 0x02
