@@ -247,7 +247,7 @@ class ImageEncoder(object):
                 if self.y == 0:
                     self._skip_cols()
                     # Optimization: Don't do skip commands at the end of a column.
-                    if (cmd & 0x83 != 0x80) and (cmd & 0xc3 != 0xc0):
+                    if (cmd & 0xc3 != 0x80) and (cmd & 0xc3 != 0xc0):
                         self.cur_col.append(cmd)
                 else:
                     self.cur_col.append(cmd)
