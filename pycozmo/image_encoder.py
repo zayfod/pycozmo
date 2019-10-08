@@ -200,7 +200,7 @@ class ImageEncoder(object):
     def _count_color(self, color: int):
         """ Count pixels with the same color, down a column. """
         cnt = 0
-        if self.y < 31:
+        if self.y < 32:
             while self.px[self.x, self.y] == color:
                 cnt += 1
                 self.y += 1
