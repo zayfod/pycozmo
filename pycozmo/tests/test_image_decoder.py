@@ -167,3 +167,59 @@ class TestImageDecoder(unittest.TestCase):
         expected = fixture["image"]
         decoder = self._decode(seq)
         self.assertSameImage(expected, decoder)
+
+    def test_chessboard_tl(self):
+        fixture = FIXTURES["chessboard_tl"]
+        seq = fixture["seq"]
+        expected = fixture["image"]
+        decoder = self._decode(seq)
+        self.assertSameImage(expected, decoder)
+
+    def test_chessboard_bl(self):
+        fixture = FIXTURES["chessboard_bl"]
+        seq = fixture["seq"]
+        expected = fixture["image"]
+        decoder = self._decode(seq)
+        self.assertSameImage(expected, decoder)
+
+    def test_chessboard_tr(self):
+        fixture = FIXTURES["chessboard_tr"]
+        seq = fixture["seq"]
+        expected = fixture["image"]
+        decoder = self._decode(seq)
+        self.assertSameImage(expected, decoder)
+
+    def test_chessboard_br(self):
+        fixture = FIXTURES["chessboard_br"]
+        seq = fixture["seq"]
+        expected = fixture["image"]
+        decoder = self._decode(seq)
+        self.assertSameImage(expected, decoder)
+
+    def test_chessboard2_tl(self):
+        fixture = FIXTURES["chessboard2_tl"]
+        seq = fixture["seq"]
+        expected = fixture["image"]
+        decoder = self._decode(seq)
+        self.assertSameImage(expected, decoder)
+
+    def test_chessboard2_bl(self):
+        fixture = FIXTURES["chessboard2_bl"]
+        seq = fixture["seq"]
+        expected = fixture["image"]
+        decoder = self._decode(seq)
+        self.assertSameImage(expected, decoder)
+
+    def test_chessboard2_tr(self):
+        fixture = FIXTURES["chessboard2_tr"]
+        seq = fixture["seq"]
+        expected = fixture["image"]
+        decoder = self._decode(seq)
+        self.assertSameImage(expected, decoder)
+
+    def test_chessboard2_br(self):
+        fixture = FIXTURES["chessboard2_br"]
+        seq = fixture["seq"]
+        expected = fixture["image"]
+        decoder = self._decode(seq)
+        self.assertSameImage(expected, decoder)

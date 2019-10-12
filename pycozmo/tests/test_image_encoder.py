@@ -182,3 +182,67 @@ class TestImageEncoder(unittest.TestCase):
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
+
+    def test_chessboard_tl(self):
+        fixture = FIXTURES["chessboard_tl"]
+        sim = fixture["image"]
+        expected = fixture["seq"]
+        actual = self._encode(sim)
+        self.assertEqual(expected, actual)
+        self.assertSameImage(sim, actual)
+
+    def test_chessboard_bl(self):
+        fixture = FIXTURES["chessboard_bl"]
+        sim = fixture["image"]
+        expected = fixture["seq"]
+        actual = self._encode(sim)
+        self.assertEqual(expected, actual)
+        self.assertSameImage(sim, actual)
+
+    def test_chessboard_tr(self):
+        fixture = FIXTURES["chessboard_tr"]
+        sim = fixture["image"]
+        expected = fixture["seq"]
+        actual = self._encode(sim)
+        self.assertEqual(expected, actual)
+        self.assertSameImage(sim, actual)
+
+    def test_chessboard_br(self):
+        fixture = FIXTURES["chessboard_br"]
+        sim = fixture["image"]
+        expected = fixture["seq"]
+        actual = self._encode(sim)
+        self.assertEqual(expected, actual)
+        self.assertSameImage(sim, actual)
+
+    def test_chessboard2_tl(self):
+        fixture = FIXTURES["chessboard2_tl"]
+        sim = fixture["image"]
+        expected = fixture["seq"]
+        actual = self._encode(sim)
+        self.assertEqual(expected, actual)
+        self.assertSameImage(sim, actual)
+
+    def test_chessboard2_bl(self):
+        fixture = FIXTURES["chessboard2_bl"]
+        sim = fixture["image"]
+        expected = fixture["seq"]
+        actual = self._encode(sim)
+        self.assertEqual(expected, actual)
+        self.assertSameImage(sim, actual)
+
+    def test_chessboard2_tr(self):
+        fixture = FIXTURES["chessboard2_tr"]
+        sim = fixture["image"]
+        expected = fixture["seq"]
+        actual = self._encode(sim)
+        self.assertEqual(expected, actual)
+        self.assertSameImage(sim, actual)
+
+    def test_chessboard2_br(self):
+        fixture = FIXTURES["chessboard2_br"]
+        sim = fixture["image"]
+        expected = fixture["seq"]
+        actual = self._encode(sim)
+        self.assertEqual(expected, actual)
+        self.assertSameImage(sim, actual)
