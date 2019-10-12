@@ -42,7 +42,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_fill_screen2(self):
         fixture = FIXTURES["fill_screen2"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -50,7 +50,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_top_left(self):
         fixture = FIXTURES["top_left"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -58,7 +58,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_top_left_5(self):
         fixture = FIXTURES["top_left_5"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -66,7 +66,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_top_left_1_8(self):
         fixture = FIXTURES["top_left_1_8"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -74,7 +74,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_top_left_line(self):
         fixture = FIXTURES["top_left_line"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -82,7 +82,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_top_line(self):
         fixture = FIXTURES["top_line"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -122,7 +122,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_rect(self):
         fixture = FIXTURES["rect"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -130,7 +130,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_rect2(self):
         fixture = FIXTURES["rect2"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -138,7 +138,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_rect3(self):
         fixture = FIXTURES["rect3"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -146,7 +146,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_rect4(self):
         fixture = FIXTURES["rect4"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -154,7 +154,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_diagonal(self):
         fixture = FIXTURES["diagonal"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -162,7 +162,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_diagonal2(self):
         fixture = FIXTURES["diagonal2"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -194,7 +194,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_chessboard_bl(self):
         fixture = FIXTURES["chessboard_bl"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -210,7 +210,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_chessboard_br(self):
         fixture = FIXTURES["chessboard_br"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -226,7 +226,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_chessboard2_bl(self):
         fixture = FIXTURES["chessboard2_bl"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)
@@ -242,7 +242,7 @@ class TestImageEncoder(unittest.TestCase):
     def test_chessboard2_br(self):
         fixture = FIXTURES["chessboard2_br"]
         sim = fixture["image"]
-        expected = fixture["seq"]
+        expected = fixture["alt_seq"]
         actual = self._encode(sim)
         self.assertEqual(expected, actual)
         self.assertSameImage(sim, actual)

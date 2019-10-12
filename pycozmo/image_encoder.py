@@ -166,10 +166,10 @@ class ImageEncoder(object):
         if color:
             # Draw
             if cnt <= 15:
-                cmd = 0x80 + (cnt << 2) + 0x02
+                cmd = 0x80 + (cnt << 2) + 0x01
             else:
                 assert 15 <= cnt <= 31
-                cmd = 0xc0 + ((cnt - 16) << 2) + 0x02
+                cmd = 0xc0 + ((cnt - 16) << 2) + 0x01
         else:
             # Skip
             if cnt <= 15:
@@ -204,6 +204,11 @@ class ImageEncoder(object):
         if self.skip_cols:
             self.repeat_cols = 0
             self.last_col = bytearray()
+            # Optimization: Remove skips, right before column skips.
+            if self.buffer:
+                cmd = self.buffer[-1]
+                if (cmd & 0xc3 == 0x80) or (cmd & 0xc3 == 0xc0):
+                    self.buffer.pop()
         while self.skip_cols >= 64:
             self.buffer.append(63)
             self.skip_cols -= 64
@@ -214,6 +219,12 @@ class ImageEncoder(object):
 
     def _repeat_cols(self) -> None:
         """ Handle column repetition. """
+        if self.repeat_cols:
+            # Optimization: Remove skips, right before column repeats.
+            if self.buffer:
+                cmd = self.buffer[-1]
+                if (cmd & 0xc3 == 0x80) or (cmd & 0xc3 == 0xc0):
+                    self.buffer.pop()
         while self.repeat_cols >= 64:
             cmd = 0x40 + 0x3f
             self.buffer.append(cmd)
@@ -232,11 +243,10 @@ class ImageEncoder(object):
             if cmd is not None:
                 if self.y == 0:
                     self._skip_cols()
-                    # Optimization: Don't do skip commands at the end of a column.
-                    if (cmd & 0xc3 != 0x80) and (cmd & 0xc3 != 0xc0):
-                        self.cur_col.append(cmd)
-                else:
-                    self.cur_col.append(cmd)
+                    # TODO: Not clear exactly how the 2 draw bits work...
+                    if (cmd & 0xc3 == 0x81) or (cmd & 0xc3 == 0xc1):
+                        cmd += 1
+                self.cur_col.append(cmd)
             # Handle column repetition
             if self.y == 0:
                 if not self.skip_cols:
