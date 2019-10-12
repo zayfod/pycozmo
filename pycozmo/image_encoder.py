@@ -112,43 +112,29 @@ class ImageDecoder(object):
             else:
                 self.repeat_column_shift = False
             self.last_draw = True
-        else:               # Draw column / Skip
+        else:               # Draw extended / Skip extended
             draw = cnt & 0x01
             cnt >>= 1
-            if draw:
-                cnt += 1
+            draw2 = cnt & 0x01
+            cnt >>= 1
+            cnt += 1
+            cnt += 16
+            if draw or draw2:
                 if self.debug:
-                    print("Draw column {}".format(cnt))
+                    print("Draw extended {}".format(cnt))
                 for _ in range(cnt):
                     self._draw(self.x, self.y)
                     self.y += 1
-                if self.y >= 31:
-                    self.repeat_column_shift = True
-                    self.x += 1
-                    self.y = 0
-                else:
-                    self.repeat_column_shift = False
             else:
-                draw2 = cnt & 0x01
-                cnt >>= 1
-                cnt += 1
-                cnt += 16
-                if draw2:
-                    if self.debug:
-                        print("Draw column2 {}".format(cnt))
-                    for _ in range(cnt):
-                        self._draw(self.x, self.y)
-                        self.y += 1
-                else:
-                    if self.debug:
-                        print("Skip2 {}".format(cnt))
-                    self.y += cnt
-                if self.y > 31:
-                    self.repeat_column_shift = True
-                    self.x += 1
-                    self.y -= 32
-                else:
-                    self.repeat_column_shift = False
+                if self.debug:
+                    print("Skip extended {}".format(cnt))
+                self.y += cnt
+            if self.y > 31:
+                self.repeat_column_shift = True
+                self.x += 1
+                self.y -= 32
+            else:
+                self.repeat_column_shift = False
             self.last_draw = False
 
     def decode(self) -> bytes:
