@@ -21,7 +21,7 @@ import pycozmo
 
 def pycozmo_program(cli):
     pkt = pycozmo.protocol_encoder.SetHeadAngle(angle_rad=0.6)
-    cli.send(pkt)
+    cli.conn.send(pkt)
     time.sleep(1)
 
 pycozmo.run_program(pycozmo_program)
@@ -38,10 +38,10 @@ cli.connect()
 cli.wait_for_robot()
 
 pkt = pycozmo.protocol_encoder.DriveWheels(lwheel_speed_mmps=50.0, rwheel_speed_mmps=50.0) 
-cli.send(pkt)
+cli.conn.send(pkt)
 time.sleep(2.0)
 pkt = pycozmo.protocol_encoder.StopAllMotors()
-cli.send(pkt)
+cli.conn.send(pkt)
 
 cli.disconnect()
 cli.stop()
@@ -54,7 +54,6 @@ Documentation
 - [Cozmo protocol](docs/protocol.md) description
 - [Cozmo function](docs/functions.md) description
 - [Capturing Cozmo communication](docs/capturing.md)
-
 - API documentation: http://pycozmo.readthedocs.io/
 
 
@@ -68,7 +67,9 @@ Examples
 - [cube_lights.py](examples/cube_lights.py) - demonstrates cube connection and LED control
 - [cube_light_animation.py](examples/cube_light_animation.py) - demonstrates cube LED animation control
 - [charger_lights.py](examples/charger_lights.py) - demonstrates Cozmo charging platform LED control
-- [display.py](examples/display.py) - demonstrates low-level visualization of images on Cozmo's display
+- [display_image.py](examples/display_image.py) - demonstrates visualization of image files on Cozmo's display
+- [display_lines.py](examples/display_lines.py) - demonstrates 2D graphics, using
+    [PIL.ImageDraw](https://pillow.readthedocs.io/en/stable/reference/ImageDraw.html) on Cozmo's display
 - [audio.py](examples/audio.py) - demonstrates 22 kHz, 8-bit, mono WAVE file playback through Cozmo's speaker 
 - [events.py](examples/events.py) - demonstrates event handling
 - [camera.py](examples/camera.py) - demonstrates capturing a camera image 
@@ -77,9 +78,11 @@ Examples
 Tools
 -----
 
-- `pycozmo_dump.py` - a command-line application that can read and annotate Cozmo communication from
-    [pcap files](https://en.wikipedia.org/wiki/Pcap)
-- `pycozmo_replay.py` - a basic command-line application that can replay .pcap files back to Cozmo.
+- [pycozmo_dump.py](tools/pycozmo_dump.py) - a command-line application that can read and annotate Cozmo communication
+    from [pcap files](https://en.wikipedia.org/wiki/Pcap) or capture it live using
+    [pypcap](https://github.com/pynetwork/pypcap).
+- [pycozmo_replay.py](tools/pycozmo_replay.py) - a basic command-line application that can replay .pcap files back to
+    Cozmo.
 
 
 Robot Support
@@ -112,6 +115,9 @@ Storage:
 - NVRAM - supported
 - Firmware update - supported
 
+Other:
+- Animations - work in progress
+
 
 Connecting to Cozmo over Wi-Fi
 ------------------------------
@@ -134,12 +140,12 @@ In contrast, an application using PyCozmo basically replaces the Cozmo app and a
 the low-level UDP communication with Cozmo.
    
 ```
-+------------------+                      +------------------+                      +------------------+
-|     SDK app      |      Cozmo SDK       |    Cozmo app     |       PyCozmo        |      Cozmo       |
-|      "game"      |      cozmoclad       |     "engine"     |                      |     "robot"      |
-|                  | +------------------> |   Wi-Fi client   | +------------------> |     Wi-Fi AP     |
-|                  |         USB          |    UDP client    |      UDP/Wi-Fi       |    UDP Server    |
-+------------------+                      +------------------+                      +------------------+
++------------------+                     +------------------+                     +------------------+
+|     SDK app      |      Cozmo SDK      |    Cozmo app     |       PyCozmo       |      Cozmo       |
+|      "game"      |      cozmoclad      |     "engine"     |                     |     "robot"      |
+|                  | ------------------> |   Wi-Fi client   | ------------------> |     Wi-Fi AP     |
+|                  |         USB         |    UDP client    |      UDP/Wi-Fi      |    UDP Server    |
++------------------+                     +------------------+                     +------------------+
 ```
 
 
@@ -163,6 +169,9 @@ Requirements
 ------------
 
 - Python 3.5.4
+- [Pillow](https://github.com/python-pillow/Pillow) 6.0.0 - Python image library
+- [FlatBuffers](https://github.com/google/flatbuffers) - serialization library
+- [dpkt](https://github.com/kbandla/dpkt) - TCP/IP packet parsing library 
 
 
 Installation
@@ -183,9 +192,13 @@ python setup.py install
 ```
 
  
-Bugs
-----
+Support
+-------
 
 Bug reports and patches should be sent via GitHub:
 
 https://github.com/zayfod/pycozmo
+
+Anki Robot Discord server, channel #cozmo:
+
+https://discord.gg/ew92haS

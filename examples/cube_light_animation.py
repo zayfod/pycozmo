@@ -18,13 +18,13 @@ def pycozmo_program(cli: pycozmo.client.Client):
 
     print("Connecting to cube...")
     pkt = pycozmo.protocol_encoder.ObjectConnect(factory_id=cube_factory_id, connect=True)
-    cli.send(pkt)
-    cli.wait_for(pycozmo.protocol_encoder.ObjectConnectionState)
+    cli.conn.send(pkt)
+    cli.conn.wait_for(pycozmo.protocol_encoder.ObjectConnectionState)
     cube_id = list(cli.connected_objects.keys())[0]
     print("Cube connected - ID {}.".format(cube_id))
 
     color = pycozmo.lights.Color(int_color=0x00ff00ff)
-    light = pycozmo.lights.LightState(
+    light = pycozmo.protocol_encoder.LightState(
         on_color=color.to_int16(),
         off_color=pycozmo.lights.off.to_int16(),
         on_frames=5,
@@ -34,14 +34,14 @@ def pycozmo_program(cli: pycozmo.client.Client):
 
     # Select cube
     pkt = pycozmo.protocol_encoder.CubeId(object_id=cube_id, rotation_period_frames=40)
-    cli.send(pkt)
+    cli.conn.send(pkt)
     # Set lights
     pkt = pycozmo.protocol_encoder.CubeLights(states=(
         light,
         pycozmo.lights.off_light,
         pycozmo.lights.off_light,
         pycozmo.lights.off_light))
-    cli.send(pkt)
+    cli.conn.send(pkt)
 
     time.sleep(30.0)
 

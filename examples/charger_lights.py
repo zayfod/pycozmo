@@ -18,8 +18,8 @@ def pycozmo_program(cli: pycozmo.client.Client):
 
     print("Connecting to charger...")
     pkt = pycozmo.protocol_encoder.ObjectConnect(factory_id=charger_factory_id, connect=True)
-    cli.send(pkt)
-    cli.wait_for(pycozmo.protocol_encoder.ObjectConnectionState)
+    cli.conn.send(pkt)
+    cli.conn.wait_for(pycozmo.protocol_encoder.ObjectConnectionState)
     charger_id = list(cli.connected_objects.keys())[0]
     print("Charger connected - ID {}.".format(charger_id))
 
@@ -32,10 +32,10 @@ def pycozmo_program(cli: pycozmo.client.Client):
     for light in lights:
         # Select
         pkt = pycozmo.protocol_encoder.CubeId(object_id=charger_id)
-        cli.send(pkt)
+        cli.conn.send(pkt)
         # Set lights
         pkt = pycozmo.protocol_encoder.CubeLights(states=(light, light, light, pycozmo.lights.off_light))
-        cli.send(pkt)
+        cli.conn.send(pkt)
 
         time.sleep(2)
 

@@ -1,6 +1,19 @@
 Revision History
 ================
 
+v0.5.0 (Oct 12, 2019)
+---------------------
+- Added initial client API.
+- Separated low-level Cozmo connection handling into a new ClientConnection class.
+- Improved the ImageDecoder class and added a new ImageEncoder class for handling Cozmo protocol image encoding.
+- Added new examples for displaying images from files and drawing on Cozmo's OLED display.
+- New protocol commands: EnableBodyACC, EnableAnimationState, AnimHead, AnimLift, AnimBackpackLights, AnimBody,
+    StartAnimation, EndAnimation, AnimationStarted, AnimationEnded, DebugData.
+- Initial support for Cozmo animations in FlatBuffer .bin files.
+- Improved filtering through packet groups for pycozmo_dump.py and pycozmo_replay.py .
+- Added type hints in the protocol generator.
+- Bug fixes and documentation improvements.
+
 v0.4.0 (Sep 13, 2019)
 ---------------------
 - New commands: Enable, TurnInPlace, DriveStraight, ButtonPressed, HardwareInfo, BodyInfo, EnableColorImages,

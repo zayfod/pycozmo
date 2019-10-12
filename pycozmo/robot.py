@@ -14,6 +14,9 @@ MAX_LIFT_HEIGHT = util.Distance(mm=92.0)
 LIFT_ARM_LENGTH = util.Distance(mm=66.0)
 LIFT_PIVOT_HEIGHT = util.Distance(mm=45.0)
 
+MIN_LIFT_ANGLE = util.Angle(radians=math.asin((MIN_LIFT_HEIGHT.mm - LIFT_PIVOT_HEIGHT.mm) / LIFT_ARM_LENGTH.mm))
+MAX_LIFT_ANGLE = util.Angle(radians=math.asin((MAX_LIFT_HEIGHT.mm - LIFT_PIVOT_HEIGHT.mm) / LIFT_ARM_LENGTH.mm))
+
 MAX_WHEEL_SPEED = util.Speed(mmps=200.0)
 
 

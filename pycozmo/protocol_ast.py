@@ -6,7 +6,7 @@ Protocol AST.
 
 import enum
 from abc import ABC
-from typing import List, Optional, Union, Type
+from typing import List, Optional, Union
 
 
 class FrameType(enum.Enum):
@@ -23,42 +23,54 @@ class PacketType(enum.Enum):
     UNKNOWN = -1
     CONNECT = 2
     DISCONNECT = 3
-    ACTION = 4
+    COMMAND = 4
     EVENT = 5
-    UNKNOWN_0A = 0x0a
+    KEYFRAME = 0x0a
     PING = 0x0b
 
 
 class Argument(ABC):
     """ Base class for packet arguments. """
 
-    def __init__(self, name: str, description: Optional[str] = None):
-        self.name = str(name)
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None):
+        self.name = str(name) if name else None
         self.description = str(description) if description else None
+
+    def type_hint(self) -> Optional[str]:
+        return None
 
 
 class FloatArgument(Argument):
     """ 32-bit floating point number. """
 
-    def __init__(self, name: str, description: Optional[str] = None, default: float = 0.0):
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None, default: float = 0.0):
         super().__init__(name, description)
         self.default = float(default)
+
+    def type_hint(self):
+        return "float"
 
 
 class DoubleArgument(Argument):
     """ 64-bit floating point number. """
 
-    def __init__(self, name: str, description: Optional[str] = None, default: float = 0.0):
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None, default: float = 0.0):
         super().__init__(name, description)
         self.default = float(default)
+
+    def type_hint(self):
+        return "double"
 
 
 class BoolArgument(Argument):
     """ 8-bit boolean. """
 
-    def __init__(self, name: str, description: Optional[str] = None, default: bool = False):
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None, default: bool = False):
         super().__init__(name, description)
         self.default = bool(default)
+
+    def type_hint(self):
+        return "bool"
 
 
 class UIntArgument(Argument, ABC):
@@ -68,25 +80,34 @@ class UIntArgument(Argument, ABC):
 class UInt8Argument(UIntArgument):
     """ 8-bit unsigned integer. """
 
-    def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None, default: int = 0):
         super().__init__(name, description)
         self.default = int(default)
+
+    def type_hint(self):
+        return "uint8"
 
 
 class UInt16Argument(UIntArgument):
     """ 16-bit unsigned integer. """
 
-    def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None, default: int = 0):
         super().__init__(name, description)
         self.default = int(default)
+
+    def type_hint(self):
+        return "uint16"
 
 
 class UInt32Argument(UIntArgument):
     """ 32-bit unsigned integer. """
 
-    def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None, default: int = 0):
         super().__init__(name, description)
         self.default = int(default)
+
+    def type_hint(self):
+        return "uint32"
 
 
 class IntArgument(Argument, ABC):
@@ -96,57 +117,34 @@ class IntArgument(Argument, ABC):
 class Int8Argument(IntArgument):
     """ 8-bit signed integer. """
 
-    def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None, default: int = 0):
         super().__init__(name, description)
         self.default = int(default)
+
+    def type_hint(self):
+        return "int8"
 
 
 class Int16Argument(IntArgument):
     """ 16-bit signed integer. """
 
-    def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None, default: int = 0):
         super().__init__(name, description)
         self.default = int(default)
+
+    def type_hint(self):
+        return "int16"
 
 
 class Int32Argument(IntArgument):
     """ 32-bit signed integer. """
 
-    def __init__(self, name: str, description: Optional[str] = None, default: int = 0):
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None, default: int = 0):
         super().__init__(name, description)
         self.default = int(default)
 
-
-class FArrayArgument(Argument):
-    """ Fixed-length array. """
-
-    def __init__(self, name: str, description: Optional[str] = None,
-                 data_type: Union[Type[Argument], str] = UInt8Argument, length: int = 0, default=()):
-        super().__init__(name, description)
-        self.data_type = data_type
-        self.length = length
-        self.default = tuple(default)
-
-
-class VArrayArgument(Argument):
-    """ Variable-length array. """
-
-    def __init__(self, name: str, description: Optional[str] = None,
-                 data_type: Type[Argument] = UInt8Argument, length_type: Type[Argument] = UInt16Argument, default=()):
-        super().__init__(name, description)
-        self.data_type = data_type
-        self.length_type = length_type
-        self.default = tuple(default)
-
-
-class StringArgument(Argument):
-    """ String. """
-
-    def __init__(self, name: str, description: Optional[str] = None,
-                 length_type: Type[Argument] = UInt16Argument, default=""):
-        super().__init__(name, description)
-        self.length_type = length_type
-        self.default = str(default)
+    def type_hint(self):
+        return "int32"
 
 
 class EnumMember(object):
@@ -172,32 +170,84 @@ class EnumArgument(Argument):
     """ Base class for enumeration arguments. """
 
     def __init__(self, name: str, enum_type: Enum, description: Optional[str] = None,
-                 data_type: Union[Type[IntArgument], Type[UIntArgument]] = Int8Argument,
+                 data_type: Union[IntArgument, UIntArgument] = Int8Argument(),
                  default=0):
         super().__init__(name, description)
         self.enum_type = enum_type
         self.data_type = data_type
         self.default = default
 
+    def type_hint(self):
+        return self.enum_type.name
 
-class Struct(ABC):
+
+class Struct(object):
     """ Base class for structures. """
 
-    def __init__(self, name: str, description: Optional[str] = None,
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None,
                  arguments: Optional[List[Argument]] = None):
-        self.name = str(name)
+        self.name = str(name) if name else None
         self.description = str(description) if description else None
         self.arguments = list(arguments) if arguments else []
+
+
+class FArrayArgument(Argument):
+    """ Fixed-length array. """
+
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None,
+                 data_type: Union[Argument, Struct] = UInt8Argument(), length: int = 0, default=()):
+        super().__init__(name, description)
+        self.data_type = data_type
+        self.length = length
+        self.default = tuple(default)
+
+    def type_hint(self):
+        if isinstance(self.data_type, Struct):
+            type_name = self.data_type.name
+        else:
+            type_name = self.data_type.type_hint()
+        return "{}[{}]".format(type_name, self.length)
+
+
+class VArrayArgument(Argument):
+    """ Variable-length array. """
+
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None,
+                 data_type: Argument = UInt8Argument(), length_type: Argument = UInt16Argument(), default=()):
+        super().__init__(name, description)
+        self.data_type = data_type
+        self.length_type = length_type
+        self.default = tuple(default)
+
+    def type_hint(self):
+        data_type_name = self.data_type.type_hint()
+        length_type_name = self.length_type.type_hint()
+        return "{}[{}]".format(data_type_name, length_type_name)
+
+
+class StringArgument(Argument):
+    """ String. """
+
+    def __init__(self, name: Optional[str] = None, description: Optional[str] = None,
+                 length_type: Argument = UInt16Argument(), default=""):
+        super().__init__(name, description)
+        self.length_type = length_type
+        self.default = str(default)
+
+    def type_hint(self):
+        return "str"
 
 
 class Packet(Struct, ABC):
     """ Base class for packets. """
 
-    def __init__(self, packet_id: PacketType, name: str, description: Optional[str] = None,
+    def __init__(self, packet_type: PacketType, name: str, packet_id: Optional[int] = None,
+                 group: Optional[str] = None, description: Optional[str] = None,
                  arguments: Optional[List[Argument]] = None):
         super().__init__(name, description, arguments)
-        # TODO: Rename to "type".
-        self.packet_id = PacketType(packet_id)
+        self.type = PacketType(packet_type)
+        self.id = packet_id
+        self.group = group
 
 
 class Connect(Packet):
@@ -214,23 +264,22 @@ class Disconnect(Packet):
         super().__init__(PacketType.DISCONNECT, "Disconnect")
 
 
-# TODO: Rename to "Action".
 class Command(Packet):
     """ Command packet. """
 
-    def __init__(self, cmd_id: int, name: str, description: Optional[str] = None,
+    def __init__(self, packet_id: int, name: str, group: Optional[str] = None,  description: Optional[str] = None,
                  arguments: Optional[List[Argument]] = None):
-        super().__init__(PacketType.ACTION, name, description, arguments)
-        self.id = int(cmd_id)
+        super().__init__(PacketType.COMMAND, name, packet_id=packet_id, group=group, description=description,
+                         arguments=arguments)
 
 
 class Event(Packet):
     """ Event packet. """
 
-    def __init__(self, evt_id: int, name: str, description: Optional[str] = None,
+    def __init__(self, packet_id: int, name: str, group: Optional[str] = None, description: Optional[str] = None,
                  arguments: Optional[List[Argument]] = None):
-        super().__init__(PacketType.EVENT, name, description, arguments)
-        self.id = int(evt_id)
+        super().__init__(PacketType.EVENT, name, packet_id=packet_id, group=group, description=description,
+                         arguments=arguments)
 
 
 class Ping(Packet):
@@ -245,10 +294,10 @@ class Ping(Packet):
         ])
 
 
-class Unknown0A(Packet):
+class Keyframe(Packet):
 
     def __init__(self):
-        super().__init__(PacketType.UNKNOWN_0A, "Unknown0A")
+        super().__init__(PacketType.KEYFRAME, "Keyframe")
 
 
 class Protocol(object):

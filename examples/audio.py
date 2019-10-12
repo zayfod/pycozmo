@@ -20,7 +20,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
     assert channels == 1
 
     pkt = pycozmo.protocol_encoder.SetRobotVolume(20000)
-    cli.send(pkt)
+    cli.conn.send(pkt)
 
     done = False
     while not done:
@@ -30,7 +30,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
             frame = frame.ljust(744, b"\x80")
 
         pkt = pycozmo.protocol_encoder.OutputAudio(frame)
-        cli.send(pkt)
+        cli.conn.send(pkt)
         time.sleep(0.033742)
 
 
