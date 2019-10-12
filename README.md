@@ -169,6 +169,9 @@ Requirements
 ------------
 
 - Python 3.5.4
+- [Pillow](https://github.com/python-pillow/Pillow) 6.0.0 - Python image library
+- [FlatBuffers](https://github.com/google/flatbuffers) - serialization library
+- [dpkt](https://github.com/kbandla/dpkt) - TCP/IP packet parsing library 
 
 
 Installation
@@ -189,9 +192,13 @@ python setup.py install
 ```
 
  
-Bugs
-----
+Support
+-------
 
 Bug reports and patches should be sent via GitHub:
 
 https://github.com/zayfod/pycozmo
+
+Anki Robot Discord server, channel #cozmo:
+
+https://discord.gg/ew92haS
