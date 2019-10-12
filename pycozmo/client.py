@@ -20,6 +20,7 @@ from . import filter
 from . import protocol_declaration
 from . import conn
 from . import lights
+from . import image_encoder
 from . import anim
 
 
@@ -335,6 +336,19 @@ class Client(event.Dispatcher):
 
     def set_head_light(self, enable: bool) -> None:
         pkt = protocol_encoder.SetHeadLight(enable=enable)
+        self.conn.send(pkt)
+
+    def display_image(self, im: Image, duration: Optional[float] = None) -> None:
+        encoder = image_encoder.ImageEncoder(im)
+        buf = bytes(encoder.encode())
+        pkt = protocol_encoder.DisplayImage(image=buf)
+        self.conn.send(pkt)
+        self.next_frame()
+        if duration is not None:
+            time.sleep(duration)
+
+    def next_frame(self):
+        pkt = protocol_encoder.NextFrame()
         self.conn.send(pkt)
 
     def play_anim(self, clip: anim.AnimClip) -> None:

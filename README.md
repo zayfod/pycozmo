@@ -67,7 +67,9 @@ Examples
 - [cube_lights.py](examples/cube_lights.py) - demonstrates cube connection and LED control
 - [cube_light_animation.py](examples/cube_light_animation.py) - demonstrates cube LED animation control
 - [charger_lights.py](examples/charger_lights.py) - demonstrates Cozmo charging platform LED control
-- [display.py](examples/display.py) - demonstrates low-level visualization of images on Cozmo's display
+- [display_image.py](examples/display_image.py) - demonstrates visualization of image files on Cozmo's display
+- [display_lines.py](examples/display_lines.py) - demonstrates 2D graphics, using
+    [PIL.ImageDraw](https://pillow.readthedocs.io/en/stable/reference/ImageDraw.html) on Cozmo's display
 - [audio.py](examples/audio.py) - demonstrates 22 kHz, 8-bit, mono WAVE file playback through Cozmo's speaker 
 - [events.py](examples/events.py) - demonstrates event handling
 - [camera.py](examples/camera.py) - demonstrates capturing a camera image 
