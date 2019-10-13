@@ -20,8 +20,7 @@ import time
 import pycozmo
 
 def pycozmo_program(cli):
-    pkt = pycozmo.protocol_encoder.SetHeadAngle(angle_rad=0.6)
-    cli.conn.send(pkt)
+    cli.set_head_angle(angle=0.6)
     time.sleep(1)
 
 pycozmo.run_program(pycozmo_program)
@@ -29,7 +28,6 @@ pycozmo.run_program(pycozmo_program)
 
 Advanced mode:
 ```python
-import time
 import pycozmo
 
 cli = pycozmo.Client()
@@ -37,11 +35,7 @@ cli.start()
 cli.connect()
 cli.wait_for_robot()
 
-pkt = pycozmo.protocol_encoder.DriveWheels(lwheel_speed_mmps=50.0, rwheel_speed_mmps=50.0) 
-cli.conn.send(pkt)
-time.sleep(2.0)
-pkt = pycozmo.protocol_encoder.StopAllMotors()
-cli.conn.send(pkt)
+cli.drive_wheels(lwheel_speed=50.0, rwheel_speed=50.0, duration=2.0)
 
 cli.disconnect()
 cli.stop()
@@ -89,34 +83,36 @@ Robot Support
 -------------
 
 Sensors:
-- Camera - supported
-- Cliff sensor - supported
-- Accelerometers - supported
-- Gyro - supported
-- Battery voltage - supported
-- Cube battery voltage - supported
-- Cube accelerometers - supported
+- [x] Camera
+- [x] Cliff sensor
+- [x] Accelerometers
+- [x] Gyro
+- [x] Battery voltage
+- [x] Cube battery voltage
+- [x] Cube accelerometers
 
 Actuators:
-- Wheel motors - supported
-- Head motor - supported
-- Lift motor - supported
-- Backpack LEDs - supported
-- IR LED - supported
-- OLED display - work in progress
-- Speaker - work in progress
-- Cube LEDs - supported
+- [x] Wheel motors
+- [x] Head motor
+- [x] Lift motor
+- [x] Backpack LEDs
+- [x] IR LED
+- [x] OLED display
+- [ ] Speaker - work progress
+- [x] Cube LEDs
+- [x] Platform LEDs
 
 Communication:
-- Wi-Fi AP - supported
-- Bluetooth LE - supported
+- [x] Wi-Fi AP
+- [x] Bluetooth LE
 
 Storage:
-- NVRAM - supported
-- Firmware update - supported
+- [x] NVRAM
+- [x] Firmware update
 
 Other:
-- Animations - work in progress
+- [ ] Animations from FlatBuffers .bin files - work in progress
+- [ ] Procedural faces - work in progress
 
 
 Connecting to Cozmo over Wi-Fi
@@ -189,6 +185,14 @@ From source:
 git clone https://github.com/zayfod/pycozmo.git
 cd pycozmo
 python setup.py install
+```
+
+From source, for development:
+
+```
+git clone git@github.com:zayfod/pycozmo.git
+cd pycozmo
+python setup.py develop
 ```
 
  
