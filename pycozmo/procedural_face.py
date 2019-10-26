@@ -3,8 +3,12 @@ from PIL import Image, ImageDraw
 
 WIDTH = 128
 HEIGHT = 64
+
 EYE_WIDTH = 28
 EYE_HEIGHT = 40
+HALF_EYE_WIDTH = EYE_WIDTH // 2
+HALF_EYE_HEIGHT = EYE_HEIGHT // 2
+
 RESAMPLE = Image.NEAREST
 
 
@@ -51,6 +55,8 @@ def rounded_rectangle(draw: ImageDraw, xy, corner_radius: int, fill=None, outlin
 
 class ProceduralLid(object):
 
+    BLACK = Image.new("1", (WIDTH * 2, HEIGHT * 2), color=0)
+
     def __init__(self, offset: int, angle_offset: float):
         self.offset = offset
         self.angle_offset = angle_offset
@@ -60,25 +66,32 @@ class ProceduralLid(object):
 
     def render(self, im: Image) -> None:
         # Lid image
-        lid = Image.new("1", im.size, color=0)
+        lid = Image.new("1", (WIDTH * 2, HEIGHT * 2), color=0)
 
         draw = ImageDraw.Draw(lid)
 
-        if self.y > 0.0:
-            x1 = lid.size[0] // 2 - EYE_WIDTH // 2 - 1
-            y1 = lid.size[1] // 2
-            x2 = lid.size[0] // 2 + EYE_WIDTH // 2 + 1
-            y2 = lid.size[1] // 2 + int(EYE_HEIGHT * self.y)
-            draw.rectangle(((x1, y1), (x2, y2)), fill=1)
+        # Draw lid
+        lid_height = int(EYE_HEIGHT * self.y)
+        x1 = WIDTH - EYE_WIDTH
+        y1 = HEIGHT - 1 - HALF_EYE_HEIGHT
+        x2 = WIDTH + EYE_WIDTH
+        y2 = HEIGHT - 1 + lid_height
+        draw.rectangle(((x1, y1), (x2, y2)), fill=1)
+
+        bend_height = int(EYE_HEIGHT * (1.0 - self.y) * self.bend)
+        x3 = WIDTH - HALF_EYE_WIDTH
+        y3 = HEIGHT - 1 + lid_height - bend_height
+        x4 = WIDTH + HALF_EYE_WIDTH
+        y4 = HEIGHT - 1 + lid_height + bend_height
+        draw.chord(((x3, y3), (x4, y4)), 0, 180, fill=1)
 
         # Rotate
-        lid = lid.rotate(self.angle + self.angle_offset, resample=RESAMPLE, expand=1)
+        lid = lid.rotate(self.angle + self.angle_offset, resample=RESAMPLE, expand=0)
 
         # Translate and compose
         location = ((im.size[0] - lid.size[0]) // 2,
                     (im.size[1] - lid.size[1]) // 2 + self.offset)
-        black = Image.new("1", lid.size, color=0)
-        im.paste(black, location, lid)
+        im.paste(self.BLACK, location, lid)
 
 
 class ProceduralEye(object):
@@ -96,23 +109,23 @@ class ProceduralEye(object):
         self.lower_outer_radius = [0.5, 0.5]
         self.upper_inner_radius = [0.5, 0.5]
         self.upper_outer_radius = [0.5, 0.5]
-        self.lid = (ProceduralLid(-EYE_HEIGHT // 2, 0.0),
-                    ProceduralLid(EYE_HEIGHT // 2 + 1, 180.0))
+        self.lids = (ProceduralLid(-HALF_EYE_HEIGHT, 0.0),
+                     ProceduralLid(HALF_EYE_HEIGHT + 1, 180.0))
 
     def render(self, im: Image) -> None:
         # Eye image
-        eye = Image.new("1", im.size, color=0)
+        eye = Image.new("1", (WIDTH, HEIGHT), color=0)
 
         draw = ImageDraw.Draw(eye)
-        x1 = eye.size[0] // 2 - EYE_WIDTH // 2
-        y1 = eye.size[1] // 2 - EYE_HEIGHT // 2
-        x2 = eye.size[0] // 2 + EYE_WIDTH // 2
-        y2 = eye.size[1] // 2 + EYE_HEIGHT // 2
+        x1 = eye.size[0] // 2 - HALF_EYE_WIDTH
+        y1 = eye.size[1] // 2 - HALF_EYE_HEIGHT
+        x2 = eye.size[0] // 2 + HALF_EYE_WIDTH
+        y2 = eye.size[1] // 2 + HALF_EYE_HEIGHT
         rounded_rectangle(draw, ((x1, y1), (x2, y2)), self.CORNER_RADIUS, fill=1)
 
         # Draw lids
-        self.lid[0].render(eye)
-        self.lid[1].render(eye)
+        self.lids[0].render(eye)
+        self.lids[1].render(eye)
 
         # Rotate
         eye = eye.rotate(self.angle, resample=RESAMPLE, expand=1)
