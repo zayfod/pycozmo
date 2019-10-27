@@ -199,12 +199,17 @@ class ProceduralEye(object):
         # Scale
         scale = (int(float(eye.size[0]) * self.scale_x),
                  int(float(eye.size[1]) * self.scale_y))
-        eye = eye.resize(scale, resample=RESAMPLE)
+        try:
+            eye = eye.resize(scale, resample=RESAMPLE)
+        except ValueError:
+            # Scale factors can be extremely small and Pillow cannot handle resize() with both scale factors of 0.
+            eye = None
 
         # Translate and compose
-        location = ((im.size[0] - eye.size[0]) // 2 + int(self.center_x * self.X_FACTOR) + self.offset,
-                    (im.size[1] - eye.size[1]) // 2 + int(self.center_y * self.Y_FACTOR))
-        im.paste(eye, location, eye)
+        if eye:
+            location = ((im.size[0] - eye.size[0]) // 2 + int(self.center_x * self.X_FACTOR) + self.offset,
+                        (im.size[1] - eye.size[1]) // 2 + int(self.center_y * self.Y_FACTOR))
+            im.paste(eye, location, eye)
 
 
 class ProceduralFace(object):
@@ -275,11 +280,16 @@ class ProceduralFace(object):
         # Scale
         scale = (int(float(face.size[0]) * self.scale_x),
                  int(float(face.size[1] * self.scale_y)))
-        face = face.resize(scale, resample=RESAMPLE)
+        try:
+            face = face.resize(scale, resample=RESAMPLE)
+        except ValueError:
+            # Scale factors can be extremely small and Pillow cannot handle resize() with both scale factors of 0.
+            face = None
 
         # Translate and compose
-        location = ((im.size[0] - face.size[0]) // 2 + int(self.center_x * self.X_FACTOR),
-                    (im.size[1] - face.size[1]) // 2 + int(self.center_y * self.Y_FACTOR))
-        im.paste(face, location)
+        if face:
+            location = ((im.size[0] - face.size[0]) // 2 + int(self.center_x * self.X_FACTOR),
+                        (im.size[1] - face.size[1]) // 2 + int(self.center_y * self.Y_FACTOR))
+            im.paste(face, location)
 
         return im
