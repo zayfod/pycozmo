@@ -1,5 +1,8 @@
 
+from typing import Optional, List
+
 from PIL import Image, ImageDraw
+
 
 WIDTH = 128
 HEIGHT = 64
@@ -10,13 +13,6 @@ HALF_EYE_WIDTH = EYE_WIDTH // 2
 HALF_EYE_HEIGHT = EYE_HEIGHT // 2
 
 RESAMPLE = Image.NEAREST
-
-
-def debug_box(im: Image) -> None:
-    draw = ImageDraw.Draw(im)
-    draw.rectangle(((0, 0), (im.size[0] - 1, im.size[1] - 1)), outline=1)
-    draw.line((0, 0) + im.size, fill=1)
-    draw.line((0, im.size[1], im.size[0], 0), fill=1)
 
 
 def rounded_rectangle(draw: ImageDraw, xy, corner_radius: int, fill=None, outline=None) -> None:
@@ -57,12 +53,17 @@ class ProceduralLid(object):
 
     BLACK = Image.new("1", (WIDTH * 2, HEIGHT * 2), color=0)
 
-    def __init__(self, offset: int, angle_offset: float):
-        self.offset = offset
-        self.angle_offset = angle_offset
-        self.y = 0.0
-        self.angle = 0.0
-        self.bend = 0.0
+    def __init__(self,
+                 offset: int = 0,
+                 angle_offset: float = 0.0,
+                 y: float = 0.0,
+                 angle: float = 0.0,
+                 bend: float = 0.0):
+        self.offset = int(offset)
+        self.angle_offset = float(angle_offset)
+        self.y = float(y)
+        self.angle = float(angle)
+        self.bend = float(bend)
 
     def render(self, im: Image) -> None:
         # Lid image
@@ -100,17 +101,45 @@ class ProceduralEye(object):
     X_FACTOR = 0.55
     Y_FACTOR = 0.25
 
-    def __init__(self, offset: int):
-        self.offset = offset
-        self.center = [0, 0]
-        self.scale = [1.0, 1.0]
-        self.angle = 0.0
-        self.lower_inner_radius = [0.5, 0.5]
-        self.lower_outer_radius = [0.5, 0.5]
-        self.upper_inner_radius = [0.5, 0.5]
-        self.upper_outer_radius = [0.5, 0.5]
-        self.lids = (ProceduralLid(-HALF_EYE_HEIGHT, 0.0),
-                     ProceduralLid(HALF_EYE_HEIGHT + 1, 180.0))
+    def __init__(self,
+                 offset: int = 0,
+                 center_x: int = 0,
+                 center_y: int = 0,
+                 scale_x: float = 1.0,
+                 scale_y: float = 1.0,
+                 angle: float = 0.0,
+                 lower_inner_radius_x: float = 0.5,
+                 lower_inner_radius_y: float = 0.5,
+                 lower_outer_radius_x: float = 0.5,
+                 lower_outer_radius_y: float = 0.5,
+                 upper_inner_radius_x: float = 0.5,
+                 upper_inner_radius_y: float = 0.5,
+                 upper_outer_radius_x: float = 0.5,
+                 upper_outer_radius_y: float = 0.5,
+                 upper_lid_y: float = 0.0,
+                 upper_lid_angle: float = 0.0,
+                 upper_lid_bend: float = 0.0,
+                 lower_lid_y: float = 0.0,
+                 lower_lid_angle: float = 0.0,
+                 lower_lid_bend: float = 0.0):
+        self.offset = int(offset)
+        self.center_x = int(center_x)
+        self.center_y = int(center_y)
+        self.scale_x = float(scale_x)
+        self.scale_y = float(scale_y)
+        self.angle = float(angle)
+        self.lower_inner_radius_x = float(lower_inner_radius_x)
+        self.lower_inner_radius_y = float(lower_inner_radius_y)
+        self.lower_outer_radius_x = float(lower_outer_radius_x)
+        self.lower_outer_radius_y = float(lower_outer_radius_y)
+        self.upper_inner_radius_x = float(upper_inner_radius_x)
+        self.upper_inner_radius_y = float(upper_inner_radius_y)
+        self.upper_outer_radius_x = float(upper_outer_radius_x)
+        self.upper_outer_radius_y = float(upper_outer_radius_y)
+        self.lids = (
+            ProceduralLid(-HALF_EYE_HEIGHT, 0.0, upper_lid_y, upper_lid_angle, upper_lid_bend),
+            ProceduralLid(HALF_EYE_HEIGHT + 1, 180.0, lower_lid_y, lower_lid_angle, lower_lid_bend)
+        )
 
     def render(self, im: Image) -> None:
         # Eye image
@@ -131,13 +160,13 @@ class ProceduralEye(object):
         eye = eye.rotate(self.angle, resample=RESAMPLE, expand=1)
 
         # Scale
-        scale = (int(float(eye.size[0]) * self.scale[0]),
-                 int(float(eye.size[1]) * self.scale[1]))
+        scale = (int(float(eye.size[0]) * self.scale_x),
+                 int(float(eye.size[1]) * self.scale_y))
         eye = eye.resize(scale, resample=RESAMPLE)
 
         # Translate and compose
-        location = ((im.size[0] - eye.size[0]) // 2 + int(self.center[0] * self.X_FACTOR) + self.offset,
-                    (im.size[1] - eye.size[1]) // 2 + int(self.center[1] * self.Y_FACTOR))
+        location = ((im.size[0] - eye.size[0]) // 2 + int(self.center_x * self.X_FACTOR) + self.offset,
+                    (im.size[1] - eye.size[1]) // 2 + int(self.center_y * self.Y_FACTOR))
         im.paste(eye, location, eye)
 
 
@@ -148,40 +177,72 @@ class ProceduralFace(object):
     LEFT_EYE_OFFSET = -23
     RIGHT_EYE_OFFSET = 21
 
-    def __init__(self):
-        self.center = (0, 0)
-        self.scale = (1.0, 1.0)
-        self.angle = 0.0
-        self.eyes = (ProceduralEye(self.LEFT_EYE_OFFSET),
-                     ProceduralEye(self.RIGHT_EYE_OFFSET))
-        self.debug = False
+    def __init__(self,
+                 center_x: int = 0,
+                 center_y: int = 0,
+                 scale_x: float = 1.0,
+                 scale_y: float = 1.0,
+                 angle: float = 0.0,
+                 left_eye: Optional[List] = None,
+                 right_eye: Optional[List] = None):
+        self.center_x = int(center_x)
+        self.center_y = int(center_y)
+        self.scale_x = float(scale_x)
+        self.scale_y = float(scale_y)
+        self.angle = float(angle)
+        if left_eye:
+            self.left_eye = ProceduralEye(
+                self.LEFT_EYE_OFFSET,
+                left_eye[0], left_eye[1],
+                left_eye[2], left_eye[3],
+                left_eye[4],
+                left_eye[5], left_eye[6],
+                left_eye[7], left_eye[8],
+                left_eye[9], left_eye[10],
+                left_eye[11], left_eye[12],
+                left_eye[13], left_eye[14], left_eye[15],
+                left_eye[16], left_eye[17], left_eye[18],
+            )
+        else:
+            self.left_eye = ProceduralEye(self.LEFT_EYE_OFFSET)
+        if right_eye:
+            self.right_eye = ProceduralEye(
+                self.RIGHT_EYE_OFFSET,
+                right_eye[0], right_eye[1],
+                right_eye[2], right_eye[3],
+                right_eye[4],
+                right_eye[5], right_eye[6],
+                right_eye[7], right_eye[8],
+                right_eye[9], right_eye[10],
+                right_eye[11], right_eye[12],
+                right_eye[13], right_eye[14], right_eye[15],
+                right_eye[16], right_eye[17], right_eye[18],
+            )
+        else:
+            self.right_eye = ProceduralEye(self.RIGHT_EYE_OFFSET)
 
     def render(self) -> Image:
         # Background image
         im = Image.new("1", (WIDTH, HEIGHT), color=0)
-        if self.debug:
-            debug_box(im)
 
         # Face image
         face = Image.new("1", (WIDTH, HEIGHT), color=0)
-        if self.debug:
-            debug_box(face)
 
         # Draw eyes
-        self.eyes[0].render(face)
-        self.eyes[1].render(face)
+        self.left_eye.render(face)
+        self.right_eye.render(face)
 
         # Rotate
         face = face.rotate(self.angle, resample=RESAMPLE, expand=1)
 
         # Scale
-        scale = (int(float(face.size[0]) * self.scale[0]),
-                 int(float(face.size[1] * self.scale[1])))
+        scale = (int(float(face.size[0]) * self.scale_x),
+                 int(float(face.size[1] * self.scale_y)))
         face = face.resize(scale, resample=RESAMPLE)
 
         # Translate and compose
-        location = ((im.size[0] - face.size[0]) // 2 + int(self.center[0] * self.X_FACTOR),
-                    (im.size[1] - face.size[1]) // 2 + int(self.center[1] * self.Y_FACTOR))
+        location = ((im.size[0] - face.size[0]) // 2 + int(self.center_x * self.X_FACTOR),
+                    (im.size[1] - face.size[1]) // 2 + int(self.center_y * self.Y_FACTOR))
         im.paste(face, location)
 
         return im
