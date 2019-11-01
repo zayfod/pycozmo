@@ -22,6 +22,7 @@ from . import camera
 from . import object
 from . import filter
 from . import anim
+from . import anim_encoder
 from . import image_encoder
 from . import procedural_face
 
