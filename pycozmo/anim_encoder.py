@@ -1,3 +1,12 @@
+"""
+
+Code for reading and writing Cozmo animations in FlatBuffers .bin and JSON format.
+
+Cozmo animations are stored in files/cozmo/cozmo_resources/assets/animations inside the Cozmo mobile application.
+
+Animation data structures are declared in FlatBuffers format in files/cozmo/cozmo_resources/config/cozmo_anim.fbs .
+
+"""
 
 from typing import List, Union
 from abc import ABC
@@ -247,7 +256,7 @@ class AnimHeadAngle(AnimKeyframe):
         self.trigger_time_ms = int(trigger_time_ms)  # uint32
         self.duration_ms = int(duration_ms)  # uint32
         self.angle_deg = int(angle_deg)  # int8
-        self.variability_deg = int(variability_deg)  # int8
+        self.variability_deg = int(variability_deg)  # uint8 = 0
 
     def to_dict(self) -> dict:
         return {
@@ -289,10 +298,10 @@ class AnimLiftHeight(AnimKeyframe):
                  height_mm: int = 0,
                  variability_mm: int = 0):
         super().__init__()
-        self.trigger_time_ms = int(trigger_time_ms)
-        self.duration_ms = int(duration_ms)
-        self.height_mm = int(height_mm)
-        self.variability_mm = int(variability_mm)
+        self.trigger_time_ms = int(trigger_time_ms)  # uint32
+        self.duration_ms = int(duration_ms)  # uint32
+        self.height_mm = int(height_mm)  # uint8
+        self.variability_mm = int(variability_mm)  # uint8 = 0
 
     def to_dict(self) -> dict:
         return {
@@ -331,7 +340,7 @@ class AnimRecordHeading(AnimKeyframe):
     def __init__(self,
                  trigger_time_ms: int = 0):
         super().__init__()
-        self.trigger_time_ms = int(trigger_time_ms)
+        self.trigger_time_ms = int(trigger_time_ms)  # uint32
 
     def to_dict(self) -> dict:
         return {
@@ -369,15 +378,15 @@ class AnimTurnToRecordedHeading(AnimKeyframe):
                  num_half_revs: int = 0,
                  use_shortest_dir: bool = False):
         super().__init__()
-        self.trigger_time_ms = int(trigger_time_ms)
-        self.duration_time_ms = int(duration_time_ms)
-        self.offset_deg = int(offset_deg)
-        self.speed_deg_per_sec = int(speed_deg_per_sec)
-        self.accel_deg_per_sec_2 = int(accel_deg_per_sec_2)
-        self.decel_deg_per_sec_2 = int(decel_deg_per_sec_2)
-        self.tolerance_deg = int(tolerance_deg)
-        self.num_half_revs = int(num_half_revs)
-        self.use_shortest_dir = bool(use_shortest_dir)
+        self.trigger_time_ms = int(trigger_time_ms)  # uint32
+        self.duration_time_ms = int(duration_time_ms)  # uint32
+        self.offset_deg = int(offset_deg)  # int16 = 0
+        self.speed_deg_per_sec = int(speed_deg_per_sec)  # int16
+        self.accel_deg_per_sec_2 = int(accel_deg_per_sec_2)  # int16 = 1000
+        self.decel_deg_per_sec_2 = int(decel_deg_per_sec_2)  # int16 = 1000
+        self.tolerance_deg = int(tolerance_deg)  # uint16 = 2
+        self.num_half_revs = int(num_half_revs)  # uint16 = 0
+        self.use_shortest_dir = bool(use_shortest_dir)  # boot = false
 
     def to_dict(self) -> dict:
         return {
@@ -434,13 +443,13 @@ class AnimBodyMotion(AnimKeyframe):
                  radius_mm: Union[float, str] = "STRAIGHT",
                  speed: float = 0.0):
         super().__init__()
-        self.trigger_time_ms = int(trigger_time_ms)
-        self.duration_ms = int(duration_ms)
+        self.trigger_time_ms = int(trigger_time_ms)  # uint32
+        self.duration_ms = int(duration_ms)  # uint32
         try:
             self.radius_mm = float(radius_mm)
         except ValueError:
-            self.radius_mm = str(radius_mm)
-        self.speed = float(speed)
+            self.radius_mm = str(radius_mm)  # string (required)
+        self.speed = float(speed)  # int16
 
     def to_dict(self) -> dict:
         return {
@@ -512,13 +521,13 @@ class AnimBackpackLights(AnimKeyframe):
                  back: AnimLight = AnimLight(),
                  right: AnimLight = AnimLight()):
         super().__init__()
-        self.trigger_time_ms = int(trigger_time_ms)
-        self.duration_ms = int(duration_ms),
-        self.left = left
-        self.front = front
-        self.middle = middle
-        self.back = back
-        self.right = right
+        self.trigger_time_ms = int(trigger_time_ms)  # uint32
+        self.duration_ms = int(duration_ms)  # uint32
+        self.left = left  # [float]
+        self.front = front  # [float]
+        self.middle = middle  # [float]
+        self.back = back  # [float]
+        self.right = right  # [float]
 
     def to_dict(self) -> dict:
         return {
@@ -572,7 +581,7 @@ class AnimFaceAnimation(AnimKeyframe):
                  trigger_time_ms: int = 0,
                  anim_name: str = ""):
         super().__init__()
-        self.trigger_time_ms = int(trigger_time_ms)
+        self.trigger_time_ms = int(trigger_time_ms)  # uint32
         self.anim_name = str(anim_name)
 
     def to_dict(self) -> dict:
@@ -613,16 +622,16 @@ class AnimProceduralFace(AnimKeyframe):
                  left_eye: List[float] = (),
                  right_eye: List[float] = ()):
         super().__init__()
-        self.trigger_time_ms = int(trigger_time_ms)
-        self.angle = float(angle)
-        self.center_x = float(center_x)
-        self.center_y = float(center_y)
-        self.scale_x = float(scale_x)
-        self.scale_y = float(scale_y)
+        self.trigger_time_ms = int(trigger_time_ms)  # uint32
+        self.angle = float(angle)  # float = 0.0
+        self.center_x = float(center_x)  # float = 0.0
+        self.center_y = float(center_y)  # float = 0.0
+        self.scale_x = float(scale_x)  # float = 1.0
+        self.scale_y = float(scale_y)  # float = 1.0
         assert(len(left_eye) == 19)
-        self.left_eye = list(left_eye)
+        self.left_eye = list(left_eye)  # [float]
         assert (len(right_eye) == 19)
-        self.right_eye = list(right_eye)
+        self.right_eye = list(right_eye)  # [float]
 
     def to_dict(self) -> dict:
         return {
@@ -681,11 +690,11 @@ class AnimRobotAudio(AnimKeyframe):
                  probabilities: List[float] = (),
                  has_alts: bool = True):
         super().__init__()
-        self.trigger_time_ms = int(trigger_time_ms)
-        self.audio_event_ids = list(audio_event_ids)
-        self.volume = float(volume)
-        self.probabilities = list(probabilities) if isinstance(probabilities, list) else [probabilities]
-        self.has_alts = bool(has_alts)
+        self.trigger_time_ms = int(trigger_time_ms)  # uint32
+        self.audio_event_ids = list(audio_event_ids)  # [int32]
+        self.volume = float(volume)  # float = 1.0
+        self.probabilities = list(probabilities) if isinstance(probabilities, list) else [probabilities]  # [float]
+        self.has_alts = bool(has_alts)  # bool = true
 
     def to_dict(self) -> dict:
         return {
@@ -752,7 +761,7 @@ class AnimEvent(AnimKeyframe):
                  trigger_time_ms: int = 0,
                  event_id: str = ""):
         super().__init__()
-        self.trigger_time_ms = int(trigger_time_ms)
+        self.trigger_time_ms = int(trigger_time_ms)  # uint32
         self.event_id = str(event_id)
 
     def to_dict(self) -> dict:

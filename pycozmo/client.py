@@ -351,7 +351,7 @@ class Client(event.Dispatcher):
         pkt = protocol_encoder.NextFrame()
         self.conn.send(pkt)
 
-    def play_anim(self, clip: anim.AnimClip) -> None:
+    def play_anim_clip(self, clip: anim.PreprocessedClip) -> None:
         self.conn.send(protocol_encoder.StartAnimation(anim_id=1))
 
         frames = list(sorted(clip.keyframes.keys()))
