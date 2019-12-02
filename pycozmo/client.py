@@ -37,6 +37,7 @@ class Client(event.Dispatcher):
         self.body_color = None
         # Robot state
         # Heading in X-Y plane.
+        self.pose = util.Vector3(0.0, 0.0, 0.0)
         self.pose_angle = util.Angle(radians=0.0)
         self.pose_pitch = util.Angle(radians=0.0)
         self.head_angle = util.Angle(radians=robot.MIN_HEAD_ANGLE.radians)
@@ -235,6 +236,7 @@ class Client(event.Dispatcher):
 
     def _on_robot_state(self, cli, pkt: protocol_encoder.RobotState):
         del cli
+        self.pose = util.Vector3(pkt.pose_x, pkt.pose_y, pkt.pose_z)
         self.pose_angle = util.Angle(radians=pkt.pose_angle_rad)   # heading in X-Y plane
         self.pose_pitch = util.Angle(radians=pkt.pose_pitch_rad)
         self.head_angle = util.Angle(radians=pkt.head_angle_rad)
