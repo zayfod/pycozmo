@@ -1830,6 +1830,141 @@ class DriveStraight(Packet):
             f6=f6)
 
     
+class SetOrigin(Packet):
+
+    __slots__ = (
+        "_unknown0",  # uint32
+        "_pose_frame_id",  # uint32
+        "_pose_origin_id",  # uint32
+        "_pose_x",  # float
+        "_pose_y",  # float
+        "_unknown5",  # uint32
+    )
+
+    def __init__(self,
+                 unknown0=0,
+                 pose_frame_id=0,
+                 pose_origin_id=1,
+                 pose_x=0.0,
+                 pose_y=0.0,
+                 unknown5=2147483648):
+        super().__init__(PacketType.COMMAND, packet_id=69)
+        self.unknown0 = unknown0
+        self.pose_frame_id = pose_frame_id
+        self.pose_origin_id = pose_origin_id
+        self.pose_x = pose_x
+        self.pose_y = pose_y
+        self.unknown5 = unknown5
+
+    @property
+    def unknown0(self):
+        return self._unknown0
+
+    @unknown0.setter
+    def unknown0(self, value):
+        self._unknown0 = validate_integer("unknown0", value, 0, 4294967295)
+
+    @property
+    def pose_frame_id(self):
+        return self._pose_frame_id
+
+    @pose_frame_id.setter
+    def pose_frame_id(self, value):
+        self._pose_frame_id = validate_integer("pose_frame_id", value, 0, 4294967295)
+
+    @property
+    def pose_origin_id(self):
+        return self._pose_origin_id
+
+    @pose_origin_id.setter
+    def pose_origin_id(self, value):
+        self._pose_origin_id = validate_integer("pose_origin_id", value, 0, 4294967295)
+
+    @property
+    def pose_x(self):
+        return self._pose_x
+
+    @pose_x.setter
+    def pose_x(self, value):
+        self._pose_x = validate_float("pose_x", value)
+
+    @property
+    def pose_y(self):
+        return self._pose_y
+
+    @pose_y.setter
+    def pose_y(self, value):
+        self._pose_y = validate_float("pose_y", value)
+
+    @property
+    def unknown5(self):
+        return self._unknown5
+
+    @unknown5.setter
+    def unknown5(self, value):
+        self._unknown5 = validate_integer("unknown5", value, 0, 4294967295)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('L')
+
+    def __repr__(self):
+        return "{type}(" \
+               "unknown0={unknown0}, " \
+               "pose_frame_id={pose_frame_id}, " \
+               "pose_origin_id={pose_origin_id}, " \
+               "pose_x={pose_x}, " \
+               "pose_y={pose_y}, " \
+               "unknown5={unknown5})".format(
+                type=type(self).__name__,
+                unknown0=self._unknown0,
+                pose_frame_id=self._pose_frame_id,
+                pose_origin_id=self._pose_origin_id,
+                pose_x=self._pose_x,
+                pose_y=self._pose_y,
+                unknown5=self._unknown5)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._unknown0, "L")
+        writer.write(self._pose_frame_id, "L")
+        writer.write(self._pose_origin_id, "L")
+        writer.write(self._pose_x, "f")
+        writer.write(self._pose_y, "f")
+        writer.write(self._unknown5, "L")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        unknown0 = reader.read("L")
+        pose_frame_id = reader.read("L")
+        pose_origin_id = reader.read("L")
+        pose_x = reader.read("f")
+        pose_y = reader.read("f")
+        unknown5 = reader.read("L")
+        return cls(
+            unknown0=unknown0,
+            pose_frame_id=pose_frame_id,
+            pose_origin_id=pose_origin_id,
+            pose_x=pose_x,
+            pose_y=pose_y,
+            unknown5=unknown5)
+
+    
 class EnableBodyACC(Packet):
 
     __slots__ = (
@@ -5563,6 +5698,7 @@ PACKETS_BY_ID = {
     0x39: TurnInPlace,  # 57
     0x3b: StopAllMotors,  # 59
     0x3d: DriveStraight,  # 61
+    0x45: SetOrigin,  # 69
     0x4b: EnableBodyACC,  # 75
     0x4c: EnableCamera,  # 76
     0x57: SetCameraParams,  # 87
@@ -5647,6 +5783,7 @@ PACKETS_BY_GROUP = {
         0x11,  # LightStateSide
     },
     "localization": {
+        0x45,  # SetOrigin
         0xc2,  # RobotDelocalized
         0xc3,  # RobotPoked
         0xdd,  # FallingStarted

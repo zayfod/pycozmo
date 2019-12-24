@@ -97,6 +97,9 @@ class Client(event.Dispatcher):
         self.conn.send(pkt)  # This repetition seems to trigger BodyInfo
 
     def _initialize_robot(self):
+        # Set world frame origin to (0,0,0), frame ID to 0, and origin ID to 1.
+        pkt = protocol_encoder.SetOrigin()
+        self.conn.send(pkt)
         # Enables RobotState and ObjectAvailable events - enables body ACC? Requires 0x25.
         pkt = protocol_encoder.EnableBodyACC()
         self.conn.send(pkt)

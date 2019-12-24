@@ -77,6 +77,7 @@ Localization
 
 `RobotState`
 `RobotDelocalized`
+`SetOrigin`
 
 
 Head

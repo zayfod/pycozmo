@@ -282,6 +282,14 @@ PROTOCOL = Protocol(
             FloatArgument("f5"),
             FloatArgument("f6"),
         ]),
+        Command(0x45, "SetOrigin", group="localization", arguments=[
+            UInt32Argument("unknown0"),
+            UInt32Argument("pose_frame_id"),
+            UInt32Argument("pose_origin_id", default=1),
+            FloatArgument("pose_x"),
+            FloatArgument("pose_y"),
+            UInt32Argument("unknown5", default=0x80000000),
+        ]),
         Command(0x4b, "EnableBodyACC", group="system", arguments=[
             FArrayArgument("unknown", length=8, default=b"\xc4\xb6\x39\x00\x00\x00\xa0\xc1"),
         ]),
