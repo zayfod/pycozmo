@@ -274,13 +274,13 @@ PROTOCOL = Protocol(
         ]),
         Command(0x3b, "StopAllMotors", group="motors"),
         Command(0x3d, "DriveStraight", group="motors", arguments=[
-            FloatArgument("f0"),
-            FloatArgument("f1"),
+            FloatArgument("unknown0"),
+            FloatArgument("unknown1"),
             FloatArgument("dist_mm"),               # minus ~20.3 mm?
-            FloatArgument("f3"),
+            FloatArgument("unknown3"),
             FloatArgument("speed_mmps"),
-            FloatArgument("f5"),
-            FloatArgument("f6"),
+            FloatArgument("unknown5"),
+            FloatArgument("unknown6"),
         ]),
         Command(0x45, "SetOrigin", group="localization", arguments=[
             UInt32Argument("unknown0"),
@@ -313,7 +313,7 @@ PROTOCOL = Protocol(
         ]),
         Command(0x81, "NvStorageOp", group="nv", arguments=[
             EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument(), default=0xffffffff),
-            Int32Argument("index"),
+            Int32Argument("length"),
             EnumArgument("op", NV_OPERATION, data_type=UInt8Argument()),
             UInt8Argument("unknown"),
             VArrayArgument("data"),
@@ -340,7 +340,7 @@ PROTOCOL = Protocol(
         ]),
         Command(0x99, "AnimBody", group="anim", arguments=[
             Int16Argument("speed"),
-            Int16Argument("unknown1"),
+            Int16Argument("unknown"),
         ]),
         Command(0x9a, "EndAnimation", group="anim"),
         Command(0x9b, "StartAnimation", group="anim", arguments=[
@@ -403,7 +403,7 @@ PROTOCOL = Protocol(
         ]),
         Command(0xcd, "NvStorageOpResult", group="nv", arguments=[
             EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument(), default=0xffffffff),
-            Int32Argument("index"),
+            Int32Argument("length"),
             EnumArgument("op", NV_OPERATION, data_type=UInt8Argument()),
             EnumArgument("result", NV_RESULT, data_type=Int8Argument()),
             VArrayArgument("data"),

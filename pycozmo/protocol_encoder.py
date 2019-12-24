@@ -1681,47 +1681,47 @@ class StopAllMotors(Packet):
 class DriveStraight(Packet):
 
     __slots__ = (
-        "_f0",  # float
-        "_f1",  # float
+        "_unknown0",  # float
+        "_unknown1",  # float
         "_dist_mm",  # float
-        "_f3",  # float
+        "_unknown3",  # float
         "_speed_mmps",  # float
-        "_f5",  # float
-        "_f6",  # float
+        "_unknown5",  # float
+        "_unknown6",  # float
     )
 
     def __init__(self,
-                 f0=0.0,
-                 f1=0.0,
+                 unknown0=0.0,
+                 unknown1=0.0,
                  dist_mm=0.0,
-                 f3=0.0,
+                 unknown3=0.0,
                  speed_mmps=0.0,
-                 f5=0.0,
-                 f6=0.0):
+                 unknown5=0.0,
+                 unknown6=0.0):
         super().__init__(PacketType.COMMAND, packet_id=61)
-        self.f0 = f0
-        self.f1 = f1
+        self.unknown0 = unknown0
+        self.unknown1 = unknown1
         self.dist_mm = dist_mm
-        self.f3 = f3
+        self.unknown3 = unknown3
         self.speed_mmps = speed_mmps
-        self.f5 = f5
-        self.f6 = f6
+        self.unknown5 = unknown5
+        self.unknown6 = unknown6
 
     @property
-    def f0(self):
-        return self._f0
+    def unknown0(self):
+        return self._unknown0
 
-    @f0.setter
-    def f0(self, value):
-        self._f0 = validate_float("f0", value)
+    @unknown0.setter
+    def unknown0(self, value):
+        self._unknown0 = validate_float("unknown0", value)
 
     @property
-    def f1(self):
-        return self._f1
+    def unknown1(self):
+        return self._unknown1
 
-    @f1.setter
-    def f1(self, value):
-        self._f1 = validate_float("f1", value)
+    @unknown1.setter
+    def unknown1(self, value):
+        self._unknown1 = validate_float("unknown1", value)
 
     @property
     def dist_mm(self):
@@ -1732,12 +1732,12 @@ class DriveStraight(Packet):
         self._dist_mm = validate_float("dist_mm", value)
 
     @property
-    def f3(self):
-        return self._f3
+    def unknown3(self):
+        return self._unknown3
 
-    @f3.setter
-    def f3(self, value):
-        self._f3 = validate_float("f3", value)
+    @unknown3.setter
+    def unknown3(self, value):
+        self._unknown3 = validate_float("unknown3", value)
 
     @property
     def speed_mmps(self):
@@ -1748,20 +1748,20 @@ class DriveStraight(Packet):
         self._speed_mmps = validate_float("speed_mmps", value)
 
     @property
-    def f5(self):
-        return self._f5
+    def unknown5(self):
+        return self._unknown5
 
-    @f5.setter
-    def f5(self, value):
-        self._f5 = validate_float("f5", value)
+    @unknown5.setter
+    def unknown5(self, value):
+        self._unknown5 = validate_float("unknown5", value)
 
     @property
-    def f6(self):
-        return self._f6
+    def unknown6(self):
+        return self._unknown6
 
-    @f6.setter
-    def f6(self, value):
-        self._f6 = validate_float("f6", value)
+    @unknown6.setter
+    def unknown6(self, value):
+        self._unknown6 = validate_float("unknown6", value)
 
     def __len__(self):
         return \
@@ -1775,21 +1775,21 @@ class DriveStraight(Packet):
 
     def __repr__(self):
         return "{type}(" \
-               "f0={f0}, " \
-               "f1={f1}, " \
+               "unknown0={unknown0}, " \
+               "unknown1={unknown1}, " \
                "dist_mm={dist_mm}, " \
-               "f3={f3}, " \
+               "unknown3={unknown3}, " \
                "speed_mmps={speed_mmps}, " \
-               "f5={f5}, " \
-               "f6={f6})".format(
+               "unknown5={unknown5}, " \
+               "unknown6={unknown6})".format(
                 type=type(self).__name__,
-                f0=self._f0,
-                f1=self._f1,
+                unknown0=self._unknown0,
+                unknown1=self._unknown1,
                 dist_mm=self._dist_mm,
-                f3=self._f3,
+                unknown3=self._unknown3,
                 speed_mmps=self._speed_mmps,
-                f5=self._f5,
-                f6=self._f6)
+                unknown5=self._unknown5,
+                unknown6=self._unknown6)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -1797,13 +1797,13 @@ class DriveStraight(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(self._f0, "f")
-        writer.write(self._f1, "f")
+        writer.write(self._unknown0, "f")
+        writer.write(self._unknown1, "f")
         writer.write(self._dist_mm, "f")
-        writer.write(self._f3, "f")
+        writer.write(self._unknown3, "f")
         writer.write(self._speed_mmps, "f")
-        writer.write(self._f5, "f")
-        writer.write(self._f6, "f")
+        writer.write(self._unknown5, "f")
+        writer.write(self._unknown6, "f")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -1813,21 +1813,21 @@ class DriveStraight(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        f0 = reader.read("f")
-        f1 = reader.read("f")
+        unknown0 = reader.read("f")
+        unknown1 = reader.read("f")
         dist_mm = reader.read("f")
-        f3 = reader.read("f")
+        unknown3 = reader.read("f")
         speed_mmps = reader.read("f")
-        f5 = reader.read("f")
-        f6 = reader.read("f")
+        unknown5 = reader.read("f")
+        unknown6 = reader.read("f")
         return cls(
-            f0=f0,
-            f1=f1,
+            unknown0=unknown0,
+            unknown1=unknown1,
             dist_mm=dist_mm,
-            f3=f3,
+            unknown3=unknown3,
             speed_mmps=speed_mmps,
-            f5=f5,
-            f6=f6)
+            unknown5=unknown5,
+            unknown6=unknown6)
 
     
 class SetOrigin(Packet):
@@ -2321,7 +2321,7 @@ class NvStorageOp(Packet):
 
     __slots__ = (
         "_tag",  # NvEntryTag
-        "_index",  # int32
+        "_length",  # int32
         "_op",  # NvOperation
         "_unknown",  # uint8
         "_data",  # uint8[uint16]
@@ -2329,13 +2329,13 @@ class NvStorageOp(Packet):
 
     def __init__(self,
                  tag=4294967295,
-                 index=0,
+                 length=0,
                  op=0,
                  unknown=0,
                  data=()):
         super().__init__(PacketType.COMMAND, packet_id=129)
         self.tag = NvEntryTag(tag)
-        self.index = index
+        self.length = length
         self.op = NvOperation(op)
         self.unknown = unknown
         self.data = data
@@ -2350,12 +2350,12 @@ class NvStorageOp(Packet):
         validate_integer("tag", value.value, 0, 4294967295)
 
     @property
-    def index(self):
-        return self._index
+    def length(self):
+        return self._length
 
-    @index.setter
-    def index(self, value):
-        self._index = validate_integer("index", value, -2147483648, 2147483647)
+    @length.setter
+    def length(self, value):
+        self._length = validate_integer("length", value, -2147483648, 2147483647)
 
     @property
     def op(self) -> NvOperation:
@@ -2394,13 +2394,13 @@ class NvStorageOp(Packet):
     def __repr__(self):
         return "{type}(" \
                "tag={tag}, " \
-               "index={index}, " \
+               "length={length}, " \
                "op={op}, " \
                "unknown={unknown}, " \
                "data={data})".format(
                 type=type(self).__name__,
                 tag=self._tag,
-                index=self._index,
+                length=self._length,
                 op=self._op,
                 unknown=self._unknown,
                 data=self._data)
@@ -2412,7 +2412,7 @@ class NvStorageOp(Packet):
         
     def to_writer(self, writer):
         writer.write(self._tag.value, "L")
-        writer.write(self._index, "l")
+        writer.write(self._length, "l")
         writer.write(self._op.value, "B")
         writer.write(self._unknown, "B")
         writer.write_varray(self._data, "B", "H")
@@ -2426,13 +2426,13 @@ class NvStorageOp(Packet):
     @classmethod
     def from_reader(cls, reader):
         tag = reader.read("L")
-        index = reader.read("l")
+        length = reader.read("l")
         op = reader.read("B")
         unknown = reader.read("B")
         data = reader.read_varray("B", "H")
         return cls(
             tag=tag,
-            index=index,
+            length=length,
             op=op,
             unknown=unknown,
             data=data)
@@ -2799,15 +2799,15 @@ class AnimBody(Packet):
 
     __slots__ = (
         "_speed",  # int16
-        "_unknown1",  # int16
+        "_unknown",  # int16
     )
 
     def __init__(self,
                  speed=0,
-                 unknown1=0):
+                 unknown=0):
         super().__init__(PacketType.COMMAND, packet_id=153)
         self.speed = speed
-        self.unknown1 = unknown1
+        self.unknown = unknown
 
     @property
     def speed(self):
@@ -2818,12 +2818,12 @@ class AnimBody(Packet):
         self._speed = validate_integer("speed", value, -32768, 32767)
 
     @property
-    def unknown1(self):
-        return self._unknown1
+    def unknown(self):
+        return self._unknown
 
-    @unknown1.setter
-    def unknown1(self, value):
-        self._unknown1 = validate_integer("unknown1", value, -32768, 32767)
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_integer("unknown", value, -32768, 32767)
 
     def __len__(self):
         return \
@@ -2833,10 +2833,10 @@ class AnimBody(Packet):
     def __repr__(self):
         return "{type}(" \
                "speed={speed}, " \
-               "unknown1={unknown1})".format(
+               "unknown={unknown})".format(
                 type=type(self).__name__,
                 speed=self._speed,
-                unknown1=self._unknown1)
+                unknown=self._unknown)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -2845,7 +2845,7 @@ class AnimBody(Packet):
         
     def to_writer(self, writer):
         writer.write(self._speed, "h")
-        writer.write(self._unknown1, "h")
+        writer.write(self._unknown, "h")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -2856,10 +2856,10 @@ class AnimBody(Packet):
     @classmethod
     def from_reader(cls, reader):
         speed = reader.read("h")
-        unknown1 = reader.read("h")
+        unknown = reader.read("h")
         return cls(
             speed=speed,
-            unknown1=unknown1)
+            unknown=unknown)
 
     
 class EndAnimation(Packet):
@@ -3920,7 +3920,7 @@ class NvStorageOpResult(Packet):
 
     __slots__ = (
         "_tag",  # NvEntryTag
-        "_index",  # int32
+        "_length",  # int32
         "_op",  # NvOperation
         "_result",  # NvResult
         "_data",  # uint8[uint16]
@@ -3928,13 +3928,13 @@ class NvStorageOpResult(Packet):
 
     def __init__(self,
                  tag=4294967295,
-                 index=0,
+                 length=0,
                  op=0,
                  result=0,
                  data=()):
         super().__init__(PacketType.COMMAND, packet_id=205)
         self.tag = NvEntryTag(tag)
-        self.index = index
+        self.length = length
         self.op = NvOperation(op)
         self.result = NvResult(result)
         self.data = data
@@ -3949,12 +3949,12 @@ class NvStorageOpResult(Packet):
         validate_integer("tag", value.value, 0, 4294967295)
 
     @property
-    def index(self):
-        return self._index
+    def length(self):
+        return self._length
 
-    @index.setter
-    def index(self, value):
-        self._index = validate_integer("index", value, -2147483648, 2147483647)
+    @length.setter
+    def length(self, value):
+        self._length = validate_integer("length", value, -2147483648, 2147483647)
 
     @property
     def op(self) -> NvOperation:
@@ -3994,13 +3994,13 @@ class NvStorageOpResult(Packet):
     def __repr__(self):
         return "{type}(" \
                "tag={tag}, " \
-               "index={index}, " \
+               "length={length}, " \
                "op={op}, " \
                "result={result}, " \
                "data={data})".format(
                 type=type(self).__name__,
                 tag=self._tag,
-                index=self._index,
+                length=self._length,
                 op=self._op,
                 result=self._result,
                 data=self._data)
@@ -4012,7 +4012,7 @@ class NvStorageOpResult(Packet):
         
     def to_writer(self, writer):
         writer.write(self._tag.value, "L")
-        writer.write(self._index, "l")
+        writer.write(self._length, "l")
         writer.write(self._op.value, "B")
         writer.write(self._result.value, "b")
         writer.write_varray(self._data, "B", "H")
@@ -4026,13 +4026,13 @@ class NvStorageOpResult(Packet):
     @classmethod
     def from_reader(cls, reader):
         tag = reader.read("L")
-        index = reader.read("l")
+        length = reader.read("l")
         op = reader.read("B")
         result = reader.read("b")
         data = reader.read_varray("B", "H")
         return cls(
             tag=tag,
-            index=index,
+            length=length,
             op=op,
             result=result,
             data=data)
