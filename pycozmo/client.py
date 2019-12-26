@@ -324,6 +324,96 @@ class Client(event.Dispatcher):
         pkt = protocol_encoder.StopAllMotors()
         self.conn.send(pkt)
 
+    @staticmethod
+    def get_motor_thrust(r: float, theta: float) -> Tuple[float, float]:
+        """
+        Convert throttle and steering angle to left and right motor thrust.
+
+        https://robotics.stackexchange.com/questions/2011/how-to-calculate-the-right-and-left-speed-for-a-tank-like-rover
+
+        :param r: throttle percentage [0, 100]
+        :param theta: steering angle [-180, 180)
+        :return: tuple - left motor and right motor thrust percentage [-100, 100]
+        """
+        # normalize theta to [-180, 180)
+        theta = ((theta + 180.0) % 360.0) - 180.0
+        # normalize r to [0, 100]
+        r = min(max(0.0, r), 100.0)
+        v_a = r * (45.0 - theta % 90.0) / 45.0
+        v_b = min(100.0, 2.0 * r + v_a, 2.0 * r - v_a)
+        if theta < -90.0:
+            return -v_b, -v_a
+        elif theta < 0:
+            return -v_a, v_b
+        elif theta < 90.0:
+            return v_b, v_a
+        else:
+            return v_a, -v_b
+
+    def go_to_pose(self, pose: util.Pose, relative_to_robot: bool = False) -> None:
+        """
+        Move to a specific pose (position and orientation).
+
+        Implementation based on:
+        - https://atsushisakai.github.io/PythonRobotics/#move-to-a-pose-control
+        - https://github.com/AtsushiSakai/PythonRobotics/blob/master/PathTracking/move_to_pose/move_to_pose.py
+        - P. I. Corke, "Robotics, Vision & Control", Springer 2017, ISBN 978-3-319-54413-7, p. 75
+        """
+
+        if relative_to_robot:
+            pose = util.Pose(self.pose.position.x, self.pose.position.y,
+                             self.pose.position.z, angle_z=self.pose.rotation.angle_z).define_pose_relative_this(pose)
+
+        kp_rho = 1.0
+        assert kp_rho > 0
+        kp_alpha = 1.5
+        assert kp_alpha - kp_rho > 0
+        kp_beta = -1.0
+        assert kp_beta < 0
+        dt = 0.03
+
+        x_diff = pose.position.x - self.pose.position.x
+        y_diff = pose.position.y - self.pose.position.y
+        rho = np.hypot(x_diff, y_diff)
+
+        while rho > 3:
+            # Get current pose
+            x = self.pose.position.x
+            y = self.pose.position.y
+            theta = self.pose.rotation.angle_z.radians
+
+            x_diff = pose.position.x - x
+            y_diff = pose.position.y - y
+            rho = np.hypot(x_diff, y_diff)
+
+            # Restrict alpha and beta (angle differences) to the range
+            # [-pi, pi] to prevent unstable behavior e.g. difference going
+            # from 0 rad to 2*pi rad with slight turn
+
+            alpha = (np.arctan2(y_diff, x_diff) - theta + np.pi) % (2.0 * np.pi) - np.pi
+            beta = (pose.rotation.angle_z.radians - theta - alpha + np.pi) % (2.0 * np.pi) - np.pi
+
+            # v = kp_rho * rho
+            v = 0.2
+            w = kp_alpha * alpha + kp_beta * beta
+
+            if alpha > np.pi / 2.0 or alpha < -np.pi / 2.0:
+                v = -v
+
+            # Send command
+            w_deg = -util.Angle(radians=w).degrees
+            if v < 0:
+                v = -v
+                w_deg += 180.0
+            v_a, v_b = self.get_motor_thrust(v, w_deg)
+            lw = v_a * robot.MAX_WHEEL_SPEED.mmps
+            rw = v_b * robot.MAX_WHEEL_SPEED.mmps
+            self.drive_wheels(lwheel_speed=lw, rwheel_speed=rw)
+
+            time.sleep(dt)
+
+        self.stop_all_motors()
+
     def set_backpack_lights(self, left_light, front_light, center_light, rear_light, right_light) -> None:
         pkt = protocol_encoder.LightStateCenter(states=(front_light, center_light, rear_light))
         self.conn.send(pkt)

@@ -75,7 +75,7 @@ read through the `lwheel_speed_mmps` and `rwheel_speed_mmps` fields of the `Robo
 Localization
 ------------
 
-`RobotState`
+`RobotState` - transmitted every 30 ms or about 33 times per second.
 `RobotDelocalized`
 `SetOrigin`
 
