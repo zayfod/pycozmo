@@ -23,7 +23,7 @@ BODY_COLOR = Enum("BodyColor", members=[
     EnumMember("CE_LM_v15", 3),
     EnumMember("LE_BL_v16", 4),
 ])
-NV_ENTRY_TAG = Enum("NvEntryTag", members=[
+NV_ENTRY_TAG = Enum("NvEntryTag", base=16, members=[
     EnumMember("NVEntry_Invalid", 0xffffffff),
     EnumMember("NVEntry_GameSkillLevels", 0x180000),
     EnumMember("NVEntry_OnboardingData", 0x181000),
@@ -169,7 +169,7 @@ IMAGE_RESOLUTION = Enum("ImageResolution", members=[
     EnumMember("ImageResolutionCount", 13),
     EnumMember("ImageResolutionNone", 14),
 ])
-DEBUG_DATA_ID = Enum("DebugDataID", members=[
+DEBUG_DATA_ID = Enum("DebugDataID", base=16, members=[
     EnumMember("MAC_ADDRESS", 0x1572),              # 624
 ])
 

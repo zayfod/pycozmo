@@ -29,44 +29,44 @@ class BodyColor(enum.Enum):
 
 
 class NvEntryTag(enum.Enum):
-    NVEntry_Invalid = 4294967295
-    NVEntry_GameSkillLevels = 1572864
-    NVEntry_OnboardingData = 1576960
-    NVEntry_GameUnlocks = 1581056
-    NVEntry_FaceEnrollData = 1585152
-    NVEntry_FaceAlbumData = 1589248
-    NVEntry_NurtureGameData = 1654784
-    NVEntry_InventoryData = 1658880
-    NVEntry_LabAssignments = 1662976
-    NVEntry_SavedCubeIDs = 1667072
-    NVEntry_NEXT_SLOT = 1671168
-    NVEntry_FACTORY_RESERVED1 = 1835008
-    NVEntry_FACTORY_RESERVED2 = 1957888
-    NVEntry_BirthCertificate = 2147483648
-    NVEntry_CameraCalib = 2147483649
-    NVEntry_ToolCodeInfo = 2147483650
-    NVEntry_CalibPose = 2147483651
-    NVEntry_CalibMetaInfo = 2147483652
-    NVEntry_ObservedCubePose = 2147483653
-    NVEntry_IMUInfo = 2147483654
-    NVEntry_CliffValOnDrop = 2147483655
-    NVEntry_CliffValOnGround = 2147483656
-    NVEntry_PlaypenTestResults = 2147483664
-    NVEntry_FactoryLock = 2147483665
-    NVEntry_VersionMagic = 2147483666
-    NVEntry_CalibImage1 = 2147549184
-    NVEntry_CalibImage2 = 2147614720
-    NVEntry_CalibImage3 = 2147680256
-    NVEntry_CalibImage4 = 2147745792
-    NVEntry_CalibImage5 = 2147811328
-    NVEntry_CalibImage6 = 2147876864
-    NVEntry_ToolCodeImageLeft = 2148532224
-    NVEntry_ToolCodeImageRight = 2148597760
-    NVEntry_PrePlaypenResults = 3221225472
-    NVEntry_PrePlaypenCentroids = 3221225473
-    NVEntry_IMUAverages = 3221225476
-    NVEntry_FactoryBaseTag = 909312
-    NVEntry_FactoryBaseTagWithBCOffset = 909360
+    NVEntry_Invalid = 0xffffffff
+    NVEntry_GameSkillLevels = 0x180000
+    NVEntry_OnboardingData = 0x181000
+    NVEntry_GameUnlocks = 0x182000
+    NVEntry_FaceEnrollData = 0x183000
+    NVEntry_FaceAlbumData = 0x184000
+    NVEntry_NurtureGameData = 0x194000
+    NVEntry_InventoryData = 0x195000
+    NVEntry_LabAssignments = 0x196000
+    NVEntry_SavedCubeIDs = 0x197000
+    NVEntry_NEXT_SLOT = 0x198000
+    NVEntry_FACTORY_RESERVED1 = 0x1c0000
+    NVEntry_FACTORY_RESERVED2 = 0x1de000
+    NVEntry_BirthCertificate = 0x80000000
+    NVEntry_CameraCalib = 0x80000001
+    NVEntry_ToolCodeInfo = 0x80000002
+    NVEntry_CalibPose = 0x80000003
+    NVEntry_CalibMetaInfo = 0x80000004
+    NVEntry_ObservedCubePose = 0x80000005
+    NVEntry_IMUInfo = 0x80000006
+    NVEntry_CliffValOnDrop = 0x80000007
+    NVEntry_CliffValOnGround = 0x80000008
+    NVEntry_PlaypenTestResults = 0x80000010
+    NVEntry_FactoryLock = 0x80000011
+    NVEntry_VersionMagic = 0x80000012
+    NVEntry_CalibImage1 = 0x80010000
+    NVEntry_CalibImage2 = 0x80020000
+    NVEntry_CalibImage3 = 0x80030000
+    NVEntry_CalibImage4 = 0x80040000
+    NVEntry_CalibImage5 = 0x80050000
+    NVEntry_CalibImage6 = 0x80060000
+    NVEntry_ToolCodeImageLeft = 0x80100000
+    NVEntry_ToolCodeImageRight = 0x80110000
+    NVEntry_PrePlaypenResults = 0xc0000000
+    NVEntry_PrePlaypenCentroids = 0xc0000001
+    NVEntry_IMUAverages = 0xc0000004
+    NVEntry_FactoryBaseTag = 0xde000
+    NVEntry_FactoryBaseTagWithBCOffset = 0xde030
 
 
 class NvOperation(enum.Enum):
@@ -182,7 +182,7 @@ class ImageResolution(enum.Enum):
 
 
 class DebugDataID(enum.Enum):
-    MAC_ADDRESS = 5490
+    MAC_ADDRESS = 0x1572
 
 
 class LightState(Struct):
