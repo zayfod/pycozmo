@@ -331,7 +331,8 @@ class ProtocolGenerator(object):
             self.f.write("        pass\n")
 
     def generate_packet_arugment_assignments(self, packet: protocol_declaration.Packet):
-        self.f.write("        super().__init__({type}, packet_id={id})\n".format(type=packet.type, id=packet.id))
+        packet_id = "0x{:02x}".format(packet.id) if packet.id is not None else None
+        self.f.write("        super().__init__({type}, packet_id={id})\n".format(type=packet.type, id=packet_id))
         self.generate_arugment_assignments(packet)
 
     def generate_packet_encoding(self, struct: protocol_declaration.Struct):
