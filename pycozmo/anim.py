@@ -11,6 +11,7 @@ Animation data structures are declared in FlatBuffers format in files/cozmo/cozm
 from typing import Optional
 from collections import defaultdict
 import math
+import time
 
 from PIL import Image
 import numpy as np
@@ -26,6 +27,31 @@ from . import robot
 __all__ = [
     "PreprocessedClip",
 ]
+
+
+class RecordHeading(object):
+    pass
+
+
+class TurnToRecordedHeading(object):
+
+    def __init__(self,
+                 duration_time_ms: int,
+                 offset_deg: int,
+                 speed_deg_per_sec: int,
+                 accel_deg_per_sec_2: int,
+                 decel_deg_per_sec_2: int,
+                 tolerance_deg: int,
+                 num_half_revs: int,
+                 use_shortest_dir: bool):
+        self.duration_time_ms = duration_time_ms
+        self.offset_deg = offset_deg
+        self.speed_deg_per_sec = speed_deg_per_sec
+        self.accel_deg_per_sec_2 = accel_deg_per_sec_2
+        self.decel_deg_per_sec_2 = decel_deg_per_sec_2
+        self.tolerance_deg = tolerance_deg
+        self.num_half_revs = num_half_revs
+        self.use_shortest_dir = use_shortest_dir
 
 
 class PreprocessedClip(object):
@@ -50,14 +76,21 @@ class PreprocessedClip(object):
                                                 height_mm=keyframe.height_mm)
                 keyframes[keyframe.trigger_time_ms].append(pkt)
             elif isinstance(keyframe, anim_encoder.AnimRecordHeading):
-                # TODO
-                pass
+                action = RecordHeading()
+                keyframes[keyframe.trigger_time_ms].append(action)
             elif isinstance(keyframe, anim_encoder.AnimTurnToRecordedHeading):
-                # TODO
-                pass
+                action = TurnToRecordedHeading(keyframe.duration_time_ms,
+                                               keyframe.offset_deg,
+                                               keyframe.speed_deg_per_sec,
+                                               keyframe.accel_deg_per_sec_2,
+                                               keyframe.decel_deg_per_sec_2,
+                                               keyframe.tolerance_deg,
+                                               keyframe.num_half_revs,
+                                               keyframe.use_shortest_dir)
+                keyframes[keyframe.trigger_time_ms].append(action)
             elif isinstance(keyframe, anim_encoder.AnimBodyMotion):
                 if keyframe.radius_mm == "STRAIGHT":
-                    pkt = protocol_encoder.AnimBody(speed=keyframe.speed, unknown1=32767)
+                    pkt = protocol_encoder.AnimBody(speed=keyframe.speed, unknown=32767)
                 elif keyframe.radius_mm == "TURN_IN_PLACE":
                     pkt = protocol_encoder.TurnInPlaceAtSpeed(wheel_speed_mmps=keyframe.speed,
                                                               direction=math.copysign(1.0, keyframe.speed))
@@ -85,6 +118,7 @@ class PreprocessedClip(object):
                                                                   off_light))
                 keyframes[keyframe.trigger_time_ms + keyframe.duration_ms].append(pkt)
             elif isinstance(keyframe, anim_encoder.AnimFaceAnimation):
+                # TODO
                 pass
             elif isinstance(keyframe, anim_encoder.AnimProceduralFace):
                 face = procedural_face.ProceduralFace(
@@ -102,10 +136,38 @@ class PreprocessedClip(object):
                 pkt = protocol_encoder.DisplayImage(image=buf)
                 keyframes[keyframe.trigger_time_ms].append(pkt)
             elif isinstance(keyframe, anim_encoder.AnimRobotAudio):
+                # TODO
                 pass
             elif isinstance(keyframe, anim_encoder.AnimEvent):
+                # TODO
                 pass
             else:
                 raise RuntimeError("Unexpected keyframe type '{}'".format(type(keyframe)))
         ppclip = cls(keyframes=keyframes)
         return ppclip
+
+    def play(self, cli):
+        cli.send(protocol_encoder.StartAnimation(anim_id=1))
+
+        frames = list(sorted(self.keyframes.keys()))
+        num_frames = len(frames)
+        for i in range(num_frames):
+            keyframe = self.keyframes[frames[i]]
+            for action in keyframe:
+                if isinstance(action, protocol_encoder.Packet):
+                    cli.conn.send(action)
+                elif isinstance(action, RecordHeading):
+                    # TODO
+                    pass
+                elif isinstance(action, TurnToRecordedHeading):
+                    # TODO
+                    pass
+
+            # Play keyframe
+            cli.conn.send(protocol_encoder.OutputAudio(samples=[0] * 744))
+
+            if i < num_frames - 1:
+                delay_ms = (frames[i + 1] - frames[i]) / 1000.0
+                time.sleep(delay_ms)
+
+        cli.conn.send(protocol_encoder.EndAnimation())

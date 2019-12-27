@@ -8,9 +8,11 @@ Animation data structures are declared in FlatBuffers format in files/cozmo/cozm
 
 """
 
-from typing import List, Union
+from typing import List, Union, Dict
 from abc import ABC
+import os
 import json
+import glob
 
 import flatbuffers
 
@@ -787,3 +789,70 @@ class AnimEvent(AnimKeyframe):
             trigger_time_ms=fbkf.TriggerTimeMs(),
             event_id=fbkf.EventId().decode("utf-8")
         )
+
+
+class ClipMetadata(object):
+    """ Animation clip metadata class. """
+    def __init__(self,
+                 fspec: str,
+                 index: int,
+                 name: str,
+                 has_head_angle_track: bool,
+                 has_lift_height_track: bool,
+                 has_record_heading_track: bool,
+                 has_turn_to_recorded_heading_track: bool,
+                 has_body_motion_track: bool,
+                 has_backpack_lights_track: bool,
+                 has_face_animation_track: bool,
+                 has_procedural_face_track: bool,
+                 has_robot_audio_track: bool,
+                 has_event_track: bool):
+        self.fspec = str(fspec)
+        self.index = int(index)
+        self.name = str(name)
+        self.has_head_angle_track = bool(has_head_angle_track)
+        self.has_lift_height_track = bool(has_lift_height_track)
+        self.has_record_heading_track = bool(has_record_heading_track)
+        self.has_turn_to_recorded_heading_track = bool(has_turn_to_recorded_heading_track)
+        self.has_body_motion_track = bool(has_body_motion_track)
+        self.has_backpack_lights_track = bool(has_backpack_lights_track)
+        self.has_face_animation_track = bool(has_face_animation_track)
+        self.has_procedural_face_track = bool(has_procedural_face_track)
+        self.has_robot_audio_track = bool(has_robot_audio_track)
+        self.has_event_track = bool(has_event_track)
+
+
+def get_clip_metadata(dspec: str) -> Dict[str, ClipMetadata]:
+    """ Retrieve clip metadata from animation FlatBuffers .bin files. """
+    res = {}
+    # Find all animation files.
+    for fspec in glob.glob(os.path.join(dspec, "*.bin")):
+        with open(fspec, "rb") as f:
+            buf = f.read()
+        fbclips = CozmoAnim.AnimClips.AnimClips.GetRootAsAnimClips(buf, 0)
+        # Read properties of all clips.
+        for i in range(fbclips.ClipsLength()):
+            fbclip = fbclips.Clips(i)
+            fbkfs = fbclip.Keyframes()
+            metadata = ClipMetadata(
+                fspec,
+                i,
+                fbclip.Name().decode("utf-8"),
+                fbkfs.HeadAngleKeyFrameLength() > 0,
+                fbkfs.LiftHeightKeyFrameLength() > 0,
+                fbkfs.RecordHeadingKeyFrameLength() > 0,
+                fbkfs.TurnToRecordedHeadingKeyFrameLength() > 0,
+                fbkfs.BodyMotionKeyFrameLength() > 0,
+                fbkfs.BackpackLightsKeyFrameLength() > 0,
+                fbkfs.FaceAnimationKeyFrameLength() > 0,
+                fbkfs.ProceduralFaceKeyFrameLength() > 0,
+                fbkfs.RobotAudioKeyFrameLength() > 0,
+                fbkfs.EventKeyFrameLength() > 0)
+            res[metadata.name] = metadata
+            if metadata.has_procedural_face_track and \
+               not metadata.has_body_motion_track and \
+               not metadata.has_lift_height_track and \
+               not metadata.has_head_angle_track and \
+               not metadata.has_robot_audio_track:
+                print("{}:{}:{}".format(metadata.fspec, metadata.index, metadata.name))
+    return res

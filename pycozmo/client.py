@@ -448,20 +448,4 @@ class Client(event.Dispatcher):
         self.conn.send(pkt)
 
     def play_anim_clip(self, clip: anim.PreprocessedClip) -> None:
-        self.conn.send(protocol_encoder.StartAnimation(anim_id=1))
-
-        frames = list(sorted(clip.keyframes.keys()))
-        num_frames = len(frames)
-        for i in range(num_frames):
-            keyframe = clip.keyframes[frames[i]]
-            for pkt in keyframe:
-                self.conn.send(pkt)
-
-            # Play keyframe
-            self.conn.send(protocol_encoder.OutputAudio(samples=[0] * 744))
-
-            if i < num_frames - 1:
-                delay_ms = (frames[i + 1] - frames[i]) / 1000.0
-                time.sleep(delay_ms)
-
-        self.conn.send(protocol_encoder.EndAnimation())
+        clip.play(self)
