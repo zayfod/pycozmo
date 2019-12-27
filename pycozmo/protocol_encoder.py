@@ -185,6 +185,13 @@ class DebugDataID(enum.Enum):
     MAC_ADDRESS = 0x1572
 
 
+class MotorID(enum.Enum):
+    MOTOR_LEFT_WHEEL = 0
+    MOTOR_RIGHT_WHEEL = 1
+    MOTOR_LIFT = 2
+    MOTOR_HEAD = 3
+
+
 class LightState(Struct):
 
     __slots__ = (
@@ -729,6 +736,123 @@ class ObjectConnect(Packet):
         return cls(
             factory_id=factory_id,
             connect=connect)
+
+    
+class StreamObjectAccel(Packet):
+
+    __slots__ = (
+        "_object_id",  # uint32
+        "_enable",  # bool
+    )
+
+    def __init__(self,
+                 object_id=0,
+                 enable=False):
+        super().__init__(PacketType.COMMAND, packet_id=0x08)
+        self.object_id = object_id
+        self.enable = enable
+
+    @property
+    def object_id(self):
+        return self._object_id
+
+    @object_id.setter
+    def object_id(self, value):
+        self._object_id = validate_integer("object_id", value, 0, 4294967295)
+
+    @property
+    def enable(self):
+        return self._enable
+
+    @enable.setter
+    def enable(self, value):
+        self._enable = validate_bool("enable", value)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "object_id={object_id}, " \
+               "enable={enable})".format(
+                type=type(self).__name__,
+                object_id=self._object_id,
+                enable=self._enable)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._object_id, "L")
+        writer.write(int(self._enable), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        object_id = reader.read("L")
+        enable = bool(reader.read("b"))
+        return cls(
+            object_id=object_id,
+            enable=enable)
+
+    
+class SetAccessoryDiscovery(Packet):
+
+    __slots__ = (
+        "_enable",  # bool
+    )
+
+    def __init__(self,
+                 enable=False):
+        super().__init__(PacketType.COMMAND, packet_id=0x0a)
+        self.enable = enable
+
+    @property
+    def enable(self):
+        return self._enable
+
+    @enable.setter
+    def enable(self, value):
+        self._enable = validate_bool("enable", value)
+
+    def __len__(self):
+        return \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "enable={enable})".format(
+                type=type(self).__name__,
+                enable=self._enable)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(int(self._enable), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        enable = bool(reader.read("b"))
+        return cls(
+            enable=enable)
 
     
 class SetHeadLight(Packet):
@@ -1965,16 +2089,27 @@ class SetOrigin(Packet):
             unknown5=unknown5)
 
     
-class EnableBodyACC(Packet):
+class SyncTime(Packet):
 
     __slots__ = (
-        "_unknown",  # uint8[8]
+        "_timestamp",  # uint32
+        "_unknown",  # uint32
     )
 
     def __init__(self,
-                 unknown=(196, 182, 57, 0, 0, 0, 160, 193)):
+                 timestamp=0,
+                 unknown=0):
         super().__init__(PacketType.COMMAND, packet_id=0x4b)
+        self.timestamp = timestamp
         self.unknown = unknown
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = validate_integer("timestamp", value, 0, 4294967295)
 
     @property
     def unknown(self):
@@ -1982,17 +2117,19 @@ class EnableBodyACC(Packet):
 
     @unknown.setter
     def unknown(self, value):
-        self._unknown = validate_farray(
-            "unknown", value, 8, lambda name, value_inner: validate_integer(name, value_inner, 0, 255))
+        self._unknown = validate_integer("unknown", value, 0, 4294967295)
 
     def __len__(self):
         return \
-            get_farray_size('B', 8)
+            get_size('L') + \
+            get_size('L')
 
     def __repr__(self):
         return "{type}(" \
+               "timestamp={timestamp}, " \
                "unknown={unknown})".format(
                 type=type(self).__name__,
+                timestamp=self._timestamp,
                 unknown=self._unknown)
 
     def to_bytes(self):
@@ -2001,7 +2138,8 @@ class EnableBodyACC(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write_farray(self._unknown, "B", 8)
+        writer.write(self._timestamp, "L")
+        writer.write(self._unknown, "L")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -2011,8 +2149,10 @@ class EnableBodyACC(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        unknown = reader.read_farray("B", 8)
+        timestamp = reader.read("L")
+        unknown = reader.read("L")
         return cls(
+            timestamp=timestamp,
             unknown=unknown)
 
     
@@ -2165,6 +2305,73 @@ class SetCameraParams(Packet):
             gain=gain,
             exposure_ms=exposure_ms,
             auto_exposure_enabled=auto_exposure_enabled)
+
+    
+class StartMotorCalibration(Packet):
+
+    __slots__ = (
+        "_head",  # bool
+        "_lift",  # bool
+    )
+
+    def __init__(self,
+                 head=False,
+                 lift=False):
+        super().__init__(PacketType.COMMAND, packet_id=0x58)
+        self.head = head
+        self.lift = lift
+
+    @property
+    def head(self):
+        return self._head
+
+    @head.setter
+    def head(self, value):
+        self._head = validate_bool("head", value)
+
+    @property
+    def lift(self):
+        return self._lift
+
+    @lift.setter
+    def lift(self, value):
+        self._lift = validate_bool("lift", value)
+
+    def __len__(self):
+        return \
+            get_size('b') + \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "head={head}, " \
+               "lift={lift})".format(
+                type=type(self).__name__,
+                head=self._head,
+                lift=self._lift)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(int(self._head), "b")
+        writer.write(int(self._lift), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        head = bool(reader.read("b"))
+        lift = bool(reader.read("b"))
+        return cls(
+            head=head,
+            lift=lift)
 
     
 class EnableStopOnCliff(Packet):
@@ -2982,6 +3189,92 @@ class EnableAnimationState(Packet):
         del reader
         return cls(
             )
+
+    
+class ShutdownRobot(Packet):
+
+    __slots__ = (
+    )
+
+    def __init__(self):
+        super().__init__(PacketType.COMMAND, packet_id=0xa9)
+        pass
+
+    def __len__(self):
+        return 0
+
+    def __repr__(self):
+        return "{type}()".format(type=type(self).__name__)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        pass
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        del reader
+        return cls(
+            )
+
+    
+class WifiOff(Packet):
+
+    __slots__ = (
+        "_enable",  # bool
+    )
+
+    def __init__(self,
+                 enable=False):
+        super().__init__(PacketType.COMMAND, packet_id=0xae)
+        self.enable = enable
+
+    @property
+    def enable(self):
+        return self._enable
+
+    @enable.setter
+    def enable(self, value):
+        self._enable = validate_bool("enable", value)
+
+    def __len__(self):
+        return \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "enable={enable})".format(
+                type=type(self).__name__,
+                enable=self._enable)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(int(self._enable), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        enable = bool(reader.read("b"))
+        return cls(
+            enable=enable)
 
     
 class FirmwareUpdate(Packet):
@@ -4222,6 +4515,91 @@ class ObjectConnectionState(Packet):
             factory_id=factory_id,
             object_type=object_type,
             connected=connected)
+
+    
+class MotorCalibration(Packet):
+
+    __slots__ = (
+        "_motor_id",  # MotorID
+        "_calib_started",  # bool
+        "_auto_started",  # bool
+    )
+
+    def __init__(self,
+                 motor_id=0,
+                 calib_started=False,
+                 auto_started=False):
+        super().__init__(PacketType.COMMAND, packet_id=0xd1)
+        self.motor_id = MotorID(motor_id)
+        self.calib_started = calib_started
+        self.auto_started = auto_started
+
+    @property
+    def motor_id(self) -> MotorID:
+        return self._motor_id
+
+    @motor_id.setter
+    def motor_id(self, value: MotorID):
+        self._motor_id = value
+        validate_integer("motor_id", value.value, 0, 255)
+
+    @property
+    def calib_started(self):
+        return self._calib_started
+
+    @calib_started.setter
+    def calib_started(self, value):
+        self._calib_started = validate_bool("calib_started", value)
+
+    @property
+    def auto_started(self):
+        return self._auto_started
+
+    @auto_started.setter
+    def auto_started(self, value):
+        self._auto_started = validate_bool("auto_started", value)
+
+    def __len__(self):
+        return \
+            get_size('B') + \
+            get_size('b') + \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "motor_id={motor_id}, " \
+               "calib_started={calib_started}, " \
+               "auto_started={auto_started})".format(
+                type=type(self).__name__,
+                motor_id=self._motor_id,
+                calib_started=self._calib_started,
+                auto_started=self._auto_started)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._motor_id.value, "B")
+        writer.write(int(self._calib_started), "b")
+        writer.write(int(self._auto_started), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        motor_id = reader.read("B")
+        calib_started = bool(reader.read("b"))
+        auto_started = bool(reader.read("b"))
+        return cls(
+            motor_id=motor_id,
+            calib_started=calib_started,
+            auto_started=auto_started)
 
     
 class ObjectUpAxisChanged(Packet):
@@ -5680,11 +6058,131 @@ class ImageImuData(Packet):
             rate_z=rate_z,
             line_2_number=line_2_number)
 
+    
+class ObjectAccel(Packet):
+
+    __slots__ = (
+        "_timestamp",  # uint32
+        "_object_id",  # uint32
+        "_accel_x",  # float
+        "_accel_y",  # float
+        "_accel_z",  # float
+    )
+
+    def __init__(self,
+                 timestamp=0,
+                 object_id=0,
+                 accel_x=0.0,
+                 accel_y=0.0,
+                 accel_z=0.0):
+        super().__init__(PacketType.EVENT, packet_id=0xf5)
+        self.timestamp = timestamp
+        self.object_id = object_id
+        self.accel_x = accel_x
+        self.accel_y = accel_y
+        self.accel_z = accel_z
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = validate_integer("timestamp", value, 0, 4294967295)
+
+    @property
+    def object_id(self):
+        return self._object_id
+
+    @object_id.setter
+    def object_id(self, value):
+        self._object_id = validate_integer("object_id", value, 0, 4294967295)
+
+    @property
+    def accel_x(self):
+        return self._accel_x
+
+    @accel_x.setter
+    def accel_x(self, value):
+        self._accel_x = validate_float("accel_x", value)
+
+    @property
+    def accel_y(self):
+        return self._accel_y
+
+    @accel_y.setter
+    def accel_y(self, value):
+        self._accel_y = validate_float("accel_y", value)
+
+    @property
+    def accel_z(self):
+        return self._accel_z
+
+    @accel_z.setter
+    def accel_z(self, value):
+        self._accel_z = validate_float("accel_z", value)
+
+    def __len__(self):
+        return \
+            get_size('L') + \
+            get_size('L') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f')
+
+    def __repr__(self):
+        return "{type}(" \
+               "timestamp={timestamp}, " \
+               "object_id={object_id}, " \
+               "accel_x={accel_x}, " \
+               "accel_y={accel_y}, " \
+               "accel_z={accel_z})".format(
+                type=type(self).__name__,
+                timestamp=self._timestamp,
+                object_id=self._object_id,
+                accel_x=self._accel_x,
+                accel_y=self._accel_y,
+                accel_z=self._accel_z)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._timestamp, "L")
+        writer.write(self._object_id, "L")
+        writer.write(self._accel_x, "f")
+        writer.write(self._accel_y, "f")
+        writer.write(self._accel_z, "f")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        timestamp = reader.read("L")
+        object_id = reader.read("L")
+        accel_x = reader.read("f")
+        accel_y = reader.read("f")
+        accel_z = reader.read("f")
+        return cls(
+            timestamp=timestamp,
+            object_id=object_id,
+            accel_x=accel_x,
+            accel_y=accel_y,
+            accel_z=accel_z)
+
 
 PACKETS_BY_ID = {
     0x03: LightStateCenter,  # 3
     0x04: CubeLights,  # 4
     0x05: ObjectConnect,  # 5
+    0x08: StreamObjectAccel,  # 8
+    0x0a: SetAccessoryDiscovery,  # 10
     0x0b: SetHeadLight,  # 11
     0x10: CubeId,  # 16
     0x11: LightStateSide,  # 17
@@ -5699,9 +6197,10 @@ PACKETS_BY_ID = {
     0x3b: StopAllMotors,  # 59
     0x3d: DriveStraight,  # 61
     0x45: SetOrigin,  # 69
-    0x4b: EnableBodyACC,  # 75
+    0x4b: SyncTime,  # 75
     0x4c: EnableCamera,  # 76
     0x57: SetCameraParams,  # 87
+    0x58: StartMotorCalibration,  # 88
     0x60: EnableStopOnCliff,  # 96
     0x64: SetRobotVolume,  # 100
     0x66: EnableColorImages,  # 102
@@ -5716,6 +6215,8 @@ PACKETS_BY_ID = {
     0x9a: EndAnimation,  # 154
     0x9b: StartAnimation,  # 155
     0x9f: EnableAnimationState,  # 159
+    0xa9: ShutdownRobot,  # 169
+    0xae: WifiOff,  # 174
     0xaf: FirmwareUpdate,  # 175
     0xb0: DebugData,  # 176
     0xb4: ObjectMoved,  # 180
@@ -5731,6 +6232,7 @@ PACKETS_BY_ID = {
     0xcd: NvStorageOpResult,  # 205
     0xce: ObjectPowerLevel,  # 206
     0xd0: ObjectConnectionState,  # 208
+    0xd1: MotorCalibration,  # 209
     0xd7: ObjectUpAxisChanged,  # 215
     0xdb: ButtonPressed,  # 219
     0xdd: FallingStarted,  # 221
@@ -5743,6 +6245,7 @@ PACKETS_BY_ID = {
     0xf2: ImageChunk,  # 242
     0xf3: ObjectAvailable,  # 243
     0xf4: ImageImuData,  # 244
+    0xf5: ObjectAccel,  # 245
 }
 
 
@@ -5799,8 +6302,10 @@ PACKETS_BY_GROUP = {
         0x39,  # TurnInPlace
         0x3b,  # StopAllMotors
         0x3d,  # DriveStraight
+        0x58,  # StartMotorCalibration
         0x60,  # EnableStopOnCliff
         0xc4,  # AcknowledgeAction
+        0xd1,  # MotorCalibration
     },
     "nv": {
         0x81,  # NvStorageOp
@@ -5809,6 +6314,8 @@ PACKETS_BY_GROUP = {
     "objects": {
         0x04,  # CubeLights
         0x05,  # ObjectConnect
+        0x08,  # StreamObjectAccel
+        0x0a,  # SetAccessoryDiscovery
         0x10,  # CubeId
         0xb4,  # ObjectMoved
         0xb5,  # ObjectStoppedMoving
@@ -5824,11 +6331,14 @@ PACKETS_BY_GROUP = {
         0xf2,  # ImageChunk
         0xf3,  # ObjectAvailable
         0xf4,  # ImageImuData
+        0xf5,  # ObjectAccel
     },
     "system": {
         0x25,  # Enable
-        0x4b,  # EnableBodyACC
+        0x4b,  # SyncTime
         0x9f,  # EnableAnimationState
+        0xa9,  # ShutdownRobot
+        0xae,  # WifiOff
         0xc9,  # HardwareInfo
         0xdb,  # ButtonPressed
         0xed,  # BodyInfo

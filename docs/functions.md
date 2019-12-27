@@ -34,6 +34,9 @@ Wi-Fi is activated automatically when the head board is powered on. The robot op
 `cozmoclad` defines a `SetBodyRadioMode` message that seems to allow changing the Wi-Fi channel but it is unclear
 how it can be used with the Cozmo protocol.
 
+`WifiOff`
+`Shutdown`
+
 
 Backpack LEDs
 -------------
@@ -75,9 +78,10 @@ read through the `lwheel_speed_mmps` and `rwheel_speed_mmps` fields of the `Robo
 Localization
 ------------
 
+`SyncTime`
+`SetOrigin`
 `RobotState` - transmitted every 30 ms or about 33 times per second.
 `RobotDelocalized`
-`SetOrigin`
 
 
 Head
@@ -92,6 +96,8 @@ The actual head angle can be read through the `head_angle_rad` field of the `Rob
 See [extremes.py](../examples/extremes.py) for example usage.
 
 `AcknowledgeAction`
+`StartMotorCalibration`
+`MotorCalibration`
 
 
 Lift
@@ -106,6 +112,8 @@ The actual lift height can be read through the `lift_height_mm` field of the `Ro
 See [extremes.py](../examples/extremes.py) for example usage.
 
 `AcknowledgeAction`
+`StartMotorCalibration`
+`MotorCalibration`
 
 
 OLED display
@@ -234,6 +242,8 @@ The `ObjectConnect` message is used to initiate or terminate a connection to obj
 Connection establishment and termination is announced with the `ObjectConnectionState` message. It contains a temporary
 "object ID" that is used to identify the object for the duration of the connection with it.
 
+`SetAccessoryDiscovery`
+
 
 Cube LEDs
 ---------
@@ -261,6 +271,8 @@ Cube Accelerometers
 `ObjectUpAxisChnaged`
 `ObjectTapped`
 `ObjectTapFiltered`
+`StreamObjectAccel`
+`ObjectAccel`
 
 
 Animations
