@@ -3256,6 +3256,42 @@ class NvStorageOp(Packet):
             data=data)
 
     
+class AbortAnimation(Packet):
+
+    __slots__ = (
+    )
+
+    def __init__(self):
+        super().__init__(PacketType.COMMAND, packet_id=0x8d)
+        pass
+
+    def __len__(self):
+        return 0
+
+    def __repr__(self):
+        return "{type}()".format(type=type(self).__name__)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        pass
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        del reader
+        return cls(
+            )
+
+    
 class OutputAudio(Packet):
 
     __slots__ = (
@@ -3314,6 +3350,78 @@ class NextFrame(Packet):
 
     def __init__(self):
         super().__init__(PacketType.COMMAND, packet_id=0x8f)
+        pass
+
+    def __len__(self):
+        return 0
+
+    def __repr__(self):
+        return "{type}()".format(type=type(self).__name__)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        pass
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        del reader
+        return cls(
+            )
+
+    
+class RecordHeading(Packet):
+
+    __slots__ = (
+    )
+
+    def __init__(self):
+        super().__init__(PacketType.COMMAND, packet_id=0x91)
+        pass
+
+    def __len__(self):
+        return 0
+
+    def __repr__(self):
+        return "{type}()".format(type=type(self).__name__)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        pass
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        del reader
+        return cls(
+            )
+
+    
+class TurnToRecordedHeading(Packet):
+
+    __slots__ = (
+    )
+
+    def __init__(self):
+        super().__init__(PacketType.COMMAND, packet_id=0x92)
         pass
 
     def __len__(self):
@@ -6889,8 +6997,11 @@ PACKETS_BY_ID = {
     0x64: SetRobotVolume,  # 100
     0x66: EnableColorImages,  # 102
     0x81: NvStorageOp,  # 129
+    0x8d: AbortAnimation,  # 141
     0x8e: OutputAudio,  # 142
     0x8f: NextFrame,  # 143
+    0x91: RecordHeading,  # 145
+    0x92: TurnToRecordedHeading,  # 146
     0x93: AnimHead,  # 147
     0x94: AnimLift,  # 148
     0x97: DisplayImage,  # 151
@@ -6936,6 +7047,9 @@ PACKETS_BY_ID = {
 
 PACKETS_BY_GROUP = {
     "anim": {
+        0x8d,  # AbortAnimation
+        0x91,  # RecordHeading
+        0x92,  # TurnToRecordedHeading
         0x93,  # AnimHead
         0x94,  # AnimLift
         0x98,  # AnimBackpackLights

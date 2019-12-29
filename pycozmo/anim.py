@@ -29,31 +29,6 @@ __all__ = [
 ]
 
 
-class RecordHeading(object):
-    pass
-
-
-class TurnToRecordedHeading(object):
-
-    def __init__(self,
-                 duration_time_ms: int,
-                 offset_deg: int,
-                 speed_deg_per_sec: int,
-                 accel_deg_per_sec_2: int,
-                 decel_deg_per_sec_2: int,
-                 tolerance_deg: int,
-                 num_half_revs: int,
-                 use_shortest_dir: bool):
-        self.duration_time_ms = duration_time_ms
-        self.offset_deg = offset_deg
-        self.speed_deg_per_sec = speed_deg_per_sec
-        self.accel_deg_per_sec_2 = accel_deg_per_sec_2
-        self.decel_deg_per_sec_2 = decel_deg_per_sec_2
-        self.tolerance_deg = tolerance_deg
-        self.num_half_revs = num_half_revs
-        self.use_shortest_dir = use_shortest_dir
-
-
 class PreprocessedClip(object):
 
     def __init__(self, keyframes: Optional[defaultdict] = None):
@@ -76,18 +51,11 @@ class PreprocessedClip(object):
                                                 height_mm=keyframe.height_mm)
                 keyframes[keyframe.trigger_time_ms].append(pkt)
             elif isinstance(keyframe, anim_encoder.AnimRecordHeading):
-                action = RecordHeading()
-                keyframes[keyframe.trigger_time_ms].append(action)
+                pkt = protocol_encoder.RecordHeading()
+                keyframes[keyframe.trigger_time_ms].append(pkt)
             elif isinstance(keyframe, anim_encoder.AnimTurnToRecordedHeading):
-                action = TurnToRecordedHeading(keyframe.duration_time_ms,
-                                               keyframe.offset_deg,
-                                               keyframe.speed_deg_per_sec,
-                                               keyframe.accel_deg_per_sec_2,
-                                               keyframe.decel_deg_per_sec_2,
-                                               keyframe.tolerance_deg,
-                                               keyframe.num_half_revs,
-                                               keyframe.use_shortest_dir)
-                keyframes[keyframe.trigger_time_ms].append(action)
+                pkt = protocol_encoder.TurnToRecordedHeading()
+                keyframes[keyframe.trigger_time_ms].append(pkt)
             elif isinstance(keyframe, anim_encoder.AnimBodyMotion):
                 if keyframe.radius_mm == "STRAIGHT":
                     pkt = protocol_encoder.AnimBody(speed=keyframe.speed, unknown=32767)
@@ -156,15 +124,9 @@ class PreprocessedClip(object):
             for action in keyframe:
                 if isinstance(action, protocol_encoder.Packet):
                     cli.conn.send(action)
-                elif isinstance(action, RecordHeading):
-                    # TODO
-                    pass
-                elif isinstance(action, TurnToRecordedHeading):
-                    # TODO
-                    pass
 
             # Play keyframe
-            cli.conn.send(protocol_encoder.OutputAudio(samples=[0] * 744))
+            cli.conn.send(protocol_encoder.NextFrame())
 
             if i < num_frames - 1:
                 delay_ms = (frames[i + 1] - frames[i]) / 1000.0
