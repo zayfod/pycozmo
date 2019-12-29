@@ -75,6 +75,7 @@ class Client(event.Dispatcher):
         self.conn.add_handler(protocol_encoder.AnimationState, self._on_animation_state)
         self.conn.add_handler(protocol_encoder.ObjectAvailable, self._on_object_available)
         self.conn.add_handler(protocol_encoder.ObjectConnectionState, self._on_object_connection_state)
+        self.add_handler(event.EvtRobotPickedUpChange, self._on_robot_picked_up)
         self.conn.start()
 
     def stop(self) -> None:
@@ -256,6 +257,13 @@ class Client(event.Dispatcher):
                 state = (pkt.status & flag) != 0
                 logger.debug("%s: %i", robot.RobotStatusFlagNames[flag], state)
                 self.dispatch(evt, self, state)
+
+    def _on_robot_picked_up(self, cli, state):
+        del cli
+        if not state:
+            # Robot put down - reset world frame origin.
+            pkt = protocol_encoder.SetOrigin(pose_frame_id=self.pose_frame_id + 1, pose_origin_id=self.pose.origin_id + 1)
+            self.conn.send(pkt)
 
     def _on_animation_state(self, cli, pkt: protocol_encoder.AnimationState):
         del cli
