@@ -84,6 +84,18 @@ Localization
 `RobotDelocalized`
 
 
+Path Tracking
+-------------
+
+`PathFollowingEvent`
+`ClearPath`
+`AppendPathSegLine`
+`AppendPathSegArc`
+`AppendPathSegPointTurn`
+`TrimPath`
+`ExecutePath`
+
+
 Head
 ----
 
@@ -119,7 +131,7 @@ See [extremes.py](../examples/extremes.py) for example usage.
 OLED display
 ------------
 
-See [display.py](../examples/display.py) for example usage.
+See [display.py](../examples/display_image.py) for example usage.
 
 `NextFrame`
 `DisplayImage`

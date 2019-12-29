@@ -192,6 +192,12 @@ class MotorID(enum.Enum):
     MOTOR_HEAD = 3
 
 
+class PathEventType(enum.Enum):
+    PATH_STARTED = 0
+    PATH_INTERRUPTED = 1
+    PATH_COMPLETED = 2
+
+
 class LightState(Struct):
 
     __slots__ = (
@@ -341,6 +347,89 @@ class LightState(Struct):
             transition_on_frames=transition_on_frames,
             transition_off_frames=transition_off_frames,
             offset=offset)
+
+
+class PathSegmentSpeed(Struct):
+
+    __slots__ = (
+        "_speed_mmps",  # float
+        "_accel_mmps2",  # float
+        "_decel_mmps2",  # float
+    )
+
+    def __init__(self,
+                 speed_mmps=0.0,
+                 accel_mmps2=0.0,
+                 decel_mmps2=0.0):
+        self.speed_mmps = speed_mmps
+        self.accel_mmps2 = accel_mmps2
+        self.decel_mmps2 = decel_mmps2
+
+    @property
+    def speed_mmps(self):
+        return self._speed_mmps
+
+    @speed_mmps.setter
+    def speed_mmps(self, value):
+        self._speed_mmps = validate_float("speed_mmps", value)
+
+    @property
+    def accel_mmps2(self):
+        return self._accel_mmps2
+
+    @accel_mmps2.setter
+    def accel_mmps2(self, value):
+        self._accel_mmps2 = validate_float("accel_mmps2", value)
+
+    @property
+    def decel_mmps2(self):
+        return self._decel_mmps2
+
+    @decel_mmps2.setter
+    def decel_mmps2(self, value):
+        self._decel_mmps2 = validate_float("decel_mmps2", value)
+
+    def __len__(self):
+        return \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f')
+
+    def __repr__(self):
+        return "{type}(" \
+               "speed_mmps={speed_mmps}, " \
+               "accel_mmps2={accel_mmps2}, " \
+               "decel_mmps2={decel_mmps2})".format(
+                type=type(self).__name__,
+                speed_mmps=self._speed_mmps,
+                accel_mmps2=self._accel_mmps2,
+                decel_mmps2=self._decel_mmps2)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._speed_mmps, "f")
+        writer.write(self._accel_mmps2, "f")
+        writer.write(self._decel_mmps2, "f")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        speed_mmps = reader.read("f")
+        accel_mmps2 = reader.read("f")
+        decel_mmps2 = reader.read("f")
+        return cls(
+            speed_mmps=speed_mmps,
+            accel_mmps2=accel_mmps2,
+            decel_mmps2=decel_mmps2)
 
     
 class Connect(Packet):
@@ -1802,66 +1891,116 @@ class StopAllMotors(Packet):
             )
 
     
-class DriveStraight(Packet):
+class ClearPath(Packet):
 
     __slots__ = (
-        "_unknown0",  # float
-        "_unknown1",  # float
-        "_dist_mm",  # float
-        "_unknown3",  # float
-        "_speed_mmps",  # float
-        "_unknown5",  # float
-        "_unknown6",  # float
+        "_unknown",  # uint16
     )
 
     def __init__(self,
-                 unknown0=0.0,
-                 unknown1=0.0,
-                 dist_mm=0.0,
-                 unknown3=0.0,
+                 unknown=0):
+        super().__init__(PacketType.COMMAND, packet_id=0x3c)
+        self.unknown = unknown
+
+    @property
+    def unknown(self):
+        return self._unknown
+
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_integer("unknown", value, 0, 65535)
+
+    def __len__(self):
+        return \
+            get_size('H')
+
+    def __repr__(self):
+        return "{type}(" \
+               "unknown={unknown})".format(
+                type=type(self).__name__,
+                unknown=self._unknown)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._unknown, "H")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        unknown = reader.read("H")
+        return cls(
+            unknown=unknown)
+
+    
+class AppendPathSegLine(Packet):
+
+    __slots__ = (
+        "_from_x",  # float
+        "_from_y",  # float
+        "_to_x",  # float
+        "_to_y",  # float
+        "_speed_mmps",  # float
+        "_accel_mmps2",  # float
+        "_decel_mmps2",  # float
+    )
+
+    def __init__(self,
+                 from_x=0.0,
+                 from_y=0.0,
+                 to_x=0.0,
+                 to_y=0.0,
                  speed_mmps=0.0,
-                 unknown5=0.0,
-                 unknown6=0.0):
+                 accel_mmps2=0.0,
+                 decel_mmps2=0.0):
         super().__init__(PacketType.COMMAND, packet_id=0x3d)
-        self.unknown0 = unknown0
-        self.unknown1 = unknown1
-        self.dist_mm = dist_mm
-        self.unknown3 = unknown3
+        self.from_x = from_x
+        self.from_y = from_y
+        self.to_x = to_x
+        self.to_y = to_y
         self.speed_mmps = speed_mmps
-        self.unknown5 = unknown5
-        self.unknown6 = unknown6
+        self.accel_mmps2 = accel_mmps2
+        self.decel_mmps2 = decel_mmps2
 
     @property
-    def unknown0(self):
-        return self._unknown0
+    def from_x(self):
+        return self._from_x
 
-    @unknown0.setter
-    def unknown0(self, value):
-        self._unknown0 = validate_float("unknown0", value)
-
-    @property
-    def unknown1(self):
-        return self._unknown1
-
-    @unknown1.setter
-    def unknown1(self, value):
-        self._unknown1 = validate_float("unknown1", value)
+    @from_x.setter
+    def from_x(self, value):
+        self._from_x = validate_float("from_x", value)
 
     @property
-    def dist_mm(self):
-        return self._dist_mm
+    def from_y(self):
+        return self._from_y
 
-    @dist_mm.setter
-    def dist_mm(self, value):
-        self._dist_mm = validate_float("dist_mm", value)
+    @from_y.setter
+    def from_y(self, value):
+        self._from_y = validate_float("from_y", value)
 
     @property
-    def unknown3(self):
-        return self._unknown3
+    def to_x(self):
+        return self._to_x
 
-    @unknown3.setter
-    def unknown3(self, value):
-        self._unknown3 = validate_float("unknown3", value)
+    @to_x.setter
+    def to_x(self, value):
+        self._to_x = validate_float("to_x", value)
+
+    @property
+    def to_y(self):
+        return self._to_y
+
+    @to_y.setter
+    def to_y(self, value):
+        self._to_y = validate_float("to_y", value)
 
     @property
     def speed_mmps(self):
@@ -1872,20 +2011,20 @@ class DriveStraight(Packet):
         self._speed_mmps = validate_float("speed_mmps", value)
 
     @property
-    def unknown5(self):
-        return self._unknown5
+    def accel_mmps2(self):
+        return self._accel_mmps2
 
-    @unknown5.setter
-    def unknown5(self, value):
-        self._unknown5 = validate_float("unknown5", value)
+    @accel_mmps2.setter
+    def accel_mmps2(self, value):
+        self._accel_mmps2 = validate_float("accel_mmps2", value)
 
     @property
-    def unknown6(self):
-        return self._unknown6
+    def decel_mmps2(self):
+        return self._decel_mmps2
 
-    @unknown6.setter
-    def unknown6(self, value):
-        self._unknown6 = validate_float("unknown6", value)
+    @decel_mmps2.setter
+    def decel_mmps2(self, value):
+        self._decel_mmps2 = validate_float("decel_mmps2", value)
 
     def __len__(self):
         return \
@@ -1899,21 +2038,21 @@ class DriveStraight(Packet):
 
     def __repr__(self):
         return "{type}(" \
-               "unknown0={unknown0}, " \
-               "unknown1={unknown1}, " \
-               "dist_mm={dist_mm}, " \
-               "unknown3={unknown3}, " \
+               "from_x={from_x}, " \
+               "from_y={from_y}, " \
+               "to_x={to_x}, " \
+               "to_y={to_y}, " \
                "speed_mmps={speed_mmps}, " \
-               "unknown5={unknown5}, " \
-               "unknown6={unknown6})".format(
+               "accel_mmps2={accel_mmps2}, " \
+               "decel_mmps2={decel_mmps2})".format(
                 type=type(self).__name__,
-                unknown0=self._unknown0,
-                unknown1=self._unknown1,
-                dist_mm=self._dist_mm,
-                unknown3=self._unknown3,
+                from_x=self._from_x,
+                from_y=self._from_y,
+                to_x=self._to_x,
+                to_y=self._to_y,
                 speed_mmps=self._speed_mmps,
-                unknown5=self._unknown5,
-                unknown6=self._unknown6)
+                accel_mmps2=self._accel_mmps2,
+                decel_mmps2=self._decel_mmps2)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -1921,13 +2060,13 @@ class DriveStraight(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(self._unknown0, "f")
-        writer.write(self._unknown1, "f")
-        writer.write(self._dist_mm, "f")
-        writer.write(self._unknown3, "f")
+        writer.write(self._from_x, "f")
+        writer.write(self._from_y, "f")
+        writer.write(self._to_x, "f")
+        writer.write(self._to_y, "f")
         writer.write(self._speed_mmps, "f")
-        writer.write(self._unknown5, "f")
-        writer.write(self._unknown6, "f")
+        writer.write(self._accel_mmps2, "f")
+        writer.write(self._decel_mmps2, "f")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -1937,21 +2076,493 @@ class DriveStraight(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        unknown0 = reader.read("f")
-        unknown1 = reader.read("f")
-        dist_mm = reader.read("f")
-        unknown3 = reader.read("f")
+        from_x = reader.read("f")
+        from_y = reader.read("f")
+        to_x = reader.read("f")
+        to_y = reader.read("f")
         speed_mmps = reader.read("f")
-        unknown5 = reader.read("f")
-        unknown6 = reader.read("f")
+        accel_mmps2 = reader.read("f")
+        decel_mmps2 = reader.read("f")
         return cls(
-            unknown0=unknown0,
-            unknown1=unknown1,
-            dist_mm=dist_mm,
-            unknown3=unknown3,
+            from_x=from_x,
+            from_y=from_y,
+            to_x=to_x,
+            to_y=to_y,
             speed_mmps=speed_mmps,
-            unknown5=unknown5,
-            unknown6=unknown6)
+            accel_mmps2=accel_mmps2,
+            decel_mmps2=decel_mmps2)
+
+    
+class AppendPathSegArc(Packet):
+
+    __slots__ = (
+        "_center_x",  # float
+        "_center_y",  # float
+        "_radius_mm",  # float
+        "_start_angle_rad",  # float
+        "_sweep_rad",  # float
+        "_speed_mmps",  # float
+        "_accel_mmps2",  # float
+        "_decel_mmps2",  # float
+    )
+
+    def __init__(self,
+                 center_x=0.0,
+                 center_y=0.0,
+                 radius_mm=0.0,
+                 start_angle_rad=0.0,
+                 sweep_rad=0.0,
+                 speed_mmps=0.0,
+                 accel_mmps2=0.0,
+                 decel_mmps2=0.0):
+        super().__init__(PacketType.COMMAND, packet_id=0x3e)
+        self.center_x = center_x
+        self.center_y = center_y
+        self.radius_mm = radius_mm
+        self.start_angle_rad = start_angle_rad
+        self.sweep_rad = sweep_rad
+        self.speed_mmps = speed_mmps
+        self.accel_mmps2 = accel_mmps2
+        self.decel_mmps2 = decel_mmps2
+
+    @property
+    def center_x(self):
+        return self._center_x
+
+    @center_x.setter
+    def center_x(self, value):
+        self._center_x = validate_float("center_x", value)
+
+    @property
+    def center_y(self):
+        return self._center_y
+
+    @center_y.setter
+    def center_y(self, value):
+        self._center_y = validate_float("center_y", value)
+
+    @property
+    def radius_mm(self):
+        return self._radius_mm
+
+    @radius_mm.setter
+    def radius_mm(self, value):
+        self._radius_mm = validate_float("radius_mm", value)
+
+    @property
+    def start_angle_rad(self):
+        return self._start_angle_rad
+
+    @start_angle_rad.setter
+    def start_angle_rad(self, value):
+        self._start_angle_rad = validate_float("start_angle_rad", value)
+
+    @property
+    def sweep_rad(self):
+        return self._sweep_rad
+
+    @sweep_rad.setter
+    def sweep_rad(self, value):
+        self._sweep_rad = validate_float("sweep_rad", value)
+
+    @property
+    def speed_mmps(self):
+        return self._speed_mmps
+
+    @speed_mmps.setter
+    def speed_mmps(self, value):
+        self._speed_mmps = validate_float("speed_mmps", value)
+
+    @property
+    def accel_mmps2(self):
+        return self._accel_mmps2
+
+    @accel_mmps2.setter
+    def accel_mmps2(self, value):
+        self._accel_mmps2 = validate_float("accel_mmps2", value)
+
+    @property
+    def decel_mmps2(self):
+        return self._decel_mmps2
+
+    @decel_mmps2.setter
+    def decel_mmps2(self, value):
+        self._decel_mmps2 = validate_float("decel_mmps2", value)
+
+    def __len__(self):
+        return \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f')
+
+    def __repr__(self):
+        return "{type}(" \
+               "center_x={center_x}, " \
+               "center_y={center_y}, " \
+               "radius_mm={radius_mm}, " \
+               "start_angle_rad={start_angle_rad}, " \
+               "sweep_rad={sweep_rad}, " \
+               "speed_mmps={speed_mmps}, " \
+               "accel_mmps2={accel_mmps2}, " \
+               "decel_mmps2={decel_mmps2})".format(
+                type=type(self).__name__,
+                center_x=self._center_x,
+                center_y=self._center_y,
+                radius_mm=self._radius_mm,
+                start_angle_rad=self._start_angle_rad,
+                sweep_rad=self._sweep_rad,
+                speed_mmps=self._speed_mmps,
+                accel_mmps2=self._accel_mmps2,
+                decel_mmps2=self._decel_mmps2)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._center_x, "f")
+        writer.write(self._center_y, "f")
+        writer.write(self._radius_mm, "f")
+        writer.write(self._start_angle_rad, "f")
+        writer.write(self._sweep_rad, "f")
+        writer.write(self._speed_mmps, "f")
+        writer.write(self._accel_mmps2, "f")
+        writer.write(self._decel_mmps2, "f")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        center_x = reader.read("f")
+        center_y = reader.read("f")
+        radius_mm = reader.read("f")
+        start_angle_rad = reader.read("f")
+        sweep_rad = reader.read("f")
+        speed_mmps = reader.read("f")
+        accel_mmps2 = reader.read("f")
+        decel_mmps2 = reader.read("f")
+        return cls(
+            center_x=center_x,
+            center_y=center_y,
+            radius_mm=radius_mm,
+            start_angle_rad=start_angle_rad,
+            sweep_rad=sweep_rad,
+            speed_mmps=speed_mmps,
+            accel_mmps2=accel_mmps2,
+            decel_mmps2=decel_mmps2)
+
+    
+class AppendPathSegPointTurn(Packet):
+
+    __slots__ = (
+        "_x",  # float
+        "_y",  # float
+        "_angle_rad",  # float
+        "_angle_tolerance_rad",  # float
+        "_speed_mmps",  # float
+        "_accel_mmps2",  # float
+        "_decel_mmps2",  # float
+        "_unknown",  # bool
+    )
+
+    def __init__(self,
+                 x=0.0,
+                 y=0.0,
+                 angle_rad=0.0,
+                 angle_tolerance_rad=0.0,
+                 speed_mmps=0.0,
+                 accel_mmps2=0.0,
+                 decel_mmps2=0.0,
+                 unknown=False):
+        super().__init__(PacketType.COMMAND, packet_id=0x3f)
+        self.x = x
+        self.y = y
+        self.angle_rad = angle_rad
+        self.angle_tolerance_rad = angle_tolerance_rad
+        self.speed_mmps = speed_mmps
+        self.accel_mmps2 = accel_mmps2
+        self.decel_mmps2 = decel_mmps2
+        self.unknown = unknown
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        self._x = validate_float("x", value)
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        self._y = validate_float("y", value)
+
+    @property
+    def angle_rad(self):
+        return self._angle_rad
+
+    @angle_rad.setter
+    def angle_rad(self, value):
+        self._angle_rad = validate_float("angle_rad", value)
+
+    @property
+    def angle_tolerance_rad(self):
+        return self._angle_tolerance_rad
+
+    @angle_tolerance_rad.setter
+    def angle_tolerance_rad(self, value):
+        self._angle_tolerance_rad = validate_float("angle_tolerance_rad", value)
+
+    @property
+    def speed_mmps(self):
+        return self._speed_mmps
+
+    @speed_mmps.setter
+    def speed_mmps(self, value):
+        self._speed_mmps = validate_float("speed_mmps", value)
+
+    @property
+    def accel_mmps2(self):
+        return self._accel_mmps2
+
+    @accel_mmps2.setter
+    def accel_mmps2(self, value):
+        self._accel_mmps2 = validate_float("accel_mmps2", value)
+
+    @property
+    def decel_mmps2(self):
+        return self._decel_mmps2
+
+    @decel_mmps2.setter
+    def decel_mmps2(self, value):
+        self._decel_mmps2 = validate_float("decel_mmps2", value)
+
+    @property
+    def unknown(self):
+        return self._unknown
+
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_bool("unknown", value)
+
+    def __len__(self):
+        return \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('f') + \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "x={x}, " \
+               "y={y}, " \
+               "angle_rad={angle_rad}, " \
+               "angle_tolerance_rad={angle_tolerance_rad}, " \
+               "speed_mmps={speed_mmps}, " \
+               "accel_mmps2={accel_mmps2}, " \
+               "decel_mmps2={decel_mmps2}, " \
+               "unknown={unknown})".format(
+                type=type(self).__name__,
+                x=self._x,
+                y=self._y,
+                angle_rad=self._angle_rad,
+                angle_tolerance_rad=self._angle_tolerance_rad,
+                speed_mmps=self._speed_mmps,
+                accel_mmps2=self._accel_mmps2,
+                decel_mmps2=self._decel_mmps2,
+                unknown=self._unknown)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._x, "f")
+        writer.write(self._y, "f")
+        writer.write(self._angle_rad, "f")
+        writer.write(self._angle_tolerance_rad, "f")
+        writer.write(self._speed_mmps, "f")
+        writer.write(self._accel_mmps2, "f")
+        writer.write(self._decel_mmps2, "f")
+        writer.write(int(self._unknown), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        x = reader.read("f")
+        y = reader.read("f")
+        angle_rad = reader.read("f")
+        angle_tolerance_rad = reader.read("f")
+        speed_mmps = reader.read("f")
+        accel_mmps2 = reader.read("f")
+        decel_mmps2 = reader.read("f")
+        unknown = bool(reader.read("b"))
+        return cls(
+            x=x,
+            y=y,
+            angle_rad=angle_rad,
+            angle_tolerance_rad=angle_tolerance_rad,
+            speed_mmps=speed_mmps,
+            accel_mmps2=accel_mmps2,
+            decel_mmps2=decel_mmps2,
+            unknown=unknown)
+
+    
+class TrimPath(Packet):
+
+    __slots__ = (
+        "_head",  # uint8
+        "_tail",  # uint8
+    )
+
+    def __init__(self,
+                 head=0,
+                 tail=0):
+        super().__init__(PacketType.COMMAND, packet_id=0x40)
+        self.head = head
+        self.tail = tail
+
+    @property
+    def head(self):
+        return self._head
+
+    @head.setter
+    def head(self, value):
+        self._head = validate_integer("head", value, 0, 255)
+
+    @property
+    def tail(self):
+        return self._tail
+
+    @tail.setter
+    def tail(self, value):
+        self._tail = validate_integer("tail", value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('B') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "head={head}, " \
+               "tail={tail})".format(
+                type=type(self).__name__,
+                head=self._head,
+                tail=self._tail)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._head, "B")
+        writer.write(self._tail, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        head = reader.read("B")
+        tail = reader.read("B")
+        return cls(
+            head=head,
+            tail=tail)
+
+    
+class ExecutePath(Packet):
+
+    __slots__ = (
+        "_event_id",  # uint16
+        "_unknown",  # bool
+    )
+
+    def __init__(self,
+                 event_id=0,
+                 unknown=False):
+        super().__init__(PacketType.COMMAND, packet_id=0x41)
+        self.event_id = event_id
+        self.unknown = unknown
+
+    @property
+    def event_id(self):
+        return self._event_id
+
+    @event_id.setter
+    def event_id(self, value):
+        self._event_id = validate_integer("event_id", value, 0, 65535)
+
+    @property
+    def unknown(self):
+        return self._unknown
+
+    @unknown.setter
+    def unknown(self, value):
+        self._unknown = validate_bool("unknown", value)
+
+    def __len__(self):
+        return \
+            get_size('H') + \
+            get_size('b')
+
+    def __repr__(self):
+        return "{type}(" \
+               "event_id={event_id}, " \
+               "unknown={unknown})".format(
+                type=type(self).__name__,
+                event_id=self._event_id,
+                unknown=self._unknown)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._event_id, "H")
+        writer.write(int(self._unknown), "b")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        event_id = reader.read("H")
+        unknown = bool(reader.read("b"))
+        return cls(
+            event_id=event_id,
+            unknown=unknown)
 
     
 class SetOrigin(Packet):
@@ -4023,6 +4634,74 @@ class RobotPoked(Packet):
         del reader
         return cls(
             )
+
+    
+class PathFollowingEvent(Packet):
+
+    __slots__ = (
+        "_event_id",  # uint16
+        "_event_type",  # PathEventType
+    )
+
+    def __init__(self,
+                 event_id=0,
+                 event_type=0):
+        super().__init__(PacketType.COMMAND, packet_id=0xc6)
+        self.event_id = event_id
+        self.event_type = PathEventType(event_type)
+
+    @property
+    def event_id(self):
+        return self._event_id
+
+    @event_id.setter
+    def event_id(self, value):
+        self._event_id = validate_integer("event_id", value, 0, 65535)
+
+    @property
+    def event_type(self) -> PathEventType:
+        return self._event_type
+
+    @event_type.setter
+    def event_type(self, value: PathEventType):
+        self._event_type = value
+        validate_integer("event_type", value.value, 0, 255)
+
+    def __len__(self):
+        return \
+            get_size('H') + \
+            get_size('B')
+
+    def __repr__(self):
+        return "{type}(" \
+               "event_id={event_id}, " \
+               "event_type={event_type})".format(
+                type=type(self).__name__,
+                event_id=self._event_id,
+                event_type=self._event_type)
+
+    def to_bytes(self):
+        writer = BinaryWriter()
+        self.to_writer(writer)
+        return writer.dumps()
+        
+    def to_writer(self, writer):
+        writer.write(self._event_id, "H")
+        writer.write(self._event_type.value, "B")
+
+    @classmethod
+    def from_bytes(cls, buffer):
+        reader = BinaryReader(buffer)
+        obj = cls.from_reader(reader)
+        return obj
+        
+    @classmethod
+    def from_reader(cls, reader):
+        event_id = reader.read("H")
+        event_type = reader.read("B")
+        return cls(
+            event_id=event_id,
+            event_type=event_type)
 
     
 class HardwareInfo(Packet):
@@ -6195,7 +6874,12 @@ PACKETS_BY_ID = {
     0x37: SetHeadAngle,  # 55
     0x39: TurnInPlace,  # 57
     0x3b: StopAllMotors,  # 59
-    0x3d: DriveStraight,  # 61
+    0x3c: ClearPath,  # 60
+    0x3d: AppendPathSegLine,  # 61
+    0x3e: AppendPathSegArc,  # 62
+    0x3f: AppendPathSegPointTurn,  # 63
+    0x40: TrimPath,  # 64
+    0x41: ExecutePath,  # 65
     0x45: SetOrigin,  # 69
     0x4b: SyncTime,  # 75
     0x4c: EnableCamera,  # 76
@@ -6226,6 +6910,7 @@ PACKETS_BY_ID = {
     0xc2: RobotDelocalized,  # 194
     0xc3: RobotPoked,  # 195
     0xc4: AcknowledgeAction,  # 196
+    0xc6: PathFollowingEvent,  # 198
     0xc9: HardwareInfo,  # 201
     0xca: AnimationStarted,  # 202
     0xcb: AnimationEnded,  # 203
@@ -6301,10 +6986,16 @@ PACKETS_BY_GROUP = {
         0x37,  # SetHeadAngle
         0x39,  # TurnInPlace
         0x3b,  # StopAllMotors
-        0x3d,  # DriveStraight
+        0x3c,  # ClearPath
+        0x3d,  # AppendPathSegLine
+        0x3e,  # AppendPathSegArc
+        0x3f,  # AppendPathSegPointTurn
+        0x40,  # TrimPath
+        0x41,  # ExecutePath
         0x58,  # StartMotorCalibration
         0x60,  # EnableStopOnCliff
         0xc4,  # AcknowledgeAction
+        0xc6,  # PathFollowingEvent
         0xd1,  # MotorCalibration
     },
     "nv": {

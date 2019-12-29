@@ -178,6 +178,11 @@ MOTOR_ID = Enum("MotorID", members=[
     EnumMember("MOTOR_LIFT", 2),
     EnumMember("MOTOR_HEAD", 3),
 ])
+PATH_EVENT_TYPE = Enum("PathEventType", members=[
+    EnumMember("PATH_STARTED", 0),
+    EnumMember("PATH_INTERRUPTED", 1),
+    EnumMember("PATH_COMPLETED", 2),
+])
 
 LIGHT_STATE = Struct("LightState", arguments=[
     UInt16Argument("on_color"),
@@ -187,6 +192,11 @@ LIGHT_STATE = Struct("LightState", arguments=[
     UInt8Argument("transition_on_frames"),
     UInt8Argument("transition_off_frames"),
     Int16Argument("offset"),
+])
+PATH_SEGMENT_SPEED = Struct("PathSegmentSpeed", arguments=[
+    FloatArgument("speed_mmps"),
+    FloatArgument("accel_mmps2"),
+    FloatArgument("decel_mmps2"),
 ])
 
 
@@ -203,10 +213,12 @@ PROTOCOL = Protocol(
         IMAGE_RESOLUTION,
         DEBUG_DATA_ID,
         MOTOR_ID,
+        PATH_EVENT_TYPE,
     ],
 
     structs=[
         LIGHT_STATE,
+        PATH_SEGMENT_SPEED,
     ],
 
     packets=[
@@ -287,14 +299,45 @@ PROTOCOL = Protocol(
             UInt8Argument("action_id"),
         ]),
         Command(0x3b, "StopAllMotors", group="motors"),
-        Command(0x3d, "DriveStraight", group="motors", arguments=[
-            FloatArgument("unknown0"),
-            FloatArgument("unknown1"),
-            FloatArgument("dist_mm"),               # minus ~20.3 mm?
-            FloatArgument("unknown3"),
-            FloatArgument("speed_mmps"),
-            FloatArgument("unknown5"),
-            FloatArgument("unknown6"),
+        Command(0x3c, "ClearPath", group="motors", arguments=[
+            UInt16Argument("unknown"),
+        ]),
+        Command(0x3d, "AppendPathSegLine", group="motors", arguments=[
+            FloatArgument("from_x"),
+            FloatArgument("from_y"),
+            FloatArgument("to_x"),
+            FloatArgument("to_y"),
+            FloatArgument("speed_mmps"),        # PathSegmentSpeed
+            FloatArgument("accel_mmps2"),
+            FloatArgument("decel_mmps2"),
+        ]),
+        Command(0x3e, "AppendPathSegArc", group="motors", arguments=[
+            FloatArgument("center_x"),
+            FloatArgument("center_y"),
+            FloatArgument("radius_mm"),
+            FloatArgument("start_angle_rad"),
+            FloatArgument("sweep_rad"),
+            FloatArgument("speed_mmps"),        # PathSegmentSpeed
+            FloatArgument("accel_mmps2"),
+            FloatArgument("decel_mmps2"),
+        ]),
+        Command(0x3f, "AppendPathSegPointTurn", group="motors", arguments=[
+            FloatArgument("x"),
+            FloatArgument("y"),
+            FloatArgument("angle_rad"),
+            FloatArgument("angle_tolerance_rad"),
+            FloatArgument("speed_mmps"),        # PathSegmentSpeed
+            FloatArgument("accel_mmps2"),
+            FloatArgument("decel_mmps2"),
+            BoolArgument("unknown")
+        ]),
+        Command(0x40, "TrimPath", group="motors", arguments=[
+            UInt8Argument("head"),
+            UInt8Argument("tail"),
+        ]),
+        Command(0x41, "ExecutePath", group="motors", arguments=[
+            UInt16Argument("event_id"),
+            BoolArgument("unknown"),
         ]),
         Command(0x45, "SetOrigin", group="localization", arguments=[
             UInt32Argument("unknown0"),
@@ -378,7 +421,7 @@ PROTOCOL = Protocol(
         Command(0xb0, "DebugData", group="debug", arguments=[
             UInt16Argument("debug_id"),             # See DebugDataID
             UInt16Argument("unused"),               # Always 0
-            UInt16Argument("unknown2"),             # Source? Observed: 1, 100, 110, 1203, 1204, 1213, 169, 171, 172, 228, 247, 249, 252, 282, 330, 341, 368, 372, 374, 391, 394, 398, 40, 405, 409, 411, 413, 414, 417, 52, 57
+            UInt16Argument("unknown2"),             # Source?
             Int8Argument("unknown3"),               # Level? Observed: -1, 1, 2, 3, 5
             VArrayArgument("data", data_type=UInt32Argument(), length_type=UInt8Argument())
         ]),
@@ -413,6 +456,10 @@ PROTOCOL = Protocol(
         ]),
         Command(0xc2, "RobotDelocalized", group="localization"),
         Command(0xc3, "RobotPoked", group="localization"),
+        Command(0xc6, "PathFollowingEvent", group="motors", arguments=[
+            UInt16Argument("event_id"),
+            EnumArgument("event_type", PATH_EVENT_TYPE, data_type=UInt8Argument()),
+        ]),
         Command(0xc9, "HardwareInfo", group="system", arguments=[
             UInt32Argument("serial_number_head"),
             UInt8Argument("unknown1"),

@@ -33,7 +33,7 @@ def on_button_pressed(cli, pkt: pycozmo.protocol_encoder.ButtonPressed):
         print("Button released.")
 
 
-def on_robot_picked_up(cli, state):
+def on_robot_picked_up(cli, state: bool):
     del cli
     if state:
         print("Picked up.")
@@ -41,7 +41,7 @@ def on_robot_picked_up(cli, state):
         print("Put down.")
 
 
-def on_robot_charging(cli, state):
+def on_robot_charging(cli, state: bool):
     del cli
     if state:
         print("Started charging.")
@@ -49,13 +49,13 @@ def on_robot_charging(cli, state):
         print("Stopped charging.")
 
 
-def on_cliff_detected(cli, state):
+def on_cliff_detected(cli, state: bool):
     del cli
     if state:
         print("Cliff detected.")
 
 
-def on_robot_wheels_moving(cli, state):
+def on_robot_wheels_moving(cli, state: bool):
     del cli
     if state:
         print("Started moving.")

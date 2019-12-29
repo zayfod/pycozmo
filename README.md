@@ -54,19 +54,29 @@ Documentation
 Examples
 --------
 
-- [rc.py](examples/rc.py) - turns Cozmo into an RC tank that can be driven with an XBox 360 Wireless controller or 
-    Logitech Gamepad F310
+Basic:
+- [minimal.py](examples/minimal.py) - minimal code to communicate with Cozmo, using PyCozmo
+- [go_to_pose.py](examples/go_to_pose.py) - demonstrates moving to a specific pose (position and orientation) 
 - [extremes.py](examples/extremes.py) - demonstrates Cozmo lift and head control
 - [backpack_lights.py](examples/backpack_lights.py) - demonstrates Cozmo backpack LED control
+- [display_image.py](examples/display_image.py) - demonstrates visualization of image files on Cozmo's display
+- [events.py](examples/events.py) - demonstrates event handling
+- [camera.py](examples/camera.py) - demonstrates capturing a camera image 
+- [path.py](examples/path.py) - demonstrates following a predefined path
+
+Advanced:
+- [display_lines.py](examples/display_lines.py) - demonstrates 2D graphics, using
+    [PIL.ImageDraw](https://pillow.readthedocs.io/en/stable/reference/ImageDraw.html) on Cozmo's display
+- [rc.py](examples/rc.py) - turns Cozmo into an RC tank that can be driven with an XBox 360 Wireless controller or 
+    Logitech Gamepad F310
 - [cube_lights.py](examples/cube_lights.py) - demonstrates cube connection and LED control
 - [cube_light_animation.py](examples/cube_light_animation.py) - demonstrates cube LED animation control
 - [charger_lights.py](examples/charger_lights.py) - demonstrates Cozmo charging platform LED control
-- [display_image.py](examples/display_image.py) - demonstrates visualization of image files on Cozmo's display
-- [display_lines.py](examples/display_lines.py) - demonstrates 2D graphics, using
-    [PIL.ImageDraw](https://pillow.readthedocs.io/en/stable/reference/ImageDraw.html) on Cozmo's display
 - [audio.py](examples/audio.py) - demonstrates 22 kHz, 8-bit, mono WAVE file playback through Cozmo's speaker 
-- [events.py](examples/events.py) - demonstrates event handling
-- [camera.py](examples/camera.py) - demonstrates capturing a camera image 
+- [nvram.py](examples/nvram.py) - domonstrates reading data from Cozmo's NVRAM (non-volatile memory)
+- [procedural_face.py](examples/procedural_face.py) - demonstrates drawing a procedural face on Cozmo's display
+- [procedural_face_show.py](examples/procedural_face_show.py) - demonstrates generating a procedural face 
+- [anim.py](examples/anim.py) - demonstrates animating Cozmo
 
 
 Tools
@@ -110,9 +120,11 @@ Storage:
 - [x] NVRAM
 - [x] Firmware update
 
-Other:
-- [ ] Animations from FlatBuffers .bin files - work in progress
-- [ ] Procedural faces - work in progress
+Functions:
+- [x] Localization
+- [x] Path tracking
+- [x] Procedural faces
+- [x] Animations from FlatBuffers .bin files
 
 
 Connecting to Cozmo over Wi-Fi
