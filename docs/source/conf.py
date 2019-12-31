@@ -11,6 +11,8 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 import os
+import glob
+from shutil import copyfile
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
 
@@ -72,3 +74,14 @@ intersphinx_mapping = {
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
     'PIL': ('https://pillow.readthedocs.io/en/latest/', None),
 }
+
+
+# Create external/ subdirectory and copy markdown files from docs/
+cur_dir = os.path.dirname(__file__)
+external_dir = os.path.join(cur_dir, 'external')
+if not os.path.exists(external_dir):
+    os.mkdir(external_dir)
+doc_spec = os.path.join(cur_dir, '..', '*.md')
+for src in glob.glob(doc_spec):
+    dst = os.path.join(external_dir, os.path.basename(src))
+    copyfile(src, dst)
