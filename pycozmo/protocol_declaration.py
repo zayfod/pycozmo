@@ -169,6 +169,11 @@ IMAGE_RESOLUTION = Enum("ImageResolution", members=[
     EnumMember("ImageResolutionCount", 13),
     EnumMember("ImageResolutionNone", 14),
 ])
+IMAGE_SEND_MODE = Enum("ImageSendMode", members=[
+    EnumMember("Off", 0),
+    EnumMember("Stream", 1),
+    EnumMember("SingleShot", 2),
+])
 DEBUG_DATA_ID = Enum("DebugDataID", base=16, members=[
     EnumMember("MAC_ADDRESS", 0x1572),              # 624
 ])
@@ -211,6 +216,7 @@ PROTOCOL = Protocol(
         OBJECT_TYPE,
         IMAGE_ENCODING,
         IMAGE_RESOLUTION,
+        IMAGE_SEND_MODE,
         DEBUG_DATA_ID,
         MOTOR_ID,
         PATH_EVENT_TYPE,
@@ -352,8 +358,8 @@ PROTOCOL = Protocol(
             UInt32Argument("unknown"),
         ]),
         Command(0x4c, "EnableCamera", group="camera", arguments=[
-            BoolArgument("enable"),
-            UInt8Argument("unknown", default=4)     # resolution but ignored?
+            EnumArgument("image_send_mode", IMAGE_SEND_MODE, default=1),
+            EnumArgument("image_resolution", IMAGE_RESOLUTION, default=4),
         ]),
         Command(0x57, "SetCameraParams", group="camera", arguments=[
             FloatArgument("gain"),

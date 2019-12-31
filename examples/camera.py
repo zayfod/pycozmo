@@ -15,7 +15,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
     angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) / 2.0
     cli.set_head_angle(angle)
 
-    pkt = pycozmo.protocol_encoder.EnableCamera(enable=True)
+    pkt = pycozmo.protocol_encoder.EnableCamera()
     cli.conn.send(pkt)
     pkt = pycozmo.protocol_encoder.EnableColorImages(enable=True)
     cli.conn.send(pkt)

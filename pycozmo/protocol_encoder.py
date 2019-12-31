@@ -181,6 +181,12 @@ class ImageResolution(enum.Enum):
     ImageResolutionNone = 14
 
 
+class ImageSendMode(enum.Enum):
+    Off = 0
+    Stream = 1
+    SingleShot = 2
+
+
 class DebugDataID(enum.Enum):
     MAC_ADDRESS = 0x1572
 
@@ -2770,45 +2776,47 @@ class SyncTime(Packet):
 class EnableCamera(Packet):
 
     __slots__ = (
-        "_enable",  # bool
-        "_unknown",  # uint8
+        "_image_send_mode",  # ImageSendMode
+        "_image_resolution",  # ImageResolution
     )
 
     def __init__(self,
-                 enable=False,
-                 unknown=4):
+                 image_send_mode=1,
+                 image_resolution=6):
         super().__init__(PacketType.COMMAND, packet_id=0x4c)
-        self.enable = enable
-        self.unknown = unknown
+        self.image_send_mode = ImageSendMode(image_send_mode)
+        self.image_resolution = ImageResolution(image_resolution)
 
     @property
-    def enable(self):
-        return self._enable
+    def image_send_mode(self) -> ImageSendMode:
+        return self._image_send_mode
 
-    @enable.setter
-    def enable(self, value):
-        self._enable = validate_bool("enable", value)
+    @image_send_mode.setter
+    def image_send_mode(self, value: ImageSendMode):
+        self._image_send_mode = value
+        validate_integer("image_send_mode", value.value, -128, 127)
 
     @property
-    def unknown(self):
-        return self._unknown
+    def image_resolution(self) -> ImageResolution:
+        return self._image_resolution
 
-    @unknown.setter
-    def unknown(self, value):
-        self._unknown = validate_integer("unknown", value, 0, 255)
+    @image_resolution.setter
+    def image_resolution(self, value: ImageResolution):
+        self._image_resolution = value
+        validate_integer("image_resolution", value.value, -128, 127)
 
     def __len__(self):
         return \
             get_size('b') + \
-            get_size('B')
+            get_size('b')
 
     def __repr__(self):
         return "{type}(" \
-               "enable={enable}, " \
-               "unknown={unknown})".format(
+               "image_send_mode={image_send_mode}, " \
+               "image_resolution={image_resolution})".format(
                 type=type(self).__name__,
-                enable=self._enable,
-                unknown=self._unknown)
+                image_send_mode=self._image_send_mode,
+                image_resolution=self._image_resolution)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -2816,8 +2824,8 @@ class EnableCamera(Packet):
         return writer.dumps()
         
     def to_writer(self, writer):
-        writer.write(int(self._enable), "b")
-        writer.write(self._unknown, "B")
+        writer.write(self._image_send_mode.value, "b")
+        writer.write(self._image_resolution.value, "b")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -2827,11 +2835,11 @@ class EnableCamera(Packet):
         
     @classmethod
     def from_reader(cls, reader):
-        enable = bool(reader.read("b"))
-        unknown = reader.read("B")
+        image_send_mode = reader.read("b")
+        image_resolution = reader.read("b")
         return cls(
-            enable=enable,
-            unknown=unknown)
+            image_send_mode=image_send_mode,
+            image_resolution=image_resolution)
 
     
 class SetCameraParams(Packet):
