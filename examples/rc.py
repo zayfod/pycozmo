@@ -190,6 +190,32 @@ class RCApp(object):
         rw = int(speed_right * pycozmo.MAX_WHEEL_SPEED.mmps)
         self.cli.drive_wheels(lwheel_speed=lw, rwheel_speed=rw)
 
+    @staticmethod
+    def get_motor_thrust(r: float, theta: float):
+        """
+        Convert throttle and steering angle to left and right motor thrust.
+
+        https://robotics.stackexchange.com/questions/2011/how-to-calculate-the-right-and-left-speed-for-a-tank-like-rover
+
+        :param r: throttle percentage [0, 100]
+        :param theta: steering angle [-180, 180)
+        :return: tuple - left motor and right motor thrust percentage [-100, 100]
+        """
+        # normalize theta to [-180, 180)
+        theta = ((theta + 180.0) % 360.0) - 180.0
+        # normalize r to [0, 100]
+        r = min(max(0.0, r), 100.0)
+        v_a = r * (45.0 - theta % 90.0) / 45.0
+        v_b = min(100.0, 2.0 * r + v_a, 2.0 * r - v_a)
+        if theta < -90.0:
+            return -v_b, -v_a
+        elif theta < 0:
+            return -v_a, v_b
+        elif theta < 90.0:
+            return v_b, v_a
+        else:
+            return v_a, -v_b
+
     def _handle_input(self, e):
         update = False
         update2 = False
@@ -283,7 +309,7 @@ class RCApp(object):
             if r < 0:
                 r *= -1.0
                 theta += 180.0
-            v_a, v_b = self.cli.get_motor_thrust(r, theta)
+            v_a, v_b = self.get_motor_thrust(r, theta)
             logging.debug("r: {:.02f}; theta: {:.02f}; v_a: {:.02f}; v_b: {:.02f};".format(
                 r, theta, v_a, v_b))
             self._drive_wheels(v_a, v_b)

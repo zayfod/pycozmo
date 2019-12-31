@@ -330,32 +330,6 @@ class Client(event.Dispatcher):
         pkt = protocol_encoder.StopAllMotors()
         self.conn.send(pkt)
 
-    @staticmethod
-    def get_motor_thrust(r: float, theta: float) -> Tuple[float, float]:
-        """
-        Convert throttle and steering angle to left and right motor thrust.
-
-        https://robotics.stackexchange.com/questions/2011/how-to-calculate-the-right-and-left-speed-for-a-tank-like-rover
-
-        :param r: throttle percentage [0, 100]
-        :param theta: steering angle [-180, 180)
-        :return: tuple - left motor and right motor thrust percentage [-100, 100]
-        """
-        # normalize theta to [-180, 180)
-        theta = ((theta + 180.0) % 360.0) - 180.0
-        # normalize r to [0, 100]
-        r = min(max(0.0, r), 100.0)
-        v_a = r * (45.0 - theta % 90.0) / 45.0
-        v_b = min(100.0, 2.0 * r + v_a, 2.0 * r - v_a)
-        if theta < -90.0:
-            return -v_b, -v_a
-        elif theta < 0:
-            return -v_a, v_b
-        elif theta < 90.0:
-            return v_b, v_a
-        else:
-            return v_a, -v_b
-
     def go_to_pose(self, pose: util.Pose, relative_to_robot: bool = False) -> None:
         """ Move to a specific pose (position and orientation). """
 

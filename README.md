@@ -1,3 +1,4 @@
+
 PyCozmo
 =======
 
@@ -218,3 +219,10 @@ https://github.com/zayfod/pycozmo
 Anki Robot Discord server, channel #cozmo:
 
 https://discord.gg/ew92haS
+
+
+Disclaimer
+----------
+
+This project is not affiliated with [Anki](https://anki.com/) or
+[Digital Dream Labs](https://www.digitaldreamlabs.com/).
