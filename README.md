@@ -214,11 +214,11 @@ Support
 
 Bug reports and patches should be sent via GitHub:
 
-https://github.com/zayfod/pycozmo
+[https://github.com/zayfod/pycozmo](https://github.com/zayfod/pycozmo)
 
 Anki Robot Discord server, channel #cozmo:
 
-https://discord.gg/ew92haS
+[https://discord.gg/ew92haS](https://discord.gg/ew92haS)
 
 
 Disclaimer

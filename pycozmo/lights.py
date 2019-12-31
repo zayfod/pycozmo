@@ -45,8 +45,7 @@ class Color:
     Any alpha components (from int_color) are ignored - all colors are fully opaque.
 
     Args:
-        int_color (int): A 32 bit value holding the binary RGBA value (where A
-            is ignored and forced to be fully opaque).
+        int_color (int): A 32 bit value holding the binary RGBA value.
         rgb (tuple): A tuple holding the integer values from 0-255 for (red, green, blue)
         name (str): A name to assign to this color
     """

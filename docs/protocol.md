@@ -14,7 +14,7 @@ The two exchange frames, encapsulated in UDP packets.
 
 Each frame can contain 0, 1, or more packets.
 
-See [protocol_declaration.py](../pycozmo/protocol_declaration.py) for packet details.
+See `protocol_declaration.py` for packet details.
 
 
 Network Setup
