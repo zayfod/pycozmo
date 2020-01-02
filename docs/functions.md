@@ -5,25 +5,55 @@ Cozmo Functions
 Overview
 --------
 
-### Head
+Cozmo is a complex distributed embedded system with the following main parts:
 
-`HardwareInfo`
-`FirmwareSignature`
+- robot
+- cubes
+- charging platform 
 
-### Body
+The robot can be subdivided into:
 
-`BodyInfo`
+- head
+- body
 
-### Cubes
+The head is responsible for the following functions:
+- Wi-Fi communication
+- OLED display
+- speaker
+- camera
+- accelerometers
+- gyro
+- NV RAM storage
+
+Once Cozmo is powered on, the head controller (ESP8266) remains always powered on to maintain Wi-Fi communication. 
+
+On connection, the head transmits its serial number with the `HardwareInfo` message and firmware version with the
+`FirmwareSignature` message.
+
+The body is in charge of:
+- left and right tread motors and encoders encoders
+- head motor and encoder
+- lift motor and encoder
+- backpack LEDs
+- backpack button (on newer models only)
+- Bluetooth LE communication (to cubes and charging platform)
+- IR LED
+- cliff sensor
+- batter charging
+
+The body is powered on with the `Enable` message. The `BodyInfo` message communicates the body hardware version, 
+serial number, and color.
+
+Cubes are communicated with over Bluetooth LE and provide access to:
 
 - LEDs
 - Accelerometers
 - Battery voltage
 
-### Charging Platform
-
 Some charging platforms (aka "pads") can be communicated with over Bluetooth LE. They contains 3 RGB LEDs that can be
 controlled, similar to cube LEDs.
+
+The following sections provide more details on the use of each function.
 
 
 Wi-Fi
@@ -244,8 +274,34 @@ The `RobotState` message communicates raw battery voltage readings.
 NV RAM Storage
 --------------
 
-`NvStorageOp`
-`NvStorageOpResult`
+The robot provides access to some amount of non-volatile memory (aka NV RAM) intended to store two main types of data:
+
+- unit-specific parameters (ex. camera calibration data and cube IDs) 
+- mobile app data (ex. sparks and unlocked games and tricks)
+ 
+The NV RAM storage is backed by the head's ESP8266 controller external SPI flash. It is a NOR flash which drives the
+following specifics for its use:
+
+- an erase operation is needed before a write operation
+- data is erased in pages
+
+The `NvStorageOp` message allows performing read, erase, and write operations. Data is addressed by the `tag` field and
+only the values enumerated by `NvEntryTag` can be used. Using any other address results in a `NV_BAD_ARGS`. Tags
+smaller than 0x80000000 are direct NOT flash memory addresses. Tags larger than 0x80000000 are virtual addresses that
+seem to be stored in the `NVEntry_FactoryBaseTagWithBCOffset` area.
+
+`NvStorageOpResult` messages communicate results of `NvStorageOp` operations.
+
+A backup through the mobile app, preserves the data behind the following keys:
+
+- NVEntry_GameSkillLevels
+- NVEntry_Onboarding
+- NVEntry_GameUnlocks
+- NVEntry_FaceEnrollData
+- NVEntry_FaceAlbumData
+- NVEntry_NurtureGameData
+- NVEntry_InventoryData
+- NVEntry_LabAssignments
 
 See `examples/nvram.py` for example usage.
 
@@ -319,32 +375,55 @@ See `examples/cube_lights.py` and `examples/cube_light_animation.py` for example
 Cube Battery Voltage
 --------------------
 
-`ObjectPowerLevel`
+Cube battery voltage is communicated periodically with `ObjectPowerLevel` messages.
 
 
 Cube Accelerometers
 -------------------
 
-`ObjectMoved`
-`ObjectStoppedMoving`
-`ObjectUpAxisChnaged`
-`ObjectTapped`
-`ObjectTapFiltered`
-`StreamObjectAccel`
-`ObjectAccel`
+Cube accelerometer value reception can be enabled with the `StreamObjectAccel` message and are communicated every 30 ms
+with the `ObjectAccel` message.
+
+In addition, the robot performs basic cube accelerometer ata processing and provides basic events with the following
+messages:  
+
+- `ObjectMoved`
+- `ObjectStoppedMoving`
+- `ObjectUpAxisChnaged`
+- `ObjectTapped`
+- `ObjectTapFiltered`
 
 
 Animations
 ----------
 
-`AnimHead`
-`AnimLift`
-`AnimBodyMotion` - STRAIGHT/TURN_IN_PLACE/float
-`AnimBackpackLights`
-`OutputAudio`
-`Keyframe`
-`AbortAnimation`
-`RecordHeading`
-`TurnToRecordedHeading`
+Cozmo "animations" allow animating the following aspects of the robot: 
+
+- body movement
+- lift movement
+- head movement
+- face images
+- backpack LED animations
+- audio
+
+Cozmo animations are series of keyframes, stored in binary files in [FlatBuffers](https://google.github.io/flatbuffers/)
+format. Animation data structures are declared in FlatBuffers format in
+`files/cozmo/cozmo_resources/config/cozmo_anim.fbs` . The animation files are available in the following directory of
+the Android mobile application:
+
+`files/cozmo/cozmo_resources/assets/animations`
+
+Face images are generated procedurally. They are described by 37 parameters - 5 for the face and 19 for each eye.
+The face as a whole can be translated, scaled, and rotated. Each individual eye can be translated, scaled, and rotated.
+The 4 corners of each eye can be controlled and each eye has a lower and upper lid.  
+
+The following presentation from Anki provides some background information on Cozmo animations:
+
+[Cozmo: Animation pipeline for a physical robot](https://www.gdcvault.com/play/1024488/Cozmo-Animation-Pipeline-for-a)
+
+Animations are controlled with the `StartAnimation`, `EndAnimation`, and `AbortAnimation` messages.
+
+Keyframes are transferred with the `AnimHead`, `AnimLift`, `AnimBody`, `AnimBackpackLights`, `RecordHeading`,
+`TurnToRecordedHeading`, and `OutputAudio` messages.
    
 See `examples/anim.py` for example usage.

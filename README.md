@@ -46,10 +46,7 @@ cli.stop()
 Documentation
 -------------
 
-- [Cozmo protocol](docs/protocol.md) description
-- [Cozmo function](docs/functions.md) description
-- [Capturing Cozmo communication](docs/capturing.md)
-- API documentation: http://pycozmo.readthedocs.io/
+[https://pycozmo.readthedocs.io/](https://pycozmo.readthedocs.io/)
 
 
 Examples
