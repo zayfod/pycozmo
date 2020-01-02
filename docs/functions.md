@@ -421,6 +421,8 @@ The following presentation from Anki provides some background information on Coz
 
 [Cozmo: Animation pipeline for a physical robot](https://www.gdcvault.com/play/1024488/Cozmo-Animation-Pipeline-for-a)
 
+To play animations, `AnimationState` message have to be enabled first using the `EnableAnimationState` message.
+
 Animations are controlled with the `StartAnimation`, `EndAnimation`, and `AbortAnimation` messages.
 
 Keyframes are transferred with the `AnimHead`, `AnimLift`, `AnimBody`, `AnimBackpackLights`, `RecordHeading`,

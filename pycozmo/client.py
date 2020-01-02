@@ -8,7 +8,7 @@ import io
 import numpy as np
 from PIL import Image
 
-from .logging import logger
+from . import logger
 from . import protocol_encoder
 from . import event
 from . import camera
@@ -22,6 +22,7 @@ from . import conn
 from . import lights
 from . import image_encoder
 from . import anim
+from . import anim_encoder
 
 
 class Client(event.Dispatcher):
@@ -64,6 +65,10 @@ class Client(event.Dispatcher):
         self.packet_type_filter.deny_ids({protocol_declaration.PacketType.PING.value})
         self.packet_id_filter = filter.Filter()
         self._reset_partial_state()
+        # Animations
+        self._clip_metadata = {}
+        self._clips = {}
+        self._ppclips = {}
 
     def start(self) -> None:
         logger.debug("Starting client...")
@@ -103,6 +108,9 @@ class Client(event.Dispatcher):
         self.conn.send(pkt)
         # Set timestamp to 0. Also enables RobotState and ObjectAvailable events. Requires Enable (0x25).
         pkt = protocol_encoder.SyncTime()
+        self.conn.send(pkt)
+        # Enable animation playback and AnimationState events. Requires Enable (0x25).
+        pkt = protocol_encoder.EnableAnimationState()
         self.conn.send(pkt)
 
         # Initialize display.
@@ -393,5 +401,38 @@ class Client(event.Dispatcher):
         pkt = protocol_encoder.NextFrame()
         self.conn.send(pkt)
 
-    def play_anim_clip(self, clip: anim.PreprocessedClip) -> None:
-        clip.play(self)
+    def _load_clips(self, fspec: str) -> None:
+        if fspec.endswith(".bin"):
+            clips = anim_encoder.AnimClips.from_fb_file(fspec)
+        elif fspec.endswith(".json"):
+            clips = anim_encoder.AnimClips.from_json_file(fspec)
+        else:
+            raise ValueError("Unsupported animation file format.")
+        for clip in clips.clips:
+            self._clips[clip.name] = clip
+
+    def play_anim(self, name: str) -> None:
+        if not self._clip_metadata:
+            raise ValueError("Animations not loaded.")
+        elif name not in self._clip_metadata:
+            raise ValueError("Unknown clip name.")
+
+        if name not in self._ppclips:
+            if name not in self._clips:
+                self._load_clips(self._clip_metadata[name].fspec)
+            clip = self._clips[name]
+            self._ppclips[name] = anim.PreprocessedClip.from_anim_clip(clip)
+
+        ppclip = self._ppclips[name]
+        ppclip.play(self)
+
+    def load_anims(self, dspec: str) -> None:
+        self._clip_metadata = anim_encoder.get_clip_metadata(dspec)
+        self._clips = {}
+
+    def get_anim_names(self) -> set:
+        return set(self._clip_metadata.keys())
+
+    @property
+    def anim_names(self) -> set:
+        return self.get_anim_names()

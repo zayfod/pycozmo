@@ -115,7 +115,7 @@ class PreprocessedClip(object):
         return ppclip
 
     def play(self, cli):
-        cli.send(protocol_encoder.StartAnimation(anim_id=1))
+        cli.conn.send(protocol_encoder.StartAnimation(anim_id=1))
 
         frames = list(sorted(self.keyframes.keys()))
         num_frames = len(frames)
