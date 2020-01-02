@@ -21,6 +21,36 @@ Cozmo app.
 
 ```json
 {
+    "version": 2315,
+    "git-rev": "d96caf034da1c4a33d70d2c1e3bc5732ec68594a",
+    "date": "Thu Nov  9 15:37:45 2017",
+    "time": 1510270665,
+    "messageEngineToRobotHash": "5d963ecd52d4ae18af796f14f02a3f60",
+    "messageRobotToEngineHash": "d07d1f4dea884725adefd33de221a49f",
+    "build": "DEVELOPMENT",
+    "wifiSig": "2749d9fb97a138aa7b56429c3a587baf6dadfb6f",
+    "rtipSig": "0605ff5cd1f37cf75573caac3678ecba12b9bebe",
+    "bodySig": "76dc76aa624fac230603101206d3a4e2e50e76cb"
+}
+```
+
+```json
+{
+    "version": 2313,
+    "git-rev": "7381fe56705992ffd03bef1bb1a7b2e7258e9bc2",
+    "date": "Tue Nov  7 21:13:04 2017",
+    "time": 1510117984,
+    "messageEngineToRobotHash": "838bbe94628fd10783e40f6b6b9874df",
+    "messageRobotToEngineHash": "6ae9b7733e469f4fef89479d63e214ba",
+    "build": "DEVELOPMENT",
+    "wifiSig": "5bfbabc73e0ec5e20a072b6ab87b60da8a51310a",
+    "rtipSig": "349d2224cc00e56ee50a5b4ecb905a5ba64c791d",
+    "bodySig": "5ac6821655294e88b5fb852427bd99120af16fb5"
+}
+```
+
+```json
+{
     "version": 2214,
     "git-rev": "c363ccc897bc3748d234f80c21e4c8a33757d063",
     "date": "Wed Aug  9 11:01:32 2017",

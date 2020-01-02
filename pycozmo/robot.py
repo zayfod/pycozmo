@@ -19,6 +19,8 @@ MAX_LIFT_ANGLE = util.Angle(radians=math.asin((MAX_LIFT_HEIGHT.mm - LIFT_PIVOT_H
 
 MAX_WHEEL_SPEED = util.Speed(mmps=200.0)
 
+TRACK_WIDTH = util.Distance(mm=45.0)
+
 
 class RobotStatusFlag(object):
     IS_MOVING = 0x1

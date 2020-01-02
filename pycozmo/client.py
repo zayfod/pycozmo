@@ -8,7 +8,7 @@ import io
 import numpy as np
 from PIL import Image
 
-from .logging import logger
+from . import logger
 from . import protocol_encoder
 from . import event
 from . import camera
@@ -22,6 +22,7 @@ from . import conn
 from . import lights
 from . import image_encoder
 from . import anim
+from . import anim_encoder
 
 
 class Client(event.Dispatcher):
@@ -37,7 +38,8 @@ class Client(event.Dispatcher):
         self.body_color = None
         # Robot state
         # Heading in X-Y plane.
-        self.pose_angle = util.Angle(radians=0.0)
+        self.pose_frame_id = 0
+        self.pose = util.Pose(0.0, 0.0, 0.0, angle_z=util.Angle(radians=0.0), origin_id=1)
         self.pose_pitch = util.Angle(radians=0.0)
         self.head_angle = util.Angle(radians=robot.MIN_HEAD_ANGLE.radians)
         self.left_wheel_speed = util.Speed(mmps=0.0)
@@ -63,6 +65,10 @@ class Client(event.Dispatcher):
         self.packet_type_filter.deny_ids({protocol_declaration.PacketType.PING.value})
         self.packet_id_filter = filter.Filter()
         self._reset_partial_state()
+        # Animations
+        self._clip_metadata = {}
+        self._clips = {}
+        self._ppclips = {}
 
     def start(self) -> None:
         logger.debug("Starting client...")
@@ -74,6 +80,7 @@ class Client(event.Dispatcher):
         self.conn.add_handler(protocol_encoder.AnimationState, self._on_animation_state)
         self.conn.add_handler(protocol_encoder.ObjectAvailable, self._on_object_available)
         self.conn.add_handler(protocol_encoder.ObjectConnectionState, self._on_object_connection_state)
+        self.add_handler(event.EvtRobotPickedUpChange, self._on_robot_picked_up)
         self.conn.start()
 
     def stop(self) -> None:
@@ -96,10 +103,13 @@ class Client(event.Dispatcher):
         self.conn.send(pkt)  # This repetition seems to trigger BodyInfo
 
     def _initialize_robot(self):
-        # Enables RobotState and ObjectAvailable events - enables body ACC? Requires 0x25.
-        pkt = protocol_encoder.EnableBodyACC()
+        # Set world frame origin to (0,0,0), frame ID to 0, and origin ID to 1.
+        pkt = protocol_encoder.SetOrigin()
         self.conn.send(pkt)
-        # Enables AnimationState events. Requires 0x25.
+        # Set timestamp to 0. Also enables RobotState and ObjectAvailable events. Requires Enable (0x25).
+        pkt = protocol_encoder.SyncTime()
+        self.conn.send(pkt)
+        # Enable animation playback and AnimationState events. Requires Enable (0x25).
         pkt = protocol_encoder.EnableAnimationState()
         self.conn.send(pkt)
 
@@ -235,7 +245,9 @@ class Client(event.Dispatcher):
 
     def _on_robot_state(self, cli, pkt: protocol_encoder.RobotState):
         del cli
-        self.pose_angle = util.Angle(radians=pkt.pose_angle_rad)   # heading in X-Y plane
+        self.pose_frame_id = pkt.pose_frame_id
+        self.pose = util.Pose(pkt.pose_x, pkt.pose_y, pkt.pose_z,
+                              angle_z=util.Angle(radians=pkt.pose_angle_rad), origin_id=pkt.pose_origin_id)
         self.pose_pitch = util.Angle(radians=pkt.pose_pitch_rad)
         self.head_angle = util.Angle(radians=pkt.head_angle_rad)
         self.left_wheel_speed = util.Speed(mmps=pkt.lwheel_speed_mmps)
@@ -253,6 +265,14 @@ class Client(event.Dispatcher):
                 state = (pkt.status & flag) != 0
                 logger.debug("%s: %i", robot.RobotStatusFlagNames[flag], state)
                 self.dispatch(evt, self, state)
+
+    def _on_robot_picked_up(self, cli, state):
+        del cli
+        if not state:
+            # Robot put down - reset world frame origin.
+            pkt = protocol_encoder.SetOrigin(
+                pose_frame_id=self.pose_frame_id + 1, pose_origin_id=self.pose.origin_id + 1)
+            self.conn.send(pkt)
 
     def _on_animation_state(self, cli, pkt: protocol_encoder.AnimationState):
         del cli
@@ -318,6 +338,36 @@ class Client(event.Dispatcher):
         pkt = protocol_encoder.StopAllMotors()
         self.conn.send(pkt)
 
+    def go_to_pose(self, pose: util.Pose, relative_to_robot: bool = False) -> None:
+        """ Move to a specific pose (position and orientation). """
+
+        if relative_to_robot:
+            pose = util.Pose(self.pose.position.x, self.pose.position.y,
+                             self.pose.position.z, angle_z=self.pose.rotation.angle_z).define_pose_relative_this(pose)
+
+        pkt = protocol_encoder.AppendPathSegLine(
+            from_x=self.pose.position.x, from_y=self.pose.position.y,
+            to_x=pose.position.x, to_y=pose.position.y,
+            speed_mmps=100.0, accel_mmps2=20.0, decel_mmps2=20.0)
+        self.conn.send(pkt)
+        pkt = protocol_encoder.AppendPathSegPointTurn(
+            x=pose.position.x, y=pose.position.y,
+            angle_rad=pose.rotation.angle_z.radians,
+            angle_tolerance_rad=0.01,
+            speed_mmps=40.0, accel_mmps2=20.0, decel_mmps2=20.0)
+        self.conn.send(pkt)
+        pkt = protocol_encoder.ExecutePath(event_id=1)
+        self.conn.send(pkt)
+
+        e = Event()
+
+        def event_wait(_, pkt2: protocol_encoder.PathFollowingEvent):
+            if pkt2.event_type != protocol_encoder.PathEventType.PATH_STARTED:
+                e.set()
+
+        self.conn.add_handler(protocol_encoder.PathFollowingEvent, event_wait)
+        e.wait()
+
     def set_backpack_lights(self, left_light, front_light, center_light, rear_light, right_light) -> None:
         pkt = protocol_encoder.LightStateCenter(states=(front_light, center_light, rear_light))
         self.conn.send(pkt)
@@ -351,21 +401,38 @@ class Client(event.Dispatcher):
         pkt = protocol_encoder.NextFrame()
         self.conn.send(pkt)
 
-    def play_anim(self, clip: anim.AnimClip) -> None:
-        self.conn.send(protocol_encoder.StartAnimation(anim_id=1))
+    def _load_clips(self, fspec: str) -> None:
+        if fspec.endswith(".bin"):
+            clips = anim_encoder.AnimClips.from_fb_file(fspec)
+        elif fspec.endswith(".json"):
+            clips = anim_encoder.AnimClips.from_json_file(fspec)
+        else:
+            raise ValueError("Unsupported animation file format.")
+        for clip in clips.clips:
+            self._clips[clip.name] = clip
 
-        frames = list(sorted(clip.keyframes.keys()))
-        num_frames = len(frames)
-        for i in range(num_frames):
-            keyframe = clip.keyframes[frames[i]]
-            for pkt in keyframe:
-                self.conn.send(pkt)
+    def play_anim(self, name: str) -> None:
+        if not self._clip_metadata:
+            raise ValueError("Animations not loaded.")
+        elif name not in self._clip_metadata:
+            raise ValueError("Unknown clip name.")
 
-            # Play keyframe
-            self.conn.send(protocol_encoder.OutputAudio(samples=[0] * 744))
+        if name not in self._ppclips:
+            if name not in self._clips:
+                self._load_clips(self._clip_metadata[name].fspec)
+            clip = self._clips[name]
+            self._ppclips[name] = anim.PreprocessedClip.from_anim_clip(clip)
 
-            if i < num_frames - 1:
-                delay_ms = (frames[i + 1] - frames[i]) / 1000.0
-                time.sleep(delay_ms)
+        ppclip = self._ppclips[name]
+        ppclip.play(self)
 
-        self.conn.send(protocol_encoder.EndAnimation())
+    def load_anims(self, dspec: str) -> None:
+        self._clip_metadata = anim_encoder.get_clip_metadata(dspec)
+        self._clips = {}
+
+    def get_anim_names(self) -> set:
+        return set(self._clip_metadata.keys())
+
+    @property
+    def anim_names(self) -> set:
+        return self.get_anim_names()

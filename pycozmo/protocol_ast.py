@@ -160,10 +160,11 @@ class Enum(object):
     """ Base class for enumerations. """
 
     def __init__(self, name: str, description: Optional[str] = None,
-                 members: Optional[List[EnumMember]] = None):
+                 members: Optional[List[EnumMember]] = None, base: int = 10):
         self.name = str(name)
         self.description = str(description) if description else None
         self.members = list(members) if members else []
+        self.base = int(base)
 
 
 class EnumArgument(Argument):

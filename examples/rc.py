@@ -191,7 +191,7 @@ class RCApp(object):
         self.cli.drive_wheels(lwheel_speed=lw, rwheel_speed=rw)
 
     @staticmethod
-    def _get_motor_thrust(r, theta):
+    def get_motor_thrust(r: float, theta: float):
         """
         Convert throttle and steering angle to left and right motor thrust.
 
@@ -309,7 +309,7 @@ class RCApp(object):
             if r < 0:
                 r *= -1.0
                 theta += 180.0
-            v_a, v_b = self._get_motor_thrust(r, theta)
+            v_a, v_b = self.get_motor_thrust(r, theta)
             logging.debug("r: {:.02f}; theta: {:.02f}; v_a: {:.02f}; v_b: {:.02f};".format(
                 r, theta, v_a, v_b))
             self._drive_wheels(v_a, v_b)

@@ -22,10 +22,12 @@ from . import camera
 from . import object
 from . import filter
 from . import anim
+from . import anim_encoder
 from . import image_encoder
+from . import procedural_face
 
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 __all__ = [
     "logger",

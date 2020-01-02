@@ -4,11 +4,15 @@
 __pycache__/
 *.pyc
 
-build/
-dist/
+/build/
+/dist/
 *.egg-info/
 
-venv/
-.idea/
+/venv/
+/.idea/
 
-examples/*.png
+/docs/source/build/
+/docs/source/generated/
+/docs/source/external/
+
+/examples/*.png

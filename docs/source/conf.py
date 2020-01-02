@@ -11,6 +11,8 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 import os
+import glob
+from shutil import copyfile
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
 
@@ -22,7 +24,7 @@ import pycozmo
 
 project = 'PyCozmo'
 # noinspection PyShadowingBuiltins
-copyright = '2019, Kaloyan Tenchov'
+copyright = '2019-2020, Kaloyan Tenchov'
 author = 'Kaloyan Tenchov'
 
 # The full version, including alpha/beta/rc tags
@@ -36,7 +38,10 @@ release = pycozmo.__version__
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
+    'sphinx.ext.intersphinx',
+    'recommonmark',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -56,3 +61,27 @@ master_doc = 'index'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = []
+
+
+autosummary_generate = True
+autodoc_default_flags = [
+    'members',
+    'undoc-members',
+    'show-inheritance'
+]
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3.5', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'PIL': ('https://pillow.readthedocs.io/en/latest/', None),
+}
+
+
+# Create external/ subdirectory and copy markdown files from docs/
+cur_dir = os.path.dirname(__file__)
+external_dir = os.path.join(cur_dir, 'external')
+if not os.path.exists(external_dir):
+    os.mkdir(external_dir)
+doc_spec = os.path.join(cur_dir, '..', '*.md')
+for src in glob.glob(doc_spec):
+    dst = os.path.join(external_dir, os.path.basename(src))
+    copyfile(src, dst)

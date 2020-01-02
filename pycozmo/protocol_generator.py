@@ -70,6 +70,18 @@ def get_enum_fmt(argument: protocol_declaration.EnumArgument):
     return data_fmt
 
 
+def int_to_str(value: int, base: int = 10) -> str:
+    if base == 8:
+        res = "0o{:o}".format(value)
+    elif base == 10:
+        res = "{:d}".format(value)
+    elif base == 16:
+        res = "0x{:x}".format(value)
+    else:
+        raise ValueError("Unexpected base {}.".format(base))
+    return res
+
+
 class ProtocolGenerator(object):
 
     def __init__(self, f):
@@ -319,7 +331,8 @@ class ProtocolGenerator(object):
             self.f.write("        pass\n")
 
     def generate_packet_arugment_assignments(self, packet: protocol_declaration.Packet):
-        self.f.write("        super().__init__({type}, packet_id={id})\n".format(type=packet.type, id=packet.id))
+        packet_id = "0x{:02x}".format(packet.id) if packet.id is not None else None
+        self.f.write("        super().__init__({type}, packet_id={id})\n".format(type=packet.type, id=packet_id))
         self.generate_arugment_assignments(packet)
 
     def generate_packet_encoding(self, struct: protocol_declaration.Struct):
@@ -449,7 +462,8 @@ class ProtocolGenerator(object):
 class {name}(enum.Enum):
 """.format(name=enum_type.name))
         for member in enum_type.members:
-            self.f.write('    {name} = {value}\n'.format(name=member.name, value=member.value))
+            self.f.write('    {name} = {value}\n'.format(
+                name=member.name, value=int_to_str(member.value, enum_type.base)))
 
     def generate_struct(self, struct: protocol_declaration.Struct):
         self.f.write(r"""

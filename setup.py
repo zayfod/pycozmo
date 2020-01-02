@@ -46,7 +46,7 @@ setuptools.setup(
     install_requires=["dpkt", "numpy", "Pillow>=6.0.0", "flatbuffers"],
     keywords=["anki", "cozmo", "robot", "robotics"],
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.5",

@@ -23,7 +23,7 @@ BODY_COLOR = Enum("BodyColor", members=[
     EnumMember("CE_LM_v15", 3),
     EnumMember("LE_BL_v16", 4),
 ])
-NV_ENTRY_TAG = Enum("NvEntryTag", members=[
+NV_ENTRY_TAG = Enum("NvEntryTag", base=16, members=[
     EnumMember("NVEntry_Invalid", 0xffffffff),
     EnumMember("NVEntry_GameSkillLevels", 0x180000),
     EnumMember("NVEntry_OnboardingData", 0x181000),
@@ -169,8 +169,24 @@ IMAGE_RESOLUTION = Enum("ImageResolution", members=[
     EnumMember("ImageResolutionCount", 13),
     EnumMember("ImageResolutionNone", 14),
 ])
-DEBUG_DATA_ID = Enum("DebugDataID", members=[
+IMAGE_SEND_MODE = Enum("ImageSendMode", members=[
+    EnumMember("Off", 0),
+    EnumMember("Stream", 1),
+    EnumMember("SingleShot", 2),
+])
+DEBUG_DATA_ID = Enum("DebugDataID", base=16, members=[
     EnumMember("MAC_ADDRESS", 0x1572),              # 624
+])
+MOTOR_ID = Enum("MotorID", members=[
+    EnumMember("MOTOR_LEFT_WHEEL", 0),
+    EnumMember("MOTOR_RIGHT_WHEEL", 1),
+    EnumMember("MOTOR_LIFT", 2),
+    EnumMember("MOTOR_HEAD", 3),
+])
+PATH_EVENT_TYPE = Enum("PathEventType", members=[
+    EnumMember("PATH_STARTED", 0),
+    EnumMember("PATH_INTERRUPTED", 1),
+    EnumMember("PATH_COMPLETED", 2),
 ])
 
 LIGHT_STATE = Struct("LightState", arguments=[
@@ -181,6 +197,11 @@ LIGHT_STATE = Struct("LightState", arguments=[
     UInt8Argument("transition_on_frames"),
     UInt8Argument("transition_off_frames"),
     Int16Argument("offset"),
+])
+PATH_SEGMENT_SPEED = Struct("PathSegmentSpeed", arguments=[
+    FloatArgument("speed_mmps"),
+    FloatArgument("accel_mmps2"),
+    FloatArgument("decel_mmps2"),
 ])
 
 
@@ -195,11 +216,15 @@ PROTOCOL = Protocol(
         OBJECT_TYPE,
         IMAGE_ENCODING,
         IMAGE_RESOLUTION,
+        IMAGE_SEND_MODE,
         DEBUG_DATA_ID,
+        MOTOR_ID,
+        PATH_EVENT_TYPE,
     ],
 
     structs=[
         LIGHT_STATE,
+        PATH_SEGMENT_SPEED,
     ],
 
     packets=[
@@ -218,6 +243,13 @@ PROTOCOL = Protocol(
         Command(0x05, "ObjectConnect", group="objects", arguments=[
             UInt32Argument("factory_id"),
             BoolArgument("connect"),
+        ]),
+        Command(0x08, "StreamObjectAccel", group="objects", arguments=[
+            UInt32Argument("object_id"),
+            BoolArgument("enable"),
+        ]),
+        Command(0x0a, "SetAccessoryDiscovery", group="objects", arguments=[
+            BoolArgument("enable")
         ]),
         Command(0x0b, "SetHeadLight", group="camera", arguments=[
             BoolArgument("enable")
@@ -273,26 +305,70 @@ PROTOCOL = Protocol(
             UInt8Argument("action_id"),
         ]),
         Command(0x3b, "StopAllMotors", group="motors"),
-        Command(0x3d, "DriveStraight", group="motors", arguments=[
-            FloatArgument("f0"),
-            FloatArgument("f1"),
-            FloatArgument("dist_mm"),               # minus ~20.3 mm?
-            FloatArgument("f3"),
-            FloatArgument("speed_mmps"),
-            FloatArgument("f5"),
-            FloatArgument("f6"),
+        Command(0x3c, "ClearPath", group="motors", arguments=[
+            UInt16Argument("unknown"),
         ]),
-        Command(0x4b, "EnableBodyACC", group="system", arguments=[
-            FArrayArgument("unknown", length=8, default=b"\xc4\xb6\x39\x00\x00\x00\xa0\xc1"),
+        Command(0x3d, "AppendPathSegLine", group="motors", arguments=[
+            FloatArgument("from_x"),
+            FloatArgument("from_y"),
+            FloatArgument("to_x"),
+            FloatArgument("to_y"),
+            FloatArgument("speed_mmps"),        # PathSegmentSpeed
+            FloatArgument("accel_mmps2"),
+            FloatArgument("decel_mmps2"),
+        ]),
+        Command(0x3e, "AppendPathSegArc", group="motors", arguments=[
+            FloatArgument("center_x"),
+            FloatArgument("center_y"),
+            FloatArgument("radius_mm"),
+            FloatArgument("start_angle_rad"),
+            FloatArgument("sweep_rad"),
+            FloatArgument("speed_mmps"),        # PathSegmentSpeed
+            FloatArgument("accel_mmps2"),
+            FloatArgument("decel_mmps2"),
+        ]),
+        Command(0x3f, "AppendPathSegPointTurn", group="motors", arguments=[
+            FloatArgument("x"),
+            FloatArgument("y"),
+            FloatArgument("angle_rad"),
+            FloatArgument("angle_tolerance_rad"),
+            FloatArgument("speed_mmps"),        # PathSegmentSpeed
+            FloatArgument("accel_mmps2"),
+            FloatArgument("decel_mmps2"),
+            BoolArgument("unknown")
+        ]),
+        Command(0x40, "TrimPath", group="motors", arguments=[
+            UInt8Argument("head"),
+            UInt8Argument("tail"),
+        ]),
+        Command(0x41, "ExecutePath", group="motors", arguments=[
+            UInt16Argument("event_id"),
+            BoolArgument("unknown"),
+        ]),
+        Command(0x45, "SetOrigin", group="localization", arguments=[
+            UInt32Argument("unknown0"),
+            UInt32Argument("pose_frame_id"),
+            UInt32Argument("pose_origin_id", default=1),
+            FloatArgument("pose_x"),
+            FloatArgument("pose_y"),
+            UInt32Argument("unknown5", default=0x80000000),
+        ]),
+        Command(0x4b, "SyncTime", group="system", arguments=[
+            UInt32Argument("timestamp"),
+            UInt32Argument("unknown"),
         ]),
         Command(0x4c, "EnableCamera", group="camera", arguments=[
-            BoolArgument("enable"),
-            UInt8Argument("unknown", default=4)     # resolution but ignored?
+            EnumArgument("image_send_mode", IMAGE_SEND_MODE, default=1),
+            EnumArgument("image_resolution", IMAGE_RESOLUTION, default=4),
         ]),
         Command(0x57, "SetCameraParams", group="camera", arguments=[
             FloatArgument("gain"),
             UInt16Argument("exposure_ms"),
             BoolArgument("auto_exposure_enabled"),
+        ]),
+        Command(0x58, "StartMotorCalibration", group="motors", arguments=[
+            BoolArgument("head"),
+            BoolArgument("lift"),
         ]),
         Command(0x60, "EnableStopOnCliff", group="motors", arguments=[
             BoolArgument("enable"),
@@ -305,15 +381,18 @@ PROTOCOL = Protocol(
         ]),
         Command(0x81, "NvStorageOp", group="nv", arguments=[
             EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument(), default=0xffffffff),
-            Int32Argument("index"),
+            Int32Argument("length"),
             EnumArgument("op", NV_OPERATION, data_type=UInt8Argument()),
             UInt8Argument("unknown"),
             VArrayArgument("data"),
         ]),
+        Command(0x8d, "AbortAnimation", group="anim"),
         Command(0x8e, "OutputAudio", group="audio", arguments=[
             FArrayArgument("samples", length=744),
         ]),
         Command(0x8f, "NextFrame", group="display"),
+        Command(0x91, "RecordHeading", group="anim"),
+        Command(0x92, "TurnToRecordedHeading", group="anim"),
         Command(0x93, "AnimHead", group="anim", arguments=[
             UInt8Argument("duration_ms"),
             Int8Argument("variability_deg"),
@@ -332,13 +411,17 @@ PROTOCOL = Protocol(
         ]),
         Command(0x99, "AnimBody", group="anim", arguments=[
             Int16Argument("speed"),
-            Int16Argument("unknown1"),
+            Int16Argument("unknown"),
         ]),
         Command(0x9a, "EndAnimation", group="anim"),
         Command(0x9b, "StartAnimation", group="anim", arguments=[
             UInt8Argument("anim_id")
         ]),
         Command(0x9f, "EnableAnimationState", group="system"),
+        Command(0xa9, "ShutdownRobot", group="system"),
+        Command(0xae, "WifiOff", group="system", arguments=[
+            BoolArgument("enable"),
+        ]),
         Command(0xaf, "FirmwareUpdate", group="firmware", arguments=[
             UInt16Argument("chunk_id"),
             FArrayArgument("data", length=1024)
@@ -347,7 +430,7 @@ PROTOCOL = Protocol(
         Command(0xb0, "DebugData", group="debug", arguments=[
             UInt16Argument("debug_id"),             # See DebugDataID
             UInt16Argument("unused"),               # Always 0
-            UInt16Argument("unknown2"),             # Source? Observed: 1, 100, 110, 1203, 1204, 1213, 169, 171, 172, 228, 247, 249, 252, 282, 330, 341, 368, 372, 374, 391, 394, 398, 40, 405, 409, 411, 413, 414, 417, 52, 57
+            UInt16Argument("unknown2"),             # Source?
             Int8Argument("unknown3"),               # Level? Observed: -1, 1, 2, 3, 5
             VArrayArgument("data", data_type=UInt32Argument(), length_type=UInt8Argument())
         ]),
@@ -382,6 +465,10 @@ PROTOCOL = Protocol(
         ]),
         Command(0xc2, "RobotDelocalized", group="localization"),
         Command(0xc3, "RobotPoked", group="localization"),
+        Command(0xc6, "PathFollowingEvent", group="motors", arguments=[
+            UInt16Argument("event_id"),
+            EnumArgument("event_type", PATH_EVENT_TYPE, data_type=UInt8Argument()),
+        ]),
         Command(0xc9, "HardwareInfo", group="system", arguments=[
             UInt32Argument("serial_number_head"),
             UInt8Argument("unknown1"),
@@ -395,7 +482,7 @@ PROTOCOL = Protocol(
         ]),
         Command(0xcd, "NvStorageOpResult", group="nv", arguments=[
             EnumArgument("tag", NV_ENTRY_TAG, data_type=UInt32Argument(), default=0xffffffff),
-            Int32Argument("index"),
+            Int32Argument("length"),
             EnumArgument("op", NV_OPERATION, data_type=UInt8Argument()),
             EnumArgument("result", NV_RESULT, data_type=Int8Argument()),
             VArrayArgument("data"),
@@ -410,6 +497,11 @@ PROTOCOL = Protocol(
             UInt32Argument("factory_id"),
             EnumArgument("object_type", OBJECT_TYPE, data_type=Int32Argument(), default=-1),
             BoolArgument("connected"),
+        ]),
+        Command(0xd1, "MotorCalibration", group="motors", arguments=[
+            EnumArgument("motor_id", MOTOR_ID, data_type=UInt8Argument()),
+            BoolArgument("calib_started"),
+            BoolArgument("auto_started"),
         ]),
         Command(0xd7, "ObjectUpAxisChanged", group="objects", arguments=[
             UInt32Argument("timestamp"),
@@ -497,6 +589,13 @@ PROTOCOL = Protocol(
             FloatArgument("rate_y"),
             FloatArgument("rate_z"),
             UInt8Argument("line_2_number"),
+        ]),
+        Event(0xf5, "ObjectAccel", group="state", arguments=[
+            UInt32Argument("timestamp"),
+            UInt32Argument("object_id"),
+            FloatArgument("accel_x"),
+            FloatArgument("accel_y"),
+            FloatArgument("accel_z"),
         ]),
     ]
 
