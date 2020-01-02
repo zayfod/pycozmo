@@ -35,6 +35,20 @@ class PreprocessedClip(object):
         self.keyframes = keyframes or defaultdict(list)
 
     @classmethod
+    def keyframe_to_im(cls, keyframe) -> Image:
+        face = procedural_face.ProceduralFace(
+            center_x=keyframe.center_x, center_y=keyframe.center_y,
+            scale_x=keyframe.scale_x, scale_y=keyframe.scale_y,
+            angle=keyframe.angle,
+            left_eye=keyframe.left_eye, right_eye=keyframe.right_eye)
+        im = face.render()
+        # The Cozmo protocol expects a 128x32 image, so take only the even lines.
+        np_im = np.array(im)
+        np_im2 = np_im[::2]
+        im = Image.fromarray(np_im2)
+        return im
+
+    @classmethod
     def from_anim_clip(cls, clip: anim_encoder.AnimClip):
         keyframes = defaultdict(list)
         for keyframe in clip.keyframes:
@@ -89,16 +103,7 @@ class PreprocessedClip(object):
                 # TODO
                 pass
             elif isinstance(keyframe, anim_encoder.AnimProceduralFace):
-                face = procedural_face.ProceduralFace(
-                    center_x=keyframe.center_x, center_y=keyframe.center_y,
-                    scale_x=keyframe.scale_x, scale_y=keyframe.scale_y,
-                    angle=keyframe.angle,
-                    left_eye=keyframe.left_eye, right_eye=keyframe.right_eye)
-                im = face.render()
-                # The Cozmo protocol expects a 128x32 image, so take only the even lines.
-                np_im = np.array(im)
-                np_im2 = np_im[::2]
-                im = Image.fromarray(np_im2)
+                im = cls.keyframe_to_im(keyframe)
                 encoder = image_encoder.ImageEncoder(im)
                 buf = bytes(encoder.encode())
                 pkt = protocol_encoder.DisplayImage(image=buf)
