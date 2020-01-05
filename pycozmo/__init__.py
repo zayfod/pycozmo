@@ -1,3 +1,8 @@
+"""
+
+PyCozmo - a pure-Python Anki Cozmo communication library.
+
+"""
 
 import sys
 

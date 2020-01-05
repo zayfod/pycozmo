@@ -1,9 +1,24 @@
+"""
+
+Cozmo image run-length encoding and decoding.
+
+"""
 
 from typing import Optional
 import sys
 from io import StringIO
 
 from PIL import Image
+
+
+__all__ = [
+    "render",
+    "image_to_str",
+    "str_to_image",
+
+    "ImageDecoder",
+    "ImageEncoder",
+]
 
 
 def render(image: bytes) -> None:

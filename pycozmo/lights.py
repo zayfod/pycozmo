@@ -1,6 +1,6 @@
 """
 
-Helper routeines for working with colors and lights.
+Helper routines for working with colors and lights.
 
 """
 
@@ -90,14 +90,24 @@ class Color:
         return "Color(name={}, int_color=0x{:08x})".format(self.name, self._int_color)
 
 
+#: Green color.
 green = Color(name="green", int_color=0x00ff00ff)
+#: Red color.
 red = Color(name="red", int_color=0xff0000ff)
+#: BLue color.
 blue = Color(name="blue", int_color=0x0000ffff)
+#: White color.
 white = Color(name="white", int_color=0xffffffff)       # Does not work well with cubes?
+#: Off/no color.
 off = Color(name="off")
 
+#: Green light.
 green_light = protocol_encoder.LightState(on_color=green.to_int16(), off_color=green.to_int16())
+#: Red light.
 red_light = protocol_encoder.LightState(on_color=red.to_int16(), off_color=red.to_int16())
+#: Blue light.
 blue_light = protocol_encoder.LightState(on_color=blue.to_int16(), off_color=blue.to_int16())
+#: White light.
 white_light = protocol_encoder.LightState(on_color=white.to_int16(), off_color=white.to_int16())
+#: Off/no light.
 off_light = protocol_encoder.LightState(on_color=off.to_int16(), off_color=off.to_int16())

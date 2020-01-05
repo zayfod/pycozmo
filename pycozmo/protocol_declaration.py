@@ -1,10 +1,20 @@
 """
 
-Protocol AST declaration.
+Cozmo protocol abstract syntax tree (AST) declaration.
 
 """
 
 from .protocol_ast import *
+
+
+__all__ = [
+    "FRAME_ID",
+    "MIN_FRAME_SIZE",
+    "FIRST_ROBOT_PACKET_ID",
+    "FIRMWARE_VERSION",
+
+    "PROTOCOL",
+]
 
 
 FRAME_ID = b"COZ\x03RE\x01"
@@ -205,6 +215,7 @@ PATH_SEGMENT_SPEED = Struct("PathSegmentSpeed", arguments=[
 ])
 
 
+#: Cozmo protocol declaration.
 PROTOCOL = Protocol(
 
     enums=[

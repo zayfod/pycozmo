@@ -1,6 +1,32 @@
+"""
+
+Cozmo protocol encoding helper classes and functions.
+
+"""
 
 from typing import Dict, Tuple
 import struct
+
+
+__all__ = [
+    "validate_float",
+    "validate_bool",
+    "validate_integer",
+    "validate_object",
+    "validate_farray",
+    "validate_varray",
+    "validate_string",
+
+    "get_size",
+    "get_farray_size",
+    "get_varray_size",
+    "get_string_size",
+    "get_object_size",
+    "get_object_farray_size",
+
+    "BinaryReader",
+    "BinaryWriter",
+]
 
 
 _struct_cache = dict()  # type: Dict[Tuple[str, int], struct.Struct]

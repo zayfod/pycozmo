@@ -1,10 +1,6 @@
 """
 
-Experimental code for reading Cozmo animations in .bin format.
-
-Cozmo animations are stored in files/cozmo/cozmo_resources/assets/animations inside the Cozmo mobile application.
-
-Animation data structures are declared in FlatBuffers format in files/cozmo/cozmo_resources/config/cozmo_anim.fbs .
+Animation clip preprocessing and playback.
 
 """
 
@@ -30,6 +26,7 @@ __all__ = [
 
 
 class PreprocessedClip(object):
+    """ Preprocessed animation clip that can be played back. """
 
     def __init__(self, keyframes: Optional[Dict[int, List[protocol_encoder.Packet]]] = None):
         self.keyframes = keyframes or defaultdict(list)

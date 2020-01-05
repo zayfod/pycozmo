@@ -1,12 +1,50 @@
 """
 
-Protocol AST.
+Cozmo protocol abstract syntax tree (AST) types.
 
 """
 
 import enum
 from abc import ABC
 from typing import List, Optional, Union, Tuple, Any
+
+
+__all__ = [
+    "FrameType",
+    "PacketType",
+
+    "EnumMember",
+    "Enum",
+
+    "Struct",
+
+    "Argument",
+    "FloatArgument",
+    "DoubleArgument",
+    "BoolArgument",
+    "UIntArgument",
+    "UInt8Argument",
+    "UInt16Argument",
+    "UInt32Argument",
+    "IntArgument",
+    "Int8Argument",
+    "Int16Argument",
+    "Int32Argument",
+    "EnumArgument",
+    "FArrayArgument",
+    "VArrayArgument",
+    "StringArgument",
+
+    "Packet",
+    "Connect",
+    "Disconnect",
+    "Command",
+    "Event",
+    "Ping",
+    "Keyframe",
+
+    "Protocol",
+]
 
 
 class FrameType(enum.Enum):

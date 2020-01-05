@@ -67,7 +67,8 @@ autosummary_generate = True
 autodoc_default_flags = [
     'members',
     'undoc-members',
-    'show-inheritance'
+    'show-inheritance',
+    'inherited-members',
 ]
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3.5', None),

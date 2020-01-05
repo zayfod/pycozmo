@@ -1,3 +1,8 @@
+"""
+
+Event declaration and dispatching.
+
+"""
 
 from typing import Callable, Optional
 import collections
@@ -9,6 +14,31 @@ from . import robot
 
 __all__ = [
     "Event",
+
+    "EvtRobotFound",
+    "EvtRobotReady",
+    "EvtNewRawCameraImage",
+    "EvtRobotMovingChange",
+    "EvtRobotCarryingBlockChange",
+    "EvtRobotPickingOrPlacingChange",
+    "EvtRobotPickedUpChange",
+    "EvtRobotBodyAccModeChange",
+    "EvtRobotFallingChange",
+    "EvtRobotAnimatingChange",
+    "EvtRobotPathingChange",
+    "EvtRobotLiftInPositionChange",
+    "EvtRobotHeadInPositionChange",
+    "EvtRobotAnimBufferFullChange",
+    "EvtRobotAnimatingIdleChange",
+    "EvtRobotOnChargerChange",
+    "EvtRobotChargingChange",
+    "EvtCliffDetectedChange",
+    "EvtRobotWheelsMovingChange",
+    "EvtChargerOOSChange",
+    "EvtRobotStateUpdated",
+
+    "STATUS_EVENTS",
+
     "Handler",
     "Dispatcher",
 ]

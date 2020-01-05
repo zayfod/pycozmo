@@ -1,7 +1,19 @@
+"""
+
+Cozmo procedural face rendering.
+
+"""
 
 from typing import Optional, List
 
 from PIL import Image, ImageDraw
+
+
+__all__ = [
+    "ProceduralLid",
+    "ProceduralEye",
+    "ProceduralFace",
+]
 
 
 WIDTH = 128

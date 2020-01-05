@@ -1,6 +1,19 @@
+"""
+
+Cozmo protocol sliding window implementation.
+
+"""
 
 import math
 from typing import Optional, Any
+
+
+__all__ = [
+    "BaseWindow",
+    "ReceiveWindow",
+    "SendWindowSlot",
+    "SendWindow",
+]
 
 
 class BaseWindow(object):

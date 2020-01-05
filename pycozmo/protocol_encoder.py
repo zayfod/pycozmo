@@ -1,6 +1,6 @@
 """
 
-Protocol packet encoder classes.
+Cozmo protocol packet encoder classes.
 
 Generated from protocol_declaration.py by protocol_generator.py
 

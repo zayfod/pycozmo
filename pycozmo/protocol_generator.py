@@ -1,6 +1,6 @@
 """
 
-Protocol packet encoder code generator.
+Cozmo protocol packet encoder code generator.
 
 """
 
@@ -8,6 +8,11 @@ import os
 from collections import defaultdict
 
 from . import protocol_declaration
+
+
+__all__ = [
+    "ProtocolGenerator",
+]
 
 
 def get_fmt_by_type(t):
@@ -527,7 +532,7 @@ class {name}(Packet):
     def generate(self):
         header = r'''"""
 
-Protocol packet encoder classes.
+Cozmo protocol packet encoder classes.
 
 Generated from {declaration} by {generator}
 

@@ -1,3 +1,8 @@
+"""
+
+Cozmo protocol frame.
+
+"""
 
 from typing import List
 
@@ -7,7 +12,13 @@ from .protocol_utils import BinaryReader, BinaryWriter
 from .protocol_encoder import Connect, Disconnect, Ping, Keyframe, PACKETS_BY_ID
 
 
+__all__ = [
+    "Frame",
+]
+
+
 class Frame(object):
+    """ Cozmo protocol frame. """
 
     __slots__ = [
         'type',

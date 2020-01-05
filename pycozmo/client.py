@@ -1,3 +1,8 @@
+"""
+
+Cozmo protocol client.
+
+"""
 
 from threading import Event
 from typing import Optional, Tuple
@@ -23,6 +28,11 @@ from . import lights
 from . import image_encoder
 from . import anim
 from . import anim_encoder
+
+
+__all__ = [
+    "Client",
+]
 
 
 class Client(event.Dispatcher):
