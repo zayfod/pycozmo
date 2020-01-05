@@ -200,7 +200,7 @@ class ProtocolGenerator(object):
         return self._{name}
 
     @{name}.setter
-    def {name}(self, value: {enum_type}):
+    def {name}(self, value: {enum_type}) -> None:
         self._{name} = value
         """.format(name=argument.name, enum_type=argument.enum_type.name))
                 self.generate_enum_validation(argument)

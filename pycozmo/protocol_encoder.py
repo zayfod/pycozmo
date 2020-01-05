@@ -2792,7 +2792,7 @@ class EnableCamera(Packet):
         return self._image_send_mode
 
     @image_send_mode.setter
-    def image_send_mode(self, value: ImageSendMode):
+    def image_send_mode(self, value: ImageSendMode) -> None:
         self._image_send_mode = value
         validate_integer("image_send_mode", value.value, -128, 127)
 
@@ -2801,7 +2801,7 @@ class EnableCamera(Packet):
         return self._image_resolution
 
     @image_resolution.setter
-    def image_resolution(self, value: ImageResolution):
+    def image_resolution(self, value: ImageResolution) -> None:
         self._image_resolution = value
         validate_integer("image_resolution", value.value, -128, 127)
 
@@ -3171,7 +3171,7 @@ class NvStorageOp(Packet):
         return self._tag
 
     @tag.setter
-    def tag(self, value: NvEntryTag):
+    def tag(self, value: NvEntryTag) -> None:
         self._tag = value
         validate_integer("tag", value.value, 0, 4294967295)
 
@@ -3188,7 +3188,7 @@ class NvStorageOp(Packet):
         return self._op
 
     @op.setter
-    def op(self, value: NvOperation):
+    def op(self, value: NvOperation) -> None:
         self._op = value
         validate_integer("op", value.value, 0, 255)
 
@@ -4262,7 +4262,7 @@ class ObjectMoved(Packet):
         return self._axis_of_accel
 
     @axis_of_accel.setter
-    def axis_of_accel(self, value: UpAxis):
+    def axis_of_accel(self, value: UpAxis) -> None:
         self._axis_of_accel = value
         validate_integer("axis_of_accel", value.value, 0, 255)
 
@@ -4779,7 +4779,7 @@ class PathFollowingEvent(Packet):
         return self._event_type
 
     @event_type.setter
-    def event_type(self, value: PathEventType):
+    def event_type(self, value: PathEventType) -> None:
         self._event_type = value
         validate_integer("event_type", value.value, 0, 255)
 
@@ -5032,7 +5032,7 @@ class NvStorageOpResult(Packet):
         return self._tag
 
     @tag.setter
-    def tag(self, value: NvEntryTag):
+    def tag(self, value: NvEntryTag) -> None:
         self._tag = value
         validate_integer("tag", value.value, 0, 4294967295)
 
@@ -5049,7 +5049,7 @@ class NvStorageOpResult(Packet):
         return self._op
 
     @op.setter
-    def op(self, value: NvOperation):
+    def op(self, value: NvOperation) -> None:
         self._op = value
         validate_integer("op", value.value, 0, 255)
 
@@ -5058,7 +5058,7 @@ class NvStorageOpResult(Packet):
         return self._result
 
     @result.setter
-    def result(self, value: NvResult):
+    def result(self, value: NvResult) -> None:
         self._result = value
         validate_integer("result", value.value, -128, 127)
 
@@ -5251,7 +5251,7 @@ class ObjectConnectionState(Packet):
         return self._object_type
 
     @object_type.setter
-    def object_type(self, value: ObjectType):
+    def object_type(self, value: ObjectType) -> None:
         self._object_type = value
         validate_integer("object_type", value.value, -2147483648, 2147483647)
 
@@ -5334,7 +5334,7 @@ class MotorCalibration(Packet):
         return self._motor_id
 
     @motor_id.setter
-    def motor_id(self, value: MotorID):
+    def motor_id(self, value: MotorID) -> None:
         self._motor_id = value
         validate_integer("motor_id", value.value, 0, 255)
 
@@ -5435,7 +5435,7 @@ class ObjectUpAxisChanged(Packet):
         return self._axis
 
     @axis.setter
-    def axis(self, value: UpAxis):
+    def axis(self, value: UpAxis) -> None:
         self._axis = value
         validate_integer("axis", value.value, 0, 255)
 
@@ -5704,7 +5704,7 @@ class BodyInfo(Packet):
         return self._body_color
 
     @body_color.setter
-    def body_color(self, value: BodyColor):
+    def body_color(self, value: BodyColor) -> None:
         self._body_color = value
         validate_integer("body_color", value.value, -2147483648, 2147483647)
 
@@ -6526,7 +6526,7 @@ class ImageChunk(Packet):
         return self._image_encoding
 
     @image_encoding.setter
-    def image_encoding(self, value: ImageEncoding):
+    def image_encoding(self, value: ImageEncoding) -> None:
         self._image_encoding = value
         validate_integer("image_encoding", value.value, -128, 127)
 
@@ -6535,7 +6535,7 @@ class ImageChunk(Packet):
         return self._image_resolution
 
     @image_resolution.setter
-    def image_resolution(self, value: ImageResolution):
+    def image_resolution(self, value: ImageResolution) -> None:
         self._image_resolution = value
         validate_integer("image_resolution", value.value, -128, 127)
 
@@ -6681,7 +6681,7 @@ class ObjectAvailable(Packet):
         return self._object_type
 
     @object_type.setter
-    def object_type(self, value: ObjectType):
+    def object_type(self, value: ObjectType) -> None:
         self._object_type = value
         validate_integer("object_type", value.value, -2147483648, 2147483647)
 
