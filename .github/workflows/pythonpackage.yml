@@ -31,7 +31,8 @@ jobs:
     - name: Analyze with mypy
       run: |
         mypy --version
-        mypy . || true
+        mypy .
+      continue-on-error: true
     - name: Test with pytest
       run: |
         pytest pycozmo/tests/
