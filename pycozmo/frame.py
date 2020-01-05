@@ -30,7 +30,7 @@ class Frame(object):
         return writer.dumps()
 
     @staticmethod
-    def _encode_packet(pkt, writer) -> None:
+    def _encode_packet(pkt: Packet, writer: BinaryWriter) -> None:
         writer.write(pkt.type.value, "B")
         if pkt.type == PacketType.COMMAND or pkt.type == PacketType.EVENT:
             writer.write(len(pkt) + 1, "H")
@@ -69,7 +69,7 @@ class Frame(object):
             raise NotImplementedError("Unexpected frame type {}.".format(self.type))
 
     @classmethod
-    def from_bytes(cls, buffer: bytes):
+    def from_bytes(cls, buffer: bytes) -> "Frame":
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
@@ -78,7 +78,7 @@ class Frame(object):
     def _decode_packet(cls, pkt_type, pkt_len, reader):
         if pkt_type == PacketType.COMMAND or pkt_type == PacketType.EVENT:
             pkt_id = reader.read("B")
-            pkt_class = PACKETS_BY_ID.get(pkt_id)
+            pkt_class = PACKETS_BY_ID.get(pkt_id)   # type: Packet  # type: ignore
             if pkt_class:
                 res = pkt_class.from_reader(reader)
             elif pkt_type == PacketType.COMMAND:
@@ -98,7 +98,7 @@ class Frame(object):
         return res
 
     @classmethod
-    def from_reader(cls, reader: BinaryReader):
+    def from_reader(cls, reader: BinaryReader) -> "Frame":
         if len(reader.buffer) < MIN_FRAME_SIZE:
             raise ValueError("Invalid frame.")
 

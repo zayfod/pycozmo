@@ -27,12 +27,12 @@ class Struct(ABC):
 
     @classmethod
     @abstractmethod
-    def from_bytes(cls, buffer: bytes):
+    def from_bytes(cls, buffer: bytes) -> "Struct":
         raise NotImplementedError
 
     @classmethod
     @abstractmethod
-    def from_reader(cls, reader: BinaryReader):
+    def from_reader(cls, reader: BinaryReader) -> "Struct":
         raise NotImplementedError
 
 
@@ -56,7 +56,7 @@ class Packet(Struct, ABC):
         return self._type
 
     @type.setter
-    def type(self, value: PacketType):
+    def type(self, value: PacketType) -> None:
         self._type = PacketType(value)
 
     @property
@@ -64,11 +64,11 @@ class Packet(Struct, ABC):
         return self._id
 
     @id.setter
-    def id(self, value: Optional[int]):
+    def id(self, value: Optional[int]) -> None:
         self._id = value
 
     def is_oob(self) -> bool:
-        res = self.type.value >= PacketType.EVENT.value
+        res = self.type.value >= PacketType.EVENT.value     # type: bool
         return res
 
     def is_from_robot(self) -> bool:
@@ -97,7 +97,7 @@ class UnknownPacket(Packet):
         return self._data
 
     @data.setter
-    def data(self, value: bytes):
+    def data(self, value: bytes) -> None:
         self._data = bytes(value)
 
     def __len__(self):

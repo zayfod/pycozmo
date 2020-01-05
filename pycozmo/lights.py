@@ -53,7 +53,7 @@ class Color:
     def __init__(self,
                  int_color: Optional[int] = None,
                  rgb: Optional[Tuple[int, int, int]] = None,
-                 name: str = None) -> None:
+                 name: str = Optional[None]) -> None:
         self.name = name
         if int_color is not None:
             self._int_color = int(int_color) | 0xff
@@ -74,7 +74,7 @@ class Color:
         return value
 
     @classmethod
-    def from_int16(cls, value: int):
+    def from_int16(cls, value: int) -> "Color":
         r = (value & LED_ENC_RED) >> LED_ENC_RED_SHIFT
         g = (value & LED_ENC_GREEN) >> LED_ENC_GREEN_SHIFT
         b = (value & LED_ENC_BLUE) >> LED_ENC_BLUE_SHIFT

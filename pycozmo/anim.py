@@ -8,7 +8,7 @@ Animation data structures are declared in FlatBuffers format in files/cozmo/cozm
 
 """
 
-from typing import Optional
+from typing import Optional, Dict, List
 from collections import defaultdict
 import math
 import time
@@ -31,7 +31,7 @@ __all__ = [
 
 class PreprocessedClip(object):
 
-    def __init__(self, keyframes: Optional[defaultdict] = None):
+    def __init__(self, keyframes: Optional[Dict[int, List[protocol_encoder.Packet]]] = None):
         self.keyframes = keyframes or defaultdict(list)
 
     @classmethod
@@ -49,8 +49,8 @@ class PreprocessedClip(object):
         return im
 
     @classmethod
-    def from_anim_clip(cls, clip: anim_encoder.AnimClip):
-        keyframes = defaultdict(list)
+    def from_anim_clip(cls, clip: anim_encoder.AnimClip) -> "PreprocessedClip":
+        keyframes = defaultdict(list)   # type: Dict[int, List[protocol_encoder.Packet]]
         for keyframe in clip.keyframes:
             if isinstance(keyframe, anim_encoder.AnimHeadAngle):
                 # FIXME: Why can duration be larger than 255?

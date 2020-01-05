@@ -66,15 +66,15 @@ class ReceiveWindow(BaseWindow):
 
 class SendWindowSlot(object):
 
-    def __init__(self):
-        self.seq = None
+    def __init__(self) -> None:
+        self.seq = None     # type: Optional[int]
         self.data = None
 
-    def set(self, seq: int, data: Any):
+    def set(self, seq: int, data: Any) -> None:
         self.seq = seq
         self.data = data
 
-    def reset(self):
+    def reset(self) -> None:
         self.seq = None
         self.data = None
 
