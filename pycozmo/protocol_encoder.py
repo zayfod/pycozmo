@@ -320,7 +320,7 @@ class LightState(Struct):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._on_color, "H")
         writer.write(self._off_color, "H")
@@ -335,7 +335,7 @@ class LightState(Struct):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         on_color = reader.read("H")
@@ -415,7 +415,7 @@ class PathSegmentSpeed(Struct):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._speed_mmps, "f")
         writer.write(self._accel_mmps2, "f")
@@ -426,7 +426,7 @@ class PathSegmentSpeed(Struct):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         speed_mmps = reader.read("f")
@@ -437,7 +437,7 @@ class PathSegmentSpeed(Struct):
             accel_mmps2=accel_mmps2,
             decel_mmps2=decel_mmps2)
 
-    
+
 class Connect(Packet):
 
     __slots__ = (
@@ -457,7 +457,7 @@ class Connect(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -466,14 +466,14 @@ class Connect(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class Disconnect(Packet):
 
     __slots__ = (
@@ -493,7 +493,7 @@ class Disconnect(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -502,14 +502,14 @@ class Disconnect(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class Ping(Packet):
 
     __slots__ = (
@@ -585,7 +585,7 @@ class Ping(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._time_sent_ms, "d")
         writer.write(self._counter, "L")
@@ -597,7 +597,7 @@ class Ping(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         time_sent_ms = reader.read("d")
@@ -610,7 +610,7 @@ class Ping(Packet):
             last=last,
             unknown=unknown)
 
-    
+
 class Keyframe(Packet):
 
     __slots__ = (
@@ -630,7 +630,7 @@ class Keyframe(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -639,14 +639,14 @@ class Keyframe(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class LightStateCenter(Packet):
 
     __slots__ = (
@@ -695,7 +695,7 @@ class LightStateCenter(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write_object_farray(self._states, 3)
         writer.write(self._unknown, "B")
@@ -705,7 +705,7 @@ class LightStateCenter(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         states = reader.read_object_farray(LightState.from_reader, 3)
@@ -714,7 +714,7 @@ class LightStateCenter(Packet):
             states=states,
             unknown=unknown)
 
-    
+
 class CubeLights(Packet):
 
     __slots__ = (
@@ -749,7 +749,7 @@ class CubeLights(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write_object_farray(self._states, 4)
 
@@ -758,14 +758,14 @@ class CubeLights(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         states = reader.read_object_farray(LightState.from_reader, 4)
         return cls(
             states=states)
 
-    
+
 class ObjectConnect(Packet):
 
     __slots__ = (
@@ -813,7 +813,7 @@ class ObjectConnect(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._factory_id, "L")
         writer.write(int(self._connect), "b")
@@ -823,7 +823,7 @@ class ObjectConnect(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         factory_id = reader.read("L")
@@ -832,7 +832,7 @@ class ObjectConnect(Packet):
             factory_id=factory_id,
             connect=connect)
 
-    
+
 class StreamObjectAccel(Packet):
 
     __slots__ = (
@@ -880,7 +880,7 @@ class StreamObjectAccel(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._object_id, "L")
         writer.write(int(self._enable), "b")
@@ -890,7 +890,7 @@ class StreamObjectAccel(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         object_id = reader.read("L")
@@ -899,7 +899,7 @@ class StreamObjectAccel(Packet):
             object_id=object_id,
             enable=enable)
 
-    
+
 class SetAccessoryDiscovery(Packet):
 
     __slots__ = (
@@ -933,7 +933,7 @@ class SetAccessoryDiscovery(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(int(self._enable), "b")
 
@@ -942,14 +942,14 @@ class SetAccessoryDiscovery(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         enable = bool(reader.read("b"))
         return cls(
             enable=enable)
 
-    
+
 class SetHeadLight(Packet):
 
     __slots__ = (
@@ -983,7 +983,7 @@ class SetHeadLight(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(int(self._enable), "b")
 
@@ -992,14 +992,14 @@ class SetHeadLight(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         enable = bool(reader.read("b"))
         return cls(
             enable=enable)
 
-    
+
 class CubeId(Packet):
 
     __slots__ = (
@@ -1047,7 +1047,7 @@ class CubeId(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._object_id, "L")
         writer.write(self._rotation_period_frames, "B")
@@ -1057,7 +1057,7 @@ class CubeId(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         object_id = reader.read("L")
@@ -1066,7 +1066,7 @@ class CubeId(Packet):
             object_id=object_id,
             rotation_period_frames=rotation_period_frames)
 
-    
+
 class LightStateSide(Packet):
 
     __slots__ = (
@@ -1115,7 +1115,7 @@ class LightStateSide(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write_object_farray(self._states, 2)
         writer.write(self._unknown, "B")
@@ -1125,7 +1125,7 @@ class LightStateSide(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         states = reader.read_object_farray(LightState.from_reader, 2)
@@ -1134,7 +1134,7 @@ class LightStateSide(Packet):
             states=states,
             unknown=unknown)
 
-    
+
 class Enable(Packet):
 
     __slots__ = (
@@ -1154,7 +1154,7 @@ class Enable(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -1163,14 +1163,14 @@ class Enable(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class DriveWheels(Packet):
 
     __slots__ = (
@@ -1246,7 +1246,7 @@ class DriveWheels(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._lwheel_speed_mmps, "f")
         writer.write(self._rwheel_speed_mmps, "f")
@@ -1258,7 +1258,7 @@ class DriveWheels(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         lwheel_speed_mmps = reader.read("f")
@@ -1271,7 +1271,7 @@ class DriveWheels(Packet):
             lwheel_accel_mmps2=lwheel_accel_mmps2,
             rwheel_accel_mmps2=rwheel_accel_mmps2)
 
-    
+
 class TurnInPlaceAtSpeed(Packet):
 
     __slots__ = (
@@ -1333,7 +1333,7 @@ class TurnInPlaceAtSpeed(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._wheel_speed_mmps, "f")
         writer.write(self._wheel_accel_mmps2, "f")
@@ -1344,7 +1344,7 @@ class TurnInPlaceAtSpeed(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         wheel_speed_mmps = reader.read("f")
@@ -1355,7 +1355,7 @@ class TurnInPlaceAtSpeed(Packet):
             wheel_accel_mmps2=wheel_accel_mmps2,
             direction=direction)
 
-    
+
 class MoveLift(Packet):
 
     __slots__ = (
@@ -1389,7 +1389,7 @@ class MoveLift(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._speed_rad_per_sec, "f")
 
@@ -1398,14 +1398,14 @@ class MoveLift(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         speed_rad_per_sec = reader.read("f")
         return cls(
             speed_rad_per_sec=speed_rad_per_sec)
 
-    
+
 class MoveHead(Packet):
 
     __slots__ = (
@@ -1439,7 +1439,7 @@ class MoveHead(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._speed_rad_per_sec, "f")
 
@@ -1448,14 +1448,14 @@ class MoveHead(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         speed_rad_per_sec = reader.read("f")
         return cls(
             speed_rad_per_sec=speed_rad_per_sec)
 
-    
+
 class SetLiftHeight(Packet):
 
     __slots__ = (
@@ -1545,7 +1545,7 @@ class SetLiftHeight(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._height_mm, "f")
         writer.write(self._max_speed_rad_per_sec, "f")
@@ -1558,7 +1558,7 @@ class SetLiftHeight(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         height_mm = reader.read("f")
@@ -1573,7 +1573,7 @@ class SetLiftHeight(Packet):
             duration_sec=duration_sec,
             action_id=action_id)
 
-    
+
 class SetHeadAngle(Packet):
 
     __slots__ = (
@@ -1663,7 +1663,7 @@ class SetHeadAngle(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._angle_rad, "f")
         writer.write(self._max_speed_rad_per_sec, "f")
@@ -1676,7 +1676,7 @@ class SetHeadAngle(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         angle_rad = reader.read("f")
@@ -1691,7 +1691,7 @@ class SetHeadAngle(Packet):
             duration_sec=duration_sec,
             action_id=action_id)
 
-    
+
 class TurnInPlace(Packet):
 
     __slots__ = (
@@ -1823,7 +1823,7 @@ class TurnInPlace(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._angle_rad, "f")
         writer.write(self._speed_rad_per_sec, "f")
@@ -1839,7 +1839,7 @@ class TurnInPlace(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         angle_rad = reader.read("f")
@@ -1860,7 +1860,7 @@ class TurnInPlace(Packet):
             is_absolute=is_absolute,
             action_id=action_id)
 
-    
+
 class StopAllMotors(Packet):
 
     __slots__ = (
@@ -1880,7 +1880,7 @@ class StopAllMotors(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -1889,14 +1889,14 @@ class StopAllMotors(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class ClearPath(Packet):
 
     __slots__ = (
@@ -1930,7 +1930,7 @@ class ClearPath(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._unknown, "H")
 
@@ -1939,14 +1939,14 @@ class ClearPath(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         unknown = reader.read("H")
         return cls(
             unknown=unknown)
 
-    
+
 class AppendPathSegLine(Packet):
 
     __slots__ = (
@@ -2064,7 +2064,7 @@ class AppendPathSegLine(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._from_x, "f")
         writer.write(self._from_y, "f")
@@ -2079,7 +2079,7 @@ class AppendPathSegLine(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         from_x = reader.read("f")
@@ -2098,7 +2098,7 @@ class AppendPathSegLine(Packet):
             accel_mmps2=accel_mmps2,
             decel_mmps2=decel_mmps2)
 
-    
+
 class AppendPathSegArc(Packet):
 
     __slots__ = (
@@ -2230,7 +2230,7 @@ class AppendPathSegArc(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._center_x, "f")
         writer.write(self._center_y, "f")
@@ -2246,7 +2246,7 @@ class AppendPathSegArc(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         center_x = reader.read("f")
@@ -2267,7 +2267,7 @@ class AppendPathSegArc(Packet):
             accel_mmps2=accel_mmps2,
             decel_mmps2=decel_mmps2)
 
-    
+
 class AppendPathSegPointTurn(Packet):
 
     __slots__ = (
@@ -2399,7 +2399,7 @@ class AppendPathSegPointTurn(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._x, "f")
         writer.write(self._y, "f")
@@ -2415,7 +2415,7 @@ class AppendPathSegPointTurn(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         x = reader.read("f")
@@ -2436,7 +2436,7 @@ class AppendPathSegPointTurn(Packet):
             decel_mmps2=decel_mmps2,
             unknown=unknown)
 
-    
+
 class TrimPath(Packet):
 
     __slots__ = (
@@ -2484,7 +2484,7 @@ class TrimPath(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._head, "B")
         writer.write(self._tail, "B")
@@ -2494,7 +2494,7 @@ class TrimPath(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         head = reader.read("B")
@@ -2503,7 +2503,7 @@ class TrimPath(Packet):
             head=head,
             tail=tail)
 
-    
+
 class ExecutePath(Packet):
 
     __slots__ = (
@@ -2551,7 +2551,7 @@ class ExecutePath(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._event_id, "H")
         writer.write(int(self._unknown), "b")
@@ -2561,7 +2561,7 @@ class ExecutePath(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         event_id = reader.read("H")
@@ -2570,7 +2570,7 @@ class ExecutePath(Packet):
             event_id=event_id,
             unknown=unknown)
 
-    
+
 class SetOrigin(Packet):
 
     __slots__ = (
@@ -2674,7 +2674,7 @@ class SetOrigin(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._unknown0, "L")
         writer.write(self._pose_frame_id, "L")
@@ -2688,7 +2688,7 @@ class SetOrigin(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         unknown0 = reader.read("L")
@@ -2705,7 +2705,7 @@ class SetOrigin(Packet):
             pose_y=pose_y,
             unknown5=unknown5)
 
-    
+
 class SyncTime(Packet):
 
     __slots__ = (
@@ -2753,7 +2753,7 @@ class SyncTime(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._timestamp, "L")
         writer.write(self._unknown, "L")
@@ -2763,7 +2763,7 @@ class SyncTime(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         timestamp = reader.read("L")
@@ -2772,7 +2772,7 @@ class SyncTime(Packet):
             timestamp=timestamp,
             unknown=unknown)
 
-    
+
 class EnableCamera(Packet):
 
     __slots__ = (
@@ -2782,7 +2782,7 @@ class EnableCamera(Packet):
 
     def __init__(self,
                  image_send_mode=1,
-                 image_resolution=6):
+                 image_resolution=4):
         super().__init__(PacketType.COMMAND, packet_id=0x4c)
         self.image_send_mode = ImageSendMode(image_send_mode)
         self.image_resolution = ImageResolution(image_resolution)
@@ -2822,7 +2822,7 @@ class EnableCamera(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._image_send_mode.value, "b")
         writer.write(self._image_resolution.value, "b")
@@ -2832,7 +2832,7 @@ class EnableCamera(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         image_send_mode = reader.read("b")
@@ -2841,7 +2841,7 @@ class EnableCamera(Packet):
             image_send_mode=image_send_mode,
             image_resolution=image_resolution)
 
-    
+
 class SetCameraParams(Packet):
 
     __slots__ = (
@@ -2903,7 +2903,7 @@ class SetCameraParams(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._gain, "f")
         writer.write(self._exposure_ms, "H")
@@ -2914,7 +2914,7 @@ class SetCameraParams(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         gain = reader.read("f")
@@ -2925,7 +2925,7 @@ class SetCameraParams(Packet):
             exposure_ms=exposure_ms,
             auto_exposure_enabled=auto_exposure_enabled)
 
-    
+
 class StartMotorCalibration(Packet):
 
     __slots__ = (
@@ -2973,7 +2973,7 @@ class StartMotorCalibration(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(int(self._head), "b")
         writer.write(int(self._lift), "b")
@@ -2983,7 +2983,7 @@ class StartMotorCalibration(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         head = bool(reader.read("b"))
@@ -2992,7 +2992,7 @@ class StartMotorCalibration(Packet):
             head=head,
             lift=lift)
 
-    
+
 class EnableStopOnCliff(Packet):
 
     __slots__ = (
@@ -3026,7 +3026,7 @@ class EnableStopOnCliff(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(int(self._enable), "b")
 
@@ -3035,14 +3035,14 @@ class EnableStopOnCliff(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         enable = bool(reader.read("b"))
         return cls(
             enable=enable)
 
-    
+
 class SetRobotVolume(Packet):
 
     __slots__ = (
@@ -3076,7 +3076,7 @@ class SetRobotVolume(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._level, "H")
 
@@ -3085,14 +3085,14 @@ class SetRobotVolume(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         level = reader.read("H")
         return cls(
             level=level)
 
-    
+
 class EnableColorImages(Packet):
 
     __slots__ = (
@@ -3126,7 +3126,7 @@ class EnableColorImages(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(int(self._enable), "b")
 
@@ -3135,14 +3135,14 @@ class EnableColorImages(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         enable = bool(reader.read("b"))
         return cls(
             enable=enable)
 
-    
+
 class NvStorageOp(Packet):
 
     __slots__ = (
@@ -3235,7 +3235,7 @@ class NvStorageOp(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._tag.value, "L")
         writer.write(self._length, "l")
@@ -3248,7 +3248,7 @@ class NvStorageOp(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         tag = reader.read("L")
@@ -3263,7 +3263,7 @@ class NvStorageOp(Packet):
             unknown=unknown,
             data=data)
 
-    
+
 class AbortAnimation(Packet):
 
     __slots__ = (
@@ -3283,7 +3283,7 @@ class AbortAnimation(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -3292,14 +3292,14 @@ class AbortAnimation(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class OutputAudio(Packet):
 
     __slots__ = (
@@ -3334,7 +3334,7 @@ class OutputAudio(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write_farray(self._samples, "B", 744)
 
@@ -3343,14 +3343,14 @@ class OutputAudio(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         samples = reader.read_farray("B", 744)
         return cls(
             samples=samples)
 
-    
+
 class NextFrame(Packet):
 
     __slots__ = (
@@ -3370,7 +3370,7 @@ class NextFrame(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -3379,14 +3379,14 @@ class NextFrame(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class RecordHeading(Packet):
 
     __slots__ = (
@@ -3406,7 +3406,7 @@ class RecordHeading(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -3415,14 +3415,14 @@ class RecordHeading(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class TurnToRecordedHeading(Packet):
 
     __slots__ = (
@@ -3442,7 +3442,7 @@ class TurnToRecordedHeading(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -3451,14 +3451,14 @@ class TurnToRecordedHeading(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class AnimHead(Packet):
 
     __slots__ = (
@@ -3520,7 +3520,7 @@ class AnimHead(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._duration_ms, "B")
         writer.write(self._variability_deg, "b")
@@ -3531,7 +3531,7 @@ class AnimHead(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         duration_ms = reader.read("B")
@@ -3542,7 +3542,7 @@ class AnimHead(Packet):
             variability_deg=variability_deg,
             angle_deg=angle_deg)
 
-    
+
 class AnimLift(Packet):
 
     __slots__ = (
@@ -3604,7 +3604,7 @@ class AnimLift(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._duration_ms, "B")
         writer.write(self._variability_mm, "B")
@@ -3615,7 +3615,7 @@ class AnimLift(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         duration_ms = reader.read("B")
@@ -3626,7 +3626,7 @@ class AnimLift(Packet):
             variability_mm=variability_mm,
             height_mm=height_mm)
 
-    
+
 class DisplayImage(Packet):
 
     __slots__ = (
@@ -3661,7 +3661,7 @@ class DisplayImage(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write_varray(self._image, "B", "H")
 
@@ -3670,14 +3670,14 @@ class DisplayImage(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         image = reader.read_varray("B", "H")
         return cls(
             image=image)
 
-    
+
 class AnimBackpackLights(Packet):
 
     __slots__ = (
@@ -3712,7 +3712,7 @@ class AnimBackpackLights(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write_farray(self._colors, "H", 5)
 
@@ -3721,14 +3721,14 @@ class AnimBackpackLights(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         colors = reader.read_farray("H", 5)
         return cls(
             colors=colors)
 
-    
+
 class AnimBody(Packet):
 
     __slots__ = (
@@ -3776,7 +3776,7 @@ class AnimBody(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._speed, "h")
         writer.write(self._unknown, "h")
@@ -3786,7 +3786,7 @@ class AnimBody(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         speed = reader.read("h")
@@ -3795,7 +3795,7 @@ class AnimBody(Packet):
             speed=speed,
             unknown=unknown)
 
-    
+
 class EndAnimation(Packet):
 
     __slots__ = (
@@ -3815,7 +3815,7 @@ class EndAnimation(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -3824,14 +3824,14 @@ class EndAnimation(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class StartAnimation(Packet):
 
     __slots__ = (
@@ -3865,7 +3865,7 @@ class StartAnimation(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._anim_id, "B")
 
@@ -3874,14 +3874,14 @@ class StartAnimation(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         anim_id = reader.read("B")
         return cls(
             anim_id=anim_id)
 
-    
+
 class EnableAnimationState(Packet):
 
     __slots__ = (
@@ -3901,7 +3901,7 @@ class EnableAnimationState(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -3910,14 +3910,14 @@ class EnableAnimationState(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class ShutdownRobot(Packet):
 
     __slots__ = (
@@ -3937,7 +3937,7 @@ class ShutdownRobot(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -3946,14 +3946,14 @@ class ShutdownRobot(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class WifiOff(Packet):
 
     __slots__ = (
@@ -3987,7 +3987,7 @@ class WifiOff(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(int(self._enable), "b")
 
@@ -3996,14 +3996,14 @@ class WifiOff(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         enable = bool(reader.read("b"))
         return cls(
             enable=enable)
 
-    
+
 class FirmwareUpdate(Packet):
 
     __slots__ = (
@@ -4052,7 +4052,7 @@ class FirmwareUpdate(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._chunk_id, "H")
         writer.write_farray(self._data, "B", 1024)
@@ -4062,7 +4062,7 @@ class FirmwareUpdate(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         chunk_id = reader.read("H")
@@ -4071,7 +4071,7 @@ class FirmwareUpdate(Packet):
             chunk_id=chunk_id,
             data=data)
 
-    
+
 class DebugData(Packet):
 
     __slots__ = (
@@ -4162,7 +4162,7 @@ class DebugData(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._debug_id, "H")
         writer.write(self._unused, "H")
@@ -4175,7 +4175,7 @@ class DebugData(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         debug_id = reader.read("H")
@@ -4190,7 +4190,7 @@ class DebugData(Packet):
             unknown3=unknown3,
             data=data)
 
-    
+
 class ObjectMoved(Packet):
 
     __slots__ = (
@@ -4295,7 +4295,7 @@ class ObjectMoved(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._timestamp, "L")
         writer.write(self._object_id, "L")
@@ -4309,7 +4309,7 @@ class ObjectMoved(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         timestamp = reader.read("L")
@@ -4326,7 +4326,7 @@ class ObjectMoved(Packet):
             active_accel_z=active_accel_z,
             axis_of_accel=axis_of_accel)
 
-    
+
 class ObjectStoppedMoving(Packet):
 
     __slots__ = (
@@ -4374,7 +4374,7 @@ class ObjectStoppedMoving(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._timestamp, "L")
         writer.write(self._object_id, "L")
@@ -4384,7 +4384,7 @@ class ObjectStoppedMoving(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         timestamp = reader.read("L")
@@ -4393,7 +4393,7 @@ class ObjectStoppedMoving(Packet):
             timestamp=timestamp,
             object_id=object_id)
 
-    
+
 class ObjectTapped(Packet):
 
     __slots__ = (
@@ -4497,7 +4497,7 @@ class ObjectTapped(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._timestamp, "L")
         writer.write(self._object_id, "L")
@@ -4511,7 +4511,7 @@ class ObjectTapped(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         timestamp = reader.read("L")
@@ -4528,7 +4528,7 @@ class ObjectTapped(Packet):
             tap_neg=tap_neg,
             tap_pos=tap_pos)
 
-    
+
 class ObjectTapFiltered(Packet):
 
     __slots__ = (
@@ -4604,7 +4604,7 @@ class ObjectTapFiltered(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._timestamp, "L")
         writer.write(self._object_id, "L")
@@ -4616,7 +4616,7 @@ class ObjectTapFiltered(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         timestamp = reader.read("L")
@@ -4629,7 +4629,7 @@ class ObjectTapFiltered(Packet):
             time=time,
             intensity=intensity)
 
-    
+
 class AcknowledgeAction(Packet):
 
     __slots__ = (
@@ -4663,7 +4663,7 @@ class AcknowledgeAction(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._action_id, "B")
 
@@ -4672,14 +4672,14 @@ class AcknowledgeAction(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         action_id = reader.read("B")
         return cls(
             action_id=action_id)
 
-    
+
 class RobotDelocalized(Packet):
 
     __slots__ = (
@@ -4699,7 +4699,7 @@ class RobotDelocalized(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -4708,14 +4708,14 @@ class RobotDelocalized(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class RobotPoked(Packet):
 
     __slots__ = (
@@ -4735,7 +4735,7 @@ class RobotPoked(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         pass
 
@@ -4744,14 +4744,14 @@ class RobotPoked(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         del reader
         return cls(
             )
 
-    
+
 class PathFollowingEvent(Packet):
 
     __slots__ = (
@@ -4800,7 +4800,7 @@ class PathFollowingEvent(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._event_id, "H")
         writer.write(self._event_type.value, "B")
@@ -4810,7 +4810,7 @@ class PathFollowingEvent(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         event_id = reader.read("H")
@@ -4819,7 +4819,7 @@ class PathFollowingEvent(Packet):
             event_id=event_id,
             event_type=event_type)
 
-    
+
 class HardwareInfo(Packet):
 
     __slots__ = (
@@ -4881,7 +4881,7 @@ class HardwareInfo(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._serial_number_head, "L")
         writer.write(self._unknown1, "B")
@@ -4892,7 +4892,7 @@ class HardwareInfo(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         serial_number_head = reader.read("L")
@@ -4903,7 +4903,7 @@ class HardwareInfo(Packet):
             unknown1=unknown1,
             unknown2=unknown2)
 
-    
+
 class AnimationStarted(Packet):
 
     __slots__ = (
@@ -4937,7 +4937,7 @@ class AnimationStarted(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._anim_id, "B")
 
@@ -4946,14 +4946,14 @@ class AnimationStarted(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         anim_id = reader.read("B")
         return cls(
             anim_id=anim_id)
 
-    
+
 class AnimationEnded(Packet):
 
     __slots__ = (
@@ -4987,7 +4987,7 @@ class AnimationEnded(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._anim_id, "B")
 
@@ -4996,14 +4996,14 @@ class AnimationEnded(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         anim_id = reader.read("B")
         return cls(
             anim_id=anim_id)
 
-    
+
 class NvStorageOpResult(Packet):
 
     __slots__ = (
@@ -5097,7 +5097,7 @@ class NvStorageOpResult(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._tag.value, "L")
         writer.write(self._length, "l")
@@ -5110,7 +5110,7 @@ class NvStorageOpResult(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         tag = reader.read("L")
@@ -5125,7 +5125,7 @@ class NvStorageOpResult(Packet):
             result=result,
             data=data)
 
-    
+
 class ObjectPowerLevel(Packet):
 
     __slots__ = (
@@ -5187,7 +5187,7 @@ class ObjectPowerLevel(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._object_id, "L")
         writer.write(self._missed_packets, "L")
@@ -5198,7 +5198,7 @@ class ObjectPowerLevel(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         object_id = reader.read("L")
@@ -5209,7 +5209,7 @@ class ObjectPowerLevel(Packet):
             missed_packets=missed_packets,
             battery_level=battery_level)
 
-    
+
 class ObjectConnectionState(Packet):
 
     __slots__ = (
@@ -5286,7 +5286,7 @@ class ObjectConnectionState(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._object_id, "L")
         writer.write(self._factory_id, "L")
@@ -5298,7 +5298,7 @@ class ObjectConnectionState(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         object_id = reader.read("L")
@@ -5311,7 +5311,7 @@ class ObjectConnectionState(Packet):
             object_type=object_type,
             connected=connected)
 
-    
+
 class MotorCalibration(Packet):
 
     __slots__ = (
@@ -5374,7 +5374,7 @@ class MotorCalibration(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._motor_id.value, "B")
         writer.write(int(self._calib_started), "b")
@@ -5385,7 +5385,7 @@ class MotorCalibration(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         motor_id = reader.read("B")
@@ -5396,7 +5396,7 @@ class MotorCalibration(Packet):
             calib_started=calib_started,
             auto_started=auto_started)
 
-    
+
 class ObjectUpAxisChanged(Packet):
 
     __slots__ = (
@@ -5459,7 +5459,7 @@ class ObjectUpAxisChanged(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._timestamp, "L")
         writer.write(self._object_id, "L")
@@ -5470,7 +5470,7 @@ class ObjectUpAxisChanged(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         timestamp = reader.read("L")
@@ -5481,7 +5481,7 @@ class ObjectUpAxisChanged(Packet):
             object_id=object_id,
             axis=axis)
 
-    
+
 class ButtonPressed(Packet):
 
     __slots__ = (
@@ -5515,7 +5515,7 @@ class ButtonPressed(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(int(self._pressed), "b")
 
@@ -5524,14 +5524,14 @@ class ButtonPressed(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         pressed = bool(reader.read("b"))
         return cls(
             pressed=pressed)
 
-    
+
 class FallingStarted(Packet):
 
     __slots__ = (
@@ -5565,7 +5565,7 @@ class FallingStarted(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._unknown, "L")
 
@@ -5574,14 +5574,14 @@ class FallingStarted(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         unknown = reader.read("L")
         return cls(
             unknown=unknown)
 
-    
+
 class FallingStopped(Packet):
 
     __slots__ = (
@@ -5643,7 +5643,7 @@ class FallingStopped(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._unknown, "L")
         writer.write(self._duration_ms, "L")
@@ -5654,7 +5654,7 @@ class FallingStopped(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         unknown = reader.read("L")
@@ -5665,7 +5665,7 @@ class FallingStopped(Packet):
             duration_ms=duration_ms,
             impact_intensity=impact_intensity)
 
-    
+
 class BodyInfo(Packet):
 
     __slots__ = (
@@ -5728,7 +5728,7 @@ class BodyInfo(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._serial_number, "L")
         writer.write(self._body_hw_version, "L")
@@ -5739,7 +5739,7 @@ class BodyInfo(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         serial_number = reader.read("L")
@@ -5750,7 +5750,7 @@ class BodyInfo(Packet):
             body_hw_version=body_hw_version,
             body_color=body_color)
 
-    
+
 class FirmwareSignature(Packet):
 
     __slots__ = (
@@ -5798,7 +5798,7 @@ class FirmwareSignature(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._unknown, "H")
         writer.write_string(self._signature, "H")
@@ -5808,7 +5808,7 @@ class FirmwareSignature(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         unknown = reader.read("H")
@@ -5817,7 +5817,7 @@ class FirmwareSignature(Packet):
             unknown=unknown,
             signature=signature)
 
-    
+
 class FirmwareUpdateResult(Packet):
 
     __slots__ = (
@@ -5879,7 +5879,7 @@ class FirmwareUpdateResult(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._byte_count, "L")
         writer.write(self._chunk_id, "H")
@@ -5890,7 +5890,7 @@ class FirmwareUpdateResult(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         byte_count = reader.read("L")
@@ -5901,7 +5901,7 @@ class FirmwareUpdateResult(Packet):
             chunk_id=chunk_id,
             status=status)
 
-    
+
 class RobotState(Packet):
 
     __slots__ = (
@@ -6244,7 +6244,7 @@ class RobotState(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._timestamp, "L")
         writer.write(self._pose_frame_id, "L")
@@ -6275,7 +6275,7 @@ class RobotState(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         timestamp = reader.read("L")
@@ -6326,7 +6326,7 @@ class RobotState(Packet):
             backpack_touch_sensor_raw=backpack_touch_sensor_raw,
             curr_path_segment=curr_path_segment)
 
-    
+
 class AnimationState(Packet):
 
     __slots__ = (
@@ -6430,7 +6430,7 @@ class AnimationState(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._timestamp, "L")
         writer.write(self._num_anim_bytes_played, "l")
@@ -6444,7 +6444,7 @@ class AnimationState(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         timestamp = reader.read("L")
@@ -6461,7 +6461,7 @@ class AnimationState(Packet):
             tag=tag,
             client_drop_count=client_drop_count)
 
-    
+
 class ImageChunk(Packet):
 
     __slots__ = (
@@ -6610,7 +6610,7 @@ class ImageChunk(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._frame_timestamp, "L")
         writer.write(self._image_id, "L")
@@ -6627,7 +6627,7 @@ class ImageChunk(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         frame_timestamp = reader.read("L")
@@ -6650,7 +6650,7 @@ class ImageChunk(Packet):
             status=status,
             data=data)
 
-    
+
 class ObjectAvailable(Packet):
 
     __slots__ = (
@@ -6713,7 +6713,7 @@ class ObjectAvailable(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._factory_id, "L")
         writer.write(self._object_type.value, "l")
@@ -6724,7 +6724,7 @@ class ObjectAvailable(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         factory_id = reader.read("L")
@@ -6735,7 +6735,7 @@ class ObjectAvailable(Packet):
             object_type=object_type,
             rssi=rssi)
 
-    
+
 class ImageImuData(Packet):
 
     __slots__ = (
@@ -6825,7 +6825,7 @@ class ImageImuData(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._image_id, "L")
         writer.write(self._rate_x, "f")
@@ -6838,7 +6838,7 @@ class ImageImuData(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         image_id = reader.read("L")
@@ -6853,7 +6853,7 @@ class ImageImuData(Packet):
             rate_z=rate_z,
             line_2_number=line_2_number)
 
-    
+
 class ObjectAccel(Packet):
 
     __slots__ = (
@@ -6943,7 +6943,7 @@ class ObjectAccel(Packet):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
         writer.write(self._timestamp, "L")
         writer.write(self._object_id, "L")
@@ -6956,7 +6956,7 @@ class ObjectAccel(Packet):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
         timestamp = reader.read("L")

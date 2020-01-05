@@ -341,7 +341,7 @@ class ProtocolGenerator(object):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
 """)
         if struct.arguments:
@@ -397,7 +397,7 @@ class ProtocolGenerator(object):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
 """)
@@ -484,7 +484,7 @@ class {name}(Struct):
 
     def generate_packet(self, packet):
         self.f.write(r"""
-    
+
 class {name}(Packet):
 """.format(name=packet.name))
         self.f.write("\n    __slots__ = (\n")
