@@ -12,7 +12,7 @@ class TestClips(unittest.TestCase):
         data = json.loads("""
 {
   "clips": []
-}       
+}
         """)
         # Load from JSON
         clips = AnimClips.from_dict(data)
@@ -54,7 +54,7 @@ class TestClip(unittest.TestCase):
       }
     }
   ]
-}      
+}
         """)
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips), 1)
@@ -103,7 +103,7 @@ class TestHeadAngle(unittest.TestCase):
       }
     }
   ]
-}      
+}
         """)
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
@@ -158,7 +158,7 @@ class TestLiftHeight(unittest.TestCase):
       }
     }
   ]
-}      
+}
         """)
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
@@ -210,7 +210,7 @@ class TestRecordHeading(unittest.TestCase):
       }
     }
   ]
-}      
+}
         """)
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
@@ -259,7 +259,7 @@ class TestBodyMotion(unittest.TestCase):
       }
     }
   ]
-}      
+}
         """)
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
@@ -342,7 +342,7 @@ class TestBackpackLights(unittest.TestCase):
       }
     }
   ]
-}      
+}
         """)
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
@@ -408,7 +408,7 @@ class TestTurnToRecordedHeading(unittest.TestCase):
       }
     }
   ]
-}      
+}
         """)
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
@@ -471,7 +471,7 @@ class TestFaceAnimation(unittest.TestCase):
       }
     }
   ]
-}      
+}
         """)
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
@@ -566,7 +566,7 @@ class TestProceduralFace(unittest.TestCase):
       }
     }
   ]
-}      
+}
         """)
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
@@ -636,7 +636,7 @@ class TestRobotAudio(unittest.TestCase):
       }
     }
   ]
-}      
+}
         """)
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
@@ -691,7 +691,7 @@ class TestEvent(unittest.TestCase):
       }
     }
   ]
-}      
+}
         """)
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)

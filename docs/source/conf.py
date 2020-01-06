@@ -14,7 +14,7 @@ import os
 import glob
 from shutil import copyfile
 import sys
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('../..'))    # noqa
 
 # noinspection PyPep8
 import pycozmo
