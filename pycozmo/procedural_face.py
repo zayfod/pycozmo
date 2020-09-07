@@ -1,72 +1,68 @@
-
 from typing import Optional, List
 
 from PIL import Image, ImageDraw
-
-
-WIDTH = 128
-HEIGHT = 64
-
-EYE_WIDTH = 28
-EYE_HEIGHT = 40
-HALF_EYE_WIDTH = EYE_WIDTH // 2
-HALF_EYE_HEIGHT = EYE_HEIGHT // 2
+import math
 
 RESAMPLE = Image.NEAREST
 
+class ProceduralMaster(object):
+    def __init__(self, WIDTH, HEIGHT):
 
-class ProceduralLid(object):
+        self.WIDTH = WIDTH
+        self.HEIGHT = HEIGHT
+        self.EYE_WIDTH = int(WIDTH*(28/128))
+        self.EYE_HEIGHT = int(HEIGHT*(40/64))
 
-    BLACK = Image.new("1", (WIDTH * 2, HEIGHT * 2), color=0)
+        self.HALF_EYE_WIDTH = self.EYE_WIDTH // 2
+        self.HALF_EYE_HEIGHT = self.EYE_HEIGHT // 2
+        self.scale_factor_lid_height = int(1.2*self.EYE_WIDTH)
+        self.scale_factor_lid_bend = int(1.2*self.HALF_EYE_WIDTH)
 
+class ProceduralLid(ProceduralMaster):
     def __init__(self,
                  offset: int = 0,
                  angle_offset: float = 0.0,
                  y: float = 0.0,
                  angle: float = 0.0,
-                 bend: float = 0.0):
+                 bend: float = 0.0,
+                 WIDTH = 128,
+                 HEIGHT = 64
+                 ):
+        super(ProceduralLid, self).__init__(WIDTH, HEIGHT)
         self.offset = int(offset)
         self.angle_offset = float(angle_offset)
         self.y = float(y)
         self.angle = float(angle)
         self.bend = float(bend)
+        self.BLACK = Image.new("1", (self.WIDTH * 2, self.HEIGHT * 2), color=0)
 
     def render(self, im: Image) -> None:
-        # Lid image
-        lid = Image.new("1", (WIDTH * 2, HEIGHT * 2), color=0)
+        lid = Image.new("1", (self.WIDTH * 2, self.HEIGHT * 2), color=0)
 
         draw = ImageDraw.Draw(lid)
 
-        # Draw lid
-        lid_height = int(EYE_HEIGHT * self.y)
-        x1 = WIDTH - EYE_WIDTH
-        y1 = HEIGHT - 1 - HALF_EYE_HEIGHT
-        x2 = WIDTH + EYE_WIDTH
-        y2 = HEIGHT - 1 + lid_height
+        lid_height = int(self.EYE_HEIGHT * self.y)
+        x1 = self.WIDTH - self.scale_factor_lid_height
+        y1 = self.HEIGHT - 1 - self.HALF_EYE_HEIGHT
+        x2 = self.WIDTH + self.scale_factor_lid_height
+        y2 = self.HEIGHT - 1 + lid_height
         draw.rectangle(((x1, y1), (x2, y2)), fill=1)
 
-        bend_height = int(EYE_HEIGHT * (1.0 - self.y) * self.bend)
-        x3 = WIDTH - HALF_EYE_WIDTH
-        y3 = HEIGHT - 1 + lid_height - bend_height
-        x4 = WIDTH + HALF_EYE_WIDTH
-        y4 = HEIGHT - 1 + lid_height + bend_height
+        bend_height = int(self.EYE_HEIGHT * (1.0 - self.y) * self.bend)
+        x3 = self.WIDTH - self.scale_factor_lid_bend
+        y3 = self.HEIGHT - 1 + lid_height - bend_height
+        x4 = self.WIDTH + self.scale_factor_lid_bend
+        y4 = self.HEIGHT - 1 + lid_height + bend_height
         draw.chord(((x3, y3), (x4, y4)), 0, 180, fill=1)
 
-        # Rotate
         lid = lid.rotate(self.angle + self.angle_offset, resample=RESAMPLE, expand=0)
 
-        # Translate and compose
         location = ((im.size[0] - lid.size[0]) // 2,
                     (im.size[1] - lid.size[1]) // 2 + self.offset)
         im.paste(self.BLACK, location, lid)
 
 
-class ProceduralEye(object):
-
-    CORNER_RADIUS = 16
-    X_FACTOR = 0.55
-    Y_FACTOR = 0.25
-
+class ProceduralEye(ProceduralMaster):
     def __init__(self,
                  offset: int = 0,
                  center_x: int = 0,
@@ -87,7 +83,14 @@ class ProceduralEye(object):
                  upper_lid_bend: float = 0.0,
                  lower_lid_y: float = 0.0,
                  lower_lid_angle: float = 0.0,
-                 lower_lid_bend: float = 0.0):
+                 lower_lid_bend: float = 0.0,
+                 WIDTH = 128,
+                 HEIGHT = 64):
+        super(ProceduralEye, self).__init__(WIDTH, HEIGHT)
+
+        self.X_FACTOR = 0.55
+        self.Y_FACTOR = 0.25
+        self.CORNER_RADIUS = (self.WIDTH/20 + self.HEIGHT/10)
         self.offset = int(offset)
         self.center_x = int(center_x)
         self.center_y = int(center_y)
@@ -103,8 +106,8 @@ class ProceduralEye(object):
         self.upper_outer_radius_x = float(upper_outer_radius_x)
         self.upper_outer_radius_y = float(upper_outer_radius_y)
         self.lids = (
-            ProceduralLid(-HALF_EYE_HEIGHT, 0.0, upper_lid_y, upper_lid_angle, upper_lid_bend),
-            ProceduralLid(HALF_EYE_HEIGHT + 1, 180.0, lower_lid_y, lower_lid_angle, lower_lid_bend)
+            ProceduralLid(-self.HALF_EYE_HEIGHT, 0.0, upper_lid_y, upper_lid_angle, upper_lid_bend, self.WIDTH, self.HEIGHT),
+            ProceduralLid(self.HALF_EYE_HEIGHT + 1, 180.0, lower_lid_y, lower_lid_angle, lower_lid_bend, self.WIDTH, self.HEIGHT)
         )
 
     def _render_inner_rect(self, draw, y1, x2, y2) -> None:
@@ -171,14 +174,13 @@ class ProceduralEye(object):
         draw.pieslice(((x3, y3), (x4, y4)), 90, 180, fill=1)
 
     def render(self, im: Image) -> None:
-        # Eye image
-        eye = Image.new("1", (WIDTH, HEIGHT), color=0)
+        eye = Image.new("1", (self.WIDTH, self.HEIGHT), color=0)
 
         draw = ImageDraw.Draw(eye)
-        x1 = eye.size[0] // 2 - HALF_EYE_WIDTH
-        y1 = eye.size[1] // 2 - HALF_EYE_HEIGHT
-        x2 = eye.size[0] // 2 + HALF_EYE_WIDTH
-        y2 = eye.size[1] // 2 + HALF_EYE_HEIGHT
+        x1 = eye.size[0] // 2 - self.HALF_EYE_WIDTH
+        y1 = eye.size[1] // 2 - self.HALF_EYE_HEIGHT
+        x2 = eye.size[0] // 2 + self.HALF_EYE_WIDTH
+        y2 = eye.size[1] // 2 + self.HALF_EYE_HEIGHT
         self._render_inner_rect(draw, y1, x2, y2)
         self._render_upper_rect(draw, x1, y1, x2)
         self._render_outer_rect(draw, x1, y1, y2)
@@ -202,23 +204,17 @@ class ProceduralEye(object):
         try:
             eye = eye.resize(scale, resample=RESAMPLE)
         except ValueError:
-            # Scale factors can be extremely small and Pillow cannot handle resize() with both scale factors of 0.
             eye = None
 
-        # Translate and compose
         if eye:
             location = ((im.size[0] - eye.size[0]) // 2 + int(self.center_x * self.X_FACTOR) + self.offset,
                         (im.size[1] - eye.size[1]) // 2 + int(self.center_y * self.Y_FACTOR))
             im.paste(eye, location, eye)
 
 
-class ProceduralFace(object):
-
+class ProceduralFace(ProceduralMaster):
     X_FACTOR = 0.55
     Y_FACTOR = 0.25
-    LEFT_EYE_OFFSET = -23
-    RIGHT_EYE_OFFSET = 21
-
     def __init__(self,
                  center_x: int = 0,
                  center_y: int = 0,
@@ -226,7 +222,13 @@ class ProceduralFace(object):
                  scale_y: float = 1.0,
                  angle: float = 0.0,
                  left_eye: Optional[List] = None,
-                 right_eye: Optional[List] = None):
+                 right_eye: Optional[List] = None,
+                 WIDTH = 128,
+                 HEIGHT = 64
+                 ):
+        super(ProceduralFace, self).__init__(WIDTH, HEIGHT)
+        self.LEFT_EYE_OFFSET = -int(self.WIDTH/6)
+        self.RIGHT_EYE_OFFSET = int(self.WIDTH/6)
         self.center_x = int(center_x)
         self.center_y = int(center_y)
         self.scale_x = float(scale_x)
@@ -244,6 +246,8 @@ class ProceduralFace(object):
                 left_eye[11], left_eye[12],
                 left_eye[13], left_eye[14], left_eye[15],
                 left_eye[16], left_eye[17], left_eye[18],
+                WIDTH = self.WIDTH,
+                HEIGHT = self.HEIGHT
             )
         else:
             self.left_eye = ProceduralEye(self.LEFT_EYE_OFFSET)
@@ -259,37 +263,34 @@ class ProceduralFace(object):
                 right_eye[11], right_eye[12],
                 right_eye[13], right_eye[14], right_eye[15],
                 right_eye[16], right_eye[17], right_eye[18],
+                WIDTH = self.WIDTH,
+                HEIGHT = self.HEIGHT
             )
         else:
             self.right_eye = ProceduralEye(self.RIGHT_EYE_OFFSET)
 
     def render(self) -> Image:
-        # Background image
-        im = Image.new("1", (WIDTH, HEIGHT), color=0)
+        im = Image.new("1", (self.WIDTH, self.HEIGHT), color=0)
 
-        # Face image
-        face = Image.new("1", (WIDTH, HEIGHT), color=0)
+        face = Image.new("1", (self.WIDTH, self.HEIGHT), color=0)
 
-        # Draw eyes
         self.left_eye.render(face)
         self.right_eye.render(face)
 
-        # Rotate
         face = face.rotate(self.angle, resample=RESAMPLE, expand=1)
 
-        # Scale
         scale = (int(float(face.size[0]) * self.scale_x),
                  int(float(face.size[1] * self.scale_y)))
         try:
             face = face.resize(scale, resample=RESAMPLE)
         except ValueError:
-            # Scale factors can be extremely small and Pillow cannot handle resize() with both scale factors of 0.
             face = None
 
-        # Translate and compose
         if face:
             location = ((im.size[0] - face.size[0]) // 2 + int(self.center_x * self.X_FACTOR),
                         (im.size[1] - face.size[1]) // 2 + int(self.center_y * self.Y_FACTOR))
             im.paste(face, location)
 
         return im
+
+
