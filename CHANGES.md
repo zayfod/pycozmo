@@ -35,7 +35,7 @@ v0.4.0 (Sep 13, 2019)
 - Added support for Int8, Int32, and enumeration packet fields.
 - Improved robot state access.
 - Added object availability and animation state access.
-- Added initial pycozmo_replay.py tool for replaying .pcap files to Cozmo.
+- Added initial pycozmo_replay.py tool for replaying PCAP files to Cozmo.
 - Added OLED display initial image encoder code. 
 - Added initial function description.
 

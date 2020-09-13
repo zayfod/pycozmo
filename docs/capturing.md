@@ -234,5 +234,5 @@ $ sudo tcpdump -i wlan0 -w cozmo.pcap
 Connect to cozmo from the app. The app should find at least 2 Cozmos (one being the masquaraded Linux machine) and a
 selection screen should show up.
 
-The captured pcap file can be analyzed with [Wireshark](https://en.wikipedia.org/wiki/Wireshark) or with
+The captured PCAP file can be analyzed with [Wireshark](https://en.wikipedia.org/wiki/Wireshark) or with
 `pycozmo_dump.py`.

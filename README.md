@@ -54,12 +54,12 @@ Examples
 
 Basic:
 - [minimal.py](examples/minimal.py) - minimal code to communicate with Cozmo, using PyCozmo
-- [go_to_pose.py](examples/go_to_pose.py) - demonstrates moving to a specific pose (position and orientation) 
 - [extremes.py](examples/extremes.py) - demonstrates Cozmo lift and head control
 - [backpack_lights.py](examples/backpack_lights.py) - demonstrates Cozmo backpack LED control
 - [display_image.py](examples/display_image.py) - demonstrates visualization of image files on Cozmo's display
 - [events.py](examples/events.py) - demonstrates event handling
 - [camera.py](examples/camera.py) - demonstrates capturing a camera image 
+- [go_to_pose.py](examples/go_to_pose.py) - demonstrates moving to a specific pose (position and orientation) 
 - [path.py](examples/path.py) - demonstrates following a predefined path
 
 Advanced:
