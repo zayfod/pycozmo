@@ -2,14 +2,14 @@
 PyCozmo
 =======
 
-`PyCozmo` is a pure-Python [Anki Cozmo](https://anki.com/en-us/cozmo.html) communication library. It allows controlling
-a Cozmo robot directly, without having to go through a mobile device, running the Cozmo app.
+`PyCozmo` is a pure-Python [Cozmo robot](https://www.digitaldreamlabs.com/pages/cozmo) communication library.
+It allows controlling a Cozmo robot directly, without having to go through a mobile device, running the Cozmo app.
 
 The library is loosely based on the [Anki Cozmo Python SDK](https://github.com/anki/cozmo-python-sdk) and the
 [cozmoclad](https://pypi.org/project/cozmoclad/) ("C-Like Abstract Data") library.
 
-This project is a tool for exploring the hardware and software of Anki Cozmo. It is unstable and heavily under
-development.
+This project is a tool for exploring the hardware and software of Digital Dream Labs (originally Anki) Cozmo robot.
+It is unstable and heavily under development.
 
 
 Usage
@@ -214,7 +214,7 @@ Bug reports and patches should be sent via GitHub:
 
 [https://github.com/zayfod/pycozmo](https://github.com/zayfod/pycozmo)
 
-Anki Robot Discord server, channel #cozmo:
+DDL Robot Discord server, channel #development-cozmo:
 
 [https://discord.gg/ew92haS](https://discord.gg/ew92haS)
 
@@ -222,5 +222,5 @@ Anki Robot Discord server, channel #cozmo:
 Disclaimer
 ----------
 
-This project is not affiliated with [Anki](https://anki.com/) or
-[Digital Dream Labs](https://www.digitaldreamlabs.com/).
+This project is not affiliated with [Digital Dream Labs](https://www.digitaldreamlabs.com/) or
+[Anki](https://anki.com/).

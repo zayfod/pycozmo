@@ -36,7 +36,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     version=get_package_variable("__version__"),
     license="MIT",
-    description="A pure-Python Anki Cozmo communication library.",
+    description="A pure-Python Cozmo robot communication library.",
     long_description=get_readme(),
     long_description_content_type="text/markdown",
     author="Kaloyan Tenchov",
@@ -44,7 +44,7 @@ setuptools.setup(
     url="https://github.com/zayfod/pycozmo/",
     python_requires=">=3.5.4",
     install_requires=["dpkt", "numpy", "Pillow>=6.0.0", "flatbuffers"],
-    keywords=["anki", "cozmo", "robot", "robotics"],
+    keywords=["ddl", "anki", "cozmo", "robot", "robotics"],
     classifiers=[
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",

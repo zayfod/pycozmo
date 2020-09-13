@@ -1,6 +1,6 @@
 """
 
-PyCozmo - a pure-Python Anki Cozmo communication library.
+PyCozmo - a pure-Python Cozmo robot communication library.
 
 """
 
