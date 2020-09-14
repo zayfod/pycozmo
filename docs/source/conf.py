@@ -17,7 +17,7 @@ import sys
 sys.path.insert(0, os.path.abspath('../..'))    # noqa
 
 # noinspection PyPep8
-import pycozmo
+import pycozmo  # noqa
 
 
 # -- Project information -----------------------------------------------------
