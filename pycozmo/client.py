@@ -440,6 +440,6 @@ class Client(event.Dispatcher):
     def anim_names(self) -> set:
         return self.get_anim_names()
 
-    def play_audio(self, audio):
-        self.audio.play_file(audio)
+    def play_audio(self, fspec: str) -> audio.AudioManager:
+        self.audio.play_file(fspec)
         return self.audio

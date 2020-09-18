@@ -10,7 +10,7 @@ from .protocol_encoder import OutputAudio
 MIN_WAIT = 0.033
 
 
-class AudioManager():
+class AudioManager:
     """
     This class takes care of reading audio files and generating the OutputAudio messages sent to
     cozmo.
@@ -22,25 +22,25 @@ class AudioManager():
     """
     def __init__(self, conn: ClientConnection):
         self.stream = []
-        self.stop = False
+        self._stop = False
         self.conn = conn
         self.thread = Thread()
         self.lock = Lock()
         self.audio_stream = []
 
     def start_stream(self):
-        self.stop = False
+        self._stop = False
         if not self.thread.is_alive():
             self.thread = Thread(target=self.run, name=__class__.__name__)
             self.thread.start()
 
     def stop(self) -> None:
-        self.stop = True
+        self._stop = True
         self.thread.join()
         self.audio_stream = []
 
     def run(self) -> None:
-        while len(self.audio_stream) > 0 and not self.stop:
+        while len(self.audio_stream) > 0 and not self._stop:
             next_trigger_time = datetime.now() + timedelta(seconds=MIN_WAIT)
             with self.lock:
                 pkt = self.audio_stream.pop(0)
@@ -78,13 +78,13 @@ class AudioManager():
         return self.thread.is_alive()
 
 
-def load_wav(self, filename: str):
+def load_wav(filename: str):
     with wave.open(filename, "r") as w:
         sampwidth = w.getsampwidth()
         framerate = w.getframerate()
         if sampwidth != 2 or (framerate != 22050 and framerate != 48000):
-            raise TypeError('Invalid audio format, only 16 bit samples are supported,' +
-                            'with 22050Hz or 48000Hz frame rates.')
+            raise ValueError('Invalid audio format, only 16 bit samples are supported, ' +
+                             'with 22050Hz or 48000Hz frame rates.')
 
         ratediv = 2 if framerate == 48000 else 1
         channels = w.getnchannels()
@@ -118,12 +118,11 @@ def u_law_encoding(sample):
     mask = 0x4000
     position = 14
     sign = 0
-    lsb = 0
-    if (sample < 0):
+    if sample < 0:
         sample = -sample
         sign = 0x80
     sample += MULAW_BIAS
-    if (sample > MULAW_MAX):
+    if sample > MULAW_MAX:
         sample = MULAW_MAX
 
     while (sample & mask) != mask and position >= 7:
