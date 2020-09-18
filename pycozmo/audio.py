@@ -112,6 +112,8 @@ def bytes_to_cozmo(byte_string: bytes, rate_correction: int, channels: int):
 
 MULAW_MAX = 0x7FFF
 MULAW_BIAS = 132
+
+
 def u_law_encoding(sample):
     mask = 0x4000
     position = 14
