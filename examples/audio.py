@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-import time
-import wave
-
 import pycozmo
 
 

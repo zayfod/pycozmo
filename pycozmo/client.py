@@ -441,5 +441,5 @@ class Client(event.Dispatcher):
         return self.get_anim_names()
 
     def play_audio(self, audio):
-        self.audio.play(audio)
+        self.audio.play_file(audio)
         return self.audio

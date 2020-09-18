@@ -5,9 +5,10 @@ from datetime import datetime, timedelta
 from threading import Thread, Lock
 
 from .conn import ClientConnection
-from .protocol_encoder import OutputAudio, Keyframe
+from .protocol_encoder import OutputAudio
 
 MIN_WAIT = 0.033
+
 
 class AudioManager():
     """
@@ -51,8 +52,8 @@ class AudioManager():
 
     def play(self, audio):
         if audio and isinstance(audio, list) and isinstance(audio[0], OutputAudio):
-                with self.lock:
-                    self.audio_stream += audio
+            with self.lock:
+                self.audio_stream += audio
         else:
             raise TypeError('Invalid audio: {}'.format(type(audio)))
 
@@ -129,4 +130,3 @@ def u_law_encoding(sample):
 
     lsb = (sample >> (position - 4)) & 0x0f
     return -(~(sign | ((position - 7) << 4) | lsb))
-
