@@ -26,7 +26,6 @@ class AudioManager():
         self.thread = Thread()
         self.lock = Lock()
         self.audio_gen = []
-        self.conn.add_handler(Keyframe, self._on_keyframe)
 
     def start(self):
         self.stop = False
@@ -54,7 +53,7 @@ class AudioManager():
                 if resting_time > 0:
                     time.sleep(resting_time)
 
-                self.conn.send(pkt, True)
+                self.conn.send(pkt)
 
                 next_trigger_time = datetime.now() + timedelta(seconds=MIN_WAIT)
 
@@ -93,10 +92,6 @@ class AudioManager():
             raise TypeError('Invalid audio type: {}'.format(type(audio)))
 
         self.start()
-
-    def _on_keyframe(self, cli, pkt: Keyframe):
-        del cli, pkt
-        self.conn.clear_repeat('OutputAudio')
 
     def wait_until_complete(self):
         self.thread.join()

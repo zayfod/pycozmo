@@ -110,16 +110,11 @@ class SendThread(Thread):
         self.timeout = timeout
         self.stop_flag = False
         self.queue = Queue()
-        self.to_clear_queue = Queue()
         self.last_ack = 1
         self.last_send_timestamp = None
-        self.one_time_queue = []
-        self.repeat_queue = {}
 
     def stop(self) -> None:
         self.stop_flag = True
-        self.one_time_queue = []
-        self.repeat_queue = {}
         self.join()
 
     def run(self) -> None:
@@ -145,67 +140,29 @@ class SendThread(Thread):
             try:
                 pkt = self.queue.get(timeout=self.timeout)
                 self.queue.task_done()
-                # Construct frame
-                self.process_frame(pkt[0], pkt[1])
             except Empty:
-                pass
+                continue
 
-            for raw_frame in self.get_frames():
-                try:
-                    self.sock.sendto(raw_frame, self.receiver_address)
-                except InterruptedError:
-                    continue
+            # Construct frame
+            if isinstance(pkt, protocol_encoder.Ping):
+                frame = Frame(protocol_declaration.FrameType.PING, 0, 0, self.last_ack, [pkt])
+            else:
+                seq = self.window.put(pkt)
+                if pkt.type == PacketType.COMMAND:
+                    frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, seq, seq, self.last_ack, [pkt])
+                else:
+                    frame = Frame(protocol_declaration.FrameType.ENGINE, seq, seq, self.last_ack, [pkt])
+            raw_frame = frame.to_bytes()
+
+            try:
+                self.sock.sendto(raw_frame, self.receiver_address)
+            except InterruptedError:
+                continue
 
             self.last_send_timestamp = datetime.now()
 
-            # Clear repeat queue
-            while not self.to_clear_queue.empty():
-                clearing = self.to_clear_queue.get(block=False)
-                self.to_clear_queue.task_done()
-                try:
-                    del(self.repeat_queue[clearing][0])
-                except (KeyError, IndexError):
-                    pass
-
-    def get_frames(self):
-        for idx in self.repeat_queue:
-            for frame in self.repeat_queue[idx]:
-                yield frame
-        for frame in self.one_time_queue:
-            yield frame
-        self.one_time_queue = []
-
-    def process_frame(self, pkt: Packet, repeat: bool) -> None:
-        if isinstance(pkt, protocol_encoder.Ping):
-            frame = Frame(
-                protocol_declaration.FrameType.PING, 0, 0, self.last_ack, [pkt]
-                ).to_bytes()
-        else:
-            seq = self.window.put(pkt)
-            if pkt.type == PacketType.COMMAND:
-                frame = Frame(
-                    protocol_declaration.FrameType.ENGINE_ACT, seq, seq, self.last_ack, [pkt]
-                    ).to_bytes()
-            else:
-                frame = Frame(
-                    protocol_declaration.FrameType.ENGINE, seq, seq, self.last_ack, [pkt]
-                    ).to_bytes()
-
-        if repeat:
-            pkt_id = pkt.__class__.__name__
-            if pkt_id not in self.repeat_queue:
-                self.repeat_queue[pkt_id] = [frame]
-            else:
-                self.repeat_queue[pkt_id].append(frame)
-        else:
-            self.one_time_queue.append(frame)
-
-
-    def clear_repeat(self, type_id):
-        self.to_clear_queue.put(type_id)
-
-    def send(self, data: Any, repeat=False) -> None:
-        self.queue.put((data, repeat))
+    def send(self, data: Any) -> None:
+        self.queue.put(data)
 
     def ack(self, seq: int) -> None:
         if self.window.is_out_of_order(seq):
@@ -221,8 +178,6 @@ class SendThread(Thread):
         self.window.reset()
         self.last_ack = 1
         self.last_send_timestamp = None
-        self.one_time_queue = []
-        self.repeat_queue = {}
 
 
 class ClientConnection(Thread, event.Dispatcher):
@@ -304,9 +259,9 @@ class ClientConnection(Thread, event.Dispatcher):
         except InterruptedError:
             pass
 
-    def send(self, pkt: Packet, repeat=False) -> None:
+    def send(self, pkt: Packet) -> None:
         self.send_last = datetime.now()
-        self.send_thread.send(pkt, repeat)
+        self.send_thread.send(pkt)
         if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
             logger_protocol.debug("Sent %s", pkt)
 
@@ -325,9 +280,6 @@ class ClientConnection(Thread, event.Dispatcher):
         del cli, pkt
         self.state = self.CONNECTED
         logger.debug("Connected.")
-
-    def clear_repeat(self, type_id):
-        self.send_thread.clear_repeat(type_id)
 
     @staticmethod
     def _on_ping(cli, pkt: protocol_encoder.Ping):
