@@ -24,19 +24,21 @@ class AudioManager:
         self.stream = []
         self._stop = False
         self.conn = conn
-        self.thread = Thread()
+        self.thread = None
         self.lock = Lock()
         self.audio_stream = []
 
     def start_stream(self):
         self._stop = False
-        if not self.thread.is_alive():
+        if not self.thread:
             self.thread = Thread(target=self.run, name=__class__.__name__)
             self.thread.start()
 
     def stop(self) -> None:
         self._stop = True
-        self.thread.join()
+        if self.thread:
+            self.thread.join()
+            self.thread = None
         self.audio_stream = []
 
     def run(self) -> None:
@@ -72,10 +74,9 @@ class AudioManager:
         self.start_stream()
 
     def wait_until_complete(self):
-        self.thread.join()
-
-    def is_running(self):
-        return self.thread.is_alive()
+        if self.thread:
+            self.thread.join()
+            self.thread = None
 
 
 def load_wav(filename: str):
