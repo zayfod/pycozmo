@@ -1,13 +1,24 @@
+"""
+Cozmo procedural face rendering.
+"""
+
 from typing import Optional, List
 
 from PIL import Image, ImageDraw
+
+
+__all__ = [
+    "ProceduralLid",
+    "ProceduralEye",
+    "ProceduralFace",
+]
+
 
 RESAMPLE = Image.NEAREST
 
 
 class ProceduralBase(object):
     def __init__(self, width, height):
-
         self.WIDTH = width
         self.HEIGHT = height
         self.EYE_WIDTH = int(width*(28/128))
@@ -38,6 +49,7 @@ class ProceduralLid(ProceduralBase):
         self.BLACK = Image.new("1", (self.WIDTH * 2, self.HEIGHT * 2), color=0)
 
     def render(self, im: Image) -> None:
+
         # Lid image
         lid = Image.new("1", (self.WIDTH * 2, self.HEIGHT * 2), color=0)
 
@@ -58,16 +70,15 @@ class ProceduralLid(ProceduralBase):
         y4 = self.HEIGHT - 1 + lid_height + bend_height
         draw.chord(((x3, y3), (x4, y4)), 0, 180, fill=1)
 
-        # Rotate
         lid = lid.rotate(self.angle + self.angle_offset, resample=RESAMPLE, expand=0)
 
-        # Translate and compose
         location = ((im.size[0] - lid.size[0]) // 2,
                     (im.size[1] - lid.size[1]) // 2 + self.offset)
         im.paste(self.BLACK, location, lid)
 
 
 class ProceduralEye(ProceduralBase):
+
     def __init__(self,
                  offset: int = 0,
                  center_x: int = 0,
@@ -92,7 +103,6 @@ class ProceduralEye(ProceduralBase):
                  width=128,
                  height=64):
         super(ProceduralEye, self).__init__(width, height)
-
         self.X_FACTOR = 0.55
         self.Y_FACTOR = 0.25
         self.CORNER_RADIUS = (self.WIDTH/20 + self.HEIGHT/10)
@@ -181,6 +191,7 @@ class ProceduralEye(ProceduralBase):
         draw.pieslice(((x3, y3), (x4, y4)), 90, 180, fill=1)
 
     def render(self, im: Image) -> None:
+
         # Eye image
         eye = Image.new("1", (self.WIDTH, self.HEIGHT), color=0)
 
@@ -212,10 +223,8 @@ class ProceduralEye(ProceduralBase):
         try:
             eye = eye.resize(scale, resample=RESAMPLE)
         except ValueError:
-            # Scale factors can be extremely small and Pillow cannot handle resize() with both scale factors of 0.
             eye = None
 
-        # Translate and compose
         if eye:
             location = ((im.size[0] - eye.size[0]) // 2 + int(self.center_x * self.X_FACTOR) + self.offset,
                         (im.size[1] - eye.size[1]) // 2 + int(self.center_y * self.Y_FACTOR))
@@ -288,23 +297,18 @@ class ProceduralFace(ProceduralBase):
         # Face image
         face = Image.new("1", (self.WIDTH, self.HEIGHT), color=0)
 
-        # Draw eyes
         self.left_eye.render(face)
         self.right_eye.render(face)
 
-        # Rotate
         face = face.rotate(self.angle, resample=RESAMPLE, expand=1)
 
-        # Scale
         scale = (int(float(face.size[0]) * self.scale_x),
                  int(float(face.size[1] * self.scale_y)))
         try:
             face = face.resize(scale, resample=RESAMPLE)
         except ValueError:
-            # Scale factors can be extremely small and Pillow cannot handle resize() with both scale factors of 0.
             face = None
 
-        # Translate and compose
         if face:
             location = ((im.size[0] - face.size[0]) // 2 + int(self.center_x * self.X_FACTOR),
                         (im.size[1] - face.size[1]) // 2 + int(self.center_y * self.Y_FACTOR))
