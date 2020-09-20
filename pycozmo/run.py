@@ -1,3 +1,8 @@
+"""
+
+Helper functions for running PyCozmo applications.
+
+"""
 
 from typing import Optional
 import sys

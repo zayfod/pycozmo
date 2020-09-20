@@ -1,11 +1,38 @@
+"""
 
+Cozmo protocol encoding helper classes and functions.
+
+"""
+
+from typing import Dict, Tuple
 import struct
 
 
-_struct_cache = dict()
+__all__ = [
+    "validate_float",
+    "validate_bool",
+    "validate_integer",
+    "validate_object",
+    "validate_farray",
+    "validate_varray",
+    "validate_string",
+
+    "get_size",
+    "get_farray_size",
+    "get_varray_size",
+    "get_string_size",
+    "get_object_size",
+    "get_object_farray_size",
+
+    "BinaryReader",
+    "BinaryWriter",
+]
 
 
-def _get_struct(fmt, length):
+_struct_cache = dict()  # type: Dict[Tuple[str, int], struct.Struct]
+
+
+def _get_struct(fmt: str, length: int) -> struct.Struct:
     key = (fmt, length)
     if key in _struct_cache:
         return _struct_cache[key]
@@ -131,12 +158,12 @@ class BinaryReader(object):
     def __len__(self):
         return len(self._buffer)
 
-    def seek_set(self, offset: int):
+    def seek_set(self, offset: int) -> None:
         if offset < 0 or offset > len(self._buffer):
             ValueError("Invalid offset.")
         self._index = offset
 
-    def seek_cur(self, offset: int):
+    def seek_cur(self, offset: int) -> None:
         offset += self._index
         if offset < 0 or offset > len(self._buffer):
             ValueError("Invalid offset.")
@@ -206,7 +233,7 @@ class BinaryWriter(object):
     def dumps(self) -> bytes:
         return b"".join(self._buffer)
 
-    def write_bytes(self, value: bytes):
+    def write_bytes(self, value: bytes) -> None:
         """ Writes out a byte sequence. """
         self._buffer.append(value)
 

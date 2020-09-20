@@ -56,7 +56,7 @@ id              7           Always "COZ\x03RE\x01"
 type            1           Frame type
 first_seq       2           First packet sequence number in the frame or 0
 seq             2           Last packet sequence number in the frame or 0
-ack             2           Peer packet sequence number acknowledgementz
+ack             2           Peer packet sequence number acknowledgement
 packets         -           0 or more encapsulated packets
 ```
 
@@ -87,7 +87,7 @@ Type    OOB     Source      Description
 0x03    n       engine      Disconnect
 0x04    n       both        Command
 0x05    y       robot       Event
-0x0a    y       engine      Unknown
+0x0a    y       engine      Keyframe
 0x0b    y       engine      Ping
 ```
 
@@ -120,9 +120,9 @@ ID                 Min     Max      Name
 0x37	     	    17	    17		SetHeadAngle                  
 0x39	     	    20	    20		TurnInPlace                 
 0x3b	     	     0	     0		StopAllMotors
-0x3d                                DriveStraight             
+0x3d								DriveStraight             
 0x45	     	    24	    24		                              
-0x4b	     	     8	     8      EnableBodyACC		                              
+0x4b	     	     8	     8		EnableBodyACC		                              
 0x4c	     	     2	     2		EnableCamera                  
 0x50	     	     2	     2		                              
 0x54	     	     2	     2		                              
@@ -144,7 +144,7 @@ ID                 Min     Max      Name
 0x9b	     	     1	     1		                              
 0x9d	     	     1	     1		                              
 0x9e	     	     1	     1		                              
-0x9f	     	     0	     0      EnableAnimationState		                              
+0x9f	     	     0	     0		EnableAnimationState		                              
 0xa0	     	    16	    16		                              
 0xaf	     	  1026	  1026		FirmwareUpdate                
 0xb0	     	     8	    40	*	UnknownB0                     

@@ -1,3 +1,8 @@
+"""
+
+Utility classes and functions.
+
+"""
 
 from typing import Optional, Tuple
 import math
@@ -40,7 +45,7 @@ class Angle:
 
         if degrees is not None:
             radians = degrees * math.pi / 180
-        self._radians = float(radians)
+        self._radians = float(radians)  # type: ignore
 
     def __repr__(self):
         return "<%s %.2f radians (%.2f degrees)>" % (self.__class__.__name__, self.radians, self.degrees)
@@ -130,7 +135,7 @@ class Distance:
 
         if inches is not None:
             mm = inches * 25.4
-        self._mm = mm
+        self._mm = mm   # type: float   # type: ignore
 
     def __repr__(self):
         return "<%s %.2f mm (%.2f inches)>" % (self.__class__.__name__, self.mm, self.inches)
@@ -402,7 +407,7 @@ class Matrix44:
         """
         return self.m30, self.m31, self.m32
 
-    def set_forward(self, x: float, y: float, z: float):
+    def set_forward(self, x: float, y: float, z: float) -> None:
         """
         Set the x,y,z components representing the matrix's forward vector.
         """
@@ -410,7 +415,7 @@ class Matrix44:
         self.m01 = y
         self.m02 = z
 
-    def set_left(self, x: float, y: float, z: float):
+    def set_left(self, x: float, y: float, z: float) -> None:
         """
         Set the x,y,z components representing the matrix's left vector.
         """
@@ -418,7 +423,7 @@ class Matrix44:
         self.m11 = y
         self.m12 = z
 
-    def set_up(self, x: float, y: float, z: float):
+    def set_up(self, x: float, y: float, z: float) -> None:
         """
         Set the x,y,z components representing the matrix's up vector.
         """
@@ -460,16 +465,16 @@ class Quaternion:
                 raise TypeError("Unsupported type for angle_z expected Angle")
             q0, q1, q2, q3 = angle_z_to_quaternion(angle_z)
 
-        self._q0 = q0
-        self._q1 = q1
-        self._q2 = q2
-        self._q3 = q3
+        self._q0 = q0   # type: float   # type: ignore
+        self._q1 = q1   # type: float   # type: ignore
+        self._q2 = q2   # type: float   # type: ignore
+        self._q3 = q3   # type: float   # type: ignore
 
     def __repr__(self):
         return ("<%s q0: %.2f q1: %.2f q2: %.2f q3: %.2f (angle_z: %s)>" %
                 (self.__class__.__name__, self.q0, self.q1, self.q2, self.q3, self.angle_z))
 
-    def to_matrix(self, pos_x: float = 0.0, pos_y: float = 0.0, pos_z: float = 0.0):
+    def to_matrix(self, pos_x: float = 0.0, pos_y: float = 0.0, pos_z: float = 0.0) -> Matrix44:
         """
         Convert the Quaternion to a 4x4 matrix representing this rotation.
 
@@ -682,7 +687,7 @@ class Pose:
         """
         self._origin_id = -1
 
-    def is_comparable(self, other_pose) -> bool:
+    def is_comparable(self, other_pose: "Pose") -> bool:
         """
         Are these two poses comparable.
 

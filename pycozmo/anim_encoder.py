@@ -1,6 +1,6 @@
 """
 
-Code for reading and writing Cozmo animations in FlatBuffers .bin and JSON format.
+Reading and writing of Cozmo animations in FlatBuffers (.bin) and JSON format.
 
 Cozmo animations are stored in files/cozmo/cozmo_resources/assets/animations inside the Cozmo mobile application.
 
@@ -17,6 +17,32 @@ import glob
 import flatbuffers
 
 from . import CozmoAnim
+
+
+__all__ = [
+    "AnimBase",
+
+    "AnimClip",
+    "AnimClips",
+
+    "AnimLight",
+
+    "AnimKeyframe",
+    "AnimHeadAngle",
+    "AnimLiftHeight",
+    "AnimRecordHeading",
+    "AnimTurnToRecordedHeading",
+    "AnimBodyMotion",
+    "AnimBackpackLights",
+    "AnimFaceAnimation",
+    "AnimProceduralFace",
+    "AnimRobotAudio",
+    "AnimEvent",
+
+    "ClipMetadata",
+
+    "get_clip_metadata",
+]
 
 
 class AnimBase(ABC):

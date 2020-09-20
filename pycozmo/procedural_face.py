@@ -1,5 +1,7 @@
 """
+
 Cozmo procedural face rendering.
+
 """
 
 from typing import Optional, List
@@ -127,63 +129,63 @@ class ProceduralEye(ProceduralBase):
                           self.WIDTH, self.HEIGHT)
         )
 
-    def _render_inner_rect(self, draw, y1, x2, y2) -> None:
+    def _render_inner_rect(self, draw: ImageDraw, y1: int, x2: int, y2: int) -> None:
         x3 = x2 - int(self.CORNER_RADIUS * max(self.upper_inner_radius_x, self.lower_inner_radius_x))
         y3 = y1 + int(self.CORNER_RADIUS * self.upper_inner_radius_y)
         x4 = x2
         y4 = y2 - int(self.CORNER_RADIUS * self.lower_inner_radius_y)
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_upper_rect(self, draw, x1, y1, x2) -> None:
+    def _render_upper_rect(self, draw: ImageDraw, x1: int, y1: int, x2: int) -> None:
         x3 = x1 + int(self.CORNER_RADIUS * self.upper_outer_radius_x)
         y3 = y1
         x4 = x2 - int(self.CORNER_RADIUS * self.upper_inner_radius_x)
         y4 = y1 + int(self.CORNER_RADIUS * max(self.upper_outer_radius_y, self.upper_inner_radius_y))
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_outer_rect(self, draw, x1, y1, y2) -> None:
+    def _render_outer_rect(self, draw: ImageDraw, x1: int, y1: int, y2: int) -> None:
         x3 = x1
         y3 = y1 + int(self.CORNER_RADIUS * self.upper_outer_radius_y)
         x4 = x1 + int(self.CORNER_RADIUS * max(self.upper_outer_radius_x, self.lower_outer_radius_x))
         y4 = y2 - int(self.CORNER_RADIUS * self.lower_outer_radius_y)
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_lower_rect(self, draw, x1, x2, y2) -> None:
+    def _render_lower_rect(self, draw: ImageDraw, x1: int, x2: int, y2: int) -> None:
         x3 = x1 + int(self.CORNER_RADIUS * self.lower_outer_radius_x)
         y3 = y2 - int(self.CORNER_RADIUS * max(self.lower_outer_radius_y, self.lower_inner_radius_y))
         x4 = x2 - int(self.CORNER_RADIUS * self.lower_inner_radius_x)
         y4 = y2
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_center_rect(self, draw, x1, y1, x2, y2) -> None:
+    def _render_center_rect(self, draw: ImageDraw, x1: int, y1: int, x2: int, y2: int) -> None:
         x3 = x1 + int(self.CORNER_RADIUS * max(self.upper_outer_radius_x, self.lower_outer_radius_x))
         y3 = y1 + int(self.CORNER_RADIUS * max(self.upper_outer_radius_y, self.upper_inner_radius_y))
         x4 = x2 - int(self.CORNER_RADIUS * max(self.upper_inner_radius_y, self.lower_inner_radius_y))
         y4 = y2 - int(self.CORNER_RADIUS * max(self.lower_outer_radius_y, self.lower_inner_radius_y))
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_lower_inner_pie(self, draw, x2, y2) -> None:
+    def _render_lower_inner_pie(self, draw: ImageDraw, x2: int, y2: int) -> None:
         x3 = x2 - 2 * int(self.CORNER_RADIUS * self.lower_inner_radius_x)
         y3 = y2 - 2 * int(self.CORNER_RADIUS * self.lower_inner_radius_y)
         x4 = x2
         y4 = y2
         draw.pieslice(((x3, y3), (x4, y4)), 0, 90, fill=1)
 
-    def _render_upper_inner_pie(self, draw, y1, x2) -> None:
+    def _render_upper_inner_pie(self, draw: ImageDraw, y1: int, x2: int) -> None:
         x3 = x2 - 2 * int(self.CORNER_RADIUS * self.upper_inner_radius_x)
         y3 = y1
         x4 = x2
         y4 = y1 + 2 * int(self.CORNER_RADIUS * self.upper_inner_radius_y)
         draw.pieslice(((x3, y3), (x4, y4)), 270, 360, fill=1)
 
-    def _render_upper_outer_pie(self, draw, x1, y1) -> None:
+    def _render_upper_outer_pie(self, draw: ImageDraw, x1: int, y1: int) -> None:
         x3 = x1
         y3 = y1
         x4 = x1 + 2 * int(self.CORNER_RADIUS * self.upper_outer_radius_x)
         y4 = y1 + 2 * int(self.CORNER_RADIUS * self.upper_outer_radius_y)
         draw.pieslice(((x3, y3), (x4, y4)), 180, 270, fill=1)
 
-    def _render_lower_outer_pie(self, draw, x1, y2) -> None:
+    def _render_lower_outer_pie(self, draw: ImageDraw, x1: int, y2: int) -> None:
         x3 = x1
         y3 = y2 - 2 * int(self.CORNER_RADIUS * self.lower_outer_radius_y)
         x4 = x1 + 2 * int(self.CORNER_RADIUS * self.lower_outer_radius_x)

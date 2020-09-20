@@ -1,3 +1,8 @@
+"""
+
+PyCozmo - a pure-Python Cozmo robot communication library.
+
+"""
 
 import sys
 

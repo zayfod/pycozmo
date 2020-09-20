@@ -1,9 +1,23 @@
+"""
+
+Camera image decoding.
+
+"""
 
 import numpy as np
 
 from . import protocol_encoder
 
 
+__all__ = [
+    "RESOLUTIONS",
+
+    "minigray_to_jpeg",
+    "minicolor_to_jpeg",
+]
+
+
+#: Camera resolutions.
 RESOLUTIONS = {
     protocol_encoder.ImageResolution.VerificationSnapshot: (16, 16),
     protocol_encoder.ImageResolution.QQQQVGA: (40, 30),

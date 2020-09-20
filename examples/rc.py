@@ -216,7 +216,7 @@ class RCApp(object):
         else:
             return v_a, -v_b
 
-    def _handle_input(self, e):
+    def _handle_input(self, e):     # noqa: C901
         update = False
         update2 = False
 

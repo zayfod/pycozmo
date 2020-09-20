@@ -1,3 +1,8 @@
+"""
+
+Cozmo protocol connection.
+
+"""
 
 import select
 import socket
@@ -16,6 +21,16 @@ from . import filter
 from . import protocol_declaration
 
 
+__all__ = [
+    "ROBOT_ADDR",
+
+    "ReceiveThread",
+    "SendThread",
+    "ClientConnection",
+]
+
+
+#: Default robot address (IP, port).
 ROBOT_ADDR = ("172.31.1.1", 5551)
 PING_INTERVAL = 0.05
 RUN_INTERVAL = 0.05

@@ -1,4 +1,10 @@
+"""
 
+Event declaration and dispatching.
+
+"""
+
+from typing import Callable, Optional
 import collections
 import threading
 
@@ -8,6 +14,31 @@ from . import robot
 
 __all__ = [
     "Event",
+
+    "EvtRobotFound",
+    "EvtRobotReady",
+    "EvtNewRawCameraImage",
+    "EvtRobotMovingChange",
+    "EvtRobotCarryingBlockChange",
+    "EvtRobotPickingOrPlacingChange",
+    "EvtRobotPickedUpChange",
+    "EvtRobotBodyAccModeChange",
+    "EvtRobotFallingChange",
+    "EvtRobotAnimatingChange",
+    "EvtRobotPathingChange",
+    "EvtRobotLiftInPositionChange",
+    "EvtRobotHeadInPositionChange",
+    "EvtRobotAnimBufferFullChange",
+    "EvtRobotAnimatingIdleChange",
+    "EvtRobotOnChargerChange",
+    "EvtRobotChargingChange",
+    "EvtCliffDetectedChange",
+    "EvtRobotWheelsMovingChange",
+    "EvtChargerOOSChange",
+    "EvtRobotStateUpdated",
+
+    "STATUS_EVENTS",
+
     "Handler",
     "Dispatcher",
 ]
@@ -19,7 +50,7 @@ class Event(object):
 
 class Handler(object):
     """ Event handler class. """
-    def __init__(self, f: callable, one_shot: bool):
+    def __init__(self, f: Callable, one_shot: bool):
         self.f = f
         self.one_shot = one_shot
 
@@ -161,7 +192,7 @@ class Dispatcher(object):
         for handler in handlers:
             handler.f(*args, **kwargs)
 
-    def wait_for(self, evt, timeout: float = None) -> None:
+    def wait_for(self, evt, timeout: Optional[float] = None) -> None:
         e = threading.Event()
         self.add_handler(evt, lambda *args: e.set(), one_shot=True)
         if not e.wait(timeout):

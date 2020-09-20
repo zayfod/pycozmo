@@ -29,7 +29,7 @@ With appropriate network configuration such a setup allows capturing Cozmo commu
 Prerequisites
 -------------
 
-- [Cozmo](https://anki.com/en-us/cozmo.html)
+- [Cozmo robot](https://www.digitaldreamlabs.com/pages/cozmo)
 - Mobile device with the [Cozmo app](https://play.google.com/store/apps/details?id=com.anki.cozmo)
 - (Ubuntu) Linux machine with 2 Wi-Fi interfaces (e.g. a Raspberry Pi)
 - The following tools installed:
@@ -234,5 +234,5 @@ $ sudo tcpdump -i wlan0 -w cozmo.pcap
 Connect to cozmo from the app. The app should find at least 2 Cozmos (one being the masquaraded Linux machine) and a
 selection screen should show up.
 
-The captured pcap file can be analyzed with [Wireshark](https://en.wikipedia.org/wiki/Wireshark) or with
+The captured PCAP file can be analyzed with [Wireshark](https://en.wikipedia.org/wiki/Wireshark) or with
 `pycozmo_dump.py`.

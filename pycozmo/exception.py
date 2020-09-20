@@ -1,6 +1,15 @@
+"""
+
+Exceptions declaration.
+
+"""
 
 __all__ = [
     "PyCozmoException",
+    "PyCozmoConnectionError",
+    "ConnectionTimeout",
+    "UnsupportedFirmwareVersion",
+    "Timeout",
 ]
 
 

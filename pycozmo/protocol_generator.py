@@ -1,6 +1,6 @@
 """
 
-Protocol packet encoder code generator.
+Cozmo protocol packet encoder code generator.
 
 """
 
@@ -8,6 +8,11 @@ import os
 from collections import defaultdict
 
 from . import protocol_declaration
+
+
+__all__ = [
+    "ProtocolGenerator",
+]
 
 
 def get_fmt_by_type(t):
@@ -200,7 +205,7 @@ class ProtocolGenerator(object):
         return self._{name}
 
     @{name}.setter
-    def {name}(self, value: {enum_type}):
+    def {name}(self, value: {enum_type}) -> None:
         self._{name} = value
         """.format(name=argument.name, enum_type=argument.enum_type.name))
                 self.generate_enum_validation(argument)
@@ -341,7 +346,7 @@ class ProtocolGenerator(object):
         writer = BinaryWriter()
         self.to_writer(writer)
         return writer.dumps()
-        
+
     def to_writer(self, writer):
 """)
         if struct.arguments:
@@ -397,7 +402,7 @@ class ProtocolGenerator(object):
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
-        
+
     @classmethod
     def from_reader(cls, reader):
 """)
@@ -484,7 +489,7 @@ class {name}(Struct):
 
     def generate_packet(self, packet):
         self.f.write(r"""
-    
+
 class {name}(Packet):
 """.format(name=packet.name))
         self.f.write("\n    __slots__ = (\n")
@@ -527,7 +532,7 @@ class {name}(Packet):
     def generate(self):
         header = r'''"""
 
-Protocol packet encoder classes.
+Cozmo protocol packet encoder classes.
 
 Generated from {declaration} by {generator}
 

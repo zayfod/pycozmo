@@ -1,3 +1,8 @@
+"""
+
+Cozmo protocol client.
+
+"""
 
 from threading import Event
 from typing import Optional, Tuple
@@ -23,6 +28,12 @@ from . import lights
 from . import image_encoder
 from . import anim
 from . import anim_encoder
+from . import audio
+
+
+__all__ = [
+    "Client",
+]
 
 
 class Client(event.Dispatcher):
@@ -31,6 +42,7 @@ class Client(event.Dispatcher):
                  protocol_log_messages: Optional[list] = None) -> None:
         super().__init__()
         self.conn = conn.ClientConnection(robot_addr, protocol_log_messages)
+        self.audio = audio.AudioManager(self.conn)
         self.serial_number_head = None
         self.robot_fw_sig = None
         self.serial_number = None
@@ -85,6 +97,7 @@ class Client(event.Dispatcher):
 
     def stop(self) -> None:
         logger.debug("Stopping client...")
+        self.audio.stop()
         self.conn.stop()
         self.del_all_handlers()
 
@@ -436,3 +449,7 @@ class Client(event.Dispatcher):
     @property
     def anim_names(self) -> set:
         return self.get_anim_names()
+
+    def play_audio(self, fspec: str) -> audio.AudioManager:
+        self.audio.play_file(fspec)
+        return self.audio
