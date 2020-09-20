@@ -5,6 +5,7 @@ Cozmo protocol sliding window implementation.
 """
 
 import math
+from threading import Lock
 from typing import Optional, Any
 
 
@@ -98,44 +99,67 @@ class SendWindow(BaseWindow):
         super().__init__(seq_bits, size)
         self.next_seq = 1
         self.window = [SendWindowSlot() for _ in range(self.size)]
+        self.lock = Lock()
 
     def is_out_of_order(self, seq: int) -> bool:
-        if self.is_empty():
-            res = True
-        elif self.expected_seq > self.next_seq:
-            res = self.expected_seq > seq >= self.next_seq
-        else:
-            res = seq < self.expected_seq or seq >= self.next_seq
-        return res
+        with self.lock:
+            if self.is_empty():
+                res = True
+            elif self.expected_seq > self.next_seq:
+                res = self.expected_seq > seq >= self.next_seq
+            else:
+                res = seq < self.expected_seq or seq >= self.next_seq
+            return res
 
     def is_empty(self) -> bool:
-        res = self.expected_seq == self.next_seq
-        return res
+        with self.lock:
+            res = self.expected_seq == self.next_seq
+            return res
 
     def is_full(self) -> bool:
-        if self.expected_seq > self.next_seq:
-            res = (self.next_seq + self.max_seq - self.expected_seq) >= self.size
-        else:
-            res = (self.next_seq - self.expected_seq) >= self.size
-        return res
+        with self.lock:
+            if self.expected_seq > self.next_seq:
+                res = (self.next_seq + self.max_seq - self.expected_seq) >= self.size
+            else:
+                res = (self.next_seq - self.expected_seq) >= self.size
+            return res
 
-    def put(self, data: Any) -> int:
-        seq = self.next_seq
-        self.next_seq = (self.next_seq + 1) % self.max_seq
-        self.window[seq % self.size].set(seq, data)
-        return seq
+    def put(self, data: Any) -> tuple(int,list):
+        with self.lock:
+            seq = self.next_seq
+            self.next_seq = (self.next_seq + 1) % self.max_seq
+            self.window[seq % self.size].set(seq, data)
+            return self.expected_seq, self.window[seq:self.expected_seq]
 
     def pop(self) -> None:
-        self.window[self.expected_seq % self.size].reset()
-        self.expected_seq = (self.expected_seq + 1) % self.max_seq
-        self.last_seq = (self.last_seq + 1) % self.max_seq
+        with self.lock:
+            self.window[self.expected_seq % self.size].reset()
+            self.expected_seq = (self.expected_seq + 1) % self.max_seq
+            self.last_seq = (self.last_seq + 1) % self.max_seq
+
+    def acknowledge(self, seq: int):
+        with self.lock:
+            if self.is_out_of_order(seq):
+                pass
+            else:
+                if seq > self.expected_seq:
+                    for frame in self.window[self.expected_seq:seq]:
+                        frame.reset()
+                else:
+                    for frame in self.window[self.expected_seq:]:
+                        frame.reset()
+                    for frame in self.window[:seq]:
+                        frame.reset()
+                self.expected_seq = seq
 
     def get_oldest(self) -> Any:
-        res = self.window[self.expected_seq % self.size].data
-        return res
+        with self.lock:
+            res = self.window[self.expected_seq % self.size].data
+            return res
 
     def reset(self):
-        super().reset()
-        self.next_seq = 1
-        for slot in self.window:
-            slot.reset()
+        with self.lock:
+            super().reset()
+            self.next_seq = 1
+            for slot in self.window:
+                slot.reset()

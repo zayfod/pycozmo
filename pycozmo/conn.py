@@ -35,20 +35,24 @@ ROBOT_ADDR = ("172.31.1.1", 5551)
 PING_INTERVAL = 0.05
 RUN_INTERVAL = 0.05
 
+SEQ_BITS = 16
+WINDOW_SIZE = 256
+
 
 class ReceiveThread(Thread):
 
     def __init__(self,
                  sock: socket.socket,
+                 recv_window: ReceiveWindow,
+                 send_window: SendWindow,
                  sender_address: Optional[Tuple[str, int]],
                  timeout: float = 0.5,
-                 buffer_size: int = 65536,
-                 seq_bits: int = 16,
-                 window_size: int = 256) -> None:
+                 buffer_size: int = 65536) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         self.sock = sock
         self.sender_address = sender_address
-        self.window = ReceiveWindow(seq_bits, size=window_size)
+        self.recv_window = recv_window
+        self.send_window = send_window
         self.timeout = timeout
         self.buffer_size = buffer_size
         self.stop_flag = False
@@ -76,25 +80,31 @@ class ReceiveThread(Thread):
             self.handle_frame(frame)
 
     def handle_frame(self, frame: Frame) -> None:
+        frame_trusted = True
         for pkt in frame.pkts:
-            self.handle_pkt(pkt)
+            frame_trusted = self.handle_pkt(pkt)
+            if not frame_trusted:
+                return
+        self.send_window.acknowledge(frame.ack)
 
-    def handle_pkt(self, pkt: Packet) -> None:
+    def handle_pkt(self, pkt: Packet) -> bool:
         if pkt.is_oob():
             self.deliver(pkt)
-            return
+            return True
 
-        if self.window.is_out_of_order(pkt.seq):
-            return
+        if self.recv_window.is_out_of_order(pkt.seq):
+            return False
 
-        if self.window.exists(pkt.seq):
+        if self.recv_window.exists(pkt.seq):
             # Duplicate
-            return
+            return False
 
-        self.window.put(pkt.seq, pkt)
+        self.recv_window.put(pkt.seq, pkt)
 
-        if self.window.is_expected(pkt.seq):
+        if self.recv_window.is_expected(pkt.seq):
             self.deliver_sequence()
+
+        return True
 
     def deliver_sequence(self) -> None:
         while True:
@@ -114,10 +124,10 @@ class SendThread(Thread):
 
     def __init__(self,
                  sock: socket.socket,
+                 recv_window: ReceiveWindow,
+                 send_window: SendWindow,
                  receiver_address: Tuple[str, int],
-                 timeout: float = 0.5,
-                 seq_bits: int = 16,
-                 window_size: Optional[int] = 256) -> None:
+                 timeout: float = 0.5) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         self.sock = sock
         self.receiver_address = receiver_address
@@ -158,19 +168,35 @@ class SendThread(Thread):
             except Empty:
                 continue
 
+            raw_frames = []
+
             # Construct frame
             if isinstance(pkt, protocol_encoder.Ping):
-                frame = Frame(protocol_declaration.FrameType.PING, 0, 0, self.last_ack, [pkt])
+                raw_frames.append(
+                    Frame(protocol_declaration.FrameType.PING, 0, 0, self.last_ack, [pkt])
+                    .to_bytes())
             else:
-                seq = self.window.put(pkt)
-                if pkt.type == PacketType.COMMAND:
-                    frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, seq, seq, self.last_ack, [pkt])
-                else:
-                    frame = Frame(protocol_declaration.FrameType.ENGINE, seq, seq, self.last_ack, [pkt])
-            raw_frame = frame.to_bytes()
+                first_seq, pkts = self.window.put(pkt)
+                framelen = 0
+                seq = first_seq
+                pkts = []
+                for p in pkts:
+                    framelen += len(p) + 1
+                    if framelen < 1000:
+                        pkts.append(pkt)
+                        seq += 1
+                    else:
+                        if len(pkts) == 1:
+                            frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, first_seq, seq, self.last_ack, pkts)
+                        else:
+                            frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, self.last_ack, pkts)
+                        raw_frames.append(frame.to_bytes())
+                        pkts = []
+                        framelen = 0
 
             try:
-                self.sock.sendto(raw_frame, self.receiver_address)
+                for raw_frame in raw_frames:
+                    self.sock.sendto(raw_frame, self.receiver_address)
             except InterruptedError:
                 continue
 
@@ -217,8 +243,12 @@ class ClientConnection(Thread, event.Dispatcher):
         self.state = self.IDLE
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setblocking(False)
-        self.recv_thread = ReceiveThread(self.sock, self.robot_addr)
-        self.send_thread = SendThread(self.sock, self.robot_addr)
+        self.recv_window = ReceiveWindow(SEQ_BITS, size=WINDOW_SIZE)
+        self.send_window = SendWindow(SEQ_BITS, size=WINDOW_SIZE)
+        self.recv_thread = ReceiveThread( self.sock, self.send_window,
+                                          self.recv_window, self.robot_addr)
+        self.send_thread = SendThread( self.sock, self.send_window,
+                                       self.recv_window, self.robot_addr)
         self.stop_flag = False
         self.send_last = datetime.now() - timedelta(days=1)
 

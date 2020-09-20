@@ -227,6 +227,9 @@ class BinaryWriter(object):
     def __init__(self):
         self._buffer = []
 
+    def __len__(self):
+        return len(self._buffer)
+
     def clear(self):
         del self._buffer[:]
 
