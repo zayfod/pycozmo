@@ -16,31 +16,40 @@ __all__ = [
 ]
 
 
+DEFAULT_WIDTH = 128
+DEFAULT_HEIGHT = 64
+
+DEFAULT_EYE_WIDTH = 28
+DEFAULT_EYE_HEIGHT = 40
+
 RESAMPLE = Image.NEAREST
 
 
 class ProceduralBase(object):
-    def __init__(self, width, height):
-        self.WIDTH = width
-        self.HEIGHT = height
-        self.EYE_WIDTH = int(width*(28/128))
-        self.EYE_HEIGHT = int(height*(40/64))
 
+    def __init__(self,
+                 width: int,
+                 height: int):
+        self.WIDTH = int(width)
+        self.HEIGHT = int(height)
+        self.EYE_WIDTH = int(width * (DEFAULT_EYE_WIDTH / DEFAULT_WIDTH))
+        self.EYE_HEIGHT = int(height * (DEFAULT_EYE_HEIGHT / DEFAULT_HEIGHT))
         self.HALF_EYE_WIDTH = self.EYE_WIDTH // 2
         self.HALF_EYE_HEIGHT = self.EYE_HEIGHT // 2
-        self.scale_factor_lid_height = int(1.2*self.EYE_WIDTH)
-        self.scale_factor_lid_bend = int(1.2*self.HALF_EYE_WIDTH)
+        self.scale_factor_lid_height = int(1.2 * self.EYE_WIDTH)
+        self.scale_factor_lid_bend = int(1.2 * self.HALF_EYE_WIDTH)
 
 
 class ProceduralLid(ProceduralBase):
+
     def __init__(self,
                  offset: int = 0,
                  angle_offset: float = 0.0,
                  y: float = 0.0,
                  angle: float = 0.0,
                  bend: float = 0.0,
-                 width=128,
-                 height=64
+                 width: int = DEFAULT_WIDTH,
+                 height: int = DEFAULT_HEIGHT
                  ):
         super(ProceduralLid, self).__init__(width, height)
         self.offset = int(offset)
@@ -51,7 +60,6 @@ class ProceduralLid(ProceduralBase):
         self.BLACK = Image.new("1", (self.WIDTH * 2, self.HEIGHT * 2), color=0)
 
     def render(self, im: Image) -> None:
-
         # Lid image
         lid = Image.new("1", (self.WIDTH * 2, self.HEIGHT * 2), color=0)
 
@@ -104,12 +112,12 @@ class ProceduralEye(ProceduralBase):
                  lower_lid_y: float = 0.0,
                  lower_lid_angle: float = 0.0,
                  lower_lid_bend: float = 0.0,
-                 width=128,
-                 height=64):
+                 width: int = DEFAULT_WIDTH,
+                 height: int = DEFAULT_HEIGHT):
         super(ProceduralEye, self).__init__(width, height)
         self.X_FACTOR = 0.55
         self.Y_FACTOR = 0.25
-        self.CORNER_RADIUS = (self.WIDTH/20 + self.HEIGHT/10)
+        self.CORNER_RADIUS = (self.WIDTH / 20 + self.HEIGHT / 10)
         self.offset = int(offset)
         self.center_x = int(center_x)
         self.center_y = int(center_y)
@@ -249,12 +257,12 @@ class ProceduralFace(ProceduralBase):
                  angle: float = 0.0,
                  left_eye: Optional[List] = None,
                  right_eye: Optional[List] = None,
-                 width=128,
-                 height=64
+                 width: int = DEFAULT_WIDTH,
+                 height: int = DEFAULT_HEIGHT
                  ):
         super(ProceduralFace, self).__init__(width, height)
-        self.LEFT_EYE_OFFSET = -int(self.WIDTH/6)
-        self.RIGHT_EYE_OFFSET = int(self.WIDTH/6)
+        self.LEFT_EYE_OFFSET = -int(self.WIDTH / 6)
+        self.RIGHT_EYE_OFFSET = int(self.WIDTH / 6)
         self.center_x = int(center_x)
         self.center_y = int(center_y)
         self.scale_x = float(scale_x)
