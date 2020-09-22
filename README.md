@@ -187,7 +187,7 @@ Installation
 Using pip:
 
 ```
-pip install pycozmo
+pip install --user pycozmo
 ```
 
 From source:
@@ -203,7 +203,7 @@ From source, for development:
 ```
 git clone git@github.com:zayfod/pycozmo.git
 cd pycozmo
-python setup.py develop
+python setup.py develop --user
 ```
 
  

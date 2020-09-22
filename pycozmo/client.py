@@ -153,7 +153,8 @@ class Client(event.Dispatcher):
         self.serial_number = pkt.serial_number
         self.body_hw_version = pkt.body_hw_version
         self.body_color = pkt.body_color
-        logger.info("Body S/N 0x%08x.", self.serial_number)
+        logger.info("Body S/N 0x%08x, HW version %i, color %i.",
+                    self.serial_number, self.body_hw_version, self.body_color.value)
         supported = self.robot_fw_sig["version"] == protocol_declaration.FIRMWARE_VERSION
         if supported:
             self._initialize_robot()

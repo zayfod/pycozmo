@@ -32,6 +32,7 @@ BODY_COLOR = Enum("BodyColor", members=[
     EnumMember("WHITE_v15", 2),
     EnumMember("CE_LM_v15", 3),
     EnumMember("LE_BL_v16", 4),
+    EnumMember("DEV", 5),           # Development units seem to report this.
 ])
 NV_ENTRY_TAG = Enum("NvEntryTag", base=16, members=[
     EnumMember("NVEntry_Invalid", 0xffffffff),
@@ -532,7 +533,7 @@ PROTOCOL = Protocol(
         ]),
         Command(0xed, "BodyInfo", group="system", arguments=[
             UInt32Argument("serial_number"),
-            UInt32Argument("body_hw_version"),
+            UInt32Argument("body_hw_version"),  # Production units report 5. Development units report 7.
             EnumArgument("body_color", BODY_COLOR, data_type=Int32Argument(), default=-1),
         ]),
         Command(0xee, "FirmwareSignature", group="system", arguments=[
@@ -576,7 +577,7 @@ PROTOCOL = Protocol(
             Int32Argument("num_audio_frames_played"),
             UInt8Argument("enabled_anim_tracks"),
             UInt8Argument("tag"),
-            UInt8Argument("client_drop_count"),
+            UInt8Argument("client_drop_count"),     # Seems to not be present in older versions.
         ]),
         Event(0xf2, "ImageChunk", group="state", arguments=[
             UInt32Argument("frame_timestamp"),

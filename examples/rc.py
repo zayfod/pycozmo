@@ -14,7 +14,7 @@ try:
     # noinspection PyPackageRequirements
     from evdev import ecodes, InputDevice
 except ImportError:
-    sys.exit("ERROR: This application can only run on Linux with evdev installed. Do 'pip install evdev'.")
+    sys.exit("ERROR: This application can only run on Linux with evdev installed. Do 'pip install --user evdev'.")
 
 import pycozmo
 

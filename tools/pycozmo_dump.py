@@ -102,7 +102,7 @@ def main():
         app.decode_pcap(fspec)
     else:
         if pcap is None:
-            sys.exit("Live packet capturing requires pypcap. Install with 'pip install pypcap'.")
+            sys.exit("Live packet capturing requires pypcap. Install with 'pip install --user pypcap'.")
 
         app.capture(fspec)
 
