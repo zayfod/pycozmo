@@ -146,6 +146,12 @@ class Client(event.Dispatcher):
         del cli
         self.robot_fw_sig = json.loads(pkt.signature)
         logger.info("Firmware version %s.", self.robot_fw_sig["version"])
+        if self.robot_fw_sig["version"] >= protocol_declaration.MIN_FACTORY_FIRMWARE_VERSION:
+            logger.warning("Factory/recovery firmware detected. Functionality may be degraded.")
+        elif self.robot_fw_sig["version"] < protocol_declaration.FIRMWARE_VERSION:
+            logger.warning(f"Old firmware detected. "
+                           f"PyCozmo works best with v{protocol_declaration.FIRMWARE_VERSION}. "
+                           f"Functionality may be degraded.")
         self._enable_robot()
 
     def _on_body_info(self, cli, pkt: protocol_encoder.BodyInfo):
@@ -155,12 +161,7 @@ class Client(event.Dispatcher):
         self.body_color = pkt.body_color
         logger.info("Body S/N 0x%08x, HW version %i, color %i.",
                     self.serial_number, self.body_hw_version, self.body_color.value)
-        supported = self.robot_fw_sig["version"] == protocol_declaration.FIRMWARE_VERSION
-        if supported:
-            self._initialize_robot()
-        else:
-            logger.error("Unsupported Cozmo firmware version %i. Only version %i is supported currently.",
-                         self.robot_fw_sig["version"], protocol_declaration.FIRMWARE_VERSION)
+        self._initialize_robot()
         self.dispatch(event.EvtRobotFound, self)
 
     def wait_for_robot(self, timeout: float = 5.0) -> None:
@@ -169,9 +170,6 @@ class Client(event.Dispatcher):
             self.add_handler(event.EvtRobotFound, lambda cli: e.set(), one_shot=True)
             if not e.wait(timeout):
                 raise exception.ConnectionTimeout("Failed to connect to Cozmo.")
-
-        if self.robot_fw_sig["version"] != protocol_declaration.FIRMWARE_VERSION:
-            raise exception.UnsupportedFirmwareVersion("Unsupported Cozmo firmware version.")
 
         if not self.serial_number:
             e = Event()
