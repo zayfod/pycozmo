@@ -7,7 +7,6 @@ Robot constants and helper code.
 import math
 
 from . import util
-from . import protocol_encoder
 
 
 __all__ = [

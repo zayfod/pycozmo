@@ -472,7 +472,7 @@ class {name}(enum.Enum):
             self.f.write('    """ {} """\n'.format(enum_type.description))
         for member in enum_type.members:
             if member.description:
-                self.f.write(f'    # {member.description}\n')
+                self.f.write('    # {}\n'.format(member.description))
             self.f.write('    {name} = {value}\n'.format(
                 name=member.name, value=int_to_str(member.value, enum_type.base)))
 
