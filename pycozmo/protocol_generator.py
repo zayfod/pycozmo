@@ -327,6 +327,8 @@ class ProtocolGenerator(object):
     def generate_arugment_assignments(self, struct: protocol_declaration.Struct):
         if struct.arguments:
             for argument in struct.arguments:
+                if argument.description:
+                    self.f.write("        # {}\n".format(argument.description))
                 if isinstance(argument, protocol_declaration.EnumArgument):
                     self.f.write("        self.{name} = {enum_type}({name})\n".format(
                         name=argument.name, enum_type=argument.enum_type.name))
@@ -466,7 +468,11 @@ class ProtocolGenerator(object):
 
 class {name}(enum.Enum):
 """.format(name=enum_type.name))
+        if enum_type.description:
+            self.f.write('    """ {} """\n'.format(enum_type.description))
         for member in enum_type.members:
+            if member.description:
+                self.f.write(f'    # {member.description}\n')
             self.f.write('    {name} = {value}\n'.format(
                 name=member.name, value=int_to_str(member.value, enum_type.base)))
 
@@ -475,6 +481,8 @@ class {name}(enum.Enum):
 
 class {name}(Struct):
 """.format(name=struct.name))
+        if struct.description:
+            self.f.write('    """ {} """\n'.format(struct.description))
         self.f.write("\n    __slots__ = (\n")
         self.generate_packet_slots(struct)
         self.f.write("    )\n\n    def __init__(self")
@@ -492,6 +500,8 @@ class {name}(Struct):
 
 class {name}(Packet):
 """.format(name=packet.name))
+        if packet.description:
+            self.f.write('    """ {} """\n'.format(packet.description))
         self.f.write("\n    __slots__ = (\n")
         self.generate_packet_slots(packet)
         self.f.write("    )\n\n    def __init__(self")
@@ -532,9 +542,9 @@ class {name}(Packet):
     def generate(self):
         header = r'''"""
 
-Cozmo protocol packet encoder classes.
+Cozmo protocol packet encoder classes, based on protocol version {version}.
 
-Generated from {declaration} by {generator}
+Generated from {declaration} by {generator} .
 
 Do not modify.
 
@@ -549,7 +559,8 @@ from .protocol_utils import \
     validate_farray, validate_varray, validate_string, \
     get_size, get_farray_size, get_varray_size, get_string_size, get_object_farray_size, \
     BinaryReader, BinaryWriter
-'''.format(declaration=os.path.basename(protocol_declaration.__file__), generator=os.path.basename(__file__))
+'''.format(declaration=os.path.basename(protocol_declaration.__file__), generator=os.path.basename(__file__),
+           version=protocol_declaration.FIRMWARE_VERSION)
         self.f.write(header)
 
         for enum in protocol_declaration.PROTOCOL.enums:

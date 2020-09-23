@@ -1,8 +1,8 @@
 """
 
-Cozmo protocol packet encoder classes.
+Cozmo protocol packet encoder classes, based on protocol version 2381.
 
-Generated from protocol_declaration.py by protocol_generator.py
+Generated from protocol_declaration.py by protocol_generator.py .
 
 Do not modify.
 
@@ -23,9 +23,13 @@ class BodyColor(enum.Enum):
     UNKNOWN = -1
     WHITE_v10 = 0
     RESERVED = 1
+    # White.
     WHITE_v15 = 2
+    # Collectors edition, liquid metal.
     CE_LM_v15 = 3
+    # Limited edition, blue.
     LE_BL_v16 = 4
+    # Development unit.
     DEV = 5
 
 
@@ -364,8 +368,11 @@ class PathSegmentSpeed(Struct):
                  speed_mmps=0.0,
                  accel_mmps2=0.0,
                  decel_mmps2=0.0):
+        # Speed in millimeters per second.
         self.speed_mmps = speed_mmps
+        # Acceleration in millimeters per second squared.
         self.accel_mmps2 = accel_mmps2
+        # Deceleration in millimeters per second squared.
         self.decel_mmps2 = decel_mmps2
 
     @property
@@ -655,6 +662,7 @@ class LightStateCenter(Packet):
                  states=(),
                  unknown=0):
         super().__init__(PacketType.COMMAND, packet_id=0x03)
+        # Top, middle, and bottom light state.
         self.states = states
         self.unknown = unknown
 
@@ -1075,6 +1083,7 @@ class LightStateSide(Packet):
                  states=(),
                  unknown=0):
         super().__init__(PacketType.COMMAND, packet_id=0x11)
+        # Left and right light state.
         self.states = states
         self.unknown = unknown
 
@@ -3684,6 +3693,7 @@ class AnimBackpackLights(Packet):
     def __init__(self,
                  colors=()):
         super().__init__(PacketType.COMMAND, packet_id=0x98)
+        # Left, front, middle, back, and right.
         self.colors = colors
 
     @property
@@ -4086,9 +4096,13 @@ class DebugData(Packet):
                  level=0,
                  args=()):
         super().__init__(PacketType.COMMAND, packet_id=0xb0)
+        # AnkiLogStringTables.json formatTable key.
         self.format_id = format_id
+        # Always 0.
         self.unused = unused
+        # AnkiLogStringTables.json nameTable key.
         self.name_id = name_id
+        # Log level. Observed: -1, 1, 2, 3, 5.
         self.level = level
         self.args = args
 
@@ -5677,6 +5691,7 @@ class BodyInfo(Packet):
                  body_color=-1):
         super().__init__(PacketType.COMMAND, packet_id=0xed)
         self.serial_number = serial_number
+        # Production units report 5. Development units report 7.
         self.body_hw_version = body_hw_version
         self.body_color = BodyColor(body_color)
 
@@ -5759,6 +5774,7 @@ class FirmwareSignature(Packet):
                  unknown=0,
                  signature=''):
         super().__init__(PacketType.COMMAND, packet_id=0xee)
+        # Last 2 bytes of head s/n?
         self.unknown = unknown
         self.signature = signature
 
@@ -5830,6 +5846,7 @@ class FirmwareUpdateResult(Packet):
         super().__init__(PacketType.COMMAND, packet_id=0xef)
         self.byte_count = byte_count
         self.chunk_id = chunk_id
+        # 0=OK; 0x0a=complete?
         self.status = status
 
     @property
@@ -6348,6 +6365,7 @@ class AnimationState(Packet):
         self.num_audio_frames_played = num_audio_frames_played
         self.enabled_anim_tracks = enabled_anim_tracks
         self.tag = tag
+        # Not present in v2214 and older.
         self.client_drop_count = client_drop_count
 
     @property

@@ -30,8 +30,6 @@ __all__ = [
     "RobotStatusFlag",
     "RobotStatusFlagNames",
 
-    "BODY_COLOR_NAMES",
-
     "LiftPosition",
 ]
 
@@ -103,16 +101,6 @@ RobotStatusFlagNames = {
     RobotStatusFlag.CLIFF_DETECTED: "CLIFF_DETECTED",
     RobotStatusFlag.ARE_WHEELS_MOVING: "ARE_WHEELS_MOVING",
     RobotStatusFlag.IS_CHARGER_OOS: "IS_CHARGER_OOS",
-}
-
-
-#: Body color names.
-BODY_COLOR_NAMES = {
-    protocol_encoder.BodyColor.WHITE_v10: "Original",
-    protocol_encoder.BodyColor.RESERVED: "Reserved",
-    protocol_encoder.BodyColor.WHITE_v15: "White",
-    protocol_encoder.BodyColor.CE_LM_v15: "Collector's Edition Liquid Metal",
-    protocol_encoder.BodyColor.LE_BL_v16: "Limited Edition Blue",
 }
 
 
