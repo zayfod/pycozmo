@@ -11,4 +11,4 @@ def pycozmo_program(cli: pycozmo.client.Client):
         time.sleep(0.1)
 
 
-pycozmo.run_program(pycozmo_program, log_level="DEBUG", protocol_log_level="WARNING")
+pycozmo.run_program(pycozmo_program, log_level="DEBUG", protocol_log_level="WARNING", robot_log_level="WARNING")

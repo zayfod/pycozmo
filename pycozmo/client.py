@@ -13,7 +13,7 @@ import io
 import numpy as np
 from PIL import Image
 
-from . import logger
+from . import logger, logger_robot
 from . import protocol_encoder
 from . import event
 from . import camera
@@ -29,6 +29,7 @@ from . import image_encoder
 from . import anim
 from . import anim_encoder
 from . import audio
+from . import robot_debug
 
 
 __all__ = [
@@ -92,6 +93,7 @@ class Client(event.Dispatcher):
         self.conn.add_handler(protocol_encoder.AnimationState, self._on_animation_state)
         self.conn.add_handler(protocol_encoder.ObjectAvailable, self._on_object_available)
         self.conn.add_handler(protocol_encoder.ObjectConnectionState, self._on_object_connection_state)
+        self.conn.add_handler(protocol_encoder.DebugData, self._on_debug_data)
         self.add_handler(event.EvtRobotPickedUpChange, self._on_robot_picked_up)
         self.conn.start()
 
@@ -315,6 +317,11 @@ class Client(event.Dispatcher):
             # Disconnected
             if pkt.object_id in self.connected_objects:
                 del self.connected_objects[pkt.object_id]
+
+    def _on_debug_data(self, cli, pkt: protocol_encoder.DebugData):
+        del cli
+        msg = robot_debug.get_debug_message(pkt.name_id, pkt.format_id, pkt.args)
+        logger_robot.log(robot_debug.get_log_level(pkt.level), msg)
 
     def set_head_angle(self, angle: float, accel: float = 10.0, max_speed: float = 10.0,
                        duration: float = 0.0):

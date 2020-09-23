@@ -187,9 +187,6 @@ IMAGE_SEND_MODE = Enum("ImageSendMode", members=[
     EnumMember("Stream", 1),
     EnumMember("SingleShot", 2),
 ])
-DEBUG_DATA_ID = Enum("DebugDataID", base=16, members=[
-    EnumMember("MAC_ADDRESS", 0x1572),              # 624
-])
 MOTOR_ID = Enum("MotorID", members=[
     EnumMember("MOTOR_LEFT_WHEEL", 0),
     EnumMember("MOTOR_RIGHT_WHEEL", 1),
@@ -231,7 +228,6 @@ PROTOCOL = Protocol(
         IMAGE_ENCODING,
         IMAGE_RESOLUTION,
         IMAGE_SEND_MODE,
-        DEBUG_DATA_ID,
         MOTOR_ID,
         PATH_EVENT_TYPE,
     ],
@@ -370,6 +366,7 @@ PROTOCOL = Protocol(
         Command(0x4b, "SyncTime", group="system", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("unknown"),
+            # UInt32Argument("unknown2"),             # Available in v2214.
         ]),
         Command(0x4c, "EnableCamera", group="camera", arguments=[
             EnumArgument("image_send_mode", IMAGE_SEND_MODE, default=1),
@@ -442,11 +439,11 @@ PROTOCOL = Protocol(
         ]),
 
         Command(0xb0, "DebugData", group="debug", arguments=[
-            UInt16Argument("debug_id"),             # See DebugDataID
+            UInt16Argument("format_id"),            # AnkiLogStringTables.json formatTable key
             UInt16Argument("unused"),               # Always 0
-            UInt16Argument("unknown2"),             # Source?
-            Int8Argument("unknown3"),               # Level? Observed: -1, 1, 2, 3, 5
-            VArrayArgument("data", data_type=UInt32Argument(), length_type=UInt8Argument())
+            UInt16Argument("name_id"),              # AnkiLogStringTables.json nameTable key
+            Int8Argument("level"),                  # Observed: -1, 1, 2, 3, 5
+            VArrayArgument("args", data_type=UInt32Argument(), length_type=UInt8Argument())
         ]),
         Command(0xb4, "ObjectMoved", group="objects", arguments=[
             UInt32Argument("timestamp"),

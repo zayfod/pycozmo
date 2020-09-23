@@ -26,6 +26,7 @@ class BodyColor(enum.Enum):
     WHITE_v15 = 2
     CE_LM_v15 = 3
     LE_BL_v16 = 4
+    DEV = 5
 
 
 class NvEntryTag(enum.Enum):
@@ -185,10 +186,6 @@ class ImageSendMode(enum.Enum):
     Off = 0
     Stream = 1
     SingleShot = 2
-
-
-class DebugDataID(enum.Enum):
-    MAC_ADDRESS = 0x1572
 
 
 class MotorID(enum.Enum):
@@ -4075,33 +4072,33 @@ class FirmwareUpdate(Packet):
 class DebugData(Packet):
 
     __slots__ = (
-        "_debug_id",  # uint16
+        "_format_id",  # uint16
         "_unused",  # uint16
-        "_unknown2",  # uint16
-        "_unknown3",  # int8
-        "_data",  # uint32[uint8]
+        "_name_id",  # uint16
+        "_level",  # int8
+        "_args",  # uint32[uint8]
     )
 
     def __init__(self,
-                 debug_id=0,
+                 format_id=0,
                  unused=0,
-                 unknown2=0,
-                 unknown3=0,
-                 data=()):
+                 name_id=0,
+                 level=0,
+                 args=()):
         super().__init__(PacketType.COMMAND, packet_id=0xb0)
-        self.debug_id = debug_id
+        self.format_id = format_id
         self.unused = unused
-        self.unknown2 = unknown2
-        self.unknown3 = unknown3
-        self.data = data
+        self.name_id = name_id
+        self.level = level
+        self.args = args
 
     @property
-    def debug_id(self):
-        return self._debug_id
+    def format_id(self):
+        return self._format_id
 
-    @debug_id.setter
-    def debug_id(self, value):
-        self._debug_id = validate_integer("debug_id", value, 0, 65535)
+    @format_id.setter
+    def format_id(self, value):
+        self._format_id = validate_integer("format_id", value, 0, 65535)
 
     @property
     def unused(self):
@@ -4112,29 +4109,29 @@ class DebugData(Packet):
         self._unused = validate_integer("unused", value, 0, 65535)
 
     @property
-    def unknown2(self):
-        return self._unknown2
+    def name_id(self):
+        return self._name_id
 
-    @unknown2.setter
-    def unknown2(self, value):
-        self._unknown2 = validate_integer("unknown2", value, 0, 65535)
-
-    @property
-    def unknown3(self):
-        return self._unknown3
-
-    @unknown3.setter
-    def unknown3(self, value):
-        self._unknown3 = validate_integer("unknown3", value, -128, 127)
+    @name_id.setter
+    def name_id(self, value):
+        self._name_id = validate_integer("name_id", value, 0, 65535)
 
     @property
-    def data(self):
-        return self._data
+    def level(self):
+        return self._level
 
-    @data.setter
-    def data(self, value):
-        self._data = validate_varray(
-            "data", value, 255, lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295))
+    @level.setter
+    def level(self, value):
+        self._level = validate_integer("level", value, -128, 127)
+
+    @property
+    def args(self):
+        return self._args
+
+    @args.setter
+    def args(self, value):
+        self._args = validate_varray(
+            "args", value, 255, lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295))
 
     def __len__(self):
         return \
@@ -4142,21 +4139,21 @@ class DebugData(Packet):
             get_size('H') + \
             get_size('H') + \
             get_size('b') + \
-            get_varray_size(self._data, 'B', 'L')
+            get_varray_size(self._args, 'B', 'L')
 
     def __repr__(self):
         return "{type}(" \
-               "debug_id={debug_id}, " \
+               "format_id={format_id}, " \
                "unused={unused}, " \
-               "unknown2={unknown2}, " \
-               "unknown3={unknown3}, " \
-               "data={data})".format(
+               "name_id={name_id}, " \
+               "level={level}, " \
+               "args={args})".format(
                 type=type(self).__name__,
-                debug_id=self._debug_id,
+                format_id=self._format_id,
                 unused=self._unused,
-                unknown2=self._unknown2,
-                unknown3=self._unknown3,
-                data=self._data)
+                name_id=self._name_id,
+                level=self._level,
+                args=self._args)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -4164,11 +4161,11 @@ class DebugData(Packet):
         return writer.dumps()
 
     def to_writer(self, writer):
-        writer.write(self._debug_id, "H")
+        writer.write(self._format_id, "H")
         writer.write(self._unused, "H")
-        writer.write(self._unknown2, "H")
-        writer.write(self._unknown3, "b")
-        writer.write_varray(self._data, "L", "B")
+        writer.write(self._name_id, "H")
+        writer.write(self._level, "b")
+        writer.write_varray(self._args, "L", "B")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -4178,17 +4175,17 @@ class DebugData(Packet):
 
     @classmethod
     def from_reader(cls, reader):
-        debug_id = reader.read("H")
+        format_id = reader.read("H")
         unused = reader.read("H")
-        unknown2 = reader.read("H")
-        unknown3 = reader.read("b")
-        data = reader.read_varray("L", "B")
+        name_id = reader.read("H")
+        level = reader.read("b")
+        args = reader.read_varray("L", "B")
         return cls(
-            debug_id=debug_id,
+            format_id=format_id,
             unused=unused,
-            unknown2=unknown2,
-            unknown3=unknown3,
-            data=data)
+            name_id=name_id,
+            level=level,
+            args=args)
 
 
 class ObjectMoved(Packet):
