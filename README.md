@@ -70,7 +70,7 @@ Advanced:
 - [cube_lights.py](examples/cube_lights.py) - demonstrates cube connection and LED control
 - [cube_light_animation.py](examples/cube_light_animation.py) - demonstrates cube LED animation control
 - [charger_lights.py](examples/charger_lights.py) - demonstrates Cozmo charging platform LED control
-- [audio.py](examples/audio.py) - demonstrates 22 kHz, 8-bit, mono WAVE file playback through Cozmo's speaker 
+- [audio.py](examples/audio.py) - demonstrates 22 kHz, 16-bit, mono WAVE file playback through Cozmo's speaker 
 - [nvram.py](examples/nvram.py) - domonstrates reading data from Cozmo's NVRAM (non-volatile memory)
 - [procedural_face.py](examples/procedural_face.py) - demonstrates drawing a procedural face on Cozmo's display
 - [procedural_face_show.py](examples/procedural_face_show.py) - demonstrates generating a procedural face 
@@ -107,7 +107,7 @@ Actuators:
 - [x] Backpack LEDs
 - [x] IR LED
 - [x] OLED display
-- [ ] Speaker - work progress
+- [x] Speaker
 - [x] Cube LEDs
 - [x] Platform LEDs
 

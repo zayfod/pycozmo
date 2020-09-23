@@ -1,3 +1,13 @@
+"""
+
+Cozmo audio encoding.
+
+References:
+    - https://en.wikipedia.org/wiki/%CE%9C-law_algorithm
+    - http://dystopiancode.blogspot.com/2012/02/pcm-law-and-u-law-companding-algorithms.html
+
+"""
+
 import struct
 import time
 import wave
@@ -8,6 +18,9 @@ from .conn import ClientConnection
 from .protocol_encoder import OutputAudio
 
 MIN_WAIT = 0.033
+
+MULAW_MAX = 0x7FFF
+MULAW_BIAS = 132
 
 
 class AudioManager:
@@ -111,11 +124,8 @@ def bytes_to_cozmo(byte_string: bytes, rate_correction: int, channels: int):
     return out
 
 
-MULAW_MAX = 0x7FFF
-MULAW_BIAS = 132
-
-
-def u_law_encoding(sample):
+def u_law_encoding(sample: int) -> int:
+    """ U-law encode a 16-bit PCM sample. """
     mask = 0x4000
     position = 14
     sign = 0

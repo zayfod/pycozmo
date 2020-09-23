@@ -7,6 +7,7 @@ pycozmo package
 
     pycozmo.anim
     pycozmo.anim_encoder
+    pycozmo.audio
     pycozmo.camera
     pycozmo.client
     pycozmo.conn
