@@ -133,7 +133,7 @@ class Frame(object):
                 try:
                     pkt = cls._decode_packet(pkt_type, pkt_len, reader)
                     if reader.tell() != expected_offset:
-                        # Packet length may change between protocol versions. This helps with dealing with shorter packets.
+                        # Packet length may change between protocol versions.
                         reader.seek_set(expected_offset)
                     pkt.seq = pkt_seq
                     pkt.ack = ack
