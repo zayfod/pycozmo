@@ -552,7 +552,7 @@ Do not modify.
 
 import enum
 
-from .protocol_declaration import PacketType
+from .protocol_ast import PacketType
 from .protocol_base import Struct, Packet
 from .protocol_utils import \
     validate_float, validate_bool, validate_integer, validate_object, \

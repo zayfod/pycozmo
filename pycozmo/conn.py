@@ -13,7 +13,8 @@ from typing import Optional, Tuple, Any
 
 from .logging import logger, logger_protocol
 from .frame import Frame
-from .protocol_base import PacketType, Packet
+from .protocol_ast import PacketType
+from .protocol_base import Packet
 from .window import ReceiveWindow, SendWindow
 from . import protocol_encoder
 from . import event
@@ -60,20 +61,30 @@ class ReceiveThread(Thread):
 
     def run(self) -> None:
         while not self.stop_flag:
-            ready = select.select([self.sock], [], [], self.timeout)
-            if not ready[0]:
+            try:
+                ready = select.select([self.sock], [], [], self.timeout)
+                if not ready[0]:
+                    continue
+
+                raw_frame, address = self.sock.recvfrom(self.buffer_size)
+                if self.sender_address and self.sender_address != address:
+                    logger_protocol.debug("Received a UDP datagram from unexpected address {}.".format(address))
+                    continue
+            except Exception as e:
+                logger.error("Failed to receive frame. {}".format(e))
                 continue
 
             try:
-                raw_frame, address = self.sock.recvfrom(self.buffer_size)
-            except InterruptedError:
-                continue
-            if self.sender_address and self.sender_address != address:
+                frame = Frame.from_bytes(raw_frame)
+            except Exception as e:
+                logger_protocol.error("Failed to decode frame. {}".format(e))
                 continue
 
-            frame = Frame.from_bytes(raw_frame)
-
-            self.handle_frame(frame)
+            try:
+                self.handle_frame(frame)
+            except Exception as e:
+                logger.error("Failed to handle frame. {}".format(e))
+                continue
 
     def handle_frame(self, frame: Frame) -> None:
         for pkt in frame.pkts:
@@ -157,21 +168,29 @@ class SendThread(Thread):
                 self.queue.task_done()
             except Empty:
                 continue
+            except Exception as e:
+                logger.error("Failed to get from output queue. {}".format(e))
+                continue
 
-            # Construct frame
-            if isinstance(pkt, protocol_encoder.Ping):
-                frame = Frame(protocol_declaration.FrameType.PING, 0, 0, self.last_ack, [pkt])
-            else:
-                seq = self.window.put(pkt)
-                if pkt.type == PacketType.COMMAND:
-                    frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, seq, seq, self.last_ack, [pkt])
+            try:
+                # Construct frame
+                if isinstance(pkt, protocol_encoder.Ping):
+                    frame = Frame(protocol_declaration.FrameType.PING, 0, 0, self.last_ack, [pkt])
                 else:
-                    frame = Frame(protocol_declaration.FrameType.ENGINE, seq, seq, self.last_ack, [pkt])
-            raw_frame = frame.to_bytes()
+                    seq = self.window.put(pkt)
+                    if pkt.type == PacketType.COMMAND:
+                        frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, seq, seq, self.last_ack, [pkt])
+                    else:
+                        frame = Frame(protocol_declaration.FrameType.ENGINE, seq, seq, self.last_ack, [pkt])
+                raw_frame = frame.to_bytes()
+            except Exception as e:
+                logger_protocol.error("Failed to serialize frame. {}".format(e))
+                continue
 
             try:
                 self.sock.sendto(raw_frame, self.receiver_address)
-            except InterruptedError:
+            except Exception as e:
+                logger.error("sendto() failed. {}".format(e))
                 continue
 
             self.last_send_timestamp = datetime.now()
@@ -249,6 +268,9 @@ class ClientConnection(Thread, event.Dispatcher):
                     self.send_thread.set_last_ack(pkt.seq)
             except Empty:
                 pkt = None
+            except Exception as e:
+                logger.error("Failed to get from incoming queue. {}".format(e))
+                continue
 
             if self.state == self.CONNECTED:
                 now = datetime.now()
@@ -259,7 +281,11 @@ class ClientConnection(Thread, event.Dispatcher):
                 if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
                     logger_protocol.debug("Got  %s", pkt)
 
-            self.dispatch(pkt.__class__, self, pkt)
+            try:
+                self.dispatch(pkt.__class__, self, pkt)
+            except Exception as e:
+                logger.error("Failed to dispatch packet. {}".format(e))
+                continue
 
     def connect(self) -> None:
         logger.debug("Connecting...")

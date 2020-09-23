@@ -42,7 +42,7 @@ class XboxController(object):
     @classmethod
     def get_deviceid(cls, f):
         # Read device identity and capabilities
-        buf = "\0" * 8
+        buf = b"\0" * 8
         try:
             res = ioctl(f, cls.EVIOCGID, buf)
             bus, vendor, product, version = unpack("hhhh", res)

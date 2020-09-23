@@ -11,6 +11,7 @@ import logging
 
 from . import logger, logger_protocol, logger_robot
 from . import client
+from . import exception
 
 
 __all__ = [
@@ -53,12 +54,17 @@ def run_program(
 
     setup_basic_logging(log_level=log_level, protocol_log_level=protocol_log_level, robot_log_level=robot_log_level)
 
-    cli = client.Client(protocol_log_messages=protocol_log_messages)
-    cli.start()
-    cli.connect()
-    cli.wait_for_robot()
+    try:
+        cli = client.Client(protocol_log_messages=protocol_log_messages)
+        cli.start()
+        cli.connect()
+        cli.wait_for_robot()
+    except exception.PyCozmoException as e:
+        logger.error(e)
+        sys.exit(1)
 
     try:
+        # Exceptions, generated from the application are intentionally not handled.
         f(cli)
     except KeyboardInterrupt:
         logger.info("Interrupted...")

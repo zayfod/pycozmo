@@ -8,7 +8,6 @@ __all__ = [
     "PyCozmoException",
     "PyCozmoConnectionError",
     "ConnectionTimeout",
-    "UnsupportedFirmwareVersion",
     "Timeout",
 ]
 
@@ -23,10 +22,6 @@ class PyCozmoConnectionError(PyCozmoException):
 
 class ConnectionTimeout(PyCozmoConnectionError):
     """ Connection timeout. """
-
-
-class UnsupportedFirmwareVersion(PyCozmoConnectionError):
-    """ Unsupported Cozmo firmware version. """
 
 
 class Timeout(PyCozmoException):

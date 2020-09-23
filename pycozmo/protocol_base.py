@@ -7,7 +7,8 @@ Cozmo protocol implementation base.
 from typing import Optional
 from abc import ABC, abstractmethod
 
-from .protocol_declaration import PacketType, FIRST_ROBOT_PACKET_ID
+from .protocol_ast import PacketType
+from .protocol_declaration import FIRST_ROBOT_PACKET_ID
 from .protocol_utils import BinaryReader, BinaryWriter
 from .util import hex_dump
 
