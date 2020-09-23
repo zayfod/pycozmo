@@ -1668,7 +1668,7 @@ def get_debug_message(name_id: int, format_id: int, args: List[Any]) -> Optional
     name = ROBOT_NAME_IDS.get(name_id)
     if name:
         if msg:
-            msg = f"{name}: {msg}"
+            msg = "{}: {}".format(name, msg)
         else:
             msg = name
     return msg

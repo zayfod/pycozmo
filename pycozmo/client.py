@@ -151,9 +151,9 @@ class Client(event.Dispatcher):
         if self.robot_fw_sig["version"] >= protocol_declaration.MIN_FACTORY_FIRMWARE_VERSION:
             logger.warning("Factory/recovery firmware detected. Functionality may be degraded.")
         elif self.robot_fw_sig["version"] < protocol_declaration.FIRMWARE_VERSION:
-            logger.warning(f"Old firmware detected. "
-                           f"PyCozmo works best with v{protocol_declaration.FIRMWARE_VERSION}. "
-                           f"Functionality may be degraded.")
+            logger.warning(
+                "Old firmware detected. PyCozmo works best with v{}. Functionality may be degraded.".format(
+                    protocol_declaration.FIRMWARE_VERSION))
         self._enable_robot()
 
     def _on_body_info(self, cli, pkt: protocol_encoder.BodyInfo):
