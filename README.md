@@ -67,6 +67,7 @@ Advanced:
     [PIL.ImageDraw](https://pillow.readthedocs.io/en/stable/reference/ImageDraw.html) on Cozmo's display
 - [rc.py](examples/rc.py) - turns Cozmo into an RC tank that can be driven with an XBox 360 Wireless controller or 
     Logitech Gamepad F310
+- [video.py](examples/video.py) - demonstrates visualizing video captured from the camera back on display
 - [cube_lights.py](examples/cube_lights.py) - demonstrates cube connection and LED control
 - [cube_light_animation.py](examples/cube_light_animation.py) - demonstrates cube LED animation control
 - [charger_lights.py](examples/charger_lights.py) - demonstrates Cozmo charging platform LED control
