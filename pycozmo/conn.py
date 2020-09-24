@@ -88,10 +88,10 @@ class SendThread(Thread):
                     pkt = self.queue.get(timeout=self.queue_timeout)
                     self.queue.task_done()
                     if isinstance(pkt, protocol_encoder.Ping):
-                        raw_frame = Frame(  protocol_declaration.FrameType.PING,
-                                            0, 0,
-                                            self.last_ack, [pkt]
-                                            ).to_bytes()
+                        raw_frame = Frame(protocol_declaration.FrameType.PING,
+                                          0, 0,
+                                          self.last_ack, [pkt]
+                                          ).to_bytes()
                         self._send_frame(raw_frame)
                     else:
                         with self.lock:
@@ -151,8 +151,8 @@ class SendThread(Thread):
                 frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, ack, pkts)
             return frame.to_bytes()
         except Exception as e:
-                logger.error("Failed to serialize frame. {}".format(e))
-                raise
+            logger.error("Failed to serialize frame. {}".format(e))
+            raise
 
     def send(self, data: Any) -> None:
         self.queue.put(data)
@@ -275,7 +275,7 @@ class ClientConnection(Thread, event.Dispatcher):
         self.robot_addr = robot_addr or ROBOT_ADDR
         # Filters
         self.packet_type_filter = filter.Filter()
-        self.packet_type_filter.deny_ids({protocol_declaration.PacketType.PING.value})
+        self.packet_type_filter.deny_ids({PacketType.PING.value})
         self.packet_id_filter = filter.Filter()
         if protocol_log_messages:
             for i in protocol_log_messages:

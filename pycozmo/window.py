@@ -138,7 +138,7 @@ class SendWindow(BaseWindow):
                     frame.reset()
             else:
                 for i in range(self.expected_seq, seq + self.max_seq):
-                    self.window[i%self.size].reset()
+                    self.window[i % self.size].reset()
             self.expected_seq = seq % self.max_seq
             if self.next_seq < seq:
                 self.next_seq = self.expected_seq
