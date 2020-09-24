@@ -8,12 +8,13 @@ import select
 import socket
 from datetime import datetime, timedelta
 from queue import Queue, Empty
-from threading import Thread
+from threading import Thread, Lock
 from typing import Optional, Tuple, Any
 
 from .logging import logger, logger_protocol
 from .frame import Frame
 from .protocol_base import PacketType, Packet
+from .protocol_declaration import MAX_FRAME_SIZE
 from .window import ReceiveWindow, SendWindow
 from . import protocol_encoder
 from . import event
@@ -35,28 +36,26 @@ ROBOT_ADDR = ("172.31.1.1", 5551)
 PING_INTERVAL = 0.05
 RUN_INTERVAL = 0.05
 
-SEQ_BITS = 16
-WINDOW_SIZE = 256
-
 
 class ReceiveThread(Thread):
 
     def __init__(self,
                  sock: socket.socket,
-                 recv_window: ReceiveWindow,
-                 send_window: SendWindow,
+                 send_thread: SendThread,
                  sender_address: Optional[Tuple[str, int]],
                  timeout: float = 0.5,
-                 buffer_size: int = 65536) -> None:
+                 buffer_size: int = 65536,
+                 seq_bits: int = 16,
+                 window_size: int = 256) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         self.sock = sock
         self.sender_address = sender_address
-        self.recv_window = recv_window
-        self.send_window = send_window
+        self.window = ReceiveWindow(seq_bits, size=window_size)
         self.timeout = timeout
         self.buffer_size = buffer_size
         self.stop_flag = False
         self.queue = Queue()
+        self.send_thread = send_thread
 
     def stop(self) -> None:
         self.stop_flag = True
@@ -82,29 +81,28 @@ class ReceiveThread(Thread):
     def handle_frame(self, frame: Frame) -> None:
         frame_trusted = True
         for pkt in frame.pkts:
-            frame_trusted = self.handle_pkt(pkt)
-            if not frame_trusted:
-                return
-        self.send_window.acknowledge(frame.ack)
+            self.handle_pkt(pkt)
+        self.send_thread.ack(frame.ack)
 
-    def handle_pkt(self, pkt: Packet) -> bool:
+    def handle_pkt(self, pkt: Packet) -> None:
         if pkt.is_oob():
             self.deliver(pkt)
-            return True
+            return
 
-        if self.recv_window.is_out_of_order(pkt.seq):
-            return False
+        if self.window.is_out_of_order(pkt.seq):
+            return
 
-        if self.recv_window.exists(pkt.seq):
+        if self.window.exists(pkt.seq):
             # Duplicate
-            return False
+            return
 
-        self.recv_window.put(pkt.seq, pkt)
+        self.window.put(pkt.seq, pkt)
 
-        if self.recv_window.is_expected(pkt.seq):
+        if self.window.is_expected(pkt.seq):
             self.deliver_sequence()
+            self.send_thread.set_last_recv_ack(pkt.seq)
 
-        return True
+        return
 
     def deliver_sequence(self) -> None:
         while True:
@@ -124,19 +122,22 @@ class SendThread(Thread):
 
     def __init__(self,
                  sock: socket.socket,
-                 recv_window: ReceiveWindow,
-                 send_window: SendWindow,
                  receiver_address: Tuple[str, int],
-                 timeout: float = 0.5) -> None:
+                 loop_timeout: float = 0.016,
+                 queue_timeout: float = 0.001,
+                 seq_bits: int = 16,
+                 window_size: Optional[int] = 256) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         self.sock = sock
+        self.lock = Lock
         self.receiver_address = receiver_address
         self.window = SendWindow(seq_bits, size=window_size)
-        self.timeout = timeout
+        self.loop_timeout = loop_timeout
         self.stop_flag = False
         self.queue = Queue()
+        self.queue_timeout = queue_timeout
         self.last_ack = 1
-        self.last_send_timestamp = None
+        self.last_send_timestamp = datetime.now() - timedelta(days=1)
 
     def stop(self) -> None:
         self.stop_flag = True
@@ -162,58 +163,73 @@ class SendThread(Thread):
             #     time.sleep(self.timeout)
             #     continue
 
-            try:
-                pkt = self.queue.get(timeout=self.timeout)
-                self.queue.task_done()
-            except Empty:
-                continue
-
-            raw_frames = []
-
-            # Construct frame
-            if isinstance(pkt, protocol_encoder.Ping):
-                raw_frames.append(
-                    Frame(protocol_declaration.FrameType.PING, 0, 0, self.last_ack, [pkt])
-                    .to_bytes())
-            else:
-                first_seq, pkts = self.window.put(pkt)
-                framelen = 0
-                seq = first_seq
-                pkts = []
-                for p in pkts:
-                    framelen += len(p) + 1
-                    if framelen < 1000:
-                        pkts.append(pkt)
-                        seq += 1
+            while datetime.now() - self.last_send_timestamp < timedelta(seconds=self.timeout):
+                try:
+                    pkt = self.queue.get(timeout=self.queue_timeout)
+                    self.queue.task_done()
+                    if isinstance(pkt, protocol_encoder.Ping):
+                        raw_frame = Frame(  protocol_declaration.FrameType.PING,
+                                            0, 0,
+                                            self.last_ack, [pkt]
+                                            ).to_bytes()
+                        self._send_frame(raw_frame)
                     else:
-                        if len(pkts) == 1:
-                            frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, first_seq, seq, self.last_ack, pkts)
-                        else:
-                            frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, self.last_ack, pkts)
-                        raw_frames.append(frame.to_bytes())
-                        pkts = []
-                        framelen = 0
+                        with self.lock:
+                            seq = self.window.put(pkt)
+                except Empty:
+                    continue
 
-            try:
-                for raw_frame in raw_frames:
-                    self.sock.sendto(raw_frame, self.receiver_address)
-            except InterruptedError:
-                continue
+            # Construct frames
+            raw_frames = []
+            framelen = 0
+            first_seq, pkts, last_ack = None, None, None
+            with self.lock:
+                first_seq = self.window.expected_seq
+                pkts = self.window.get()
+                last_ack = self.last_ack
+            to_frame = []
+            for p in pkts:
+                framelen += len(p) + 1
+                if framelen < MAX_FRAME_SIZE:
+                    to_frame.append(pkt)
+                    seq += 1
+                else:
+                    raw_frames.append(self._build_frame(to_frame, first_seq, seq, last_ack))
+                    to_frame = []
+                    framelen = 0
+
+            if len(to_frame) > 0:
+                raw_frames.append(self._build_frame(to_frame, first_seq, seq, last_ack))
+
+            for raw_frame in raw_frames:
+                self._send_frame(raw_frame)
 
             self.last_send_timestamp = datetime.now()
+
+    def _send_frame(self, raw_frame: bytes) -> None:
+        try:
+            self.sock.sendto(raw_frame, self.receiver_address)
+        except InterruptedError:
+            pass
+
+    @staticmethod
+    def _build_frame(pkts: list, first_seq: int, seq: int, ack: int):
+        if len(pkts) == 1:
+            frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, first_seq, seq, ack, pkts)
+        else:
+            frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, ack, pkts)
+        return frame.to_bytes()
 
     def send(self, data: Any) -> None:
         self.queue.put(data)
 
     def ack(self, seq: int) -> None:
-        if self.window.is_out_of_order(seq):
-            return
+        with self.lock:
+            self.window.acknowledge(seq)
 
-        while self.window.expected_seq <= seq:
-            self.window.pop()
-
-    def set_last_ack(self, last_ack: int) -> None:
-        self.last_ack = last_ack
+    def set_last_recv_ack(self, last_ack: int) -> None:
+        with self.lock:
+            self.last_ack = last_ack
 
     def reset(self) -> None:
         self.window.reset()
@@ -243,12 +259,8 @@ class ClientConnection(Thread, event.Dispatcher):
         self.state = self.IDLE
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setblocking(False)
-        self.recv_window = ReceiveWindow(SEQ_BITS, size=WINDOW_SIZE)
-        self.send_window = SendWindow(SEQ_BITS, size=WINDOW_SIZE)
-        self.recv_thread = ReceiveThread( self.sock, self.send_window,
-                                          self.recv_window, self.robot_addr)
-        self.send_thread = SendThread( self.sock, self.send_window,
-                                       self.recv_window, self.robot_addr)
+        self.send_thread = SendThread(self.sock, self.robot_addr)
+        self.recv_thread = ReceiveThread(self.sock, self.send_thread, self.robot_addr)
         self.stop_flag = False
         self.send_last = datetime.now() - timedelta(days=1)
 
@@ -274,9 +286,6 @@ class ClientConnection(Thread, event.Dispatcher):
             try:
                 pkt = self.recv_thread.queue.get(timeout=RUN_INTERVAL)
                 self.recv_thread.queue.task_done()
-                self.send_thread.ack(pkt.ack)
-                if not pkt.is_oob():
-                    self.send_thread.set_last_ack(pkt.seq)
             except Empty:
                 pkt = None
 

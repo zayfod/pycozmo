@@ -10,6 +10,7 @@ from .protocol_ast import *
 __all__ = [
     "FRAME_ID",
     "MIN_FRAME_SIZE",
+    "MAX_FRAME_SIZE",
     "FIRST_ROBOT_PACKET_ID",
     "FIRMWARE_VERSION",
 
@@ -19,6 +20,7 @@ __all__ = [
 
 FRAME_ID = b"COZ\x03RE\x01"
 MIN_FRAME_SIZE = len(FRAME_ID) + 1 + 2 + 2 + 2
+MAX_FRAME_SIZE = 1420 - MIN_FRAME_SIZE
 
 FIRST_ROBOT_PACKET_ID = 0xb0
 
