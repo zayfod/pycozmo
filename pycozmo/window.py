@@ -119,7 +119,7 @@ class SendWindow(BaseWindow):
             res = (self.next_seq - self.expected_seq) >= self.size
         return res
 
-    def put(self, data: Any) -> tuple(int,list):
+    def put(self, data: Any) -> int:
         seq = self.next_seq
         self.next_seq = (self.next_seq + 1) % self.max_seq
         self.window[seq % self.size].set(seq, data)
@@ -132,20 +132,25 @@ class SendWindow(BaseWindow):
 
     def acknowledge(self, seq: int) -> None:
         if not self.is_out_of_order(seq):
+            seq += 1
             if seq > self.expected_seq:
-                for frame in self.window[self.expected_seq:seq]:
+                for frame in self.window[(self.expected_seq % self.size):(seq % self.size)]:
                     frame.reset()
             else:
-                for i in range(self.expected_seq, seq + self.size):
+                for i in range(self.expected_seq, seq + self.max_seq):
                     self.window[i%self.size].reset()
-            self.expected_seq = seq
+            self.expected_seq = seq % self.max_seq
+            if self.next_seq < seq:
+                self.next_seq = self.expected_seq
 
     def get(self):
-        if self.last_seq > self.expected_seq:
-            res = self.window[self.expected_seq:self.last_seq]
+        expected_idx = self.expected_seq % self.size
+        next_idx = self.next_seq % self.size
+        if next_idx >= expected_idx:
+            res = self.window[expected_idx:next_idx]
         else:
-            res = self.window[self.expected_seq:] + self.window[:self.last_seq]
-        return res
+            res = self.window[expected_idx:] + self.window[:next_idx]
+        return [r.data for r in res]
 
     def get_oldest(self) -> Any:
         res = self.window[self.expected_seq % self.size].data

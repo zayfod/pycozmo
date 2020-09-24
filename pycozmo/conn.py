@@ -38,6 +38,139 @@ PING_INTERVAL = 0.05
 RUN_INTERVAL = 0.05
 
 
+class SendThread(Thread):
+
+    def __init__(self,
+                 sock: socket.socket,
+                 receiver_address: Tuple[str, int],
+                 loop_timeout: float = 0.01,
+                 queue_timeout: float = 0.001,
+                 seq_bits: int = 16,
+                 window_size: Optional[int] = 256) -> None:
+        super().__init__(daemon=True, name=__class__.__name__)
+        self.sock = sock
+        self.lock = Lock()
+        self.receiver_address = receiver_address
+        self.window = SendWindow(seq_bits, size=window_size)
+        self.loop_timeout = loop_timeout
+        self.stop_flag = False
+        self.queue = Queue()
+        self.queue_timeout = queue_timeout
+        self.last_ack = 1
+        self.last_send_timestamp = datetime.now() - timedelta(days=1)
+
+    def stop(self) -> None:
+        self.stop_flag = True
+        self.join()
+
+    def run(self) -> None:
+        while not self.stop_flag:
+            # if not self.window.is_empty() and \
+            #         datetime.now() - self.last_send_timestamp > timedelta(seconds=HELLO_INTERVAL):
+            #     pkt = self.window.get_oldest()
+            #     pkt.last_ack = self.window.expected_seq
+            #     pkt.ack = self.last_ack
+            #     frame = pkt.to_bytes()
+            #     try:
+            #         self.sock.sendto(frame, self.receiver_address)
+            #     except InterruptedError:
+            #         continue
+            #     self.last_send_timestamp = datetime.now()
+            #     print("Rsnt {}".format(hex_dump(frame[7:])))
+            #     continue
+
+            # if self.window.is_full():
+            #     time.sleep(self.timeout)
+            #     continue
+
+            while datetime.now() - self.last_send_timestamp < timedelta(seconds=self.loop_timeout):
+                try:
+                    pkt = self.queue.get(timeout=self.queue_timeout)
+                    self.queue.task_done()
+                    if isinstance(pkt, protocol_encoder.Ping):
+                        raw_frame = Frame(  protocol_declaration.FrameType.PING,
+                                            0, 0,
+                                            self.last_ack, [pkt]
+                                            ).to_bytes()
+                        self._send_frame(raw_frame)
+                    else:
+                        with self.lock:
+                            self.window.put(pkt)
+                except Empty:
+                    continue
+                except Exception as e:
+                    logger.error("Failed to get from output queue. {}".format(e))
+                    continue
+
+            try:
+                # Construct frames
+                raw_frames = []
+                framelen = 0
+                first_seq, pkts, last_ack = None, None, None
+                with self.lock:
+                    first_seq = self.window.expected_seq
+                    seq = first_seq
+                    pkts = self.window.get()
+                    last_ack = self.last_ack
+                to_frame = []
+                for p in pkts:
+                    framelen += len(p) + 1
+                    if framelen < MAX_FRAME_SIZE:
+                        to_frame.append(p)
+                        seq += 1
+                    else:
+                        raw_frames.append(self._build_frame(to_frame, first_seq, seq, last_ack))
+                        to_frame = []
+                        framelen = 0
+                        first_seq = seq
+                    if len(raw_frames) > 4:
+                        break
+
+                if len(to_frame) > 0:
+                    raw_frames.append(self._build_frame(to_frame, first_seq, seq, last_ack))
+
+                for raw_frame in raw_frames:
+                    self._send_frame(raw_frame)
+
+                self.last_send_timestamp = datetime.now()
+            except Exception:
+                continue
+
+    def _send_frame(self, raw_frame: bytes) -> None:
+        try:
+            self.sock.sendto(raw_frame, self.receiver_address)
+        except Exception as e:
+            logger.error("sendto() failed. {}".format(e))
+
+    def _build_frame(self, pkts: list, first_seq: int, seq: int, ack: int):
+        try:
+            seq = seq % self.window.max_seq
+            if len(pkts) == 1:
+                frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, ack, pkts)
+            else:
+                frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, ack, pkts)
+            return frame.to_bytes()
+        except Exception as e:
+                logger.error("Failed to serialize frame. {}".format(e))
+                raise
+
+    def send(self, data: Any) -> None:
+        self.queue.put(data)
+
+    def ack(self, seq: int) -> None:
+        with self.lock:
+            self.window.acknowledge(seq)
+
+    def set_last_recv_ack(self, last_ack: int) -> None:
+        with self.lock:
+            self.last_ack = last_ack
+
+    def reset(self) -> None:
+        self.window.reset()
+        self.last_ack = 1
+        self.last_send_timestamp = datetime.now() - timedelta(days=1)
+
+
 class ReceiveThread(Thread):
 
     def __init__(self,
@@ -90,7 +223,6 @@ class ReceiveThread(Thread):
                 continue
 
     def handle_frame(self, frame: Frame) -> None:
-        frame_trusted = True
         for pkt in frame.pkts:
             self.handle_pkt(pkt)
         self.send_thread.ack(frame.ack)
@@ -127,135 +259,6 @@ class ReceiveThread(Thread):
 
     def reset(self):
         self.window.reset()
-
-
-class SendThread(Thread):
-
-    def __init__(self,
-                 sock: socket.socket,
-                 receiver_address: Tuple[str, int],
-                 loop_timeout: float = 0.016,
-                 queue_timeout: float = 0.001,
-                 seq_bits: int = 16,
-                 window_size: Optional[int] = 256) -> None:
-        super().__init__(daemon=True, name=__class__.__name__)
-        self.sock = sock
-        self.lock = Lock
-        self.receiver_address = receiver_address
-        self.window = SendWindow(seq_bits, size=window_size)
-        self.loop_timeout = loop_timeout
-        self.stop_flag = False
-        self.queue = Queue()
-        self.queue_timeout = queue_timeout
-        self.last_ack = 1
-        self.last_send_timestamp = datetime.now() - timedelta(days=1)
-
-    def stop(self) -> None:
-        self.stop_flag = True
-        self.join()
-
-    def run(self) -> None:
-        while not self.stop_flag:
-            # if not self.window.is_empty() and \
-            #         datetime.now() - self.last_send_timestamp > timedelta(seconds=HELLO_INTERVAL):
-            #     pkt = self.window.get_oldest()
-            #     pkt.last_ack = self.window.expected_seq
-            #     pkt.ack = self.last_ack
-            #     frame = pkt.to_bytes()
-            #     try:
-            #         self.sock.sendto(frame, self.receiver_address)
-            #     except InterruptedError:
-            #         continue
-            #     self.last_send_timestamp = datetime.now()
-            #     print("Rsnt {}".format(hex_dump(frame[7:])))
-            #     continue
-
-            # if self.window.is_full():
-            #     time.sleep(self.timeout)
-            #     continue
-
-            while datetime.now() - self.last_send_timestamp < timedelta(seconds=self.timeout):
-                try:
-                    pkt = self.queue.get(timeout=self.queue_timeout)
-                    self.queue.task_done()
-                    if isinstance(pkt, protocol_encoder.Ping):
-                        raw_frame = Frame(  protocol_declaration.FrameType.PING,
-                                            0, 0,
-                                            self.last_ack, [pkt]
-                                            ).to_bytes()
-                        self._send_frame(raw_frame)
-                    else:
-                        with self.lock:
-                            seq = self.window.put(pkt)
-                except Empty:
-                    continue
-                except Exception as e:
-                    logger.error("Failed to get from output queue. {}".format(e))
-                    continue
-
-            try:
-                # Construct frames
-                raw_frames = []
-                framelen = 0
-                first_seq, pkts, last_ack = None, None, None
-                with self.lock:
-                    first_seq = self.window.expected_seq
-                    pkts = self.window.get()
-                    last_ack = self.last_ack
-                to_frame = []
-                for p in pkts:
-                    framelen += len(p) + 1
-                    if framelen < MAX_FRAME_SIZE:
-                        to_frame.append(pkt)
-                        seq += 1
-                    else:
-                        raw_frames.append(self._build_frame(to_frame, first_seq, seq, last_ack))
-                        to_frame = []
-                        framelen = 0
-
-                if len(to_frame) > 0:
-                    raw_frames.append(self._build_frame(to_frame, first_seq, seq, last_ack))
-
-                for raw_frame in raw_frames:
-                    self._send_frame(raw_frame)
-
-                self.last_send_timestamp = datetime.now()
-            except Exception:
-                continue
-
-    def _send_frame(self, raw_frame: bytes) -> None:
-        try:
-            self.sock.sendto(raw_frame, self.receiver_address)
-        except Exception as e:
-            logger.error("sendto() failed. {}".format(e))
-
-    @staticmethod
-    def _build_frame(pkts: list, first_seq: int, seq: int, ack: int):
-        try:
-            if len(pkts) == 1:
-                frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, first_seq, seq, ack, pkts)
-            else:
-                frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, ack, pkts)
-            return frame.to_bytes()
-        except Exception as e:
-                logger.error("Failed to serialize frame. {}".format(e))
-                raise
-
-    def send(self, data: Any) -> None:
-        self.queue.put(data)
-
-    def ack(self, seq: int) -> None:
-        with self.lock:
-            self.window.acknowledge(seq)
-
-    def set_last_recv_ack(self, last_ack: int) -> None:
-        with self.lock:
-            self.last_ack = last_ack
-
-    def reset(self) -> None:
-        self.window.reset()
-        self.last_ack = 1
-        self.last_send_timestamp = None
 
 
 class ClientConnection(Thread, event.Dispatcher):
