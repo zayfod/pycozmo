@@ -87,6 +87,7 @@ Tools
 - [pycozmo_replay.py](tools/pycozmo_replay.py) - a basic command-line application that can replay .pcap files back to
     Cozmo.
 - [pycozmo_anim.py](tools/pycozmo_anim.py) - a tool for examining and manipulating animation files.
+- [pycozmo_update.py](tools/pycozmo_update.py) - a tool for over-the-air (OTA) updates of Cozmo's firmware.
 
 
 Robot Support

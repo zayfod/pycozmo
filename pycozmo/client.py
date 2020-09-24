@@ -39,11 +39,17 @@ __all__ = [
 
 class Client(event.Dispatcher):
 
-    def __init__(self, robot_addr: Optional[Tuple[str, int]] = None,
-                 protocol_log_messages: Optional[list] = None) -> None:
+    def __init__(self,
+                 robot_addr: Optional[Tuple[str, int]] = None,
+                 protocol_log_messages: Optional[list] = None,
+                 auto_initialize: bool = True) -> None:
         super().__init__()
+        # Whether to automatically initialize the robot when connection is established.
+        self.auto_initialize = bool(auto_initialize)
+
         self.conn = conn.ClientConnection(robot_addr, protocol_log_messages)
         self.audio = audio.AudioManager(self.conn)
+
         self.serial_number_head = None
         self.robot_fw_sig = None
         self.serial_number = None
@@ -148,8 +154,8 @@ class Client(event.Dispatcher):
         del cli
         self.robot_fw_sig = json.loads(pkt.signature)
         logger.info("Firmware version %s.", self.robot_fw_sig["version"])
-        if self.robot_fw_sig["version"] >= protocol_declaration.MIN_FACTORY_FIRMWARE_VERSION:
-            logger.warning("Factory/recovery firmware detected. Functionality may be degraded.")
+        if self.robot_fw_sig.get("build") == "FACTORY":
+            logger.warning("Factory/recovery firmware detected. Functionality is degraded.")
         elif self.robot_fw_sig["version"] < protocol_declaration.FIRMWARE_VERSION:
             logger.warning(
                 "Old firmware detected. PyCozmo works best with v{}. Functionality may be degraded.".format(
@@ -163,7 +169,8 @@ class Client(event.Dispatcher):
         self.body_color = pkt.body_color
         logger.info("Body S/N 0x%08x, HW version %i, color %i.",
                     self.serial_number, self.body_hw_version, self.body_color.value)
-        self._initialize_robot()
+        if self.auto_initialize:
+            self._initialize_robot()
         self.dispatch(event.EvtRobotFound, self)
 
     def wait_for_robot(self, timeout: float = 5.0) -> None:

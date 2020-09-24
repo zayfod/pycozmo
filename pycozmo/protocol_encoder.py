@@ -1483,6 +1483,7 @@ class SetLiftHeight(Packet):
         self.max_speed_rad_per_sec = max_speed_rad_per_sec
         self.accel_rad_per_sec2 = accel_rad_per_sec2
         self.duration_sec = duration_sec
+        # Not present in v2214 and older.
         self.action_id = action_id
 
     @property
@@ -1601,6 +1602,7 @@ class SetHeadAngle(Packet):
         self.max_speed_rad_per_sec = max_speed_rad_per_sec
         self.accel_rad_per_sec2 = accel_rad_per_sec2
         self.duration_sec = duration_sec
+        # Not present in v2214 and older.
         self.action_id = action_id
 
     @property

@@ -12,7 +12,6 @@ __all__ = [
     "MIN_FRAME_SIZE",
     "FIRST_ROBOT_PACKET_ID",
     "FIRMWARE_VERSION",
-    "MIN_FACTORY_FIRMWARE_VERSION",
 
     "PROTOCOL",
 ]
@@ -24,7 +23,6 @@ MIN_FRAME_SIZE = len(FRAME_ID) + 1 + 2 + 2 + 2
 FIRST_ROBOT_PACKET_ID = 0xb0
 
 FIRMWARE_VERSION = 2381
-MIN_FACTORY_FIRMWARE_VERSION = 10000
 
 
 BODY_COLOR = Enum("BodyColor", members=[
@@ -297,14 +295,14 @@ PROTOCOL = Protocol(
             FloatArgument("max_speed_rad_per_sec", default=3.0),
             FloatArgument("accel_rad_per_sec2", default=20.0),
             FloatArgument("duration_sec"),
-            UInt8Argument("action_id"),
+            UInt8Argument("action_id", description="Not present in v2214 and older."),
         ]),
         Command(0x37, "SetHeadAngle", group="motors", arguments=[
             FloatArgument("angle_rad"),
             FloatArgument("max_speed_rad_per_sec", default=15.0),
             FloatArgument("accel_rad_per_sec2", default=20.0),
             FloatArgument("duration_sec"),
-            UInt8Argument("action_id"),
+            UInt8Argument("action_id", description="Not present in v2214 and older."),
         ]),
         Command(0x39, "TurnInPlace", group="motors", arguments=[
             FloatArgument("angle_rad"),
@@ -579,7 +577,7 @@ PROTOCOL = Protocol(
             Int32Argument("num_audio_frames_played"),
             UInt8Argument("enabled_anim_tracks"),
             UInt8Argument("tag"),
-            UInt8Argument("client_drop_count", "Not present in v2214 and older."),
+            UInt8Argument("client_drop_count", description="Not present in v2214 and older."),
         ]),
         Event(0xf2, "ImageChunk", group="state", arguments=[
             UInt32Argument("frame_timestamp"),
