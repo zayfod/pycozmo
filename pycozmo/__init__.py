@@ -37,6 +37,7 @@ __version__ = "0.6.0"
 __all__ = [
     "logger",
     "logger_protocol",
+    "logger_robot",
 
     "Frame",
     "ROBOT_ADDR",

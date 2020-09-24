@@ -4,6 +4,8 @@ Cozmo Firmware Versions
 Cozmo firmware images can be found under `com.anki.cozmo/files/cozmo/cozmo_resources/config/engine/firmware` in the
 Cozmo app.
 
+The Cozmo factory firmware identifies with a version > 10000. v10501 and v10700 have been observed.
+
 ```json
 {
     "version": 2381,
@@ -16,6 +18,21 @@ Cozmo app.
     "wifiSig": "69ca03352e42143d340f0f7fac02ed8ff96ef10b",
     "rtipSig": "36574986d76144a70e9252ab633be4617a4bc661",
     "bodySig": "695b59eff43664acd1a5a956d08c682b3f8bd2c8"
+}
+```
+
+```json
+{
+    "version": 2380,
+    "git-rev": "6ef227df0d64427f95cb943e01d8ac3956646e4d",
+    "date": "Thu Dec 20 17:33:45 2018",
+    "time": 1545356025,
+    "messageEngineToRobotHash": "3aed3b94dbf19e11b2775ff980874213",
+    "messageRobotToEngineHash": "c5a95cb6f44c1b89a42784d0c637fda8",
+    "build": "DEVELOPMENT",
+    "wifiSig": "8694122d7de45ee085c488274d28b69b7b1f2f44",
+    "rtipSig": "8acba259c7b440dc0a3467ae73f262a224f036db",
+    "bodySig": "14d4420c42432211ae4cda4f78a41841b03a6b40"
 }
 ```
 

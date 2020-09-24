@@ -48,6 +48,7 @@ __all__ = [
 
 
 class FrameType(enum.Enum):
+    """ Frame type enumeration. """
     RESET = 1
     RESET_ACK = 2
     FIN = 3
@@ -58,6 +59,7 @@ class FrameType(enum.Enum):
 
 
 class PacketType(enum.Enum):
+    """ Packet type enumeration. """
     UNKNOWN = -1
     CONNECT = 2
     DISCONNECT = 3
@@ -178,7 +180,7 @@ class Int32Argument(IntArgument):
 
 
 class EnumMember(object):
-    """ Base class for enumeration members. """
+    """ Enumeration member. """
 
     def __init__(self, name: str, value: int, description: Optional[str] = None):
         self.name = str(name)
@@ -187,7 +189,7 @@ class EnumMember(object):
 
 
 class Enum(object):
-    """ Base class for enumerations. """
+    """ Enumeration. """
 
     def __init__(self, name: str, description: Optional[str] = None,
                  members: Optional[List[EnumMember]] = None, base: int = 10) -> None:
@@ -198,7 +200,7 @@ class Enum(object):
 
 
 class EnumArgument(Argument):
-    """ Base class for enumeration arguments. """
+    """ Enumeration argument. """
 
     def __init__(self, name: str, enum_type: Enum, description: Optional[str] = None,
                  data_type: Union[IntArgument, UIntArgument] = Int8Argument(),
@@ -212,7 +214,7 @@ class EnumArgument(Argument):
 
 
 class Struct(object):
-    """ Base class for structures. """
+    """ Structure. """
 
     def __init__(self, name: Optional[str] = None, description: Optional[str] = None,
                  arguments: Optional[List[Argument]] = None):
@@ -279,17 +281,17 @@ class Packet(Struct, ABC):
 
 
 class Connect(Packet):
-    """ Connection acknowledgement packet. """
+    """ Connect packet. """
 
-    def __init__(self):
-        super().__init__(PacketType.CONNECT, "Connect")
+    def __init__(self, description: Optional[str] = None):
+        super().__init__(PacketType.CONNECT, "Connect", description=description)
 
 
 class Disconnect(Packet):
     """ Disconnect packet. """
 
-    def __init__(self):
-        super().__init__(PacketType.DISCONNECT, "Disconnect")
+    def __init__(self, description: Optional[str] = None):
+        super().__init__(PacketType.DISCONNECT, "Disconnect", description=description)
 
 
 class Command(Packet):
@@ -313,8 +315,8 @@ class Event(Packet):
 class Ping(Packet):
     """ Ping packet. """
 
-    def __init__(self):
-        super().__init__(PacketType.PING, "Ping", arguments=[
+    def __init__(self, description: Optional[str] = None):
+        super().__init__(PacketType.PING, "Ping", description=description, arguments=[
             DoubleArgument("time_sent_ms"),
             UInt32Argument("counter"),
             UInt32Argument("last"),
@@ -323,9 +325,10 @@ class Ping(Packet):
 
 
 class Keyframe(Packet):
+    """ Keyframe packet. """
 
-    def __init__(self):
-        super().__init__(PacketType.KEYFRAME, "Keyframe")
+    def __init__(self, description: Optional[str] = None):
+        super().__init__(PacketType.KEYFRAME, "Keyframe", description=description)
 
 
 class Protocol(object):

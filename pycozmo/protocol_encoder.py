@@ -1,8 +1,8 @@
 """
 
-Cozmo protocol packet encoder classes.
+Cozmo protocol packet encoder classes, based on protocol version 2381.
 
-Generated from protocol_declaration.py by protocol_generator.py
+Generated from protocol_declaration.py by protocol_generator.py .
 
 Do not modify.
 
@@ -10,7 +10,7 @@ Do not modify.
 
 import enum
 
-from .protocol_declaration import PacketType
+from .protocol_ast import PacketType
 from .protocol_base import Struct, Packet
 from .protocol_utils import \
     validate_float, validate_bool, validate_integer, validate_object, \
@@ -23,9 +23,14 @@ class BodyColor(enum.Enum):
     UNKNOWN = -1
     WHITE_v10 = 0
     RESERVED = 1
+    # White.
     WHITE_v15 = 2
+    # Collectors edition, liquid metal.
     CE_LM_v15 = 3
+    # Limited edition, blue.
     LE_BL_v16 = 4
+    # Development unit.
+    DEV = 5
 
 
 class NvEntryTag(enum.Enum):
@@ -185,10 +190,6 @@ class ImageSendMode(enum.Enum):
     Off = 0
     Stream = 1
     SingleShot = 2
-
-
-class DebugDataID(enum.Enum):
-    MAC_ADDRESS = 0x1572
 
 
 class MotorID(enum.Enum):
@@ -367,8 +368,11 @@ class PathSegmentSpeed(Struct):
                  speed_mmps=0.0,
                  accel_mmps2=0.0,
                  decel_mmps2=0.0):
+        # Speed in millimeters per second.
         self.speed_mmps = speed_mmps
+        # Acceleration in millimeters per second squared.
         self.accel_mmps2 = accel_mmps2
+        # Deceleration in millimeters per second squared.
         self.decel_mmps2 = decel_mmps2
 
     @property
@@ -658,6 +662,7 @@ class LightStateCenter(Packet):
                  states=(),
                  unknown=0):
         super().__init__(PacketType.COMMAND, packet_id=0x03)
+        # Top, middle, and bottom light state.
         self.states = states
         self.unknown = unknown
 
@@ -1078,6 +1083,7 @@ class LightStateSide(Packet):
                  states=(),
                  unknown=0):
         super().__init__(PacketType.COMMAND, packet_id=0x11)
+        # Left and right light state.
         self.states = states
         self.unknown = unknown
 
@@ -3687,6 +3693,7 @@ class AnimBackpackLights(Packet):
     def __init__(self,
                  colors=()):
         super().__init__(PacketType.COMMAND, packet_id=0x98)
+        # Left, front, middle, back, and right.
         self.colors = colors
 
     @property
@@ -4075,33 +4082,37 @@ class FirmwareUpdate(Packet):
 class DebugData(Packet):
 
     __slots__ = (
-        "_debug_id",  # uint16
+        "_format_id",  # uint16
         "_unused",  # uint16
-        "_unknown2",  # uint16
-        "_unknown3",  # int8
-        "_data",  # uint32[uint8]
+        "_name_id",  # uint16
+        "_level",  # int8
+        "_args",  # uint32[uint8]
     )
 
     def __init__(self,
-                 debug_id=0,
+                 format_id=0,
                  unused=0,
-                 unknown2=0,
-                 unknown3=0,
-                 data=()):
+                 name_id=0,
+                 level=0,
+                 args=()):
         super().__init__(PacketType.COMMAND, packet_id=0xb0)
-        self.debug_id = debug_id
+        # AnkiLogStringTables.json formatTable key.
+        self.format_id = format_id
+        # Always 0.
         self.unused = unused
-        self.unknown2 = unknown2
-        self.unknown3 = unknown3
-        self.data = data
+        # AnkiLogStringTables.json nameTable key.
+        self.name_id = name_id
+        # Log level. Observed: -1, 1, 2, 3, 5.
+        self.level = level
+        self.args = args
 
     @property
-    def debug_id(self):
-        return self._debug_id
+    def format_id(self):
+        return self._format_id
 
-    @debug_id.setter
-    def debug_id(self, value):
-        self._debug_id = validate_integer("debug_id", value, 0, 65535)
+    @format_id.setter
+    def format_id(self, value):
+        self._format_id = validate_integer("format_id", value, 0, 65535)
 
     @property
     def unused(self):
@@ -4112,29 +4123,29 @@ class DebugData(Packet):
         self._unused = validate_integer("unused", value, 0, 65535)
 
     @property
-    def unknown2(self):
-        return self._unknown2
+    def name_id(self):
+        return self._name_id
 
-    @unknown2.setter
-    def unknown2(self, value):
-        self._unknown2 = validate_integer("unknown2", value, 0, 65535)
-
-    @property
-    def unknown3(self):
-        return self._unknown3
-
-    @unknown3.setter
-    def unknown3(self, value):
-        self._unknown3 = validate_integer("unknown3", value, -128, 127)
+    @name_id.setter
+    def name_id(self, value):
+        self._name_id = validate_integer("name_id", value, 0, 65535)
 
     @property
-    def data(self):
-        return self._data
+    def level(self):
+        return self._level
 
-    @data.setter
-    def data(self, value):
-        self._data = validate_varray(
-            "data", value, 255, lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295))
+    @level.setter
+    def level(self, value):
+        self._level = validate_integer("level", value, -128, 127)
+
+    @property
+    def args(self):
+        return self._args
+
+    @args.setter
+    def args(self, value):
+        self._args = validate_varray(
+            "args", value, 255, lambda name, value_inner: validate_integer(name, value_inner, 0, 4294967295))
 
     def __len__(self):
         return \
@@ -4142,21 +4153,21 @@ class DebugData(Packet):
             get_size('H') + \
             get_size('H') + \
             get_size('b') + \
-            get_varray_size(self._data, 'B', 'L')
+            get_varray_size(self._args, 'B', 'L')
 
     def __repr__(self):
         return "{type}(" \
-               "debug_id={debug_id}, " \
+               "format_id={format_id}, " \
                "unused={unused}, " \
-               "unknown2={unknown2}, " \
-               "unknown3={unknown3}, " \
-               "data={data})".format(
+               "name_id={name_id}, " \
+               "level={level}, " \
+               "args={args})".format(
                 type=type(self).__name__,
-                debug_id=self._debug_id,
+                format_id=self._format_id,
                 unused=self._unused,
-                unknown2=self._unknown2,
-                unknown3=self._unknown3,
-                data=self._data)
+                name_id=self._name_id,
+                level=self._level,
+                args=self._args)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -4164,11 +4175,11 @@ class DebugData(Packet):
         return writer.dumps()
 
     def to_writer(self, writer):
-        writer.write(self._debug_id, "H")
+        writer.write(self._format_id, "H")
         writer.write(self._unused, "H")
-        writer.write(self._unknown2, "H")
-        writer.write(self._unknown3, "b")
-        writer.write_varray(self._data, "L", "B")
+        writer.write(self._name_id, "H")
+        writer.write(self._level, "b")
+        writer.write_varray(self._args, "L", "B")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -4178,17 +4189,17 @@ class DebugData(Packet):
 
     @classmethod
     def from_reader(cls, reader):
-        debug_id = reader.read("H")
+        format_id = reader.read("H")
         unused = reader.read("H")
-        unknown2 = reader.read("H")
-        unknown3 = reader.read("b")
-        data = reader.read_varray("L", "B")
+        name_id = reader.read("H")
+        level = reader.read("b")
+        args = reader.read_varray("L", "B")
         return cls(
-            debug_id=debug_id,
+            format_id=format_id,
             unused=unused,
-            unknown2=unknown2,
-            unknown3=unknown3,
-            data=data)
+            name_id=name_id,
+            level=level,
+            args=args)
 
 
 class ObjectMoved(Packet):
@@ -5680,6 +5691,7 @@ class BodyInfo(Packet):
                  body_color=-1):
         super().__init__(PacketType.COMMAND, packet_id=0xed)
         self.serial_number = serial_number
+        # Production units report 5. Development units report 7.
         self.body_hw_version = body_hw_version
         self.body_color = BodyColor(body_color)
 
@@ -5762,6 +5774,7 @@ class FirmwareSignature(Packet):
                  unknown=0,
                  signature=''):
         super().__init__(PacketType.COMMAND, packet_id=0xee)
+        # Last 2 bytes of head s/n?
         self.unknown = unknown
         self.signature = signature
 
@@ -5833,6 +5846,7 @@ class FirmwareUpdateResult(Packet):
         super().__init__(PacketType.COMMAND, packet_id=0xef)
         self.byte_count = byte_count
         self.chunk_id = chunk_id
+        # 0=OK; 0x0a=complete?
         self.status = status
 
     @property
@@ -6351,6 +6365,7 @@ class AnimationState(Packet):
         self.num_audio_frames_played = num_audio_frames_played
         self.enabled_anim_tracks = enabled_anim_tracks
         self.tag = tag
+        # Not present in v2214 and older.
         self.client_drop_count = client_drop_count
 
     @property

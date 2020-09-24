@@ -7,6 +7,7 @@ pycozmo package
 
     pycozmo.anim
     pycozmo.anim_encoder
+    pycozmo.audio
     pycozmo.camera
     pycozmo.client
     pycozmo.conn
@@ -26,6 +27,7 @@ pycozmo package
     pycozmo.protocol_generator
     pycozmo.protocol_utils
     pycozmo.robot
+    pycozmo.robot_debug
     pycozmo.run
     pycozmo.util
     pycozmo.window

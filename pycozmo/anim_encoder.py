@@ -1097,10 +1097,4 @@ def get_clip_metadata(dspec: str) -> Dict[str, ClipMetadata]:
                 fbkfs.RobotAudioKeyFrameLength() > 0,
                 fbkfs.EventKeyFrameLength() > 0)
             res[metadata.name] = metadata
-            if metadata.has_procedural_face_track and \
-               not metadata.has_body_motion_track and \
-               not metadata.has_lift_height_track and \
-               not metadata.has_head_angle_track and \
-               not metadata.has_robot_audio_track:
-                print("{}:{}:{}".format(metadata.fspec, metadata.index, metadata.name))
     return res

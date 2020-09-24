@@ -13,7 +13,8 @@ from typing import Optional, Tuple, Any
 
 from .logging import logger, logger_protocol
 from .frame import Frame
-from .protocol_base import PacketType, Packet
+from .protocol_ast import PacketType
+from .protocol_base import Packet
 from .protocol_declaration import MAX_FRAME_SIZE
 from .window import ReceiveWindow, SendWindow
 from . import protocol_encoder
@@ -63,20 +64,30 @@ class ReceiveThread(Thread):
 
     def run(self) -> None:
         while not self.stop_flag:
-            ready = select.select([self.sock], [], [], self.timeout)
-            if not ready[0]:
+            try:
+                ready = select.select([self.sock], [], [], self.timeout)
+                if not ready[0]:
+                    continue
+
+                raw_frame, address = self.sock.recvfrom(self.buffer_size)
+                if self.sender_address and self.sender_address != address:
+                    logger_protocol.debug("Received a UDP datagram from unexpected address {}.".format(address))
+                    continue
+            except Exception as e:
+                logger.error("Failed to receive frame. {}".format(e))
                 continue
 
             try:
-                raw_frame, address = self.sock.recvfrom(self.buffer_size)
-            except InterruptedError:
-                continue
-            if self.sender_address and self.sender_address != address:
+                frame = Frame.from_bytes(raw_frame)
+            except Exception as e:
+                logger_protocol.error("Failed to decode frame. {}".format(e))
                 continue
 
-            frame = Frame.from_bytes(raw_frame)
-
-            self.handle_frame(frame)
+            try:
+                self.handle_frame(frame)
+            except Exception as e:
+                logger.error("Failed to handle frame. {}".format(e))
+                continue
 
     def handle_frame(self, frame: Frame) -> None:
         frame_trusted = True
@@ -178,47 +189,57 @@ class SendThread(Thread):
                             seq = self.window.put(pkt)
                 except Empty:
                     continue
+                except Exception as e:
+                    logger.error("Failed to get from output queue. {}".format(e))
+                    continue
 
-            # Construct frames
-            raw_frames = []
-            framelen = 0
-            first_seq, pkts, last_ack = None, None, None
-            with self.lock:
-                first_seq = self.window.expected_seq
-                pkts = self.window.get()
-                last_ack = self.last_ack
-            to_frame = []
-            for p in pkts:
-                framelen += len(p) + 1
-                if framelen < MAX_FRAME_SIZE:
-                    to_frame.append(pkt)
-                    seq += 1
-                else:
+            try:
+                # Construct frames
+                raw_frames = []
+                framelen = 0
+                first_seq, pkts, last_ack = None, None, None
+                with self.lock:
+                    first_seq = self.window.expected_seq
+                    pkts = self.window.get()
+                    last_ack = self.last_ack
+                to_frame = []
+                for p in pkts:
+                    framelen += len(p) + 1
+                    if framelen < MAX_FRAME_SIZE:
+                        to_frame.append(pkt)
+                        seq += 1
+                    else:
+                        raw_frames.append(self._build_frame(to_frame, first_seq, seq, last_ack))
+                        to_frame = []
+                        framelen = 0
+
+                if len(to_frame) > 0:
                     raw_frames.append(self._build_frame(to_frame, first_seq, seq, last_ack))
-                    to_frame = []
-                    framelen = 0
 
-            if len(to_frame) > 0:
-                raw_frames.append(self._build_frame(to_frame, first_seq, seq, last_ack))
+                for raw_frame in raw_frames:
+                    self._send_frame(raw_frame)
 
-            for raw_frame in raw_frames:
-                self._send_frame(raw_frame)
-
-            self.last_send_timestamp = datetime.now()
+                self.last_send_timestamp = datetime.now()
+            except Exception:
+                continue
 
     def _send_frame(self, raw_frame: bytes) -> None:
         try:
             self.sock.sendto(raw_frame, self.receiver_address)
-        except InterruptedError:
-            pass
+        except Exception as e:
+            logger.error("sendto() failed. {}".format(e))
 
     @staticmethod
     def _build_frame(pkts: list, first_seq: int, seq: int, ack: int):
-        if len(pkts) == 1:
-            frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, first_seq, seq, ack, pkts)
-        else:
-            frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, ack, pkts)
-        return frame.to_bytes()
+        try:
+            if len(pkts) == 1:
+                frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, first_seq, seq, ack, pkts)
+            else:
+                frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, ack, pkts)
+            return frame.to_bytes()
+        except Exception as e:
+                logger.error("Failed to serialize frame. {}".format(e))
+                raise
 
     def send(self, data: Any) -> None:
         self.queue.put(data)
@@ -288,6 +309,9 @@ class ClientConnection(Thread, event.Dispatcher):
                 self.recv_thread.queue.task_done()
             except Empty:
                 pkt = None
+            except Exception as e:
+                logger.error("Failed to get from incoming queue. {}".format(e))
+                continue
 
             if self.state == self.CONNECTED:
                 now = datetime.now()
@@ -298,7 +322,11 @@ class ClientConnection(Thread, event.Dispatcher):
                 if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
                     logger_protocol.debug("Got  %s", pkt)
 
-            self.dispatch(pkt.__class__, self, pkt)
+            try:
+                self.dispatch(pkt.__class__, self, pkt)
+            except Exception as e:
+                logger.error("Failed to dispatch packet. {}".format(e))
+                continue
 
     def connect(self) -> None:
         logger.debug("Connecting...")

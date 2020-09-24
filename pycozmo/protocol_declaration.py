@@ -13,6 +13,7 @@ __all__ = [
     "MAX_FRAME_SIZE",
     "FIRST_ROBOT_PACKET_ID",
     "FIRMWARE_VERSION",
+    "MIN_FACTORY_FIRMWARE_VERSION",
 
     "PROTOCOL",
 ]
@@ -25,15 +26,17 @@ MAX_FRAME_SIZE = 1420 - MIN_FRAME_SIZE
 FIRST_ROBOT_PACKET_ID = 0xb0
 
 FIRMWARE_VERSION = 2381
+MIN_FACTORY_FIRMWARE_VERSION = 10000
 
 
 BODY_COLOR = Enum("BodyColor", members=[
     EnumMember("UNKNOWN", -1),
     EnumMember("WHITE_v10", 0),
     EnumMember("RESERVED", 1),
-    EnumMember("WHITE_v15", 2),
-    EnumMember("CE_LM_v15", 3),
-    EnumMember("LE_BL_v16", 4),
+    EnumMember("WHITE_v15", 2, description="White."),
+    EnumMember("CE_LM_v15", 3, description="Collectors edition, liquid metal."),
+    EnumMember("LE_BL_v16", 4, description="Limited edition, blue."),
+    EnumMember("DEV", 5, description="Development unit."),
 ])
 NV_ENTRY_TAG = Enum("NvEntryTag", base=16, members=[
     EnumMember("NVEntry_Invalid", 0xffffffff),
@@ -186,9 +189,6 @@ IMAGE_SEND_MODE = Enum("ImageSendMode", members=[
     EnumMember("Stream", 1),
     EnumMember("SingleShot", 2),
 ])
-DEBUG_DATA_ID = Enum("DebugDataID", base=16, members=[
-    EnumMember("MAC_ADDRESS", 0x1572),              # 624
-])
 MOTOR_ID = Enum("MotorID", members=[
     EnumMember("MOTOR_LEFT_WHEEL", 0),
     EnumMember("MOTOR_RIGHT_WHEEL", 1),
@@ -211,9 +211,9 @@ LIGHT_STATE = Struct("LightState", arguments=[
     Int16Argument("offset"),
 ])
 PATH_SEGMENT_SPEED = Struct("PathSegmentSpeed", arguments=[
-    FloatArgument("speed_mmps"),
-    FloatArgument("accel_mmps2"),
-    FloatArgument("decel_mmps2"),
+    FloatArgument("speed_mmps", description="Speed in millimeters per second."),
+    FloatArgument("accel_mmps2", description="Acceleration in millimeters per second squared."),
+    FloatArgument("decel_mmps2", description="Deceleration in millimeters per second squared."),
 ])
 
 
@@ -230,7 +230,6 @@ PROTOCOL = Protocol(
         IMAGE_ENCODING,
         IMAGE_RESOLUTION,
         IMAGE_SEND_MODE,
-        DEBUG_DATA_ID,
         MOTOR_ID,
         PATH_EVENT_TYPE,
     ],
@@ -247,7 +246,8 @@ PROTOCOL = Protocol(
         Keyframe(),
 
         Command(0x03, "LightStateCenter", group="lights", arguments=[
-            FArrayArgument("states", data_type=LIGHT_STATE, length=3),      # top, middle, bottom
+            FArrayArgument("states", data_type=LIGHT_STATE, length=3,
+                           description="Top, middle, and bottom light state."),
             UInt8Argument("unknown"),
         ]),
         Command(0x04, "CubeLights", group="objects", arguments=[
@@ -272,7 +272,8 @@ PROTOCOL = Protocol(
             UInt8Argument("rotation_period_frames"),
         ]),
         Command(0x11, "LightStateSide", group="lights", arguments=[
-            FArrayArgument("states", data_type=LIGHT_STATE, length=2),      # left, right
+            FArrayArgument("states", data_type=LIGHT_STATE, length=2,
+                           description="Left and right light state."),
             UInt8Argument("unknown"),
         ]),
         Command(0x25, "Enable", group="system"),
@@ -326,7 +327,7 @@ PROTOCOL = Protocol(
             FloatArgument("from_y"),
             FloatArgument("to_x"),
             FloatArgument("to_y"),
-            FloatArgument("speed_mmps"),        # PathSegmentSpeed
+            FloatArgument("speed_mmps"),        # TODO: PathSegmentSpeed
             FloatArgument("accel_mmps2"),
             FloatArgument("decel_mmps2"),
         ]),
@@ -336,7 +337,7 @@ PROTOCOL = Protocol(
             FloatArgument("radius_mm"),
             FloatArgument("start_angle_rad"),
             FloatArgument("sweep_rad"),
-            FloatArgument("speed_mmps"),        # PathSegmentSpeed
+            FloatArgument("speed_mmps"),        # TODO: PathSegmentSpeed
             FloatArgument("accel_mmps2"),
             FloatArgument("decel_mmps2"),
         ]),
@@ -345,7 +346,7 @@ PROTOCOL = Protocol(
             FloatArgument("y"),
             FloatArgument("angle_rad"),
             FloatArgument("angle_tolerance_rad"),
-            FloatArgument("speed_mmps"),        # PathSegmentSpeed
+            FloatArgument("speed_mmps"),        # TODO: PathSegmentSpeed
             FloatArgument("accel_mmps2"),
             FloatArgument("decel_mmps2"),
             BoolArgument("unknown")
@@ -369,6 +370,7 @@ PROTOCOL = Protocol(
         Command(0x4b, "SyncTime", group="system", arguments=[
             UInt32Argument("timestamp"),
             UInt32Argument("unknown"),
+            # UInt32Argument("unknown2"),             # Available in v2214.
         ]),
         Command(0x4c, "EnableCamera", group="camera", arguments=[
             EnumArgument("image_send_mode", IMAGE_SEND_MODE, default=1),
@@ -420,7 +422,8 @@ PROTOCOL = Protocol(
             VArrayArgument("image"),
         ]),
         Command(0x98, "AnimBackpackLights", group="anim", arguments=[
-            FArrayArgument("colors", data_type=UInt16Argument(), length=5),  # left, front, middle, back, right
+            FArrayArgument("colors", data_type=UInt16Argument(), length=5,
+                           description="Left, front, middle, back, and right."),
         ]),
         Command(0x99, "AnimBody", group="anim", arguments=[
             Int16Argument("speed"),
@@ -441,11 +444,11 @@ PROTOCOL = Protocol(
         ]),
 
         Command(0xb0, "DebugData", group="debug", arguments=[
-            UInt16Argument("debug_id"),             # See DebugDataID
-            UInt16Argument("unused"),               # Always 0
-            UInt16Argument("unknown2"),             # Source?
-            Int8Argument("unknown3"),               # Level? Observed: -1, 1, 2, 3, 5
-            VArrayArgument("data", data_type=UInt32Argument(), length_type=UInt8Argument())
+            UInt16Argument("format_id", description="AnkiLogStringTables.json formatTable key."),
+            UInt16Argument("unused", description="Always 0."),
+            UInt16Argument("name_id", description="AnkiLogStringTables.json nameTable key."),
+            Int8Argument("level", description="Log level. Observed: -1, 1, 2, 3, 5."),
+            VArrayArgument("args", data_type=UInt32Argument(), length_type=UInt8Argument())
         ]),
         Command(0xb4, "ObjectMoved", group="objects", arguments=[
             UInt32Argument("timestamp"),
@@ -534,17 +537,17 @@ PROTOCOL = Protocol(
         ]),
         Command(0xed, "BodyInfo", group="system", arguments=[
             UInt32Argument("serial_number"),
-            UInt32Argument("body_hw_version"),
+            UInt32Argument("body_hw_version", description="Production units report 5. Development units report 7."),
             EnumArgument("body_color", BODY_COLOR, data_type=Int32Argument(), default=-1),
         ]),
         Command(0xee, "FirmwareSignature", group="system", arguments=[
-            UInt16Argument("unknown"),          # Last 2 bytes of head s/n?
+            UInt16Argument("unknown", description="Last 2 bytes of head s/n?"),
             StringArgument("signature"),
         ]),
         Command(0xef, "FirmwareUpdateResult", group="firmware", arguments=[
             UInt32Argument("byte_count"),
             UInt16Argument("chunk_id"),
-            UInt8Argument("status"),            # 0=OK; 0x0a=complete?
+            UInt8Argument("status", description="0=OK; 0x0a=complete?"),
         ]),
 
         Event(0xf0, "RobotState", group="state", arguments=[
@@ -578,7 +581,7 @@ PROTOCOL = Protocol(
             Int32Argument("num_audio_frames_played"),
             UInt8Argument("enabled_anim_tracks"),
             UInt8Argument("tag"),
-            UInt8Argument("client_drop_count"),
+            UInt8Argument("client_drop_count", "Not present in v2214 and older."),
         ]),
         Event(0xf2, "ImageChunk", group="state", arguments=[
             UInt32Argument("frame_timestamp"),
