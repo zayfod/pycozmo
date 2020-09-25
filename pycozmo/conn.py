@@ -15,7 +15,7 @@ from .logging import logger, logger_protocol
 from .frame import Frame
 from .protocol_ast import PacketType
 from .protocol_base import Packet
-from .protocol_declaration import MAX_FRAME_SIZE
+from .protocol_declaration import MAX_FRAME_PAYLOAD_SIZE
 from .window import ReceiveWindow, SendWindow
 from . import protocol_encoder
 from . import event
@@ -65,24 +65,6 @@ class SendThread(Thread):
 
     def run(self) -> None:
         while not self.stop_flag:
-            # if not self.window.is_empty() and \
-            #         datetime.now() - self.last_send_timestamp > timedelta(seconds=HELLO_INTERVAL):
-            #     pkt = self.window.get_oldest()
-            #     pkt.last_ack = self.window.expected_seq
-            #     pkt.ack = self.last_ack
-            #     frame = pkt.to_bytes()
-            #     try:
-            #         self.sock.sendto(frame, self.receiver_address)
-            #     except InterruptedError:
-            #         continue
-            #     self.last_send_timestamp = datetime.now()
-            #     print("Rsnt {}".format(hex_dump(frame[7:])))
-            #     continue
-
-            # if self.window.is_full():
-            #     time.sleep(self.timeout)
-            #     continue
-
             while datetime.now() - self.last_send_timestamp < timedelta(seconds=self.loop_timeout):
                 try:
                     pkt = self.queue.get(timeout=self.queue_timeout)
@@ -115,7 +97,7 @@ class SendThread(Thread):
                 to_frame = []
                 for p in pkts:
                     framelen += len(p) + 1
-                    if framelen < MAX_FRAME_SIZE:
+                    if framelen < MAX_FRAME_PAYLOAD_SIZE:
                         to_frame.append(p)
                         seq += 1
                     else:
@@ -244,8 +226,6 @@ class ReceiveThread(Thread):
         if self.window.is_expected(pkt.seq):
             self.deliver_sequence()
             self.send_thread.set_last_recv_ack(pkt.seq)
-
-        return
 
     def deliver_sequence(self) -> None:
         while True:

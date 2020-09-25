@@ -27,7 +27,7 @@ class BaseWindow(object):
             self.size = size
         self.expected_seq = 1
         self.last_seq = 0
-        self.max_seq = int(math.pow(2, seq_bits))
+        self.max_seq = int(math.pow(2, seq_bits)) - 1
 
     def is_valid_seq(self, seq: int) -> bool:
         res = 0 <= seq < self.max_seq
