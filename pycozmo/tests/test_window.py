@@ -11,14 +11,14 @@ class TestBaseWindowCreate(unittest.TestCase):
         self.assertEqual(w.size, 8)
         self.assertEqual(w.expected_seq, 1)
         self.assertEqual(w.last_seq, 0)
-        self.assertEqual(w.max_seq, 16)
+        self.assertEqual(w.max_seq, 15)
 
     def test_create_limted(self):
         w = ReceiveWindow(4, size=5)
         self.assertEqual(w.size, 5)
         self.assertEqual(w.expected_seq, 1)
         self.assertEqual(w.last_seq, 0)
-        self.assertEqual(w.max_seq, 16)
+        self.assertEqual(w.max_seq, 15)
 
     def test_create_invalid(self):
         with self.assertRaises(ValueError):
@@ -34,7 +34,7 @@ class TestBaseWindow(unittest.TestCase):
         self.assertFalse(self.w.is_valid_seq(-1))
 
     def test_is_valid_seq_too_large(self):
-        self.assertFalse(self.w.is_valid_seq(16))
+        self.assertFalse(self.w.is_valid_seq(15))
 
     def test_is_valid_seq(self):
         self.assertTrue(self.w.is_valid_seq(0))
@@ -78,15 +78,15 @@ class TestTransmitWindow(unittest.TestCase):
     def test_is_out_of_order_empty(self):
         self.assertTrue(self.w.is_out_of_order(0))
         self.assertTrue(self.w.is_out_of_order(1))
+        self.assertTrue(self.w.is_out_of_order(14))
         self.assertTrue(self.w.is_out_of_order(15))
-        self.assertTrue(self.w.is_out_of_order(16))
 
     def test_is_out_of_order_one(self):
         self.w.put("1")
         self.assertTrue(self.w.is_out_of_order(0))
         self.assertFalse(self.w.is_out_of_order(1))
         self.assertTrue(self.w.is_out_of_order(2))
-        self.assertTrue(self.w.is_out_of_order(16))
+        self.assertTrue(self.w.is_out_of_order(15))
 
     def test_is_empty(self):
         self.assertTrue(self.w.is_empty())
