@@ -148,11 +148,24 @@ Factory Versions
 
 Cozmo factory firmwares identify with large version numbers.
 
+Seen on Cozmo with HW v1.5:
+
 ```json
 {
     "build": "FACTORY",
     "version": 10501,
     "date": "Fri Apr 14 20:28:21 2017",
     "time": 1492201868
+}
+```
+
+Seen on development Cozmo with HW v1.7:
+
+```json
+{
+    "build": "FACTORY",
+    "version": 10700,
+    "date": "Thu Mar 28 14:18:13 2019",
+    "time": 1553807893
 }
 ```
