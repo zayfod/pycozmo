@@ -1,11 +1,24 @@
 Revision History
 ================
 
+v0.7.0 (Sep 26, 2020)
+---------------------
+- Full robot audio support and a new AudioManager class (thanks to Aitor Miguel Blanco / gimait).  
+- Cozmo protocol client robustness improvements (thanks to Aitor Miguel Blanco / gimait):
+    - frame retransmission
+    - transmission of multiple packets in a single frame
+- Procedural face rendering improvements (thanks to Catherine Chambers / ca2-chambers).
+- Added support for robot firmware debug message decoding.
+- Added a new video.py example.
+- Added a tool for over-the-air firmware updates - pycozmo_update.py (thanks to Einfari).
+- Added hardware version description.
+- Bug fixes and documentation improvements.
+
 v0.6.0 (Jan 2, 2020)
 --------------------
 - Improved localization - SetOrigin and SyncTime commands and pose (position and orientation) interpretation.
 - Added new path tracking commands (AppendPath*, ExecutePath, etc.) and examples (path.py, go_to_pose.py). 
-- Added support for drawing procedural faces.
+- Added support for drawing procedural faces (thanks to Pedro Tiago Pereira / ppedro74).
 - Added support for reading and writing animations in FlatBuffers (.bin) and JSON format.
 - Added a new tool for examining and manipulating animation files - pycozmo_anim.py .
 - Added commands for working with cube/object accelerometers - StreamObjectAccel, ObjectAccel.

@@ -2,6 +2,8 @@
 Overview
 ========
 
+https://github.com/zayfod/pycozmo
+
 `PyCozmo` is a pure-Python [Cozmo robot](https://www.digitaldreamlabs.com/pages/cozmo) communication library.
 It allows controlling a Cozmo robot directly, without having to go through a mobile device, running the Cozmo app.
 
@@ -15,7 +17,7 @@ It is unstable and heavily under development.
 Usage
 -----
 
-Basic mode:
+Basic:
 ```python
 import time
 import pycozmo
@@ -27,7 +29,7 @@ def pycozmo_program(cli):
 pycozmo.run_program(pycozmo_program)
 ```
 
-Advanced mode:
+Advanced:
 ```python
 import pycozmo
 
@@ -94,13 +96,14 @@ From source, for development:
 git clone git@github.com:zayfod/pycozmo.git
 cd pycozmo
 python setup.py develop --user
+pip install --user -r requirements-dev.txt
 ```
 
  
 Support
 -------
 
-Bug reports and patches should be sent via GitHub:
+Bug reports and changes should be sent via GitHub:
 
 [https://github.com/zayfod/pycozmo](https://github.com/zayfod/pycozmo)
 
