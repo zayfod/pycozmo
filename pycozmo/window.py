@@ -27,7 +27,7 @@ class BaseWindow(object):
             self.size = size
         self.expected_seq = 1
         self.last_seq = 0
-        self.max_seq = int(math.pow(2, seq_bits))
+        self.max_seq = int(math.pow(2, seq_bits)) - 1
 
     def is_valid_seq(self, seq: int) -> bool:
         res = 0 <= seq < self.max_seq
@@ -129,6 +129,28 @@ class SendWindow(BaseWindow):
         self.window[self.expected_seq % self.size].reset()
         self.expected_seq = (self.expected_seq + 1) % self.max_seq
         self.last_seq = (self.last_seq + 1) % self.max_seq
+
+    def acknowledge(self, seq: int) -> None:
+        if not self.is_out_of_order(seq):
+            seq += 1
+            if seq > self.expected_seq:
+                for frame in self.window[(self.expected_seq % self.size):(seq % self.size)]:
+                    frame.reset()
+            else:
+                for i in range(self.expected_seq, seq + self.max_seq):
+                    self.window[i % self.size].reset()
+            self.expected_seq = seq % self.max_seq
+            if self.next_seq < seq:
+                self.next_seq = self.expected_seq
+
+    def get(self):
+        expected_idx = self.expected_seq % self.size
+        next_idx = self.next_seq % self.size
+        if next_idx >= expected_idx:
+            res = self.window[expected_idx:next_idx]
+        else:
+            res = self.window[expected_idx:] + self.window[:next_idx]
+        return [r.data for r in res]
 
     def get_oldest(self) -> Any:
         res = self.window[self.expected_seq % self.size].data
