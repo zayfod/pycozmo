@@ -53,12 +53,12 @@ In contrast, an application using PyCozmo basically replaces the Cozmo app and a
 the low-level UDP communication with Cozmo.
    
 ```
-+------------------+                     +------------------+                     +------------------+
-|     SDK app      |      Cozmo SDK      |    Cozmo app     |       PyCozmo       |      Cozmo       |
-|      "game"      |      cozmoclad      |     "engine"     |                     |     "robot"      |
-|                  | ------------------> |   Wi-Fi client   | ------------------> |     Wi-Fi AP     |
-|                  |         USB         |    UDP client    |      UDP/Wi-Fi      |    UDP Server    |
-+------------------+                     +------------------+                     +------------------+
++------------------+                   +------------------+                   +------------------+
+|     SDK app      |     Cozmo SDK     |    Cozmo app     |       Cozmo       |      Cozmo       |
+|      "game"      |     cozmoclad     |     "engine"     |      protocol     |     "robot"      |
+|                  | ----------------> |   Wi-Fi client   | ----------------> |     Wi-Fi AP     |
+|                  |        USB        |    UDP client    |     UDP/Wi-Fi     |    UDP Server    |
++------------------+                   +------------------+                   +------------------+
 ```
 
 
@@ -85,7 +85,7 @@ From source:
 ```
 git clone https://github.com/zayfod/pycozmo.git
 cd pycozmo
-python setup.py install
+python setup.py install --user
 ```
 
 From source, for development:

@@ -20,7 +20,9 @@ __all__ = [
 
 FRAME_ID = b"COZ\x03RE\x01"
 MIN_FRAME_SIZE = len(FRAME_ID) + 1 + 2 + 2 + 2
-MAX_FRAME_PAYLOAD_SIZE = 1051 - MIN_FRAME_SIZE
+MAX_FRAME_SIZE = 1051
+# The robot drops frames with payload size, larger than 1037 B.
+MAX_FRAME_PAYLOAD_SIZE = MAX_FRAME_SIZE - MIN_FRAME_SIZE
 
 FIRST_ROBOT_PACKET_ID = 0xb0
 
@@ -170,9 +172,9 @@ IMAGE_RESOLUTION = Enum("ImageResolution", members=[
     EnumMember("QQQQVGA", 1),
     EnumMember("QQQVGA", 2),
     EnumMember("QQVGA", 3),
-    EnumMember("QVGA", 4),
+    EnumMember("QVGA", 4, description="320x240"),
     EnumMember("CVGA", 5),
-    EnumMember("VGA", 6),
+    EnumMember("VGA", 6, description="640x480"),
     EnumMember("SVGA", 7),
     EnumMember("XGA", 8),
     EnumMember("SXGA", 9),

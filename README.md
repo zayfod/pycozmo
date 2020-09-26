@@ -149,12 +149,12 @@ In contrast, an application using PyCozmo basically replaces the Cozmo app and a
 the low-level UDP communication with Cozmo.
    
 ```
-+------------------+                     +------------------+                     +------------------+
-|     SDK app      |      Cozmo SDK      |    Cozmo app     |       PyCozmo       |      Cozmo       |
-|      "game"      |      cozmoclad      |     "engine"     |                     |     "robot"      |
-|                  | ------------------> |   Wi-Fi client   | ------------------> |     Wi-Fi AP     |
-|                  |         USB         |    UDP client    |      UDP/Wi-Fi      |    UDP Server    |
-+------------------+                     +------------------+                     +------------------+
++------------------+                   +------------------+                   +------------------+
+|     SDK app      |     Cozmo SDK     |    Cozmo app     |       Cozmo       |      Cozmo       |
+|      "game"      |     cozmoclad     |     "engine"     |      protocol     |     "robot"      |
+|                  | ----------------> |   Wi-Fi client   | ----------------> |     Wi-Fi AP     |
+|                  |        USB        |    UDP client    |     UDP/Wi-Fi     |    UDP Server    |
++------------------+                   +------------------+                   +------------------+
 ```
 
 
@@ -170,8 +170,6 @@ Limitations
     - text-to-speech
     - songs
 - there is no Wi-Fi control. The library assumes a Wi-Fi connection to Cozmo, established in advance.
-- frame retransmission is not implemented
-- transmission of multiple packets in a single frame is not implemented
 
 
 Requirements
@@ -197,7 +195,7 @@ From source:
 ```
 git clone https://github.com/zayfod/pycozmo.git
 cd pycozmo
-python setup.py install
+python setup.py install --user
 ```
 
 From source, for development:
