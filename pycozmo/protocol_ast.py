@@ -213,30 +213,29 @@ class EnumArgument(Argument):
         return self.enum_type.name
 
 
-class Struct(object):
+class Struct(Argument):
     """ Structure. """
 
     def __init__(self, name: Optional[str] = None, description: Optional[str] = None,
                  arguments: Optional[List[Argument]] = None):
-        self.name = str(name) if name else None
-        self.description = str(description) if description else None
+        super().__init__(name=name, description=description)
         self.arguments = list(arguments) if arguments else []
+
+    def type_hint(self):
+        return self.name
 
 
 class FArrayArgument(Argument):
     """ Fixed-length array. """
 
     def __init__(self, name: Optional[str] = None, description: Optional[str] = None,
-                 data_type: Union[Argument, Struct] = UInt8Argument(), length: int = 0, default: Tuple = ()) -> None:
+                 data_type: Argument = UInt8Argument(), length: int = 0, default: Tuple = ()) -> None:
         super().__init__(name, description, tuple(default))
         self.data_type = data_type
         self.length = length
 
     def type_hint(self):
-        if isinstance(self.data_type, Struct):
-            type_name = self.data_type.name
-        else:
-            type_name = self.data_type.type_hint()
+        type_name = self.data_type.type_hint()
         return "{}[{}]".format(type_name, self.length)
 
 

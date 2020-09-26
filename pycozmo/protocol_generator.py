@@ -4,6 +4,7 @@ Cozmo protocol packet encoder code generator.
 
 """
 
+from typing import Tuple
 import os
 from collections import defaultdict
 
@@ -15,7 +16,7 @@ __all__ = [
 ]
 
 
-def get_fmt_by_type(t):
+def get_fmt_by_type(t: protocol_declaration.Argument) -> str:
     if isinstance(t, protocol_declaration.FloatArgument):
         fmt = "f"
     elif isinstance(t, protocol_declaration.DoubleArgument):
@@ -35,11 +36,11 @@ def get_fmt_by_type(t):
     elif isinstance(t, protocol_declaration.Int32Argument):
         fmt = "l"
     else:
-        fmt = None
+        raise ValueError("Unexpected argument type '{}'".format(t.__class__.__name__))
     return fmt
 
 
-def get_farray_fmt(argument: protocol_declaration.FArrayArgument):
+def get_farray_fmt(argument: protocol_declaration.FArrayArgument) -> str:
     data_fmt = get_fmt_by_type(argument.data_type)
     if not data_fmt:
         raise NotImplementedError("Unexpected farray data type '{}' for '{}'".format(
@@ -47,7 +48,7 @@ def get_farray_fmt(argument: protocol_declaration.FArrayArgument):
     return data_fmt
 
 
-def get_varray_fmts(argument: protocol_declaration.VArrayArgument):
+def get_varray_fmts(argument: protocol_declaration.VArrayArgument) -> Tuple[str, str]:
     length_fmt = get_fmt_by_type(argument.length_type)
     if not length_fmt:
         raise NotImplementedError("Unexpected varray length type '{}' for '{}'".format(
@@ -59,7 +60,7 @@ def get_varray_fmts(argument: protocol_declaration.VArrayArgument):
     return length_fmt, data_fmt
 
 
-def get_string_fmt(argument: protocol_declaration.StringArgument):
+def get_string_fmt(argument: protocol_declaration.StringArgument) -> str:
     length_fmt = get_fmt_by_type(argument.length_type)
     if not length_fmt:
         raise NotImplementedError("Unexpected string length type '{}' for '{}'".format(
@@ -67,7 +68,7 @@ def get_string_fmt(argument: protocol_declaration.StringArgument):
     return length_fmt
 
 
-def get_enum_fmt(argument: protocol_declaration.EnumArgument):
+def get_enum_fmt(argument: protocol_declaration.EnumArgument) -> str:
     data_fmt = get_fmt_by_type(argument.data_type)
     if not data_fmt:
         raise NotImplementedError("Unexpected enum data type '{}' for '{}'".format(
@@ -92,7 +93,7 @@ class ProtocolGenerator(object):
     def __init__(self, f):
         self.f = f
 
-    def generate_packet_slots(self, struct: protocol_declaration.Struct):
+    def generate_packet_slots(self, struct: protocol_declaration.Struct) -> None:
         for argument in struct.arguments:
             type_hint = argument.type_hint()
             if type_hint:
@@ -101,7 +102,7 @@ class ProtocolGenerator(object):
                 type_hint = ""
             self.f.write('        "_{name}",{type_hint}\n'.format(name=argument.name, type_hint=type_hint))
 
-    def generate_farray_validation(self, argument: protocol_declaration.FArrayArgument):
+    def generate_farray_validation(self, argument: protocol_declaration.FArrayArgument) -> None:
         if isinstance(argument.data_type, protocol_declaration.FloatArgument):
             element_validation = "lambda name, value_inner: validate_float(name, value_inner)"
         elif isinstance(argument.data_type, protocol_declaration.DoubleArgument):
@@ -131,7 +132,7 @@ class ProtocolGenerator(object):
         self.f.write('validate_farray(\n            "{name}", value, {length}, {element_validation})\n'.format(
             name=argument.name, length=argument.length, element_validation=element_validation))
 
-    def generate_varray_validation(self, argument: protocol_declaration.VArrayArgument):
+    def generate_varray_validation(self, argument: protocol_declaration.VArrayArgument) -> None:
         if isinstance(argument.length_type, protocol_declaration.UInt8Argument):
             maximum_length = 255
         elif isinstance(argument.length_type, protocol_declaration.UInt16Argument):
@@ -166,7 +167,7 @@ class ProtocolGenerator(object):
         self.f.write('validate_varray(\n            "{name}", value, {maximum_length}, {element_validation})\n'.format(
             name=argument.name, maximum_length=maximum_length, element_validation=element_validation))
 
-    def generate_string_validation(self, argument: protocol_declaration.StringArgument):
+    def generate_string_validation(self, argument: protocol_declaration.StringArgument) -> None:
         if isinstance(argument.length_type, protocol_declaration.UInt8Argument):
             maximum_length = 255
         elif isinstance(argument.length_type, protocol_declaration.UInt16Argument):
@@ -178,7 +179,7 @@ class ProtocolGenerator(object):
         self.f.write('validate_string("{name}", value, {maximum_length})\n'.format(
             name=argument.name, maximum_length=maximum_length))
 
-    def generate_enum_validation(self, argument: protocol_declaration.EnumArgument):
+    def generate_enum_validation(self, argument: protocol_declaration.EnumArgument) -> None:
         if isinstance(argument.data_type, protocol_declaration.UInt8Argument):
             self.f.write('validate_integer("{name}", value.value, 0, 255)\n'.format(name=argument.name))
         elif isinstance(argument.data_type, protocol_declaration.UInt16Argument):
@@ -196,7 +197,7 @@ class ProtocolGenerator(object):
             raise NotImplementedError("Unexpected enum data type '{}' for '{}'".format(
                 argument.data_type.__class__.__name__, argument.name))
 
-    def generate_argument_methods(self, struct: protocol_declaration.Struct):
+    def generate_argument_methods(self, struct: protocol_declaration.Struct) -> None:
         for argument in struct.arguments:
             if isinstance(argument, protocol_declaration.EnumArgument):
                 self.f.write(r"""
@@ -247,7 +248,7 @@ class ProtocolGenerator(object):
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
                         argument.__class__.__name__, argument.name))
 
-    def generate_len_method(self, struct: protocol_declaration.Struct):
+    def generate_len_method(self, struct: protocol_declaration.Struct) -> None:
         self.f.write("\n    def __len__(self):\n")
         if not struct.arguments:
             self.f.write("        return 0\n")
@@ -299,7 +300,7 @@ class ProtocolGenerator(object):
             self.f.write(" + \\\n            ".join(statements))
             self.f.write("\n")
 
-    def generate_repr_method(self, struct: protocol_declaration.Struct):
+    def generate_repr_method(self, struct: protocol_declaration.Struct) -> None:
         self.f.write("\n    def __repr__(self):\n")
         if struct.arguments:
             argument_strs = []
@@ -315,7 +316,7 @@ class ProtocolGenerator(object):
         else:
             self.f.write('        return "{type}()".format(type=type(self).__name__)\n')
 
-    def generate_argument_defaults(self, struct: protocol_declaration.Struct):
+    def generate_argument_defaults(self, struct: protocol_declaration.Struct) -> None:
         for argument in struct.arguments:
             if isinstance(argument.default, str):
                 self.f.write(
@@ -324,7 +325,7 @@ class ProtocolGenerator(object):
                 self.f.write(
                     ",\n                 {name}={default}".format(name=argument.name, default=argument.default))
 
-    def generate_argument_assignments(self, struct: protocol_declaration.Struct):
+    def generate_argument_assignments(self, struct: protocol_declaration.Struct) -> None:
         if struct.arguments:
             for argument in struct.arguments:
                 if argument.description:
@@ -337,12 +338,12 @@ class ProtocolGenerator(object):
         else:
             self.f.write("        pass\n")
 
-    def generate_packet_argument_assignments(self, packet: protocol_declaration.Packet):
+    def generate_packet_argument_assignments(self, packet: protocol_declaration.Packet) -> None:
         packet_id = "0x{:02x}".format(packet.id) if packet.id is not None else None
         self.f.write("        super().__init__({type}, packet_id={id})\n".format(type=packet.type, id=packet_id))
         self.generate_argument_assignments(packet)
 
-    def generate_packet_encoding(self, struct: protocol_declaration.Struct):
+    def generate_packet_encoding(self, struct: protocol_declaration.Struct) -> None:
         self.f.write(r"""
     def to_bytes(self):
         writer = BinaryWriter()
@@ -397,7 +398,7 @@ class ProtocolGenerator(object):
         else:
             self.f.write("        pass\n")
 
-    def generate_packet_decoding(self, struct: protocol_declaration.Struct):
+    def generate_packet_decoding(self, struct: protocol_declaration.Struct) -> None:
         self.f.write(r"""
     @classmethod
     def from_bytes(cls, buffer):
@@ -462,7 +463,7 @@ class ProtocolGenerator(object):
         self.f.write(",\n            ".join(arguments))
         self.f.write(")\n")
 
-    def generate_enum(self, enum_type: protocol_declaration.Enum):
+    def generate_enum(self, enum_type: protocol_declaration.Enum) -> None:
 
         self.f.write(r"""
 
@@ -476,7 +477,7 @@ class {name}(enum.Enum):
             self.f.write('    {name} = {value}\n'.format(
                 name=member.name, value=int_to_str(member.value, enum_type.base)))
 
-    def generate_struct(self, struct: protocol_declaration.Struct):
+    def generate_struct(self, struct: protocol_declaration.Struct) -> None:
         self.f.write(r"""
 
 class {name}(Struct):
@@ -495,7 +496,7 @@ class {name}(Struct):
         self.generate_packet_encoding(struct)
         self.generate_packet_decoding(struct)
 
-    def generate_packet(self, packet):
+    def generate_packet(self, packet: protocol_declaration.Packet) -> None:
         self.f.write(r"""
 
 class {name}(Packet):
@@ -514,7 +515,7 @@ class {name}(Packet):
         self.generate_packet_encoding(packet)
         self.generate_packet_decoding(packet)
 
-    def generate_id_map(self):
+    def generate_id_map(self) -> None:
         packet_map = {}
         for pkt in protocol_declaration.PROTOCOL.packets:
             if pkt.id:
@@ -525,7 +526,7 @@ class {name}(Packet):
             self.f.write('    0x{id:02x}: {name},  # {id}\n'.format(id=k, name=v))
         self.f.write('}\n')
 
-    def generate_group_map(self):
+    def generate_group_map(self) -> None:
         packet_map = defaultdict(set)
         for pkt in protocol_declaration.PROTOCOL.packets:
             if pkt.group and pkt.id:
@@ -539,7 +540,7 @@ class {name}(Packet):
             self.f.write('    },\n')
         self.f.write('}\n')
 
-    def generate(self):
+    def generate(self) -> None:
         header = r'''"""
 
 Cozmo protocol packet encoder classes, based on protocol version {version}.

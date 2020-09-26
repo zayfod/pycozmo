@@ -4,7 +4,7 @@ Helper functions for running PyCozmo applications.
 
 """
 
-from typing import Optional
+from typing import Optional, Callable
 import sys
 import os
 import logging
@@ -47,7 +47,7 @@ def setup_basic_logging(
 
 
 def run_program(
-        f: callable,
+        f: Callable,
         log_level: Optional[str] = None,
         protocol_log_level: Optional[str] = None,
         protocol_log_messages: Optional[list] = None,
