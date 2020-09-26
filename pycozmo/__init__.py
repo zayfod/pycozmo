@@ -1,3 +1,8 @@
+"""
+
+PyCozmo - a pure-Python Cozmo robot communication library.
+
+"""
 
 import sys
 
@@ -27,11 +32,12 @@ from . import image_encoder
 from . import procedural_face
 
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 __all__ = [
     "logger",
     "logger_protocol",
+    "logger_robot",
 
     "Frame",
     "ROBOT_ADDR",

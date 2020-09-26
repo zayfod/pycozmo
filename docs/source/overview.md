@@ -2,20 +2,22 @@
 Overview
 ========
 
-`PyCozmo` is a pure-Python [Anki Cozmo](https://anki.com/en-us/cozmo.html) communication library. It allows controlling
-a Cozmo robot directly, without having to go through a mobile device, running the Cozmo app.
+https://github.com/zayfod/pycozmo
+
+`PyCozmo` is a pure-Python [Cozmo robot](https://www.digitaldreamlabs.com/pages/cozmo) communication library.
+It allows controlling a Cozmo robot directly, without having to go through a mobile device, running the Cozmo app.
 
 The library is loosely based on the [Anki Cozmo Python SDK](https://github.com/anki/cozmo-python-sdk) and the
 [cozmoclad](https://pypi.org/project/cozmoclad/) ("C-Like Abstract Data") library.
 
-This project is a tool for exploring the hardware and software of Anki Cozmo. It is unstable and heavily under
-development.
+This project is a tool for exploring the hardware and software of Digital Dream Labs (originally Anki) Cozmo robot.
+It is unstable and heavily under development.
 
 
 Usage
 -----
 
-Basic mode:
+Basic:
 ```python
 import time
 import pycozmo
@@ -27,7 +29,7 @@ def pycozmo_program(cli):
 pycozmo.run_program(pycozmo_program)
 ```
 
-Advanced mode:
+Advanced:
 ```python
 import pycozmo
 
@@ -53,12 +55,12 @@ In contrast, an application using PyCozmo basically replaces the Cozmo app and a
 the low-level UDP communication with Cozmo.
    
 ```
-+------------------+                     +------------------+                     +------------------+
-|     SDK app      |      Cozmo SDK      |    Cozmo app     |       PyCozmo       |      Cozmo       |
-|      "game"      |      cozmoclad      |     "engine"     |                     |     "robot"      |
-|                  | ------------------> |   Wi-Fi client   | ------------------> |     Wi-Fi AP     |
-|                  |         USB         |    UDP client    |      UDP/Wi-Fi      |    UDP Server    |
-+------------------+                     +------------------+                     +------------------+
++------------------+                   +------------------+                   +------------------+
+|     SDK app      |     Cozmo SDK     |    Cozmo app     |       Cozmo       |      Cozmo       |
+|      "game"      |     cozmoclad     |     "engine"     |      protocol     |     "robot"      |
+|                  | ----------------> |   Wi-Fi client   | ----------------> |     Wi-Fi AP     |
+|                  |        USB        |    UDP client    |     UDP/Wi-Fi     |    UDP Server    |
++------------------+                   +------------------+                   +------------------+
 ```
 
 
@@ -77,7 +79,7 @@ Installation
 Using pip:
 
 ```
-pip install pycozmo
+pip install --user pycozmo
 ```
 
 From source:
@@ -85,7 +87,7 @@ From source:
 ```
 git clone https://github.com/zayfod/pycozmo.git
 cd pycozmo
-python setup.py install
+python setup.py install --user
 ```
 
 From source, for development:
@@ -93,18 +95,19 @@ From source, for development:
 ```
 git clone git@github.com:zayfod/pycozmo.git
 cd pycozmo
-python setup.py develop
+python setup.py develop --user
+pip install --user -r requirements-dev.txt
 ```
 
  
 Support
 -------
 
-Bug reports and patches should be sent via GitHub:
+Bug reports and changes should be sent via GitHub:
 
 [https://github.com/zayfod/pycozmo](https://github.com/zayfod/pycozmo)
 
-Anki Robot Discord server, channel #cozmo:
+DDL Robot Discord server, channel #development-cozmo:
 
 [https://discord.gg/ew92haS](https://discord.gg/ew92haS)
 
@@ -112,5 +115,5 @@ Anki Robot Discord server, channel #cozmo:
 Disclaimer
 ----------
 
-This project is not affiliated with [Anki](https://anki.com/) or
-[Digital Dream Labs](https://www.digitaldreamlabs.com/).
+This project is not affiliated with [Digital Dream Labs](https://www.digitaldreamlabs.com/) or
+[Anki](https://anki.com/).

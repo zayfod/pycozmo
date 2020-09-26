@@ -13,7 +13,7 @@ Examples:
 
     pycozmo_anim.py json anim_bored_01.bin
 
-- convert a JSON animation to FlatFuffers format
+- convert a JSON animation to FlatBuffers format
 
     pycozmo_anim.py bin anim_bored_01.json
 

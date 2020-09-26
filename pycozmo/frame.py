@@ -1,13 +1,26 @@
+"""
+
+Cozmo protocol frame.
+
+"""
 
 from typing import List
 
-from .protocol_declaration import FRAME_ID, MIN_FRAME_SIZE, FrameType, PacketType
+from .logging import logger_protocol
+from .protocol_ast import FrameType, PacketType
+from .protocol_declaration import FRAME_ID, MIN_FRAME_SIZE
 from .protocol_base import Packet, UnknownCommand, UnknownEvent
 from .protocol_utils import BinaryReader, BinaryWriter
 from .protocol_encoder import Connect, Disconnect, Ping, Keyframe, PACKETS_BY_ID
 
 
+__all__ = [
+    "Frame",
+]
+
+
 class Frame(object):
+    """ Cozmo protocol frame. """
 
     __slots__ = [
         'type',
@@ -30,7 +43,7 @@ class Frame(object):
         return writer.dumps()
 
     @staticmethod
-    def _encode_packet(pkt, writer) -> None:
+    def _encode_packet(pkt: Packet, writer: BinaryWriter) -> None:
         writer.write(pkt.type.value, "B")
         if pkt.type == PacketType.COMMAND or pkt.type == PacketType.EVENT:
             writer.write(len(pkt) + 1, "H")
@@ -69,7 +82,7 @@ class Frame(object):
             raise NotImplementedError("Unexpected frame type {}.".format(self.type))
 
     @classmethod
-    def from_bytes(cls, buffer: bytes):
+    def from_bytes(cls, buffer: bytes) -> "Frame":
         reader = BinaryReader(buffer)
         obj = cls.from_reader(reader)
         return obj
@@ -78,7 +91,7 @@ class Frame(object):
     def _decode_packet(cls, pkt_type, pkt_len, reader):
         if pkt_type == PacketType.COMMAND or pkt_type == PacketType.EVENT:
             pkt_id = reader.read("B")
-            pkt_class = PACKETS_BY_ID.get(pkt_id)
+            pkt_class = PACKETS_BY_ID.get(pkt_id)   # type: Packet  # type: ignore
             if pkt_class:
                 res = pkt_class.from_reader(reader)
             elif pkt_type == PacketType.COMMAND:
@@ -98,7 +111,7 @@ class Frame(object):
         return res
 
     @classmethod
-    def from_reader(cls, reader: BinaryReader):
+    def from_reader(cls, reader: BinaryReader) -> "Frame":
         if len(reader.buffer) < MIN_FRAME_SIZE:
             raise ValueError("Invalid frame.")
 
@@ -118,15 +131,19 @@ class Frame(object):
                 pkt_type = PacketType(reader.read("B"))
                 pkt_len = reader.read("H")
                 expected_offset = reader.tell() + pkt_len
-                pkt = cls._decode_packet(pkt_type, pkt_len, reader)
-                if reader.tell() != expected_offset:
-                    # Packet length may change between protocol versions. This helps with dealing with shorter packets.
+                try:
+                    pkt = cls._decode_packet(pkt_type, pkt_len, reader)
+                    if reader.tell() != expected_offset:
+                        # Packet length may change between protocol versions.
+                        reader.seek_set(expected_offset)
+                    pkt.seq = pkt_seq
+                    pkt.ack = ack
+                    if not pkt.is_oob():
+                        pkt_seq = (pkt_seq + 1) % 0xffff
+                    pkts.append(pkt)
+                except (ValueError, IndexError) as e:
+                    logger_protocol.debug("Failed to decode packet. Ignoring. {}".format(e))
                     reader.seek_set(expected_offset)
-                pkt.seq = pkt_seq
-                pkt.ack = ack
-                if not pkt.is_oob():
-                    pkt_seq = (pkt_seq + 1) % 0xffff
-                pkts.append(pkt)
             assert not seq or seq == 2 or seq + 1 == pkt_seq
         elif frame_type == FrameType.PING:
             pkt = Ping.from_reader(reader)
@@ -135,12 +152,15 @@ class Frame(object):
             pkt_seq = first_seq
             pkt_type = PacketType.COMMAND
             pkt_len = len(reader) - reader.tell()
-            pkt = cls._decode_packet(pkt_type, pkt_len, reader)
-            pkt.seq = pkt_seq
-            pkt.ack = ack
-            if not pkt.is_oob():
-                pkt_seq = (pkt_seq + 1) % 0xffff
-            pkts.append(pkt)
+            try:
+                pkt = cls._decode_packet(pkt_type, pkt_len, reader)
+                pkt.seq = pkt_seq
+                pkt.ack = ack
+                if not pkt.is_oob():
+                    pkt_seq = (pkt_seq + 1) % 0xffff
+                pkts.append(pkt)
+            except (ValueError, IndexError) as e:
+                logger_protocol.debug("Failed to decode packet. Ignoring. {}".format(e))
             assert not seq or seq == 2 or seq + 1 == pkt_seq
         elif frame_type == FrameType.RESET:
             # No packets

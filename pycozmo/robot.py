@@ -1,28 +1,67 @@
+"""
+
+Robot constants and helper code.
+
+"""
 
 import math
 
 from . import util
-from . import protocol_encoder
 
 
+__all__ = [
+    "MIN_HEAD_ANGLE",
+    "MAX_HEAD_ANGLE",
+
+    "MIN_LIFT_HEIGHT",
+    "MAX_LIFT_HEIGHT",
+
+    "LIFT_ARM_LENGTH",
+    "LIFT_PIVOT_HEIGHT",
+
+    "MIN_LIFT_ANGLE",
+    "MAX_LIFT_ANGLE",
+
+    "MAX_WHEEL_SPEED",
+
+    "TRACK_WIDTH",
+
+    "RobotStatusFlag",
+    "RobotStatusFlagNames",
+
+    "LiftPosition",
+]
+
+
+#: Minimum head angle.
 MIN_HEAD_ANGLE = util.Angle(degrees=-25)
+#: Maximum head angle.
 MAX_HEAD_ANGLE = util.Angle(degrees=44.5)
 
+#: Minimum lift height.
 MIN_LIFT_HEIGHT = util.Distance(mm=32.0)
+#: Maximum lift height.
 MAX_LIFT_HEIGHT = util.Distance(mm=92.0)
 
+#: Lift arm length.
 LIFT_ARM_LENGTH = util.Distance(mm=66.0)
+#: Lift arm pivot point height.
 LIFT_PIVOT_HEIGHT = util.Distance(mm=45.0)
 
+#: Minimum lift arm angle.
 MIN_LIFT_ANGLE = util.Angle(radians=math.asin((MIN_LIFT_HEIGHT.mm - LIFT_PIVOT_HEIGHT.mm) / LIFT_ARM_LENGTH.mm))
+#: Maximum lift arm angle.
 MAX_LIFT_ANGLE = util.Angle(radians=math.asin((MAX_LIFT_HEIGHT.mm - LIFT_PIVOT_HEIGHT.mm) / LIFT_ARM_LENGTH.mm))
 
+#: Maximum wheel speed.
 MAX_WHEEL_SPEED = util.Speed(mmps=200.0)
 
+#: Track width.
 TRACK_WIDTH = util.Distance(mm=45.0)
 
 
 class RobotStatusFlag(object):
+    # Robot status flags.
     IS_MOVING = 0x1
     IS_CARRYING_BLOCK = 0x2
     IS_PICKING_OR_PLACING = 0x4
@@ -42,6 +81,7 @@ class RobotStatusFlag(object):
     IS_CHARGER_OOS = 0x10000
 
 
+#: Robot status flag names.
 RobotStatusFlagNames = {
     RobotStatusFlag.IS_MOVING: "IS_MOVING",
     RobotStatusFlag.IS_CARRYING_BLOCK: "IS_CARRYING_BLOCK",
@@ -60,15 +100,6 @@ RobotStatusFlagNames = {
     RobotStatusFlag.CLIFF_DETECTED: "CLIFF_DETECTED",
     RobotStatusFlag.ARE_WHEELS_MOVING: "ARE_WHEELS_MOVING",
     RobotStatusFlag.IS_CHARGER_OOS: "IS_CHARGER_OOS",
-}
-
-
-BODY_COLOR_NAMES = {
-    protocol_encoder.BodyColor.WHITE_v10: "Original",
-    protocol_encoder.BodyColor.RESERVED: "Reserved",
-    protocol_encoder.BodyColor.WHITE_v15: "White",
-    protocol_encoder.BodyColor.CE_LM_v15: "CE_LM",
-    protocol_encoder.BodyColor.LE_BL_v16: "LE_BL",
 }
 
 

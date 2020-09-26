@@ -14,23 +14,29 @@ Cozmo is a complex distributed embedded system with the following main parts:
 The robot can be subdivided into:
 
 - head
+    - Wi-Fi communication controller ([Espressif ESP8266](https://en.wikipedia.org/wiki/ESP8266))
+    - Real-time and Image Processing (RTIP) controller ([NXP Kinetis K02](https://www.nxp.com/products/processors-and-microcontrollers/arm-microcontrollers/general-purpose-mcus/k-series-cortex-m4/k0x-entry-level/kinetis-k02-100-mhz-microcontrollers-mcus-with-optimized-features-based-on-arm-cortex-m4-core:K02_100))
 - body
+    - Body controller ([Nordic nRF51822](https://www.nordicsemi.com/Products/Low-power-short-range-wireless/nRF51822))
 
-The head is responsible for the following functions:
+The Wi-Fi communication controller is responsible for the following functions:
 - Wi-Fi communication
-- OLED display
-- speaker
-- camera
-- accelerometers
-- gyro
+- over-the-air (OTA) firmware updates
 - NV RAM storage
 
-Once Cozmo is powered on, the head controller (ESP8266) remains always powered on to maintain Wi-Fi communication. 
+Once Cozmo is powered on, the communications controller remains always powered on to maintain Wi-Fi communication. 
 
-On connection, the head transmits its serial number with the `HardwareInfo` message and firmware version with the
+On connection, the robot transmits its serial number with the `HardwareInfo` message and firmware version with the
 `FirmwareSignature` message.
 
-The body is in charge of:
+The RTIP controller is responsible for:
+- OLED display image decoding
+- speaker audio decoding
+- camera image encoding
+- accelerometers
+- gyro
+
+The body controller is in charge of:
 - left and right tread motors and encoders encoders
 - head motor and encoder
 - lift motor and encoder
@@ -131,10 +137,10 @@ The last composed path can be executed using the `ExecutePath` message. One of i
 the reception of  `PathFollowingEvent` message when path traversing finishes.
 
 The `status` filed of the `RobotState` message has a `robot_pathing` flag that indicates whether the robot is currently
-travesing a path. The `curr_path_segment` filed indicates which segment is being traversed. 
+traversing a path. The `curr_path_segment` filed indicates which segment is being traversed. 
 
 The `ClearPath` message can be used to destroy an already composed path. The `TrimPath` message can be used to delete
-path segmens from the beginning or the end of a composed path.
+path segments from the beginning or the end of a composed path.
 
 See `examples/path.py` and `examples/go_to_pose.py` for example usage.
 
@@ -196,6 +202,7 @@ Speaker
 -------
 
 The `OutputAudio` message can be used to transmit 744 audio samples at a time.
+The samples are 8-bit and [u-law](https://en.wikipedia.org/wiki/%CE%9C-law_algorithm) encoded.
 
 Speaker volume can be adjusted with the `SetRobotVolume` message.
  
@@ -227,7 +234,7 @@ See `examples/camera.py` for example usage.
 IR LED
 ------
 
-The IR LED (ala head light) can improve the camera performance in dark environments.
+The IR LED (aka head light) can improve the camera performance in dark environments.
 
 The IR LED can be turned on and off using the `SetHeadLight` message.
 
@@ -310,8 +317,7 @@ Firmware Updates
 ----------------
 
 Cozmo firmware updates are distributed in "cozmo.safe" files that seem to contain firmware images for all three of
-Cozmos controllers - the Wi-Fi controller (Espressif ESP8266), the body controller (NXP Kinetis K02), and the Bluetooth
-LE controller (Nordic nRF51822).
+Cozmos controllers - the Wi-Fi communication controller, the RTIP controller, and the body controller.
 
 The "cozmo.safe" files start with a firmware signature in JSON format:
 
@@ -348,7 +354,7 @@ repeats the last chunk ID and has a `status` field set to 10.
 Bluetooth LE
 ------------
 
-"Objects", that can be connected to over Bluettoth LE announce their availability with an `ObjectAvailable` message
+"Objects", that can be connected to over Bluetooth LE announce their availability with an `ObjectAvailable` message
 periodically. The `ObjectAvailable` message contains the object type (e.g. light cube 1, 2, 3 or charging pad) and
 the object factory ID which identifies it uniquely.
 

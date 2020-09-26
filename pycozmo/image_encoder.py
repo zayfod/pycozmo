@@ -1,8 +1,24 @@
+"""
 
+Cozmo image run-length encoding and decoding.
+
+"""
+
+from typing import Optional
 import sys
 from io import StringIO
 
 from PIL import Image
+
+
+__all__ = [
+    "render",
+    "image_to_str",
+    "str_to_image",
+
+    "ImageDecoder",
+    "ImageEncoder",
+]
 
 
 def render(image: bytes) -> None:
@@ -61,7 +77,7 @@ class ImageDecoder(object):
         if y < 32 and x < 128:
             self.image[y * 128 + x] = color
 
-    def _execute(self, b: int):
+    def _execute(self, b: int) -> None:
         cmd = (b & 0xc0) >> 6
         cnt = b & 0x3f
         if cmd == 0:        # Skip column
@@ -161,8 +177,9 @@ class ImageEncoder(object):
         self.x = 0
         self.y = 0
 
-    def _encode_seq(self, color: int, cnt: int) -> int:
+    def _encode_seq(self, color: int, cnt: int) -> Optional[int]:
         """ Encode a sequence of pixels with the same color. """
+        cmd = None  # type: Optional[int]
         if color:
             # Draw
             if cnt <= 15:
@@ -180,10 +197,9 @@ class ImageEncoder(object):
                 # Skip column
                 assert cnt == 31
                 self.skip_cols += 1
-                cmd = None
         return cmd
 
-    def _count_color(self, color: int):
+    def _count_color(self, color: int) -> int:
         """ Count pixels with the same color, down a column. """
         cnt = 0
         if self.y < 32:

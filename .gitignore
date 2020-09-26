@@ -15,4 +15,6 @@ __pycache__/
 /docs/source/generated/
 /docs/source/external/
 
+/.mypy_cache/
+
 /examples/*.png

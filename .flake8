@@ -1,0 +1,6 @@
+[flake8]
+max-line-length = 120
+exclude = pycozmo/CozmoAnim/,.github/,venv/,build/,dist/,*.egg-info/
+per-file-ignores =
+    pycozmo/__init__.py:F401,F403,F405
+    pycozmo/protocol_declaration.py:F403,F405

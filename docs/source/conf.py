@@ -14,10 +14,10 @@ import os
 import glob
 from shutil import copyfile
 import sys
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('../..'))    # noqa
 
 # noinspection PyPep8
-import pycozmo
+import pycozmo  # noqa
 
 
 # -- Project information -----------------------------------------------------
@@ -67,7 +67,8 @@ autosummary_generate = True
 autodoc_default_flags = [
     'members',
     'undoc-members',
-    'show-inheritance'
+    'show-inheritance',
+    'inherited-members',
 ]
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3.5', None),

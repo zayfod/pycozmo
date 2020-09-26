@@ -1,3 +1,8 @@
+"""
+
+Cozmo protocol client.
+
+"""
 
 from threading import Event
 from typing import Optional, Tuple
@@ -8,7 +13,7 @@ import io
 import numpy as np
 from PIL import Image
 
-from . import logger
+from . import logger, logger_robot
 from . import protocol_encoder
 from . import event
 from . import camera
@@ -23,14 +28,28 @@ from . import lights
 from . import image_encoder
 from . import anim
 from . import anim_encoder
+from . import audio
+from . import robot_debug
+
+
+__all__ = [
+    "Client",
+]
 
 
 class Client(event.Dispatcher):
 
-    def __init__(self, robot_addr: Optional[Tuple[str, int]] = None,
-                 protocol_log_messages: Optional[list] = None) -> None:
+    def __init__(self,
+                 robot_addr: Optional[Tuple[str, int]] = None,
+                 protocol_log_messages: Optional[list] = None,
+                 auto_initialize: bool = True) -> None:
         super().__init__()
+        # Whether to automatically initialize the robot when connection is established.
+        self.auto_initialize = bool(auto_initialize)
+
         self.conn = conn.ClientConnection(robot_addr, protocol_log_messages)
+        self.audio = audio.AudioManager(self.conn)
+
         self.serial_number_head = None
         self.robot_fw_sig = None
         self.serial_number = None
@@ -80,11 +99,13 @@ class Client(event.Dispatcher):
         self.conn.add_handler(protocol_encoder.AnimationState, self._on_animation_state)
         self.conn.add_handler(protocol_encoder.ObjectAvailable, self._on_object_available)
         self.conn.add_handler(protocol_encoder.ObjectConnectionState, self._on_object_connection_state)
+        self.conn.add_handler(protocol_encoder.DebugData, self._on_debug_data)
         self.add_handler(event.EvtRobotPickedUpChange, self._on_robot_picked_up)
         self.conn.start()
 
     def stop(self) -> None:
         logger.debug("Stopping client...")
+        self.audio.stop()
         self.conn.stop()
         self.del_all_handlers()
 
@@ -133,6 +154,12 @@ class Client(event.Dispatcher):
         del cli
         self.robot_fw_sig = json.loads(pkt.signature)
         logger.info("Firmware version %s.", self.robot_fw_sig["version"])
+        if self.robot_fw_sig.get("build") == "FACTORY":
+            logger.warning("Factory/recovery firmware detected. Functionality is degraded.")
+        elif self.robot_fw_sig["version"] < protocol_declaration.FIRMWARE_VERSION:
+            logger.warning(
+                "Old firmware detected. PyCozmo works best with v{}. Functionality may be degraded.".format(
+                    protocol_declaration.FIRMWARE_VERSION))
         self._enable_robot()
 
     def _on_body_info(self, cli, pkt: protocol_encoder.BodyInfo):
@@ -140,13 +167,10 @@ class Client(event.Dispatcher):
         self.serial_number = pkt.serial_number
         self.body_hw_version = pkt.body_hw_version
         self.body_color = pkt.body_color
-        logger.info("Body S/N 0x%08x.", self.serial_number)
-        supported = self.robot_fw_sig["version"] == protocol_declaration.FIRMWARE_VERSION
-        if supported:
+        logger.info("Body S/N 0x%08x, HW version %i, color %i.",
+                    self.serial_number, self.body_hw_version, self.body_color.value)
+        if self.auto_initialize:
             self._initialize_robot()
-        else:
-            logger.error("Unsupported Cozmo firmware version %i. Only version %i is supported currently.",
-                         self.robot_fw_sig["version"], protocol_declaration.FIRMWARE_VERSION)
         self.dispatch(event.EvtRobotFound, self)
 
     def wait_for_robot(self, timeout: float = 5.0) -> None:
@@ -155,9 +179,6 @@ class Client(event.Dispatcher):
             self.add_handler(event.EvtRobotFound, lambda cli: e.set(), one_shot=True)
             if not e.wait(timeout):
                 raise exception.ConnectionTimeout("Failed to connect to Cozmo.")
-
-        if self.robot_fw_sig["version"] != protocol_declaration.FIRMWARE_VERSION:
-            raise exception.UnsupportedFirmwareVersion("Unsupported Cozmo firmware version.")
 
         if not self.serial_number:
             e = Event()
@@ -304,6 +325,11 @@ class Client(event.Dispatcher):
             if pkt.object_id in self.connected_objects:
                 del self.connected_objects[pkt.object_id]
 
+    def _on_debug_data(self, cli, pkt: protocol_encoder.DebugData):
+        del cli
+        msg = robot_debug.get_debug_message(pkt.name_id, pkt.format_id, pkt.args)
+        logger_robot.log(robot_debug.get_log_level(pkt.level), msg)
+
     def set_head_angle(self, angle: float, accel: float = 10.0, max_speed: float = 10.0,
                        duration: float = 0.0):
         pkt = protocol_encoder.SetHeadAngle(angle_rad=angle, accel_rad_per_sec2=accel,
@@ -436,3 +462,7 @@ class Client(event.Dispatcher):
     @property
     def anim_names(self) -> set:
         return self.get_anim_names()
+
+    def play_audio(self, fspec: str) -> audio.AudioManager:
+        self.audio.play_file(fspec)
+        return self.audio
