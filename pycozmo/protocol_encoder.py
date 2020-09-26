@@ -173,8 +173,10 @@ class ImageResolution(enum.Enum):
     QQQQVGA = 1
     QQQVGA = 2
     QQVGA = 3
+    # 320x240
     QVGA = 4
     CVGA = 5
+    # 640x480
     VGA = 6
     SVGA = 7
     XGA = 8

@@ -13,7 +13,7 @@ class TestBaseWindowCreate(unittest.TestCase):
         self.assertEqual(w.last_seq, 0)
         self.assertEqual(w.max_seq, 15)
 
-    def test_create_limted(self):
+    def test_create_limited(self):
         w = ReceiveWindow(4, size=5)
         self.assertEqual(w.size, 5)
         self.assertEqual(w.expected_seq, 1)

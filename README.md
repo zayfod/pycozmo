@@ -72,7 +72,7 @@ Advanced:
 - [cube_light_animation.py](examples/cube_light_animation.py) - demonstrates cube LED animation control
 - [charger_lights.py](examples/charger_lights.py) - demonstrates Cozmo charging platform LED control
 - [audio.py](examples/audio.py) - demonstrates 22 kHz, 16-bit, mono WAVE file playback through Cozmo's speaker 
-- [nvram.py](examples/nvram.py) - domonstrates reading data from Cozmo's NVRAM (non-volatile memory)
+- [nvram.py](examples/nvram.py) - demonstrates reading data from Cozmo's NVRAM (non-volatile memory)
 - [procedural_face.py](examples/procedural_face.py) - demonstrates drawing a procedural face on Cozmo's display
 - [procedural_face_show.py](examples/procedural_face_show.py) - demonstrates generating a procedural face 
 - [anim.py](examples/anim.py) - demonstrates animating Cozmo

@@ -324,7 +324,7 @@ class ProtocolGenerator(object):
                 self.f.write(
                     ",\n                 {name}={default}".format(name=argument.name, default=argument.default))
 
-    def generate_arugment_assignments(self, struct: protocol_declaration.Struct):
+    def generate_argument_assignments(self, struct: protocol_declaration.Struct):
         if struct.arguments:
             for argument in struct.arguments:
                 if argument.description:
@@ -337,10 +337,10 @@ class ProtocolGenerator(object):
         else:
             self.f.write("        pass\n")
 
-    def generate_packet_arugment_assignments(self, packet: protocol_declaration.Packet):
+    def generate_packet_argument_assignments(self, packet: protocol_declaration.Packet):
         packet_id = "0x{:02x}".format(packet.id) if packet.id is not None else None
         self.f.write("        super().__init__({type}, packet_id={id})\n".format(type=packet.type, id=packet_id))
-        self.generate_arugment_assignments(packet)
+        self.generate_argument_assignments(packet)
 
     def generate_packet_encoding(self, struct: protocol_declaration.Struct):
         self.f.write(r"""
@@ -488,7 +488,7 @@ class {name}(Struct):
         self.f.write("    )\n\n    def __init__(self")
         self.generate_argument_defaults(struct)
         self.f.write("):\n")
-        self.generate_arugment_assignments(struct)
+        self.generate_argument_assignments(struct)
         self.generate_argument_methods(struct)
         self.generate_len_method(struct)
         self.generate_repr_method(struct)
@@ -507,7 +507,7 @@ class {name}(Packet):
         self.f.write("    )\n\n    def __init__(self")
         self.generate_argument_defaults(packet)
         self.f.write("):\n")
-        self.generate_packet_arugment_assignments(packet)
+        self.generate_packet_argument_assignments(packet)
         self.generate_argument_methods(packet)
         self.generate_len_method(packet)
         self.generate_repr_method(packet)

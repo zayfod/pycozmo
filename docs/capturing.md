@@ -112,7 +112,7 @@ PING 172.31.1.1 (172.31.1.1) 56(84) bytes of data.
 ```
 
 
-Masquarading as a Cozmo
+Masquerading as a Cozmo
 -----------------------
 
 Install hostapd and dnsmasq:
@@ -209,7 +209,7 @@ $ sudo sysctl net.ipv4.ip_forward=1
 
 The Cozmo app always tries to communicate with Cozmo using the IP address 172.31.1.1 .
 
-Configure masquarading on wlan0 so that packets, coming from the Cozmo app, with source IP in the range 192.168.50.0/24,
+Configure masquerading on wlan0 so that packets, coming from the Cozmo app, with source IP in the range 192.168.50.0/24,
 reach Cozmo with the wlan0 IP address of the Linux machine.
 ```
 $ sudo iptables -t nat -A POSTROUTING -o wlan0 -j MASQUERADE
@@ -231,7 +231,7 @@ At this point, it should be possible to capture Cozmo communication using tcpdum
 $ sudo tcpdump -i wlan0 -w cozmo.pcap
 ```
 
-Connect to cozmo from the app. The app should find at least 2 Cozmos (one being the masquaraded Linux machine) and a
+Connect to cozmo from the app. The app should find at least 2 Cozmos (one being the masqueraded Linux machine) and a
 selection screen should show up.
 
 The captured PCAP file can be analyzed with [Wireshark](https://en.wikipedia.org/wiki/Wireshark) or with

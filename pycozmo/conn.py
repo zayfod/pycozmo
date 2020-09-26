@@ -88,7 +88,6 @@ class SendThread(Thread):
                 # Construct frames
                 raw_frames = []
                 framelen = 0
-                first_seq, pkts, last_ack = None, None, None
                 with self.lock:
                     first_seq = self.window.expected_seq
                     seq = first_seq

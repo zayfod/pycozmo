@@ -12,6 +12,7 @@ PyCozmo
    external/functions.md
    external/esp8266.md
    external/versions.md
+   external/hardware_versions.md
 
 .. toctree::
    :maxdepth: 2

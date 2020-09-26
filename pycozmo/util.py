@@ -31,7 +31,7 @@ class Angle:
     Args:
         radians (float): The number of radians the angle should represent
             (cannot be combined with ``degrees``)
-        degrees (float): The number of degress the angle should represent
+        degrees (float): The number of degrees the angle should represent
             (cannot be combined with ``radians``)
     """
 
