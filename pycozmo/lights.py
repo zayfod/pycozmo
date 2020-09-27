@@ -111,3 +111,6 @@ blue_light = protocol_encoder.LightState(on_color=blue.to_int16(), off_color=blu
 white_light = protocol_encoder.LightState(on_color=white.to_int16(), off_color=white.to_int16())
 #: Off/no light.
 off_light = protocol_encoder.LightState(on_color=off.to_int16(), off_color=off.to_int16())
+
+
+# TODO: Classes and methods for loading and cozmo_resources/config/engine/lights/*/*.json

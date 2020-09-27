@@ -30,6 +30,10 @@ from . import anim
 from . import anim_encoder
 from . import image_encoder
 from . import procedural_face
+from . import activity
+from . import behavior
+from . import emotions
+from . import brain
 
 
 __version__ = "0.7.0"

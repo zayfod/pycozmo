@@ -4,7 +4,7 @@ Animation clip preprocessing and playback.
 
 """
 
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Iterable
 from collections import defaultdict
 import math
 import time
@@ -135,3 +135,40 @@ class PreprocessedClip(object):
                 time.sleep(delay_ms)
 
         cli.conn.send(protocol_encoder.EndAnimation())
+
+
+class AnimationGroupMember:
+
+    __slots__ = [
+        "name",
+        "weight",
+        "cooldown_time",
+        "mood",
+    ]
+
+    def __init__(self, name: str, weight: float, cooldown_time: float, mood: str) -> None:
+        self.name = str(name)
+        self.weight = float(weight)
+        # seconds
+        self.cooldown_time = float(cooldown_time)
+        self.mood = str(mood)
+
+
+class AnimationGroup:
+
+    __slots__ = [
+        "members"
+    ]
+
+    def __init__(self, members: Iterable[AnimationGroupMember]) -> None:
+        self.members = members
+
+
+def load_animation_groups() -> Dict[str, AnimationGroup]:
+    # See cozmo_resources/assets/animationGroups/*/*.json
+    pass
+
+
+def load_cube_animation_group() -> Dict[str, AnimationGroup]:
+    # See cozmo_resources/assets/cubeAnimationGroupMap/CubeAnimationTriggerMap.json
+    pass
