@@ -33,7 +33,7 @@ def brain(cli: pycozmo.client.Client):
 
 def main():
     # Parse command-line.
-    args = parse_args()
+    args = parse_args()     # noqa
 
     # Update robot.
     try:
