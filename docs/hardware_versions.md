@@ -6,6 +6,7 @@ Cozmo Hardware Versions
 Hardware Version 4
 ------------------
 
+- fall 2016
 - does not have a button
 - come with platforms with LEDs?
 
@@ -19,7 +20,8 @@ Hardware Version 4
 Hardware Version 5
 ------------------
 
-- has a button
+- fall 2017
+- has an off button (EU Certification)
 - observed to have factory firmware v10501
 - teardown - https://www.microcontrollertips.com/teardown-anki-cozmo-vector/
 
@@ -30,10 +32,18 @@ Hardware Version 5
 ```
 
 
+Hardware Version 6
+------------------
+
+- fall 2018
+- has an off button (Japan certification)
+
+
 Hardware Version 7
 ------------------
 
-- has a button
+- fall 2019
+- has an on/off button
 - observed with development units
 - observed to have factory firmware v10700
 - observed to report undocumented color "5"
