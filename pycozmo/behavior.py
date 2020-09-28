@@ -2,10 +2,6 @@
 
 Behavior classes.
 
-See:
-- cozmo_resources/config/engine/behaviorSystem/behaviors/*/*.json
-- cozmo_resources/config/engine/behaviorSystem/reactionTrigger_behavior_map.json
-
 """
 
 from typing import Dict, Any
@@ -16,14 +12,16 @@ __all__ = [
     "Behavior",
 
     "load_behaviors",
+    "load_reaction_trigger_behavior_map",
 ]
 
 
 class ReactionTrigger:
     """ Reaction trigger representation class. """
 
-    def __init__(self):
-        pass
+    def __init__(self, name: str):
+        self.name = str(name)
+        # TODO
 
 
 class Behavior:
@@ -54,5 +52,13 @@ class Behavior:
         self.params = dict(params)
 
 
-def load_behaviors():
-    pass
+def load_behaviors() -> Dict[str, Behavior]:
+    # TODO: Load cozmo_resources/config/engine/behaviorSystem/behaviors/*/*.json
+    behaviors = {}
+    return behaviors
+
+
+def load_reaction_trigger_behavior_map() -> Dict[str, ReactionTrigger]:
+    # TODO: Load cozmo_resources/config/engine/behaviorSystem/reactionTrigger_behavior_map.json
+    reaction_trigger_behavior_map = {}
+    return reaction_trigger_behavior_map

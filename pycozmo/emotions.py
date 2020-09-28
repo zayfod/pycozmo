@@ -2,39 +2,41 @@
 
 Emotion classes.
 
-See:
-- cozmo_resources/config/engine/mood_config.json
-
 """
 
 from typing import Dict
-import enum
 
 
 __all__ = [
     "EmotionType",
     "EmotionEvent",
 
+    "load_emotion_types",
     "load_emotion_events",
 ]
 
 
-class EmotionType(enum.Enum):
-    WantToPlay = 1
-    Social = 2
-    Confident = 3
-    Excited = 4
-    Happy = 5
-    Calm = 6
-    Brave = 7
+class EmotionType:
+    """ Emotion type class. """
+
+    __slots__ = [
+        "name",
+        "value",
+    ]
+
+    def __init__(self, name: str, value: float = 0.0) -> None:
+        self.name = str(name)
+        self.value = float(value)
+
+    def update(self):
+        """ Update from decay function. """
+        # TODO
+        pass
 
 
 class EmotionEvent:
-    """
-    EmotionEvent representation class.
+    """ EmotionEvent representation class. """
 
-    See cozmo_resources/config/engine/emotionevents/*.json
-    """
     __slots__ = [
         "name",
         "affectors",
@@ -45,5 +47,21 @@ class EmotionEvent:
         self.affectors = dict(affectors)
 
 
-def load_emotion_events():
-    pass
+def load_emotion_types() -> Dict[str, EmotionType]:
+    # TODO: Load cozmo_resources/config/engine/mood_config.json and construct decay functions.
+    emotion_types = {
+        "WantToPlay": EmotionType("WantToPlay"),
+        "Social": EmotionType("Social"),
+        "Confident": EmotionType("Confident"),
+        "Excited": EmotionType("Excited"),
+        "Happy": EmotionType("Happy"),
+        "Calm": EmotionType("Calm"),
+        "Brave": EmotionType("Brave"),
+    }
+    return emotion_types
+
+
+def load_emotion_events() -> Dict[str, EmotionEvent]:
+    # TODO: Load cozmo_resources/config/engine/emotionevents/*.json
+    emotion_events = {}
+    return emotion_events

@@ -2,11 +2,10 @@
 
 Activity classes.
 
-See:
-- cozmo_resources/config/engine/behaviorSystem/activities_config.json
-- cozmo_resources/config/engine/behaviorSystem/activities/*/*.json
-
 """
+
+from typing import Dict
+
 
 __all__ = [
     "Activity",
@@ -36,6 +35,9 @@ class Activity:
         self.strategy = str(strategy)
 
 
-def load_activities():
-    # TODO
-    pass
+def load_activities() -> Dict[str, Activity]:
+    # TODO: Load:
+    #  - cozmo_resources/config/engine/behaviorSystem/activities_config.json
+    #  - cozmo_resources/config/engine/behaviorSystem/activities/*/*.json
+    activities = {}
+    return activities

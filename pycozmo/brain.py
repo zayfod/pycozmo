@@ -14,6 +14,7 @@ from . import emotions
 from . import behavior
 from . import activity
 from . import anim
+from . import util
 
 
 __all__ = [
@@ -29,12 +30,13 @@ class Brain:
 
         self.activities = activity.load_activities()
         self.behaviors = behavior.load_behaviors()
+        self.reaction_trigger_beahvior_map = behavior.load_reaction_trigger_behavior_map()
         self.animation_groups = anim.load_animation_groups()    # TODO: Move to Client?
-        self.emotion_types = {emotion.name: 0.0 for emotion in emotions.EmotionType}
+        self.emotion_types = emotions.load_emotion_types()
         self.emotion_events = emotions.load_emotion_events()
 
         self.cli = cli
-        self.cli.load_anims("...")
+        self.cli.load_anims(str(util.get_cozmo_anim_dir()))
         self.cli.add_handler(event.EvtCliffDetectedChange, self.on_cliff_detected)
         # TODO: ...
 
@@ -123,16 +125,17 @@ class Brain:
             self.update_emotion_types()
             self.update_face()
             # TODO: hiccups
-            if cnt % (30 * 10) == 0:
+            if cnt % (30 * 60) == 0:
                 self.post_reaction("Hiccup")
 
             cnt += 1
             time.sleep(1/30)
 
     def update_emotion_types(self) -> None:
-        # TODO: Update emotion types from their decay functios.
-        pass
+        """ Update emotion types from their decay functions. """
+        for emotion_type in self.emotion_types.values():
+            emotion_type.update()
 
     def update_face(self) -> None:
-        # TODO: Procedural face update when an animation is not running.
+        """ Procedural face update when an animation is not running. """
         pass

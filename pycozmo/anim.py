@@ -22,6 +22,11 @@ from . import robot
 
 __all__ = [
     "PreprocessedClip",
+    "AnimationGroupMember",
+    "AnimationGroup",
+
+    "load_animation_groups",
+    "load_cube_animation_group",
 ]
 
 
@@ -165,10 +170,12 @@ class AnimationGroup:
 
 
 def load_animation_groups() -> Dict[str, AnimationGroup]:
-    # See cozmo_resources/assets/animationGroups/*/*.json
-    pass
+    # TODO: Load cozmo_resources/assets/animationGroups/*/*.json
+    animation_groups = {}
+    return animation_groups
 
 
 def load_cube_animation_group() -> Dict[str, AnimationGroup]:
-    # See cozmo_resources/assets/cubeAnimationGroupMap/CubeAnimationTriggerMap.json
-    pass
+    # TODO: Load cozmo_resources/assets/cubeAnimationGroupMap/CubeAnimationTriggerMap.json
+    cube_animation_groups = {}
+    return cube_animation_groups
