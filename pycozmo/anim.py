@@ -4,7 +4,7 @@ Animation clip preprocessing and playback.
 
 """
 
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Iterable
 from collections import defaultdict
 import math
 import time
@@ -22,6 +22,11 @@ from . import robot
 
 __all__ = [
     "PreprocessedClip",
+    "AnimationGroupMember",
+    "AnimationGroup",
+
+    "load_animation_groups",
+    "load_cube_animation_group",
 ]
 
 
@@ -135,3 +140,42 @@ class PreprocessedClip(object):
                 time.sleep(delay_ms)
 
         cli.conn.send(protocol_encoder.EndAnimation())
+
+
+class AnimationGroupMember:
+
+    __slots__ = [
+        "name",
+        "weight",
+        "cooldown_time",
+        "mood",
+    ]
+
+    def __init__(self, name: str, weight: float, cooldown_time: float, mood: str) -> None:
+        self.name = str(name)
+        self.weight = float(weight)
+        # seconds
+        self.cooldown_time = float(cooldown_time)
+        self.mood = str(mood)
+
+
+class AnimationGroup:
+
+    __slots__ = [
+        "members"
+    ]
+
+    def __init__(self, members: Iterable[AnimationGroupMember]) -> None:
+        self.members = members
+
+
+def load_animation_groups() -> Dict[str, AnimationGroup]:
+    # TODO: Load cozmo_resources/assets/animationGroups/*/*.json
+    animation_groups = {}
+    return animation_groups
+
+
+def load_cube_animation_group() -> Dict[str, AnimationGroup]:
+    # TODO: Load cozmo_resources/assets/cubeAnimationGroupMap/CubeAnimationTriggerMap.json
+    cube_animation_groups = {}
+    return cube_animation_groups

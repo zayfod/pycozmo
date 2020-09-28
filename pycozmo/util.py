@@ -5,6 +5,8 @@ Utility classes and functions.
 """
 
 from typing import Optional, Tuple
+import os
+import pathlib
 import math
 
 
@@ -21,6 +23,9 @@ __all__ = [
     'hex_dump',
     'hex_load',
     'frange',
+    'get_pycozmo_dir',
+    'get_cozmo_asset_dir',
+    'get_cozmo_anim_dir',
 ]
 
 
@@ -766,3 +771,22 @@ def frange(start, stop, step):
     while x < stop:
         yield x
         x += step
+
+
+def get_pycozmo_dir() -> pathlib.Path:
+    """ Get PyCozmo directory. """
+    default_dir = pathlib.Path.home() / ".pycozmo"
+    path = pathlib.Path(os.environ.get('PYCOZMO_DIR', str(default_dir)))
+    return path
+
+
+def get_cozmo_asset_dir() -> pathlib.Path:
+    """ Get Cozmo asset directory. """
+    path = get_pycozmo_dir() / "assets"
+    return path
+
+
+def get_cozmo_anim_dir() -> pathlib.Path:
+    """ Get Cozmo animation asset directory. """
+    path = get_cozmo_asset_dir() / "cozmo_resources" / "assets" / "animations"
+    return path
