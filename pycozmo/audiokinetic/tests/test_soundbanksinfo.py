@@ -55,7 +55,8 @@ class TestLoadSoundbanksInfo(unittest.TestCase):
             <ShortName>SFX</ShortName>
             <Path>SFX.bnk</Path>
             <IncludedEvents>
-                <Event Id="72626837" Name="Play__Codelab__SFX_Alien_Invasion_UFO" ObjectPath="\Events\Gameplay_SFX\Codelab__SFX\Play__Codelab__SFX_Alien_Invasion_UFO"/>
+                <Event Id="72626837" Name="Play__Codelab__SFX_Alien_Invasion_UFO"
+                    ObjectPath="\Events\Gameplay_SFX\Codelab__SFX\Play__Codelab__SFX_Alien_Invasion_UFO"/>
             </IncludedEvents>
         </SoundBank>
     </SoundBanks>
@@ -111,7 +112,7 @@ class TestLoadSoundbanksInfo(unittest.TestCase):
             <Path>SFX\Codelab__SFX_General_Negative_4B76E3B5.wem</Path>
         </File>
     </StreamedFiles>
-    <SoundBanks>    
+    <SoundBanks>
         <SoundBank Id="393239870" Language="SFX">
             <ObjectPath>\SoundBanks\Default Work Unit\SFX</ObjectPath>
             <ShortName>SFX</ShortName>
