@@ -54,6 +54,34 @@ class BehaviorChooser:
         return None
 
 
+class Objective:
+    def __init__(self,
+                 objective: str,
+                 behavior_ID: str,
+                 ignore_if_locked: str,
+                 probability_to_require_objective: float,
+                 random_completions_needed_min: Optional[int] = 0,
+                 random_completions_needed_max: Optional[int] = 0) -> None:
+        self.objective = objective
+        self.behavior_ID = behavior_ID
+        self.ignore_if_locked = ignore_if_locked
+        self.probability_to_require_objective = probability_to_require_objective
+        self.random_completions_needed_min = random_completions_needed_min
+        self.random_completions_needed_max = random_completions_needed_max
+
+    @classmethod
+    def from_json(cls, data: Dict):
+        return cls(objective=data['objective'],
+                   behavior_ID=data['behaviorID'],
+                   ignore_if_locked=data['ignoreIfLocked'],
+                   probability_to_require_objective=data['probabilityToRequireObjective'],
+                   random_completions_needed_min=data['randomCompletionsNeededMin']
+                                            if 'randomCompletionsNeededMin' in data else None,
+                   random_completions_needed_max=data['randomCompletionsNeededMax']
+                                            if 'randomCompletionsNeededMax' in data else None,
+                )
+
+
 class Activity:
     """ Activity representation class. """
 
@@ -87,10 +115,26 @@ class BehaviorsActivity(Activity):
         if self.behavior_chooser:
             return self.behavior_chooser.choose()
 
+    @classmethod
+    def from_json(cls, data: Dict):
+        return cls(
+            BehaviorChooser.from_json(data['behaviorChooser'])
+                if 'behaviorChooser' in data else None,
+            activity_id=data['activityID'],
+            activity_type=data['activityType'],
+            strategy=data['activityStrategy']['type'])
+
 
 class VoiceCommandActivity(Activity):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+
+    @classmethod
+    def from_json(cls, data: Dict):
+        return cls(
+            activity_id=data['activityID'],
+            activity_type=data['activityType'],
+            strategy=data['activityStrategy']['type'])
 
 
 class FeedingActivity(Activity):
@@ -103,6 +147,15 @@ class FeedingActivity(Activity):
     def choose(self):
         if self.universal_chooser:
             return self.universal_chooser
+
+    @classmethod
+    def from_json(cls, data: Dict):
+        return cls(
+            universal_chooser=data['universalChooser']['behaviors']
+                                if 'universalChooser' in data else None,
+            activity_id=data['activityID'],
+            activity_type=data['activityType'],
+            strategy=data['activityStrategy']['type'])
 
 
 class FreeplayActivity(Activity):
@@ -121,6 +174,18 @@ class FreeplayActivity(Activity):
 
         super().__init__(*args, **kwargs)
 
+    @classmethod
+    def from_json(cls, data: Dict):
+        return cls(
+            cube_only_activity=data['desiredActivityNames']['cubeOnlyActivityName'],
+            face_only_activity=data['desiredActivityNames']['faceOnlyActivityName'],
+            face_and_cube_activity=data['desiredActivityNames']['faceAndCubeActivityName'],
+            no_face_no_cube_activity=data['desiredActivityNames']['noFaceNoCubeActivityName'],
+            sub_activities=data['subActivities'] if 'subActivities' in data else None,
+            activity_id=data['activityID'],
+            activity_type=data['activityType'],
+            strategy=data['activityStrategy']['type'])
+
 
 class SparkedActivity(Activity):
     def __init__(self,
@@ -131,8 +196,7 @@ class SparkedActivity(Activity):
                  behavior_objective: str,
                  soft_spark_trigger: str,
                  behavior_chooser: Optional[BehaviorChooser] = None,
-                 #TODO: class for activity_delegate
-                 sub_activity_delegate: Optional[Dict] = None,
+                 sub_activity_delegate: Optional[Activity] = None,
                  spark_success_trigger: Optional[str] = None,
                  spark_fail_trigger: Optional[str] = None,
                  drive_start_trigger: Optional[str] = None,
@@ -161,16 +225,43 @@ class SparkedActivity(Activity):
         if self.behavior_chooser:
             return self.behavior_chooser.choose()
 
+    @classmethod
+    def from_json(cls, data: Dict):
+        if 'subActivityDelegate' in data:
+            sub_act_delegate = from_dict(data['subActivityDelegate'])
+        else:
+            sub_act_delegate = None
+        return cls(
+            require_spark=data['requireSpark'],
+            min_time_secs=data['minTimeSecs'],
+            max_time_secs=data['maxTimeSecs'],
+            reps=data['numberOfRepetitions'],
+            behavior_objective=data['behaviorObjective'],
+            soft_spark_trigger=data['softSparkTrigger'],
+            behavior_chooser=BehaviorChooser.from_json(data['behaviorChooser'])
+                if 'behaviorChooser' in data else None,
+            sub_activity_delegate=sub_act_delegate,
+            spark_success_trigger=data['sparksSuccessTrigger'] if 'sparksSuccessTrigger' in data else None,
+            spark_fail_trigger=data['sparksFailTrigger'] if 'sparksFailTrigger' in data else None,
+            drive_start_trigger=data['driveStartAnimTrigger'] if 'driveStartAnimTrigger' in data else None,
+            drive_loop_trigger=data['driveLoopAnimTrigger'] if 'driveLoopAnimTrigger' in data else None,
+            drive_stop_trigger=data['driveStopAnimTrigger'] if 'driveStopAnimTrigger' in data else None,
+            activity_id=data['activityID'],
+            activity_type=data['activityType'],
+            strategy=data['activityStrategy']['type'])
+
 
 class PyramidActivity(Activity):
     def __init__(self,
                  setup_chooser: BehaviorChooser,
                  build_chooser: BehaviorChooser,
-                 interlude_chooser: BehaviorChooser,
+                 interlude_chooser: Optional[BehaviorChooser] = None,
+                 needs_action_id: Optional[str] = None,
                  *args, **kwargs):
         self.setup_chooser = setup_chooser
         self.build_chooser = build_chooser
         self.interlude_chooser = interlude_chooser
+        self.needs_action_id = needs_action_id
 
         super().__init__(*args, **kwargs)
 
@@ -178,14 +269,25 @@ class PyramidActivity(Activity):
         if self.setup_chooser:
             return self.setup_chooser.choose()
 
+    @classmethod
+    def from_json(cls, data: Dict):
+        return cls(
+            setup_chooser=BehaviorChooser.from_json(data['setupChooser']),
+            build_chooser=BehaviorChooser.from_json(data['buildChooser']),
+            interlude_chooser=BehaviorChooser.from_json(data['interludeBehaviorChooser'])
+            if 'interludeBehaviorChooser' in data else None,
+            needs_action_id=data['needsActionID'] if 'needsActionID' in data else None,
+            activity_id=data['activityID'],
+            activity_type=data['activityType'],
+            strategy=data['activityStrategy']['type'])
+
 
 class SocializeActivity(Activity):
     def __init__(self,
                  behavior_chooser: BehaviorChooser,
                  interlude_chooser: BehaviorChooser,
                  max_face_iterations: int,
-                 #TODO: class for objectives
-                 required_objectives: List,
+                 required_objectives: List[Objective],
                 *args, **kwargs):
         self.behavior_chooser = behavior_chooser
         self.interlude_chooser = interlude_chooser
@@ -197,6 +299,17 @@ class SocializeActivity(Activity):
     def choose(self):
         if self.behavior_chooser:
             return self.behavior_chooser.choose()
+
+    @classmethod
+    def from_json(cls, data: Dict):
+        return cls(
+            behavior_chooser=BehaviorChooser.from_json(data['behaviorChooser']),
+            interlude_chooser=BehaviorChooser.from_json(data['interludeBehaviorChooser']),
+            max_face_iterations=data['maxNumFindFacesSearchIterations'],
+            required_objectives=[Objective.from_json(d) for d in data['requiredObjectives']],
+            activity_id=data['activityID'],
+            activity_type=data['activityType'],
+            strategy=data['activityStrategy']['type'])
 
 
 class NeedsActivity(Activity):
@@ -210,86 +323,39 @@ class NeedsActivity(Activity):
         if self.behavior_chooser:
             return self.behavior_chooser.choose()
 
+    @classmethod
+    def from_json(cls, data: Dict):
+        return cls(
+            behavior_chooser=BehaviorChooser.from_json(data['behaviorChooser']),
+            activity_id=data['activityID'],
+            activity_type=data['activityType'],
+            strategy=data['activityStrategy']['type'])
+
 
 def from_dict(info: Dict) -> Activity:
     if info['activityType'] == 'VoiceCommand':
-        return VoiceCommandActivity(
-            activity_id=info['activityID'],
-            activity_type=info['activityType'],
-            strategy=info['activityStrategy']['type'])
+        return VoiceCommandActivity.from_json(info)
 
     elif info['activityType'] == 'BehaviorsOnly':
-        return BehaviorsActivity(
-            BehaviorChooser.from_json(info['behaviorChooser'])
-                if 'behaviorChooser' in info else None,
-            activity_id=info['activityID'],
-            activity_type=info['activityType'],
-            strategy=info['activityStrategy']['type'])
+        return BehaviorsActivity.from_json(info)
 
     elif info['activityType'] == 'Feeding':
-        return FeedingActivity(
-            universal_chooser=info['universalChooser']['behaviors']
-                                if 'universalChooser' in info else None,
-            activity_id=info['activityID'],
-            activity_type=info['activityType'],
-            strategy=info['activityStrategy']['type'])
+        return FeedingActivity.from_json(info)
 
     elif info['activityType'] == 'Freeplay':
-        return FreeplayActivity(
-            cube_only_activity=info['desiredActivityNames']['cubeOnlyActivityName'],
-            face_only_activity=info['desiredActivityNames']['faceOnlyActivityName'],
-            face_and_cube_activity=info['desiredActivityNames']['faceAndCubeActivityName'],
-            no_face_no_cube_activity=info['desiredActivityNames']['noFaceNoCubeActivityName'],
-            sub_activities=info['subActivities'] if 'subActivities' in info else None,
-            activity_id=info['activityID'],
-            activity_type=info['activityType'],
-            strategy=info['activityStrategy']['type'])
+        return FreeplayActivity.from_json(info)
 
     elif info['activityType'] == 'Sparked':
-        return SparkedActivity(
-            require_spark=info['requireSpark'],
-            min_time_secs=info['minTimeSecs'],
-            max_time_secs=info['maxTimeSecs'],
-            reps=info['numberOfRepetitions'],
-            behavior_objective=info['behaviorObjective'],
-            soft_spark_trigger=info['softSparkTrigger'],
-            behavior_chooser=BehaviorChooser.from_json(info['behaviorChooser'])
-                if 'behaviorChooser' in info else None,
-            sub_activity_delegate=info['subActivityDelegate'] if 'subActivityDelegate' in info else None,
-            spark_success_trigger=info['sparksSuccessTrigger'] if 'sparksSuccessTrigger' in info else None,
-            spark_fail_trigger=info['sparksFailTrigger'] if 'sparksFailTrigger' in info else None,
-            drive_start_trigger=info['driveStartAnimTrigger'] if 'driveStartAnimTrigger' in info else None,
-            drive_loop_trigger=info['driveLoopAnimTrigger'] if 'driveLoopAnimTrigger' in info else None,
-            drive_stop_trigger=info['driveStopAnimTrigger'] if 'driveStopAnimTrigger' in info else None,
-            activity_id=info['activityID'],
-            activity_type=info['activityType'],
-            strategy=info['activityStrategy']['type'])
+        return SparkedActivity.from_json(info)
 
     elif info['activityType'] == 'BuildPyramid':
-        return PyramidActivity(
-            setup_chooser=BehaviorChooser.from_json(info['setupChooser']),
-            build_chooser=BehaviorChooser.from_json(info['buildChooser']),
-            interlude_chooser=BehaviorChooser.from_json(info['interludeBehaviorChooser']),
-            activity_id=info['activityID'],
-            activity_type=info['activityType'],
-            strategy=info['activityStrategy']['type'])
+        return PyramidActivity.from_json(info)
 
     elif info['activityType'] == 'Socialize':
-        return SocializeActivity(
-            behavior_chooser=BehaviorChooser.from_json(info['behaviorChooser']),
-            interlude_chooser=BehaviorChooser.from_json(info['interludeBehaviorChooser']),
-            max_face_iterations=info['maxNumFindFacesSearchIterations'],
-            required_objectives=info['requiredObjectives'],
-            activity_id=info['activityID'],
-            activity_type=info['activityType'],
-            strategy=info['activityStrategy']['type'])
+        return SocializeActivity.from_json(info)
 
     elif info['activityType'] == 'NeedsExpression':
-        return NeedsActivity(
-            behavior_chooser=BehaviorChooser.from_json(info['behaviorChooser']),
-            activity_id=info['activityID'],
-            activity_type=info['activityType'],
-            strategy=info['activityStrategy']['type'])
+        return NeedsActivity.from_json(info)
 
     else:
         return Activity(
