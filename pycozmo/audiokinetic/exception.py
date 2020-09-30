@@ -4,8 +4,17 @@ AudioKinetic WWave exceptions.
 
 """
 
+from .. import exception
 
-class AudioKineticBaseError(Exception):
+
+__all__ = [
+    "AudioKineticBaseError",
+    "AudioKineticFormatError",
+    "AudioKineticIOError",
+]
+
+
+class AudioKineticBaseError(exception.PyCozmoException):
     """ AudioKinetic WWise base error. """
     pass
 
@@ -17,3 +26,4 @@ class AudioKineticFormatError(AudioKineticBaseError):
 
 class AudioKineticIOError(AudioKineticBaseError):
     """ File I/O error. """
+    pass

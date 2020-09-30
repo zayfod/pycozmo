@@ -8,11 +8,12 @@ References:
 
 """
 
-from typing import BinaryIO, Iterable
+from typing import BinaryIO, Iterable, Dict, Any
 import struct
 from chunk import Chunk
 
 from . import exception
+from . import soundbanksinfo
 
 
 class File:
@@ -42,17 +43,21 @@ class SFX:
     __slots__ = [
         "soundbank_id",
         "id",
+        "name",
         "location",
         "file_id",
         "length",
         "type",
     ]
 
-    def __init__(self, soundbank_id: int, sfx_id: int, location: int, file_id: int, length: int, sfx_type: int) -> None:
+    def __init__(self, soundbank_id: int, sfx_id: int, name: str,
+                 location: int, file_id: int, length: int, sfx_type: int) -> None:
         # SoundBank ID.
         self.soundbank_id = int(soundbank_id)
         # SFX ID.
         self.id = int(sfx_id)
+        # SFX from SoundbankInfo.xml, if available.
+        self.name = str(name)
         # Location.
         #   - 0: "embedded"
         #       - the file is in the SoundBank
@@ -104,14 +109,17 @@ class Event:
     __slots__ = [
         "soundbank_id",
         "id",
+        "name",
         "action_ids"
     ]
 
-    def __init__(self, soundbank_id: int, event_id: int, action_ids: Iterable[int]) -> None:
+    def __init__(self, soundbank_id: int, event_id: int, name: str, action_ids: Iterable[int]) -> None:
         # SoundBank ID.
         self.soundbank_id = int(soundbank_id)
         # Event ID.
         self.id = int(event_id)
+        # Event name from SoundbankInfo.xml, if available.
+        self.name = str(name)
         # Action IDs.
         self.action_ids = action_ids
 
@@ -122,6 +130,7 @@ class SoundBank:
     __slots__ = [
         "fspec",
         "id",
+        "name",
         "version",
         "data_offset",
         "objs",
@@ -132,6 +141,8 @@ class SoundBank:
         self.fspec = ""
         # SoundBank ID.
         self.id = -1
+        # SoundBank name from SoundbankInfo.xml, if available.
+        self.name = ""
         # SoundBank version.
         self.version = -1
         # DATA chunk start offset for loading WEM files.
@@ -142,8 +153,9 @@ class SoundBank:
 
 class SoundBankReader:
 
-    def __init__(self):
-        self.soundbank = None
+    def __init__(self, soundbankinfo: Dict[int, Any]) -> None:
+        self.soundbankinfo = soundbankinfo
+        self._soundbank = None
 
     @staticmethod
     def _read_uint8(chunk: Chunk) -> int:
@@ -160,26 +172,35 @@ class SoundBankReader:
         chunk = Chunk(f, bigendian=False, align=False)
         if chunk.getname() != b"BKHD":
             raise exception.AudioKineticFormatError("Not an AudioKinetic WWise SoundBank file.")
-        self.soundbank.version = self._read_uint32(chunk)
-        self.soundbank.id = self._read_uint32(chunk)
+        self._soundbank.version = self._read_uint32(chunk)
+        self._soundbank.id = self._read_uint32(chunk)
         # There are additional 6 unknown uint32 values.
         chunk.skip()
+        # Get name from SoundBankInfo
+        info = self.soundbankinfo.get(self._soundbank.id)
+        self._soundbank.name = info.name if isinstance(info, soundbanksinfo.SoundBankInfo) else ""
 
     def _read_data_index(self, chunk: Chunk) -> None:
         """ Read Data Index (DIDX) chunk."""
         num_objects = chunk.getsize() // 12
         for i in range(num_objects):
-            file_id, offset, length = struct.unpack("<LLL", chunk.read(12))
+            try:
+                file_id, offset, length = struct.unpack("<LLL", chunk.read(12))
+            except struct.error as e:
+                raise exception.AudioKineticIOError("Failed to read Data Index (DIDX) chunk.") from e
             assert file_id
             assert length
-            assert file_id not in self.soundbank.objs
-            self.soundbank.objs[file_id] = File(self.soundbank.id, file_id, offset, length)
+            assert file_id not in self._soundbank.objs
+            self._soundbank.objs[file_id] = File(self._soundbank.id, file_id, offset, length)
 
     def _read_hirc(self, chunk: Chunk) -> None:
         """ Read HIRC chunk. """
         num_objects = self._read_uint32(chunk)
         for i in range(num_objects):
-            object_type, object_len, object_id = struct.unpack("<BLL", chunk.read(9))
+            try:
+                object_type, object_len, object_id = struct.unpack("<BLL", chunk.read(9))
+            except struct.error as e:
+                raise exception.AudioKineticIOError("Failed to read HIRC chunk.") from e
             assert object_id
             assert object_type
             assert object_len
@@ -187,33 +208,52 @@ class SoundBankReader:
             obj_data = chunk.read(object_len)
             if object_type == 2:
                 # Sound effect/voice
-                _, location, file_id, length, sfx_type = struct.unpack_from('<LBLLL', obj_data)
+                try:
+                    _, location, file_id, length, sfx_type = struct.unpack_from('<LBLLL', obj_data)
+                except struct.error as e:
+                    raise exception.AudioKineticIOError("Failed to read SFX object.") from e
                 assert location in (0, 1, 2)
                 assert file_id
                 assert sfx_type in (0, 1)
-                assert object_id not in self.soundbank.objs
-                self.soundbank.objs[object_id] = SFX(
-                    self.soundbank.id, object_id, location, file_id, length, sfx_type)
+                assert object_id not in self._soundbank.objs
+                # Get name from SoundBankInfo
+                info = self.soundbankinfo.get(object_id)
+                name = info.name if isinstance(info, soundbanksinfo.FileInfo) else ""
+                assert object_id not in self._soundbank.objs
+                self._soundbank.objs[object_id] = SFX(
+                    self._soundbank.id, object_id, name, location, file_id, length, sfx_type)
             elif object_type == 3:
                 # Event Action
-                act_scope, act_type, reference_id, zero = struct.unpack_from('<BBLB', obj_data)
+                try:
+                    act_scope, act_type, reference_id, zero = struct.unpack_from('<BBLB', obj_data)
+                except struct.error as e:
+                    raise exception.AudioKineticIOError("Failed to read event action object.") from e
                 assert act_scope in (1, 2, 3, 4, 8)
                 assert act_type in (1, 2, 3, 4, 18, 19, 25, 30, 33)
                 assert zero == 0
-                assert object_id not in self.soundbank.objs
-                self.soundbank.objs[object_id] = EventAction(
-                    self.soundbank.id, object_id, act_scope, act_type, reference_id)
+                assert object_id not in self._soundbank.objs
+                self._soundbank.objs[object_id] = EventAction(
+                    self._soundbank.id, object_id, act_scope, act_type, reference_id)
             elif object_type == 4:
                 # Event
                 action_ids = []
-                num_act_ids = struct.unpack_from('<L', obj_data)[0]
+                try:
+                    num_act_ids = struct.unpack_from('<L', obj_data)[0]
+                except struct.error as e:
+                    raise exception.AudioKineticIOError("Failed to event object.") from e
                 for j in range(num_act_ids):
-                    action_id = struct.unpack_from('<L', obj_data, 4 + j * 4)[0]
+                    try:
+                        action_id = struct.unpack_from('<L', obj_data, 4 + j * 4)[0]
+                    except struct.error as e:
+                        raise exception.AudioKineticIOError("Failed to read event object.") from e
                     assert action_id
                     action_ids.append(action_id)
-                assert object_id not in self.soundbank.objs
-                self.soundbank.objs[object_id] = Event(
-                    self.soundbank.id, object_id, action_ids)
+                # Get name from SoundBankInfo
+                info = self.soundbankinfo.get(object_id)
+                name = info.name if isinstance(info, soundbanksinfo.EventInfo) else ""
+                assert object_id not in self._soundbank.objs
+                self._soundbank.objs[object_id] = Event(
+                    self._soundbank.id, object_id, name, action_ids)
             else:
                 # Skip unknown objects.
                 pass
@@ -221,8 +261,8 @@ class SoundBankReader:
     def load_file(self, f: BinaryIO, fspec: str) -> SoundBank:
         """ Load a SoundBank .bnk file object and return a SoundBank object. """
 
-        self.soundbank = SoundBank()
-        self.soundbank.fspec = fspec
+        self._soundbank = SoundBank()
+        self._soundbank.fspec = fspec
 
         # Read header.
         try:
@@ -238,7 +278,7 @@ class SoundBankReader:
                 if chunkname == b"DIDX":
                     self._read_data_index(chunk)
                 elif chunkname == b"DATA":
-                    self.soundbank.data_offset = f.tell()
+                    self._soundbank.data_offset = f.tell()
                 elif chunkname == b"HIRC":
                     self._read_hirc(chunk)
                 else:
@@ -251,7 +291,10 @@ class SoundBankReader:
             except (OSError, ValueError, RuntimeError) as e:
                 raise exception.AudioKineticIOError("Failed reading SoundBank file.") from e
 
-        return self.soundbank
+        soundbank = self._soundbank
+        self._soundbank = None
+
+        return soundbank
 
     def load(self, fspec: str) -> SoundBank:
         """ Load a SoundBank .bnk file and return a SoundBank object. """
