@@ -47,7 +47,7 @@ class BehaviorChooser:
             else:
                 return None
         elif self.choice_type == 'Scoring':
-            #TODO: add score based choice method
+            # TODO: add score based choice method
             pass
         else:
             print(self.choice_type)
@@ -76,10 +76,9 @@ class Objective:
                    ignore_if_locked=data['ignoreIfLocked'],
                    probability_to_require_objective=data['probabilityToRequireObjective'],
                    random_completions_needed_min=data['randomCompletionsNeededMin']
-                                            if 'randomCompletionsNeededMin' in data else None,
+                   if 'randomCompletionsNeededMin' in data else None,
                    random_completions_needed_max=data['randomCompletionsNeededMax']
-                                            if 'randomCompletionsNeededMax' in data else None,
-                )
+                   if 'randomCompletionsNeededMax' in data else None)
 
 
 class Activity:
@@ -119,7 +118,7 @@ class BehaviorsActivity(Activity):
     def from_json(cls, data: Dict):
         return cls(
             BehaviorChooser.from_json(data['behaviorChooser'])
-                if 'behaviorChooser' in data else None,
+            if 'behaviorChooser' in data else None,
             activity_id=data['activityID'],
             activity_type=data['activityType'],
             strategy=data['activityStrategy']['type'])
@@ -152,7 +151,7 @@ class FeedingActivity(Activity):
     def from_json(cls, data: Dict):
         return cls(
             universal_chooser=data['universalChooser']['behaviors']
-                                if 'universalChooser' in data else None,
+            if 'universalChooser' in data else None,
             activity_id=data['activityID'],
             activity_type=data['activityType'],
             strategy=data['activityStrategy']['type'])
@@ -201,14 +200,14 @@ class SparkedActivity(Activity):
                  spark_fail_trigger: Optional[str] = None,
                  drive_start_trigger: Optional[str] = None,
                  drive_loop_trigger: Optional[str] = None,
-                 drive_stop_trigger: Optional[str]=None,
+                 drive_stop_trigger: Optional[str] = None,
                  *args, **kwargs) -> None:
         self.require_spark = require_spark
         self.min_time = min_time_secs
         self.max_time = max_time_secs
         self.reps = reps
         self.behavior_objective = behavior_objective
-        self.soft_spark_trigger =soft_spark_trigger
+        self.soft_spark_trigger = soft_spark_trigger
 
         self.behavior_chooser = behavior_chooser
         self.sub_activity_delegate = sub_activity_delegate
@@ -239,13 +238,18 @@ class SparkedActivity(Activity):
             behavior_objective=data['behaviorObjective'],
             soft_spark_trigger=data['softSparkTrigger'],
             behavior_chooser=BehaviorChooser.from_json(data['behaviorChooser'])
-                if 'behaviorChooser' in data else None,
+            if 'behaviorChooser' in data else None,
             sub_activity_delegate=sub_act_delegate,
-            spark_success_trigger=data['sparksSuccessTrigger'] if 'sparksSuccessTrigger' in data else None,
-            spark_fail_trigger=data['sparksFailTrigger'] if 'sparksFailTrigger' in data else None,
-            drive_start_trigger=data['driveStartAnimTrigger'] if 'driveStartAnimTrigger' in data else None,
-            drive_loop_trigger=data['driveLoopAnimTrigger'] if 'driveLoopAnimTrigger' in data else None,
-            drive_stop_trigger=data['driveStopAnimTrigger'] if 'driveStopAnimTrigger' in data else None,
+            spark_success_trigger=data['sparksSuccessTrigger']
+            if 'sparksSuccessTrigger' in data else None,
+            spark_fail_trigger=data['sparksFailTrigger']
+            if 'sparksFailTrigger' in data else None,
+            drive_start_trigger=data['driveStartAnimTrigger']
+            if 'driveStartAnimTrigger' in data else None,
+            drive_loop_trigger=data['driveLoopAnimTrigger']
+            if 'driveLoopAnimTrigger' in data else None,
+            drive_stop_trigger=data['driveStopAnimTrigger']
+            if 'driveStopAnimTrigger' in data else None,
             activity_id=data['activityID'],
             activity_type=data['activityType'],
             strategy=data['activityStrategy']['type'])
@@ -288,7 +292,7 @@ class SocializeActivity(Activity):
                  interlude_chooser: BehaviorChooser,
                  max_face_iterations: int,
                  required_objectives: List[Objective],
-                *args, **kwargs):
+                 *args, **kwargs):
         self.behavior_chooser = behavior_chooser
         self.interlude_chooser = interlude_chooser
         self.max_face_iterations = max_face_iterations
@@ -376,6 +380,8 @@ def get_activity_files(resource_dir: str) -> List[str]:
 
 
 def load_activities(resource_dir: str) -> Dict[str, Activity]:
+    """ Load activity map from cozmo resources. """
+
     activities = {}
     activity_files = get_activity_files(resource_dir)
 
@@ -396,5 +402,3 @@ def load_activities(resource_dir: str) -> Dict[str, Activity]:
                 activities[json_data['activityID']] = from_dict(json_data)
 
     return activities
-
-
