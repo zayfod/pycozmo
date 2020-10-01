@@ -4,7 +4,7 @@ AudioKinetic WWave exceptions.
 
 """
 
-from .. import exception
+import pycozmo
 
 
 __all__ = [
@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 
-class AudioKineticBaseError(exception.PyCozmoException):
+class AudioKineticBaseError(pycozmo.exception.PyCozmoException):
     """ AudioKinetic WWise base error. """
     pass
 
