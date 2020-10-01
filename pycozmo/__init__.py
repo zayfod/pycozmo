@@ -6,7 +6,7 @@ PyCozmo - a pure-Python Cozmo robot communication library.
 
 import sys
 
-from .logging import *
+from .logger import *
 from .run import *
 
 from .frame import Frame

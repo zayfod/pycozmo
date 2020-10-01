@@ -6,7 +6,7 @@ Cozmo protocol frame.
 
 from typing import List
 
-from .logging import logger_protocol
+from .logger import logger_protocol
 from .protocol_ast import FrameType, PacketType
 from .protocol_declaration import FRAME_ID, MIN_FRAME_SIZE
 from .protocol_base import Packet, UnknownCommand, UnknownEvent

@@ -11,7 +11,7 @@ from queue import Queue, Empty
 from threading import Thread, Lock
 from typing import Optional, Tuple, Any
 
-from .logging import logger, logger_protocol
+from .logger import logger, logger_protocol
 from .frame import Frame
 from .protocol_ast import PacketType
 from .protocol_base import Packet
