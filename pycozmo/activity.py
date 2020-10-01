@@ -30,7 +30,7 @@ class BehaviorChooser:
     def from_json(cls, data: Dict):
         return cls(
             choice_type=data['type'],
-            behaviors=data['behaviors'] if 'behaviors' in data else []
+            behaviors=data.get('behaviors', [])
         )
 
     def reset(self):
@@ -48,10 +48,9 @@ class BehaviorChooser:
                 return None
         elif self.choice_type == 'Scoring':
             # TODO: add score based choice method
-            pass
+            return None
         else:
-            print(self.choice_type)
-        return None
+            raise ValueError('Unknown choice type: {}'.format(self.choice_type))
 
 
 class Objective:
@@ -75,10 +74,8 @@ class Objective:
                    behavior_ID=data['behaviorID'],
                    ignore_if_locked=data['ignoreIfLocked'],
                    probability_to_require_objective=data['probabilityToRequireObjective'],
-                   random_completions_needed_min=data['randomCompletionsNeededMin']
-                   if 'randomCompletionsNeededMin' in data else None,
-                   random_completions_needed_max=data['randomCompletionsNeededMax']
-                   if 'randomCompletionsNeededMax' in data else None)
+                   random_completions_needed_min=data.get('randomCompletionsNeededMin', 0),
+                   random_completions_needed_max=data.get('randomCompletionsNeededMax', 0))
 
 
 class Activity:
@@ -180,7 +177,7 @@ class FreeplayActivity(Activity):
             face_only_activity=data['desiredActivityNames']['faceOnlyActivityName'],
             face_and_cube_activity=data['desiredActivityNames']['faceAndCubeActivityName'],
             no_face_no_cube_activity=data['desiredActivityNames']['noFaceNoCubeActivityName'],
-            sub_activities=data['subActivities'] if 'subActivities' in data else None,
+            sub_activities=data.get('subActivities'),
             activity_id=data['activityID'],
             activity_type=data['activityType'],
             strategy=data['activityStrategy']['type'])
@@ -240,16 +237,11 @@ class SparkedActivity(Activity):
             behavior_chooser=BehaviorChooser.from_json(data['behaviorChooser'])
             if 'behaviorChooser' in data else None,
             sub_activity_delegate=sub_act_delegate,
-            spark_success_trigger=data['sparksSuccessTrigger']
-            if 'sparksSuccessTrigger' in data else None,
-            spark_fail_trigger=data['sparksFailTrigger']
-            if 'sparksFailTrigger' in data else None,
-            drive_start_trigger=data['driveStartAnimTrigger']
-            if 'driveStartAnimTrigger' in data else None,
-            drive_loop_trigger=data['driveLoopAnimTrigger']
-            if 'driveLoopAnimTrigger' in data else None,
-            drive_stop_trigger=data['driveStopAnimTrigger']
-            if 'driveStopAnimTrigger' in data else None,
+            spark_success_trigger=data.get('sparksSuccessTrigger'),
+            spark_fail_trigger=data.get('sparksFailTrigger'),
+            drive_start_trigger=data.get('driveStartAnimTrigger'),
+            drive_loop_trigger=data.get('driveLoopAnimTrigger'),
+            drive_stop_trigger=data.get('driveStopAnimTrigger'),
             activity_id=data['activityID'],
             activity_type=data['activityType'],
             strategy=data['activityStrategy']['type'])
@@ -280,7 +272,7 @@ class PyramidActivity(Activity):
             build_chooser=BehaviorChooser.from_json(data['buildChooser']),
             interlude_chooser=BehaviorChooser.from_json(data['interludeBehaviorChooser'])
             if 'interludeBehaviorChooser' in data else None,
-            needs_action_id=data['needsActionID'] if 'needsActionID' in data else None,
+            needs_action_id=data.get('needsActionID'),
             activity_id=data['activityID'],
             activity_type=data['activityType'],
             strategy=data['activityStrategy']['type'])
@@ -372,7 +364,7 @@ def from_dict(info: Dict) -> Activity:
 def get_activity_files(resource_dir: str) -> List[str]:
     activity_files = [resource_dir + '/cozmo_resources/config/engine/behaviorSystem/activities_config.json']
     activity_folder = resource_dir + '/cozmo_resources/config/engine/behaviorSystem/activities/'
-    for root, dirs, files in os.walk(activity_folder):
+    for root, _, files in os.walk(activity_folder):
         for name in files:
             if name.endswith((".json")):
                 activity_files.append(os.path.join(root, name))
