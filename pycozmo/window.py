@@ -17,23 +17,32 @@ __all__ = [
 
 
 class BaseWindow(object):
+    """ Base communication window class. """
 
     def __init__(self, seq_bits: int, size: Optional[int] = None) -> None:
+        """ Crate a window by specifying either sequence number bits or size of the window. """
         if size is None:
-            self.size = int(math.pow(2, seq_bits - 1))
+            if seq_bits < 1:
+                raise ValueError("Invalid sequence number bits.")
+            size = int(math.pow(2, seq_bits - 1))
         elif size < 0 or size > int(math.pow(2, seq_bits - 1)):
             raise ValueError("Invalid window size.")
-        else:
-            self.size = size
+        # Size of the window.
+        self.size = size
+        # Next expected sequence number.
         self.expected_seq = 1
+        # Last used sequence number.
         self.last_seq = 0
+        # Maximum valid sequence number.
         self.max_seq = int(math.pow(2, seq_bits)) - 1
 
     def is_valid_seq(self, seq: int) -> bool:
-        res = 0 <= seq < self.max_seq
+        """ Check whether a sequence number is valid for the window. """
+        res = 0 <= seq <= self.max_seq
         return res
 
     def reset(self) -> None:
+        """ Reset the window. """
         self.expected_seq = 1
         self.last_seq = 0
 
