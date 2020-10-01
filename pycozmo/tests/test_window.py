@@ -6,15 +6,22 @@ from pycozmo.window import BaseWindow, ReceiveWindow, SendWindow
 
 class TestBaseWindowCreate(unittest.TestCase):
 
-    def test_create(self):
+    def test_create_1(self):
+        w = BaseWindow(1)
+        self.assertEqual(w.size, 1)
+        self.assertEqual(w.expected_seq, 1)
+        self.assertEqual(w.last_seq, 0)
+        self.assertEqual(w.max_seq, 1)
+
+    def test_create_4(self):
         w = BaseWindow(4)
         self.assertEqual(w.size, 8)
         self.assertEqual(w.expected_seq, 1)
         self.assertEqual(w.last_seq, 0)
         self.assertEqual(w.max_seq, 15)
 
-    def test_create_limited(self):
-        w = ReceiveWindow(4, size=5)
+    def test_create_4_limited(self):
+        w = BaseWindow(4, size=5)
         self.assertEqual(w.size, 5)
         self.assertEqual(w.expected_seq, 1)
         self.assertEqual(w.last_seq, 0)
@@ -22,22 +29,57 @@ class TestBaseWindowCreate(unittest.TestCase):
 
     def test_create_invalid(self):
         with self.assertRaises(ValueError):
-            ReceiveWindow(3, size=10)
+            BaseWindow(-1)
+
+    def test_create_invalid2(self):
+        with self.assertRaises(ValueError):
+            BaseWindow(0)
+
+    def test_create_limited_invalid(self):
+        with self.assertRaises(ValueError):
+            BaseWindow(3, size=10)
 
 
-class TestBaseWindow(unittest.TestCase):
+class TestBaseWindowIsValidSeq1(unittest.TestCase):
+
+    def setUp(self):
+        self.w = BaseWindow(1)
+
+    def test_negative(self):
+        self.assertFalse(self.w.is_valid_seq(-1))
+
+    def test_first_valid(self):
+        self.assertTrue(self.w.is_valid_seq(0))
+
+    def test_last_valid(self):
+        self.assertTrue(self.w.is_valid_seq(1))
+
+    def test_too_large(self):
+        self.assertFalse(self.w.is_valid_seq(2))
+
+    def test_too_large2(self):
+        self.assertFalse(self.w.is_valid_seq(100))
+
+
+class TestBaseWindowIsValidSeq4(unittest.TestCase):
 
     def setUp(self):
         self.w = BaseWindow(4)
 
-    def test_is_valid_seq_negative(self):
+    def test_negative(self):
         self.assertFalse(self.w.is_valid_seq(-1))
 
-    def test_is_valid_seq_too_large(self):
-        self.assertFalse(self.w.is_valid_seq(15))
-
-    def test_is_valid_seq(self):
+    def test_first_valid(self):
         self.assertTrue(self.w.is_valid_seq(0))
+
+    def test_last_valid(self):
+        self.assertTrue(self.w.is_valid_seq(15))
+
+    def test_too_large(self):
+        self.assertFalse(self.w.is_valid_seq(16))
+
+    def test_too_large2(self):
+        self.assertFalse(self.w.is_valid_seq(100))
 
 
 class TestReceiveWindow(unittest.TestCase):
