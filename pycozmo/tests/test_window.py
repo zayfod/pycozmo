@@ -37,6 +37,10 @@ class TestBaseWindowCreate(unittest.TestCase):
 
     def test_create_limited_invalid(self):
         with self.assertRaises(ValueError):
+            BaseWindow(3, size=0)
+
+    def test_create_limited_invalid2(self):
+        with self.assertRaises(ValueError):
             BaseWindow(3, size=10)
 
 
@@ -80,6 +84,27 @@ class TestBaseWindowIsValidSeq4(unittest.TestCase):
 
     def test_too_large2(self):
         self.assertFalse(self.w.is_valid_seq(100))
+
+
+class TestBaseWindowIsValidSeq16(unittest.TestCase):
+
+    def setUp(self):
+        self.w = BaseWindow(16)
+
+    def test_negative(self):
+        self.assertFalse(self.w.is_valid_seq(-1))
+
+    def test_first_valid(self):
+        self.assertTrue(self.w.is_valid_seq(0))
+
+    def test_last_valid(self):
+        self.assertTrue(self.w.is_valid_seq(65535))
+
+    def test_too_large(self):
+        self.assertFalse(self.w.is_valid_seq(65536))
+
+    def test_too_large2(self):
+        self.assertFalse(self.w.is_valid_seq(100000))
 
 
 class TestReceiveWindow(unittest.TestCase):
