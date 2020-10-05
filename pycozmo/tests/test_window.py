@@ -10,21 +10,18 @@ class TestBaseWindowCreate(unittest.TestCase):
         w = BaseWindow(1)
         self.assertEqual(w.size, 1)
         self.assertEqual(w.expected_seq, 1)
-        self.assertEqual(w.last_seq, 0)
         self.assertEqual(w.max_seq, 1)
 
     def test_create_4(self):
         w = BaseWindow(4)
         self.assertEqual(w.size, 8)
         self.assertEqual(w.expected_seq, 1)
-        self.assertEqual(w.last_seq, 0)
         self.assertEqual(w.max_seq, 15)
 
     def test_create_4_limited(self):
         w = BaseWindow(4, size=5)
         self.assertEqual(w.size, 5)
         self.assertEqual(w.expected_seq, 1)
-        self.assertEqual(w.last_seq, 0)
         self.assertEqual(w.max_seq, 15)
 
     def test_create_invalid(self):
@@ -110,12 +107,24 @@ class TestBaseWindowIsValidSeq16(unittest.TestCase):
 class TestReceiveWindow(unittest.TestCase):
 
     def setUp(self):
-        self.w = ReceiveWindow(4)
+        self.w = ReceiveWindow(3, size=3)
 
     def test_is_out_of_order(self):
+        self.assertTrue(self.w.is_out_of_order(0))
+        self.assertFalse(self.w.is_out_of_order(1))
+        self.assertFalse(self.w.is_out_of_order(2))
+        self.assertFalse(self.w.is_out_of_order(3))
+        self.assertTrue(self.w.is_out_of_order(4))
+        self.assertTrue(self.w.is_out_of_order(7))
+
+    def test_is_out_of_order_wrapped(self):
+        self.w.expected_seq = 7
+        self.w.last_seq = (self.w.expected_seq + self.w.size - 1) % (self.w.max_seq + 1)
+        self.assertTrue(self.w.is_out_of_order(6))
+        self.assertFalse(self.w.is_out_of_order(7))
         self.assertFalse(self.w.is_out_of_order(0))
         self.assertFalse(self.w.is_out_of_order(1))
-        self.assertFalse(self.w.is_out_of_order(10))
+        self.assertTrue(self.w.is_out_of_order(2))
 
     def test_exists(self):
         self.assertFalse(self.w.exists(0))
@@ -124,17 +133,49 @@ class TestReceiveWindow(unittest.TestCase):
         self.assertFalse(self.w.exists(0))
         self.assertTrue(self.w.exists(1))
 
-    def test_is_expected(self):
-        self.assertTrue(self.w.is_expected(1))
-        self.assertFalse(self.w.is_expected(2))
-
-    def test_get(self):
+    def test_put_get(self):
         self.assertIsNone(self.w.get())
         self.w.put(2, "2")
         self.w.put(1, "1")
         self.assertEqual(self.w.get(), "1")
         self.assertEqual(self.w.get(), "2")
         self.assertIsNone(self.w.get())
+
+    def test_sequence(self):
+        sequence = list(range(1, 100))
+        expected_sequence = list(range(1, 100))
+        received_sequence = []
+        for seq, data in enumerate(sequence):
+            self.w.put((seq + 1) % self.w.max_seq, data)
+            data = self.w.get()
+            if data:
+                received_sequence.append(data)
+        self.assertEqual(received_sequence, expected_sequence)
+
+    def test_sequence2(self):
+        sequence = [
+            (1, 1),
+            (2, 2),
+            (3, 3),
+            (5, 5),
+            (4, 4),
+            (6, 6),
+            (1, 8),
+            (0, 7),
+            (2, 9),
+            (3, 10),
+        ]
+        expected_sequence = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        received_sequence = []
+        for seq, data in sequence:
+            self.w.put(seq, data)
+            while True:
+                data = self.w.get()
+                if data:
+                    received_sequence.append(data)
+                else:
+                    break
+        self.assertEqual(received_sequence, expected_sequence)
 
 
 class TestTransmitWindow(unittest.TestCase):

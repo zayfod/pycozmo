@@ -29,12 +29,12 @@ class BaseWindow(object):
             raise ValueError("Invalid window size.")
         # Size of the window.
         self.size = size
-        # Next expected sequence number.
+        # Next expected sequence number (0, max_seq).
         self.expected_seq = 1
-        # Last used sequence number.
-        self.last_seq = 0
         # Maximum valid sequence number.
-        self.max_seq = int(math.pow(2, seq_bits)) - 1
+        self.max_seq = int(math.pow(2, seq_bits))
+        # Cozmo skips the last sequence number value - 65535.
+        self.max_seq -= 1
 
     def is_valid_seq(self, seq: int) -> bool:
         """ Check whether a sequence number is valid for the window. """
@@ -44,16 +44,26 @@ class BaseWindow(object):
     def reset(self) -> None:
         """ Reset the window. """
         self.expected_seq = 1
-        self.last_seq = 0
 
 
 class ReceiveWindow(BaseWindow):
+    """
+    Receive communication window class.
+
+    When packets are received (in whatever order), they are put in the window using the put() method.
+
+    Packets are extracted from the window in the expected order using the get() method.
+    """
 
     def __init__(self, seq_bits: int, size: Optional[int] = None) -> None:
+        """ Crate a window by specifying either sequence number bits or size of the window. """
         super().__init__(seq_bits, size)
+        # Last used sequence number (0, max_seq).
+        self.last_seq = (self.expected_seq + self.size - 1) % self.max_seq
         self.window = [None for _ in range(self.size)]
 
     def is_out_of_order(self, seq: int) -> bool:
+        """ Check whether a sequence number is outside the current window. """
         if self.expected_seq > self.last_seq:
             res = self.expected_seq > seq > self.last_seq
         else:
@@ -61,29 +71,37 @@ class ReceiveWindow(BaseWindow):
         return res
 
     def exists(self, seq: int) -> bool:
+        """ Check whether a sequence number has already been received. """
         res = self.window[seq % self.size] is not None
         return res
 
     def put(self, seq: int, data: Any) -> None:
+        """ Add the data, associated with a particular sequence number to the window. """
+        if not self.is_valid_seq(seq):
+            # Invalid sequence number.
+            return
+        if self.is_out_of_order(seq):
+            # Not in the window.
+            return
+        if self.exists(seq):
+            # Duplicate.
+            return
         self.window[seq % self.size] = data
 
-    def is_expected(self, seq: int) -> bool:
-        res = seq == self.expected_seq
-        return res
-
     def get(self) -> Any:
-        seq = self.expected_seq
-        data = self.window[seq % self.size]
+        """ If data is available, return it and move the window forward. Return None otherwise. """
+        data = self.window[self.expected_seq % self.size]
         if data is not None:
-            self.window[seq % self.size] = None
-            self.expected_seq = (seq + 1) % self.max_seq
+            self.window[self.expected_seq % self.size] = None
+            self.expected_seq = (self.expected_seq + 1) % self.max_seq
             self.last_seq = (self.expected_seq + self.size - 1) % self.max_seq
         return data
 
     def reset(self) -> None:
+        """ Reset the window. """
         super().reset()
-        for i in range(self.size):
-            self.window[i] = None
+        self.last_seq = (self.expected_seq + self.size - 1) % self.max_seq
+        self.window = [None for _ in range(self.size)]
 
 
 class SendWindowSlot(object):
@@ -137,7 +155,6 @@ class SendWindow(BaseWindow):
     def pop(self) -> None:
         self.window[self.expected_seq % self.size].reset()
         self.expected_seq = (self.expected_seq + 1) % self.max_seq
-        self.last_seq = (self.last_seq + 1) % self.max_seq
 
     def acknowledge(self, seq: int) -> None:
         if not self.is_out_of_order(seq):

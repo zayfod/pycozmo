@@ -211,26 +211,17 @@ class ReceiveThread(Thread):
     def handle_pkt(self, pkt: Packet) -> None:
         if pkt.is_oob():
             self.deliver(pkt)
-            return
-
-        if self.window.is_out_of_order(pkt.seq):
-            return
-
-        if self.window.exists(pkt.seq):
-            # Duplicate
-            return
-
-        self.window.put(pkt.seq, pkt)
-
-        if self.window.is_expected(pkt.seq):
+        else:
+            self.window.put(pkt.seq, pkt)
             self.deliver_sequence()
-            self.send_thread.set_last_recv_ack(pkt.seq)
+
 
     def deliver_sequence(self) -> None:
         while True:
             pkt = self.window.get()
             if pkt is None:
                 break
+            self.send_thread.set_last_recv_ack(pkt.seq)
             self.deliver(pkt)
 
     def deliver(self, pkt: Packet) -> None:
