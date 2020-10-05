@@ -25,7 +25,7 @@ class BaseWindow(object):
             if seq_bits < 1:
                 raise ValueError("Invalid sequence number bits.")
             size = int(math.pow(2, seq_bits - 1))
-        elif size < 0 or size > int(math.pow(2, seq_bits - 1)):
+        elif size <= 0 or size > int(math.pow(2, seq_bits - 1)):
             raise ValueError("Invalid window size.")
         # Size of the window.
         self.size = size
