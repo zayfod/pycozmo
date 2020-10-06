@@ -4,9 +4,9 @@ Activity classes.
 
 """
 
-import json
-import os
 from typing import Dict, List, Optional
+
+from .json_loader import get_json_files, load_json_file
 
 
 __all__ = [
@@ -361,36 +361,21 @@ def from_dict(info: Dict) -> Activity:
         )
 
 
-def get_activity_files(resource_dir: str) -> List[str]:
-    activity_files = [resource_dir + '/cozmo_resources/config/engine/behaviorSystem/activities_config.json']
-    activity_folder = resource_dir + '/cozmo_resources/config/engine/behaviorSystem/activities/'
-    for root, _, files in os.walk(activity_folder):
-        for name in files:
-            if name.endswith((".json")):
-                activity_files.append(os.path.join(root, name))
-    return activity_files
-
-
 def load_activities(resource_dir: str) -> Dict[str, Activity]:
     """ Load activity map from cozmo resources. """
 
+    activity_folders = ['/cozmo_resources/config/engine/behaviorSystem/activities_config.json',
+                          '/cozmo_resources/config/engine/behaviorSystem/activities/']
+    activity_files = get_json_files(resource_dir, activity_folders)
+
     activities = {}
-    activity_files = get_activity_files(resource_dir)
 
     for filename in activity_files:
-        with open(filename, 'r') as cf:
-            filtered_json = ''
-            for line in cf.readlines():
-                if '//' in line:
-                    wordlist = line.split(' ')
-                    # get all words before '//'
-                    line = ' '.join(wordlist[:wordlist.index('//')])
-                filtered_json += line
-            json_data = json.loads(filtered_json)
-            if isinstance(json_data, list):
-                for activity in json_data:
-                    activities[activity['activityID']] = from_dict(activity)
-            else:
-                activities[json_data['activityID']] = from_dict(json_data)
+        json_data = load_json_file(filename)
+        if isinstance(json_data, list):
+            for activity in json_data:
+                activities[activity['activityID']] = from_dict(activity)
+        else:
+            activities[json_data['activityID']] = from_dict(json_data)
 
     return activities
