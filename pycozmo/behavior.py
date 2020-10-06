@@ -126,20 +126,21 @@ class BehaviorParameters:
             n_steps = int(seq_keys[-1][1]) + 1
 
             for s in range(n_steps):
-                step = SubState(main_turn_chance=data.get('s{}_MainTurnCWChance'.format(s), 0.0),
-                                body_angle_range_min=data.get('s{}_BodyAngleRangeMin_deg'.format(s), 0.0),
-                                body_angle_range_max=data.get('s{}_BodyAngleRangeMax_deg'.format(s), 0.0),
-                                relative_body_angle_range_min=data.get('s{}_BodyAngleRelativeRangeMin_deg'.format(s), 0.0),
-                                relative_body_angle_range_max=data.get('s{}_BodyAngleRelativeRangeMax_deg'.format(s), 0.0),
-                                head_angle_range_min=data.get('s{}_HeadAngleRangeMin_deg'.format(s), 0.0),
-                                head_angle_range_max=data.get('s{}_HeadAngleRangeMax_deg'.format(s), 0.0),
-                                head_angle_changes_min=data.get('s{}_HeadAngleChangesMin'.format(s), 0.0),
-                                head_angle_changes_max=data.get('s{}_HeadAngleChangesMax'.format(s), 0.0),
-                                wait_min=data.get('s{}_WaitMin_sec'.format(s), 0.0),
-                                wait_max=data.get('s{}_WaitMax_sec'.format(s), 0.0),
-                                wait_anim_trigger=data.get('s{}_WaitAnimTrigger'.format(s), 0.0),
-                                wait_between_changes_min=data.get('s{}_WaitBetweenChangesMin_sec'.format(s), 0.0),
-                                wait_between_changes_max=data.get('s{}_WaitBetweenChangesMin_sec'.format(s), 0.0))
+                step = SubState(
+                    main_turn_chance=data.get('s{}_MainTurnCWChance'.format(s), 0.0),
+                    body_angle_range_min=data.get('s{}_BodyAngleRangeMin_deg'.format(s), 0.0),
+                    body_angle_range_max=data.get('s{}_BodyAngleRangeMax_deg'.format(s), 0.0),
+                    relative_body_angle_range_min=data.get('s{}_BodyAngleRelativeRangeMin_deg'.format(s), 0.0),
+                    relative_body_angle_range_max=data.get('s{}_BodyAngleRelativeRangeMax_deg'.format(s), 0.0),
+                    head_angle_range_min=data.get('s{}_HeadAngleRangeMin_deg'.format(s), 0.0),
+                    head_angle_range_max=data.get('s{}_HeadAngleRangeMax_deg'.format(s), 0.0),
+                    head_angle_changes_min=data.get('s{}_HeadAngleChangesMin'.format(s), 0.0),
+                    head_angle_changes_max=data.get('s{}_HeadAngleChangesMax'.format(s), 0.0),
+                    wait_min=data.get('s{}_WaitMin_sec'.format(s), 0.0),
+                    wait_max=data.get('s{}_WaitMax_sec'.format(s), 0.0),
+                    wait_anim_trigger=data.get('s{}_WaitAnimTrigger'.format(s), 0.0),
+                    wait_between_changes_min=data.get('s{}_WaitBetweenChangesMin_sec'.format(s), 0.0),
+                    wait_between_changes_max=data.get('s{}_WaitBetweenChangesMin_sec'.format(s), 0.0))
                 steps.append(step)
 
         mp = MotionProfile.from_json(data['motionProfile']) if 'motionProfile' in data else None
