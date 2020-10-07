@@ -27,6 +27,7 @@ __all__ = [
 
     "load_animation_groups",
     "load_cube_animation_groups",
+    "load_backpack_light_patterns"
 ]
 
 
@@ -142,8 +143,8 @@ class PreprocessedClip(object):
         cli.conn.send(protocol_encoder.EndAnimation())
 
 
-class CubeAnimation:
-    # TODO: create play method for cube animations
+class LightAnimation:
+    # TODO: create play method for light animations
     __slots__ = [
         "on_colors",
         "off_colors",
@@ -152,8 +153,6 @@ class CubeAnimation:
         "transition_on_period",
         "transition_off_period",
         "offset",
-        "rotation_period",
-        "duration",
     ]
 
     def __init__(self,
@@ -163,9 +162,7 @@ class CubeAnimation:
                  off_period: List[int],
                  transition_on_period: List[int],
                  transition_off_period: List[int],
-                 offset: List[int],
-                 rotation_period: int,
-                 duration: int):
+                 offset: List[int]):
         self.on_colors = on_colors
         self.off_colors = off_colors
         self.on_period = on_period
@@ -173,8 +170,18 @@ class CubeAnimation:
         self.transition_on_period = transition_on_period
         self.transition_off_period = transition_off_period
         self.offset = offset
-        self.rotation_period = rotation_period
+
+
+class CubeAnimation(LightAnimation):
+    __slots__ = [
+        "duration",
+        "rotation_period"
+    ]
+
+    def __init__(self, duration: int, rotation_period: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.duration = duration
+        self.rotation_period = rotation_period
 
     @classmethod
     def from_json(cls, data: Dict):
@@ -187,6 +194,23 @@ class CubeAnimation:
                    offset=data['pattern']['offset'],
                    rotation_period=data['pattern']['rotationPeriod_ms'],
                    duration=data['duration_ms'])
+
+
+class BackpackAnimation(LightAnimation):
+    __slots__ = []
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @classmethod
+    def from_json(cls, data: Dict):
+        return cls(on_colors=data['onColors'],
+                   off_colors=data['offColors'],
+                   on_period=data['onPeriod_ms'],
+                   off_period=data['offPeriod_ms'],
+                   transition_on_period=data['transitionOnPeriod_ms'],
+                   transition_off_period=data['transitionOffPeriod_ms'],
+                   offset=data['offset'])
 
 
 class AnimationGroupMember:
@@ -273,3 +297,13 @@ def load_cube_animation_groups(resource_dir: str) -> Dict[str, List[CubeAnimatio
             cube_animation_group[evt].append(CubeAnimation.from_json(cube_anim))
 
     return cube_animation_group
+
+
+def load_backpack_light_patterns(resource_dir: str) -> Dict[str, BackpackAnimation]:
+    backpack_light_patterns = {}
+    json_data = load_json_file(
+        os.path.join(resource_dir, 'cozmo_resources/config/engine/lights/backpackLights/backpackLightPatterns.json'))
+
+    for key in json_data:
+        backpack_light_patterns[key] = BackpackAnimation.from_json(json_data[key])
+    return backpack_light_patterns
