@@ -22,7 +22,9 @@ def get_json_files(resource_dir: str, base_names: List[str]) -> List[str]:
     file_addr = []
 
     for name in base_names:
-        addr = resource_dir + name
+        if name[0] == '/':
+            name = name[1:]
+        addr = os.path.join(resource_dir, name)
         if os.path.isdir(addr):
             for root, _, files in os.walk(addr):
                 for name in files:
@@ -33,3 +35,9 @@ def get_json_files(resource_dir: str, base_names: List[str]) -> List[str]:
             file_addr.append(addr)
 
     return file_addr
+
+
+def find_file(directory: str, name: str) -> str:
+    for root, _, files in os.walk(directory):
+        if name in files:
+            return os.path.join(root, name)
