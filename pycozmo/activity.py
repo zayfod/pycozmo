@@ -365,7 +365,7 @@ def load_activities(resource_dir: str) -> Dict[str, Activity]:
     """ Load activity map from cozmo resources. """
 
     activity_folders = ['/cozmo_resources/config/engine/behaviorSystem/activities_config.json',
-                          '/cozmo_resources/config/engine/behaviorSystem/activities/']
+                        '/cozmo_resources/config/engine/behaviorSystem/activities/']
     activity_files = get_json_files(resource_dir, activity_folders)
 
     activities = {}
