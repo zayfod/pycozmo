@@ -119,7 +119,7 @@ class BehaviorParameters:
 
     @classmethod
     def from_json(cls, data: Dict):
-        r = re.compile('^s\d_.*')
+        r = re.compile('^s\d_.*')  # noqa: W605
         seq_keys = list(filter(r.match, data.keys()))
         steps = []
         if seq_keys:
