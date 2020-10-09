@@ -13,8 +13,10 @@ def load_json_file(filename: str) -> Dict:
     with open(filename, 'r') as f:
         filtered_json = ''
         for line in f.readlines():
-            # get all characters before '//'
-            filtered_json += line.split('//')[0]
+            # ignore urls (don't know what they might be used for)
+            if '\"url\":' not in line:
+                # get all characters before '//'
+                filtered_json += line.split('//')[0]
         return json.loads(filtered_json)
 
 
