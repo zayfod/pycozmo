@@ -4,6 +4,7 @@ Activity classes.
 
 """
 
+import os
 from typing import Dict, List, Optional
 
 from .json_loader import get_json_files, load_json_file
@@ -364,8 +365,8 @@ def from_dict(info: Dict) -> Activity:
 def load_activities(resource_dir: str) -> Dict[str, Activity]:
     """ Load activity map from cozmo resources. """
 
-    activity_folders = ['/cozmo_resources/config/engine/behaviorSystem/activities_config.json',
-                        '/cozmo_resources/config/engine/behaviorSystem/activities/']
+    activity_folders = [os.path.join('cozmo_resources', 'config', 'engine', 'behaviorSystem', 'activities_config.json'),
+                        os.path.join('cozmo_resources', 'config', 'engine', 'behaviorSystem', 'activities')]
     activity_files = get_json_files(resource_dir, activity_folders)
 
     activities = {}

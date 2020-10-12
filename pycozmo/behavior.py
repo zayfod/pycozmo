@@ -3,6 +3,7 @@
 Behavior classes.
 
 """
+import os
 import re
 from typing import Dict, List, Optional
 
@@ -117,10 +118,11 @@ class BehaviorParameters:
         self.motion_profile = motion_profile
         self.sequence = sequence
 
+    r = re.compile('^s\d_.*')  # noqa: W605
+
     @classmethod
     def from_json(cls, data: Dict):
-        r = re.compile('^s\d_.*')  # noqa: W605
-        seq_keys = list(filter(r.match, data.keys()))
+        seq_keys = list(filter(cls.r.match, data.keys()))
         steps = []
         if seq_keys:
             n_steps = int(seq_keys[-1][1]) + 1
@@ -217,7 +219,8 @@ class TestBehavior:
 
 def load_behaviors(resource_dir: str) -> Dict[str, Behavior]:
     behavior_files = get_json_files(resource_dir,
-                                    ['/cozmo_resources/config/engine/behaviorSystem/behaviors/'])
+                                    [os.path.join('cozmo_resources', 'config', 'engine',
+                                                  'behaviorSystem', 'behaviors')])
     behaviors = {}
 
     for filename in behavior_files:
@@ -229,7 +232,8 @@ def load_behaviors(resource_dir: str) -> Dict[str, Behavior]:
 
 def load_test_behaviors(resource_dir: str) -> Dict[str, Behavior]:
     behavior_files = get_json_files(resource_dir,
-                                    ['/cozmo_resources/config/engine/behaviorSystem/behaviors/'])
+                                    [os.path.join('cozmo_resources', 'config', 'engine',
+                                                  'behaviorSystem', 'behaviors')])
     behaviors = {}
 
     for filename in behavior_files:
@@ -241,8 +245,8 @@ def load_test_behaviors(resource_dir: str) -> Dict[str, Behavior]:
 
 def load_reaction_trigger_behavior_map(resource_dir: str) -> Dict[str, ReactionTrigger]:
     reaction_trigger_behavior_map = {}
-    filename = resource_dir + \
-        '/cozmo_resources/config/engine/behaviorSystem/reactionTrigger_behavior_map.json'
+    filename = os.path.join(resource_dir, 'cozmo_resources', 'config',
+                            'engine', 'behaviorSystem', 'reactionTrigger_behavior_map.json')
 
     json_data = load_json_file(filename)
     for trigger in json_data['reactionTriggerBehaviorMap']:

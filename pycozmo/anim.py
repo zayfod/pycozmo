@@ -279,8 +279,8 @@ def load_trigger_map(resource_dir: str, map_relative_path: str) -> Tuple[str, st
 
 def load_animation_groups(resource_dir: str) -> Dict[str, AnimationGroup]:
     animation_groups = {}
-    trigger_map_loader = load_trigger_map(resource_dir,
-                                          'cozmo_resources/assets/animationGroupMaps/AnimationTriggerMap.json')
+    trigger_map_loader = load_trigger_map(resource_dir, os.path.join('cozmo_resources', 'assets',
+                                                                     'animationGroupMaps', 'AnimationTriggerMap.json'))
     for evt, name, json_data in trigger_map_loader:
         animation_groups[evt] = AnimationGroup.from_json(json_data)
 
@@ -290,7 +290,8 @@ def load_animation_groups(resource_dir: str) -> Dict[str, AnimationGroup]:
 def load_cube_animation_groups(resource_dir: str) -> Dict[str, List[CubeAnimation]]:
     cube_animation_group = {}
     trigger_map_loader = load_trigger_map(resource_dir,
-                                          'cozmo_resources/assets/cubeAnimationGroupMaps/CubeAnimationTriggerMap.json')
+                                          os.path.join('cozmo_resources', 'assets',
+                                                       'cubeAnimationGroupMaps', 'CubeAnimationTriggerMap.json'))
     for evt, name, json_data in trigger_map_loader:
         cube_animation_group[evt] = []
         for cube_anim in json_data[name]:
@@ -301,8 +302,8 @@ def load_cube_animation_groups(resource_dir: str) -> Dict[str, List[CubeAnimatio
 
 def load_backpack_light_patterns(resource_dir: str) -> Dict[str, BackpackAnimation]:
     backpack_light_patterns = {}
-    json_data = load_json_file(
-        os.path.join(resource_dir, 'cozmo_resources/config/engine/lights/backpackLights/backpackLightPatterns.json'))
+    json_data = load_json_file(os.path.join(resource_dir, 'cozmo_resources', 'config',
+                               'engine', 'lights', 'backpackLights', 'backpackLightPatterns.json'))
 
     for key in json_data:
         backpack_light_patterns[key] = BackpackAnimation.from_json(json_data[key])
