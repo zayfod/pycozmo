@@ -21,10 +21,16 @@ __all__ = [
 
 class ReactionTrigger:
     """ Reaction trigger representation class. """
+    __slots__ = [
+        "name",
+        "behavior_id",
+        "should_resume_last",
+    ]
+
     def __init__(self, name: str, behavior_id: str, should_resume_last: Optional[bool] = False):
         self.name = str(name)
-        self.behavior_id = behavior_id
-        self.should_resume_last = should_resume_last
+        self.behavior_id = str(behavior_id)
+        self.should_resume_last = bool(should_resume_last)
 
     @classmethod
     def from_json(cls, data: Dict):
@@ -34,22 +40,35 @@ class ReactionTrigger:
 
 
 class MotionProfile:
+    __slots__ = [
+        "speed",
+        "accel",
+        "decel",
+        "dock_speed",
+        "dock_accel",
+        "dock_decel",
+        "point_turn_speed",
+        "point_turn_accel",
+        "point_turn_decel",
+        "reverse_speed",
+    ]
+
     def __init__(self,
                  speed: float, accel: float, decel: float,
                  dock_speed: float, dock_accel: float, dock_decel: float,
                  point_turn_speed: float, point_turn_accel: float, point_turn_decel: float,
                  reverse_speed: float):
 
-        self.speed = speed
-        self.accel = accel
-        self.decel = decel
-        self.dock_speed = dock_speed
-        self.dock_accel = dock_accel
-        self.dock_decel = dock_decel
-        self.point_turn_speed = point_turn_speed
-        self.point_turn_accel = point_turn_accel
-        self.point_turn_decel = point_turn_decel
-        self.reverse_speed = reverse_speed
+        self.speed = float(speed)
+        self.accel = float(accel)
+        self.decel = float(decel)
+        self.dock_speed = float(dock_speed)
+        self.dock_accel = float(dock_accel)
+        self.dock_decel = float(dock_decel)
+        self.point_turn_speed = float(point_turn_speed)
+        self.point_turn_accel = float(point_turn_accel)
+        self.point_turn_decel = float(point_turn_decel)
+        self.reverse_speed = float(reverse_speed)
 
     @classmethod
     def from_json(cls, data: Dict):
@@ -66,6 +85,23 @@ class MotionProfile:
 
 
 class SubState:
+    __slots__ = [
+        "main_turn_chance",
+        "body_angle_range_min",
+        "body_angle_range_max",
+        "relative_body_angle_range_min",
+        "relative_body_angle_range_max",
+        "head_angle_range_min",
+        "head_angle_range_max",
+        "head_angle_changes_min",
+        "head_angle_changes_max",
+        "wait_min",
+        "wait_max",
+        "wait_anim_trigger",
+        "wait_between_changes_min",
+        "wait_between_changes_max",
+    ]
+
     def __init__(self,
                  main_turn_chance: Optional[float] = 0.0,
                  body_angle_range_min: Optional[float] = 0.0,
@@ -81,21 +117,36 @@ class SubState:
                  wait_anim_trigger: Optional[str] = '',
                  wait_between_changes_min: Optional[float] = 0.0,
                  wait_between_changes_max: Optional[float] = 0.0):
-        self.main_turn_chance = main_turn_chance
-        self.body_angle_range_min = body_angle_range_min
-        self.body_angle_range_max = body_angle_range_max
-        self.relative_body_angle_range_min = relative_body_angle_range_min
-        self.relative_body_angle_range_max = relative_body_angle_range_max
-        self.head_angle_range_min = head_angle_range_min
-        self.head_angle_range_max = head_angle_range_max
-        self.wait_min = wait_min
-        self.wait_max = wait_max
-        self.wait_anim_trigger = wait_anim_trigger
-        self.wait_between_changes_min = wait_between_changes_min
-        self.wait_between_changes_max = wait_between_changes_max
+        self.main_turn_chance = float(main_turn_chance) if main_turn_chance is not None else 0.0
+        self.body_angle_range_min = float(body_angle_range_min) if body_angle_range_min is not None else 0.0
+        self.body_angle_range_max = float(body_angle_range_max) if body_angle_range_max is not None else 0.0
+        self.relative_body_angle_range_min = \
+            float(relative_body_angle_range_min) if (relative_body_angle_range_min is not None) else 0.0
+        self.relative_body_angle_range_max = \
+            float(relative_body_angle_range_max) if (relative_body_angle_range_max is not None) else 0.0
+        self.head_angle_range_min = float(head_angle_range_min) if head_angle_changes_min is not None else 0.0
+        self.head_angle_range_max = float(head_angle_range_max) if head_angle_changes_max is not None else 0.0
+        self.wait_min = float(wait_min) if wait_min is not None else 0.0
+        self.wait_max = float(wait_max) if wait_max is not None else 0.0
+        self.wait_anim_trigger = str(wait_anim_trigger) if wait_anim_trigger is not None else ''
+        self.wait_between_changes_min = float(wait_between_changes_min) if wait_between_changes_min is not None else 0.0
+        self.wait_between_changes_max = float(wait_between_changes_max) if wait_between_changes_max is not None else 0.0
 
 
 class BehaviorParameters:
+    __slots__ = [
+        "should_reset_turn_direction",
+        "reset_body_facing_on_start",
+        "should_lower_lift",
+        "can_carry_cube",
+        "distance_from_recent_location",
+        "recent_location_max",
+        "angle_of_focus",
+        "number_of_scans",
+        "sequence",
+        "motion_profile",
+    ]
+
     def __init__(self,
                  should_reset_turn_direction: bool,
                  reset_body_facing_on_start: bool,
@@ -107,16 +158,16 @@ class BehaviorParameters:
                  number_of_scans: int,
                  sequence: List[SubState],
                  motion_profile: Optional[MotionProfile] = None):
-        self.should_reset_turn_direction = should_reset_turn_direction
-        self.reset_body_facing_on_start = reset_body_facing_on_start
-        self.should_lower_lift = should_lower_lift
-        self.can_carry_cube = can_carry_cube
-        self.distance_from_recent_location = distance_from_recent_location
-        self.recent_location_max = recent_location_max
-        self.angle_of_focus = angle_of_focus
-        self.number_of_scans = number_of_scans
-        self.motion_profile = motion_profile
+        self.should_reset_turn_direction = bool(should_reset_turn_direction)
+        self.reset_body_facing_on_start = bool(reset_body_facing_on_start)
+        self.should_lower_lift = bool(should_lower_lift)
+        self.can_carry_cube = bool(can_carry_cube)
+        self.distance_from_recent_location = float(distance_from_recent_location)
+        self.recent_location_max = float(recent_location_max)
+        self.angle_of_focus = float(angle_of_focus)
+        self.number_of_scans = int(number_of_scans)
         self.sequence = sequence
+        self.motion_profile = motion_profile
 
     r = re.compile('^s\d_.*')  # noqa: W605
 
@@ -196,6 +247,14 @@ class Behavior:
 
 
 class TestBehavior:
+    __slots__ = [
+        "behavior_class",
+        "id",
+        "loop_forever",
+        "test_gap",
+        "runs_per_test",
+    ]
+
     def __init__(self,
                  behavior_class: str,
                  behavior_id: str,
@@ -204,9 +263,9 @@ class TestBehavior:
                  runs_per_test: Optional[int] = 1) -> None:
         self.behavior_class = str(behavior_class)
         self.id = str(behavior_id)
-        self.loop_forever = loop_forever
-        self.test_gap = test_gap
-        self.runs_per_test = runs_per_test
+        self.loop_forever = bool(loop_forever)
+        self.test_gap = float(test_gap) if test_gap is not None else 0.0
+        self.runs_per_test = int(runs_per_test) if runs_per_test is not None else 1
 
     @classmethod
     def from_json(cls, data: Dict):

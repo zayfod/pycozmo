@@ -18,12 +18,17 @@ __all__ = [
 
 
 class BehaviorChooser:
+    __slots__ = [
+        "choice_type",
+        "behaviors",
+        "iteration",
+    ]
 
     def __init__(self,
                  choice_type: str,
                  behaviors: List) -> None:
 
-        self.choice_type = choice_type
+        self.choice_type = str(choice_type)
         self.behaviors = behaviors
         self.iteration = 0
 
@@ -55,6 +60,15 @@ class BehaviorChooser:
 
 
 class Objective:
+    __slots__ = [
+        "objective",
+        "behavior_ID",
+        "ignore_if_locked",
+        "probability_to_require_objective",
+        "random_completions_needed_min",
+        "random_completions_needed_max",
+    ]
+
     def __init__(self,
                  objective: str,
                  behavior_ID: str,
@@ -62,12 +76,14 @@ class Objective:
                  probability_to_require_objective: float,
                  random_completions_needed_min: Optional[int] = 0,
                  random_completions_needed_max: Optional[int] = 0) -> None:
-        self.objective = objective
-        self.behavior_ID = behavior_ID
-        self.ignore_if_locked = ignore_if_locked
-        self.probability_to_require_objective = probability_to_require_objective
-        self.random_completions_needed_min = random_completions_needed_min
-        self.random_completions_needed_max = random_completions_needed_max
+        self.objective = str(objective)
+        self.behavior_ID = str(behavior_ID)
+        self.ignore_if_locked = str(ignore_if_locked)
+        self.probability_to_require_objective = float(probability_to_require_objective)
+        self.random_completions_needed_min = \
+            int(random_completions_needed_min) if random_completions_needed_min is not None else 0
+        self.random_completions_needed_max = \
+            int(random_completions_needed_min) if random_completions_needed_max is not None else 0
 
     @classmethod
     def from_json(cls, data: Dict):
@@ -102,6 +118,10 @@ class Activity:
 
 
 class BehaviorsActivity(Activity):
+    __slots__ = [
+        "behavior_chooser"
+    ]
+
     def __init__(self,
                  behavior_chooser: BehaviorChooser,
                  *args, **kwargs):
@@ -135,6 +155,10 @@ class VoiceCommandActivity(Activity):
 
 
 class FeedingActivity(Activity):
+    __slots__ = [
+        "universal_chooser",
+    ]
+
     def __init__(self,
                  universal_chooser: List[str],
                  *args, **kwargs) -> None:
@@ -142,8 +166,8 @@ class FeedingActivity(Activity):
         super().__init__(*args, **kwargs)
 
     def choose(self):
-        if self.universal_chooser:
-            return self.universal_chooser
+        # TODO: method to choose from list of options
+        pass
 
     @classmethod
     def from_json(cls, data: Dict):
@@ -156,6 +180,14 @@ class FeedingActivity(Activity):
 
 
 class FreeplayActivity(Activity):
+    __slots__ = [
+        "cube_only_activity",
+        "face_only_activity",
+        "face_and_cube_activity",
+        "no_face_no_cube_activity",
+        "sub_activities",
+    ]
+
     def __init__(self,
                  cube_only_activity: str,
                  face_only_activity: str,
@@ -163,10 +195,10 @@ class FreeplayActivity(Activity):
                  no_face_no_cube_activity: str,
                  sub_activities: List,
                  *args, **kwargs) -> None:
-        self.cube_only_activity = cube_only_activity
-        self.face_only_activity = face_only_activity
-        self.face_and_cube_activity = face_and_cube_activity
-        self.no_face_only_activity = no_face_no_cube_activity
+        self.cube_only_activity = str(cube_only_activity)
+        self.face_only_activity = str(face_only_activity)
+        self.face_and_cube_activity = str(face_and_cube_activity)
+        self.no_face_no_cube_activity = str(no_face_no_cube_activity)
         self.sub_activities = sub_activities
 
         super().__init__(*args, **kwargs)
@@ -185,6 +217,22 @@ class FreeplayActivity(Activity):
 
 
 class SparkedActivity(Activity):
+    __slots__ = [
+        "require_spark",
+        "min_time",
+        "max_time",
+        "reps",
+        "behavior_objective",
+        "soft_spark_trigger",
+        "behavior_chooser",
+        "sub_activity_delegate",
+        "spark_success_trigger",
+        "spark_fail_trigger",
+        "drive_start_trigger",
+        "drive_loop_trigger",
+        "drive_stop_trigger",
+    ]
+
     def __init__(self,
                  require_spark: str,
                  min_time_secs: float,
@@ -200,12 +248,12 @@ class SparkedActivity(Activity):
                  drive_loop_trigger: Optional[str] = None,
                  drive_stop_trigger: Optional[str] = None,
                  *args, **kwargs) -> None:
-        self.require_spark = require_spark
-        self.min_time = min_time_secs
-        self.max_time = max_time_secs
-        self.reps = reps
-        self.behavior_objective = behavior_objective
-        self.soft_spark_trigger = soft_spark_trigger
+        self.require_spark = str(require_spark)
+        self.min_time = float(min_time_secs)
+        self.max_time = float(max_time_secs)
+        self.reps = int(reps)
+        self.behavior_objective = str(behavior_objective)
+        self.soft_spark_trigger = str(soft_spark_trigger)
 
         self.behavior_chooser = behavior_chooser
         self.sub_activity_delegate = sub_activity_delegate
@@ -249,6 +297,13 @@ class SparkedActivity(Activity):
 
 
 class PyramidActivity(Activity):
+    __slots__ = [
+        "setup_chooser",
+        "build_chooser",
+        "interlude_chooser",
+        "needs_action_id",
+    ]
+
     def __init__(self,
                  setup_chooser: BehaviorChooser,
                  build_chooser: BehaviorChooser,
@@ -280,6 +335,13 @@ class PyramidActivity(Activity):
 
 
 class SocializeActivity(Activity):
+    __slots__ = [
+        "behavior_chooser",
+        "interlude_chooser",
+        "max_face_iterations",
+        "required_objectives",
+    ]
+
     def __init__(self,
                  behavior_chooser: BehaviorChooser,
                  interlude_chooser: BehaviorChooser,
@@ -288,7 +350,7 @@ class SocializeActivity(Activity):
                  *args, **kwargs):
         self.behavior_chooser = behavior_chooser
         self.interlude_chooser = interlude_chooser
-        self.max_face_iterations = max_face_iterations
+        self.max_face_iterations = int(max_face_iterations)
         self.required_objectives = required_objectives
 
         super().__init__(*args, **kwargs)
@@ -310,6 +372,10 @@ class SocializeActivity(Activity):
 
 
 class NeedsActivity(Activity):
+    __slots__ = [
+        "behavior_chooser"
+    ]
+
     def __init__(self,
                  behavior_chooser: BehaviorChooser,
                  *args, **kwargs):

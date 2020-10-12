@@ -27,20 +27,25 @@ class Node:
 
 
 class DecayGraph:
+    __slots__ = [
+        "nodes_x",
+        "nodes_y",
+        "ext_line_params",
+    ]
+
     def __init__(self, nodes: List[Node]):
         self.nodes_x = [node.x for node in nodes]
         self.nodes_y = [node.y for node in nodes]
-        if len(nodes) > 1:
-            self.ext_line_params = self.get_line_parameters(nodes[-2], nodes[-1])
+        self.ext_line_params = self.get_line_parameters(nodes[-2], nodes[-1]) if len(nodes) > 1 else None
 
     def get_increment(self, val) -> float:
-        if len(self.nodes_x) == 1:
+        if self.ext_line_params is None:
             f_out = self.nodes_y
         elif val <= self.nodes_x[-1]:
             f_out = np.interp(val, self.nodes_x, self.nodes_y)
         else:
             f_out = self.ext_line_params[0] * val + self.ext_line_params[1]
-        return round(1 - f_out, 2)
+        return 1 - f_out
 
     @staticmethod
     def get_line_parameters(p1: Node, p2: Node) -> Tuple[float]:

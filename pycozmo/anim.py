@@ -180,8 +180,8 @@ class CubeAnimation(LightAnimation):
 
     def __init__(self, duration: int, rotation_period: int, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.duration = duration
-        self.rotation_period = rotation_period
+        self.duration = int(duration)
+        self.rotation_period = int(rotation_period)
 
     @classmethod
     def from_json(cls, data: Dict):
