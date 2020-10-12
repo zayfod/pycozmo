@@ -2,6 +2,7 @@
 import unittest
 
 from pycozmo.window import BaseWindow, ReceiveWindow, SendWindow
+from pycozmo.exception import NoSpace
 
 
 class TestBaseWindowCreate(unittest.TestCase):
@@ -10,19 +11,19 @@ class TestBaseWindowCreate(unittest.TestCase):
         w = BaseWindow(1)
         self.assertEqual(w.size, 1)
         self.assertEqual(w.expected_seq, 1)
-        self.assertEqual(w.max_seq, 1)
+        self.assertEqual(w.max_seq, 2)
 
     def test_create_4(self):
         w = BaseWindow(4)
         self.assertEqual(w.size, 8)
         self.assertEqual(w.expected_seq, 1)
-        self.assertEqual(w.max_seq, 15)
+        self.assertEqual(w.max_seq, 16)
 
     def test_create_4_limited(self):
-        w = BaseWindow(4, size=5)
-        self.assertEqual(w.size, 5)
+        w = BaseWindow(4, size=8)
+        self.assertEqual(w.size, 8)
         self.assertEqual(w.expected_seq, 1)
-        self.assertEqual(w.max_seq, 15)
+        self.assertEqual(w.max_seq, 16)
 
     def test_create_invalid(self):
         with self.assertRaises(ValueError):
@@ -107,24 +108,24 @@ class TestBaseWindowIsValidSeq16(unittest.TestCase):
 class TestReceiveWindow(unittest.TestCase):
 
     def setUp(self):
-        self.w = ReceiveWindow(3, size=3)
+        self.w = ReceiveWindow(3, size=4)
 
     def test_is_out_of_order(self):
         self.assertTrue(self.w.is_out_of_order(0))
         self.assertFalse(self.w.is_out_of_order(1))
-        self.assertFalse(self.w.is_out_of_order(2))
-        self.assertFalse(self.w.is_out_of_order(3))
-        self.assertTrue(self.w.is_out_of_order(4))
+        self.assertFalse(self.w.is_out_of_order(4))
+        self.assertTrue(self.w.is_out_of_order(5))
         self.assertTrue(self.w.is_out_of_order(7))
 
     def test_is_out_of_order_wrapped(self):
         self.w.expected_seq = 7
-        self.w.last_seq = (self.w.expected_seq + self.w.size - 1) % (self.w.max_seq + 1)
+        self.w.last_seq = (self.w.expected_seq + self.w.size - 1) % self.w.max_seq
         self.assertTrue(self.w.is_out_of_order(6))
         self.assertFalse(self.w.is_out_of_order(7))
         self.assertFalse(self.w.is_out_of_order(0))
         self.assertFalse(self.w.is_out_of_order(1))
-        self.assertTrue(self.w.is_out_of_order(2))
+        self.assertFalse(self.w.is_out_of_order(2))
+        self.assertTrue(self.w.is_out_of_order(3))
 
     def test_exists(self):
         self.assertFalse(self.w.exists(0))
@@ -160,10 +161,10 @@ class TestReceiveWindow(unittest.TestCase):
             (5, 5),
             (4, 4),
             (6, 6),
-            (1, 8),
-            (0, 7),
-            (2, 9),
-            (3, 10),
+            (0, 8),
+            (7, 7),
+            (1, 9),
+            (2, 10),
         ]
         expected_sequence = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         received_sequence = []
@@ -175,39 +176,135 @@ class TestReceiveWindow(unittest.TestCase):
                     received_sequence.append(data)
                 else:
                     break
-        self.assertEqual(received_sequence, expected_sequence)
+        self.assertEqual(expected_sequence, received_sequence)
 
 
-class TestTransmitWindow(unittest.TestCase):
+class TestSendWindow(unittest.TestCase):
 
     def setUp(self):
-        self.w = SendWindow(4)
+        self.w = SendWindow(3, size=4)
 
     def test_is_out_of_order_empty(self):
+        for i in range(-2, self.w.max_seq + 2):
+            self.assertTrue(self.w.is_out_of_order(i))
+
+    def test_is_out_of_order_full(self):
+        self.w.put("x")
+        self.w.put("y")
+        self.w.put("z")
         self.assertTrue(self.w.is_out_of_order(0))
-        self.assertTrue(self.w.is_out_of_order(1))
-        self.assertTrue(self.w.is_out_of_order(14))
-        self.assertTrue(self.w.is_out_of_order(15))
+        self.assertFalse(self.w.is_out_of_order(1))
+        self.assertFalse(self.w.is_out_of_order(2))
+        self.assertFalse(self.w.is_out_of_order(3))
+        self.assertTrue(self.w.is_out_of_order(4))
+
+    def test_is_out_of_order_full_wrapped(self):
+        self.w.expected_seq = 6
+        self.w.next_seq = 6
+        self.w.put("w")
+        self.w.put("x")
+        self.w.put("y")
+        self.w.put("z")
+        self.assertFalse(self.w.is_out_of_order(0))
+        self.assertFalse(self.w.is_out_of_order(1))
+        self.assertTrue(self.w.is_out_of_order(2))
+        self.assertTrue(self.w.is_out_of_order(5))
+        self.assertFalse(self.w.is_out_of_order(6))
+        self.assertFalse(self.w.is_out_of_order(7))
 
     def test_is_out_of_order_one(self):
         self.w.put("1")
         self.assertTrue(self.w.is_out_of_order(0))
         self.assertFalse(self.w.is_out_of_order(1))
         self.assertTrue(self.w.is_out_of_order(2))
-        self.assertTrue(self.w.is_out_of_order(15))
-
-    def test_is_empty(self):
-        self.assertTrue(self.w.is_empty())
-        self.w.put("0")
-        self.assertFalse(self.w.is_empty())
-        self.w.pop()
-        self.assertTrue(self.w.is_empty())
 
     def test_is_full(self):
-        for i in range(8):
-            self.assertFalse(self.w.is_full())
-            self.w.put(str(i))
+        self.assertFalse(self.w.is_full())
+        self.w.put("w")
+        self.assertFalse(self.w.is_full())
+        self.w.put("x")
+        self.assertFalse(self.w.is_full())
+        self.w.put("y")
+        self.assertFalse(self.w.is_full())
+        self.w.put("z")
         self.assertTrue(self.w.is_full())
-        for _ in range(8):
-            self.w.pop()
-            self.assertFalse(self.w.is_full())
+
+    def test_is_full_wrapped(self):
+        self.w.expected_seq = 6
+        self.w.next_seq = 6
+        self.assertFalse(self.w.is_full())
+        self.w.put("w")
+        self.assertFalse(self.w.is_full())
+        self.w.put("x")
+        self.assertFalse(self.w.is_full())
+        self.w.put("y")
+        self.assertFalse(self.w.is_full())
+        self.w.put("z")
+        self.assertTrue(self.w.is_full())
+
+    def test_put(self):
+        self.assertEqual(self.w.window, [None, None, None, None])
+        self.w.put("x")
+        self.assertEqual(self.w.expected_seq, 1)
+        self.assertEqual(self.w.next_seq, 2)
+        self.assertEqual(self.w.window, [None, "x", None, None])
+
+    def test_put_full(self):
+        self.w.put("w")
+        self.w.put("x")
+        self.w.put("y")
+        self.w.put("z")
+        self.assertEqual(self.w.expected_seq, 1)
+        self.assertEqual(self.w.next_seq, 5)
+        self.assertEqual(self.w.window, ["z", "w", "x", "y"])
+
+    def test_put_full_exception(self):
+        self.w.put("w")
+        self.w.put("x")
+        self.w.put("y")
+        self.w.put("z")
+        with self.assertRaises(NoSpace):
+            self.w.put("e")
+
+    def test_acknowledge_empty(self):
+        self.w.acknowledge(5)
+        self.assertEqual(self.w.window, [None, None, None, None])
+        self.assertEqual(self.w.expected_seq, 1)
+        self.assertEqual(self.w.next_seq, 1)
+
+    def test_acknowledge(self):
+        self.w.put("x")
+        self.w.put("y")
+        self.w.put("z")
+        self.w.acknowledge(2)
+        self.assertEqual(self.w.window, [None, None, None, "z"])
+        self.assertEqual(self.w.expected_seq, 3)
+        self.assertEqual(self.w.next_seq, 4)
+
+    def test_acknowledge_wrapped(self):
+        self.w.expected_seq = 6
+        self.w.next_seq = 6
+        self.w.put("x")
+        self.w.put("y")
+        self.w.put("z")
+        self.w.acknowledge(7)
+        self.assertEqual(self.w.window, ["z", None, None, None])
+        self.assertEqual(self.w.expected_seq, 0)
+        self.assertEqual(self.w.next_seq, 1)
+
+    def test_get_empty(self):
+        self.assertEqual(self.w.get(), [])
+
+    def test_get(self):
+        self.w.put("x")
+        self.w.put("y")
+        self.w.put("z")
+        self.assertEqual(self.w.get(), [(1, "x"), (2, "y"), (3, "z")])
+
+    def test_get_wrapped(self):
+        self.w.expected_seq = 6
+        self.w.next_seq = 6
+        self.w.put("x")
+        self.w.put("y")
+        self.w.put("z")
+        self.assertEqual(self.w.get(), [(6, "x"), (7, "y"), (0, "z")])

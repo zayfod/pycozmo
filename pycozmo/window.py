@@ -5,13 +5,14 @@ Cozmo protocol sliding window implementation.
 """
 
 import math
-from typing import Optional, Any
+from typing import Optional, List, Tuple, Any
+
+from . import exception
 
 
 __all__ = [
     "BaseWindow",
     "ReceiveWindow",
-    "SendWindowSlot",
     "SendWindow",
 ]
 
@@ -19,7 +20,7 @@ __all__ = [
 class BaseWindow(object):
     """ Base communication window class. """
 
-    def __init__(self, seq_bits: int, size: Optional[int] = None) -> None:
+    def __init__(self, seq_bits: int, size: Optional[int] = None, max_seq: Optional[int] = None) -> None:
         """ Crate a window by specifying either sequence number bits or size of the window. """
         if size is None:
             if seq_bits < 1:
@@ -29,21 +30,24 @@ class BaseWindow(object):
             raise ValueError("Invalid window size.")
         # Size of the window.
         self.size = size
-        # Next expected sequence number (0, max_seq).
+        # Next expected sequence number (0, max_seq-1).
         self.expected_seq = 1
-        # Maximum valid sequence number.
-        self.max_seq = int(math.pow(2, seq_bits))
-        # Cozmo skips the last sequence number value - 65535.
-        self.max_seq -= 1
+        # Maximum sequence number (first invalid).
+        self.max_seq = max_seq or int(math.pow(2, seq_bits))
+        if self.max_seq % self.size != 0:
+            raise ValueError("The maximum sequence number must be a multiple of the window size must.")
+        # Window data
+        self.window = [None for _ in range(self.size)]
 
     def is_valid_seq(self, seq: int) -> bool:
         """ Check whether a sequence number is valid for the window. """
-        res = 0 <= seq <= self.max_seq
+        res = 0 <= seq < self.max_seq
         return res
 
     def reset(self) -> None:
         """ Reset the window. """
         self.expected_seq = 1
+        self.window = [None for _ in range(self.size)]
 
 
 class ReceiveWindow(BaseWindow):
@@ -55,15 +59,14 @@ class ReceiveWindow(BaseWindow):
     Packets are extracted from the window in the expected order using the get() method.
     """
 
-    def __init__(self, seq_bits: int, size: Optional[int] = None) -> None:
+    def __init__(self, seq_bits: int, size: Optional[int] = None, max_seq: Optional[int] = None) -> None:
         """ Crate a window by specifying either sequence number bits or size of the window. """
-        super().__init__(seq_bits, size)
-        # Last used sequence number (0, max_seq).
+        super().__init__(seq_bits, size, max_seq)
+        # Last used sequence number (0, max_seq-1).
         self.last_seq = (self.expected_seq + self.size - 1) % self.max_seq
-        self.window = [None for _ in range(self.size)]
 
     def is_out_of_order(self, seq: int) -> bool:
-        """ Check whether a sequence number is outside the current window. """
+        """ Check whether a sequence number is outside the current window (assuming it is valid). """
         if self.expected_seq > self.last_seq:
             res = self.expected_seq > seq > self.last_seq
         else:
@@ -71,7 +74,7 @@ class ReceiveWindow(BaseWindow):
         return res
 
     def exists(self, seq: int) -> bool:
-        """ Check whether a sequence number has already been received. """
+        """ Check whether a sequence number has already been received (assuming it is valid). """
         res = self.window[seq % self.size] is not None
         return res
 
@@ -101,89 +104,68 @@ class ReceiveWindow(BaseWindow):
         """ Reset the window. """
         super().reset()
         self.last_seq = (self.expected_seq + self.size - 1) % self.max_seq
-        self.window = [None for _ in range(self.size)]
-
-
-class SendWindowSlot(object):
-
-    def __init__(self) -> None:
-        self.seq = None     # type: Optional[int]
-        self.data = None
-
-    def set(self, seq: int, data: Any) -> None:
-        self.seq = seq
-        self.data = data
-
-    def reset(self) -> None:
-        self.seq = None
-        self.data = None
 
 
 class SendWindow(BaseWindow):
+    """
+    Send communication window class.
 
-    def __init__(self, seq_bits: int, size: Optional[int] = None) -> None:
-        super().__init__(seq_bits, size)
+    When packets are sent, they are put in the window using the put() method which returns a sequence number.
+
+    Packets are removed from the window when they are acknowledged with the acknowledge() method.
+    """
+
+    def __init__(self, seq_bits: int, size: Optional[int] = None, max_seq: Optional[int] = None) -> None:
+        """ Crate a window by specifying either sequence number bits or size of the window. """
+        super().__init__(seq_bits, size, max_seq)
         self.next_seq = 1
-        self.window = [SendWindowSlot() for _ in range(self.size)]
 
     def is_out_of_order(self, seq: int) -> bool:
-        if self.is_empty():
-            res = True
-        elif self.expected_seq > self.next_seq:
+        """ Check whether a sequence number is outside the current window (assuming it is valid). """
+        if self.expected_seq > self.next_seq:
             res = self.expected_seq > seq >= self.next_seq
         else:
             res = seq < self.expected_seq or seq >= self.next_seq
         return res
 
-    def is_empty(self) -> bool:
-        res = self.expected_seq == self.next_seq
-        return res
-
     def is_full(self) -> bool:
+        """ Check whether the window is full. """
         if self.expected_seq > self.next_seq:
             res = (self.next_seq + self.max_seq - self.expected_seq) >= self.size
         else:
             res = (self.next_seq - self.expected_seq) >= self.size
         return res
 
-    def put(self, data: Any) -> int:
-        seq = self.next_seq
+    def put(self, data: Any) -> None:
+        """ Add data to the window. Raises NoSpace exception if the window is full. """
+        if self.is_full():
+            raise exception.NoSpace("Send window full.")
+        self.window[self.next_seq % self.size] = data
         self.next_seq = (self.next_seq + 1) % self.max_seq
-        self.window[seq % self.size].set(seq, data)
-        return seq
-
-    def pop(self) -> None:
-        self.window[self.expected_seq % self.size].reset()
-        self.expected_seq = (self.expected_seq + 1) % self.max_seq
 
     def acknowledge(self, seq: int) -> None:
-        if not self.is_out_of_order(seq):
-            seq += 1
-            if seq > self.expected_seq:
-                for frame in self.window[(self.expected_seq % self.size):(seq % self.size)]:
-                    frame.reset()
-            else:
-                for i in range(self.expected_seq, seq + self.max_seq):
-                    self.window[i % self.size].reset()
-            self.expected_seq = seq % self.max_seq
-            if self.next_seq < seq:
-                self.next_seq = self.expected_seq
+        """ Acknowledge a sequence number and remove any associated data from the window. """
+        if not self.is_valid_seq(seq):
+            # Invalid sequence number.
+            return
+        if self.is_out_of_order(seq):
+            # Not in the window.
+            return
+        seq = (seq + 1) % self.max_seq
+        while self.expected_seq != seq:
+            self.window[self.expected_seq % self.size] = None
+            self.expected_seq = (self.expected_seq + 1) % self.max_seq
 
-    def get(self):
-        expected_idx = self.expected_seq % self.size
-        next_idx = self.next_seq % self.size
-        if next_idx >= expected_idx:
-            res = self.window[expected_idx:next_idx]
-        else:
-            res = self.window[expected_idx:] + self.window[:next_idx]
-        return [r.data for r in res]
-
-    def get_oldest(self) -> Any:
-        res = self.window[self.expected_seq % self.size].data
+    def get(self) -> List[Tuple[int, Any]]:
+        """ Get the contents of the window as a list of tuples (sequence number, data). """
+        res = []
+        seq = self.expected_seq
+        while seq != self.next_seq:
+            res.append((seq, self.window[seq % self.size]))
+            seq = (seq + 1) % self.max_seq
         return res
 
     def reset(self):
+        """ Reset the window. """
         super().reset()
         self.next_seq = 1
-        for slot in self.window:
-            slot.reset()

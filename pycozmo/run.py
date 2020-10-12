@@ -70,6 +70,9 @@ def run_program(
     except exception.PyCozmoException as e:
         logger.error(e)
         sys.exit(1)
+    except KeyboardInterrupt:
+        logger.info("Interrupted...")
+        return
 
     try:
         # Exceptions, generated from the application are intentionally not handled.

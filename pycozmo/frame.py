@@ -69,7 +69,7 @@ class Frame(object):
         elif self.type == FrameType.ENGINE_ACT:
             assert len(self.pkts) == 1
             pkt = self.pkts[0]
-            assert pkt.type == PacketType.COMMAND
+            assert pkt.type in (PacketType.COMMAND, PacketType.DISCONNECT)
             writer.write(pkt.id, "B")
             writer.write_object(pkt)
         elif self.type == FrameType.RESET:
@@ -144,7 +144,7 @@ class Frame(object):
                 except (ValueError, IndexError) as e:
                     logger_protocol.debug("Failed to decode packet. Ignoring. {}".format(e))
                     reader.seek_set(expected_offset)
-            assert not seq or seq == 2 or seq + 1 == pkt_seq
+            # assert not seq or seq == 2 or seq + 1 == pkt_seq
         elif frame_type == FrameType.PING:
             pkt = Ping.from_reader(reader)
             pkts.append(pkt)
@@ -161,7 +161,7 @@ class Frame(object):
                 pkts.append(pkt)
             except (ValueError, IndexError) as e:
                 logger_protocol.debug("Failed to decode packet. Ignoring. {}".format(e))
-            assert not seq or seq == 2 or seq + 1 == pkt_seq
+            # assert not seq or seq == 2 or seq + 1 == pkt_seq
         elif frame_type == FrameType.RESET:
             # No packets
             assert reader.tell() == len(reader)

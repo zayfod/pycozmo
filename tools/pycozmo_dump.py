@@ -35,7 +35,7 @@ class DumpApp(object):
             self.filtered_frame_count += 1
             return
 
-        print("{:<12s}first_seq={:04x}, seq={:04x}, ack={:04x}, frame={:6d}, time={:.06f}".format(
+        print("{:<12s}first_seq=0x{:04x}, seq=0x{:04x}, ack=0x{:04x}, frame={:6d}, time={:.06f}".format(
             frame.type.name, frame.first_seq, frame.seq, frame.ack, self.frame_count + 1, ts))
 
         for pkt in frame.pkts:

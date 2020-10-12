@@ -44,14 +44,12 @@ class SendThread(Thread):
                  sock: socket.socket,
                  receiver_address: Tuple[str, int],
                  loop_timeout: float = 0.01,
-                 queue_timeout: float = 0.001,
-                 seq_bits: int = 16,
-                 window_size: Optional[int] = 256) -> None:
+                 queue_timeout: float = 0.001) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         self.sock = sock
         self.lock = Lock()
         self.receiver_address = receiver_address
-        self.window = SendWindow(seq_bits, size=window_size)
+        self.window = SendWindow(16, size=62, max_seq=0xfffe)
         self.loop_timeout = loop_timeout
         self.stop_flag = False
         self.queue = Queue()
@@ -82,32 +80,32 @@ class SendThread(Thread):
                     continue
                 except Exception as e:
                     logger.error("Failed to get from output queue. {}".format(e))
-                    continue
+                    # Fall through to service window.
 
             try:
                 # Construct frames
-                raw_frames = []
-                framelen = 0
                 with self.lock:
-                    first_seq = self.window.expected_seq
-                    seq = first_seq
                     pkts = self.window.get()
                     last_ack = self.last_ack
+
+                raw_frames = []
+
                 to_frame = []
-                for p in pkts:
+                framelen = 0
+                first_seq = None
+                seq = None
+                for seq, p in pkts:
                     framelen += len(p) + 1
+                    if first_seq is None:
+                        first_seq = seq
                     if framelen < MAX_FRAME_PAYLOAD_SIZE:
                         to_frame.append(p)
-                        seq += 1
                     else:
                         raw_frames.append(self._build_frame(to_frame, first_seq, seq, last_ack))
                         to_frame = []
                         framelen = 0
-                        first_seq = seq
-                    if len(raw_frames) > 4:
-                        break
-
-                if len(to_frame) > 0:
+                        first_seq = None
+                if len(to_frame):
                     raw_frames.append(self._build_frame(to_frame, first_seq, seq, last_ack))
 
                 for raw_frame in raw_frames:
@@ -123,11 +121,11 @@ class SendThread(Thread):
         except Exception as e:
             logger.error("sendto() failed. {}".format(e))
 
-    def _build_frame(self, pkts: list, first_seq: int, seq: int, ack: int):
+    @staticmethod
+    def _build_frame(pkts: list, first_seq: int, seq: int, ack: int):
         try:
-            seq = seq % self.window.max_seq
             if len(pkts) == 1:
-                frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, ack, pkts)
+                frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, first_seq, seq, ack, pkts)
             else:
                 frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, ack, pkts)
             return frame.to_bytes()
@@ -159,13 +157,11 @@ class ReceiveThread(Thread):
                  send_thread: SendThread,
                  sender_address: Optional[Tuple[str, int]],
                  timeout: float = 0.5,
-                 buffer_size: int = 65536,
-                 seq_bits: int = 16,
-                 window_size: int = 256) -> None:
+                 buffer_size: int = 2048) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         self.sock = sock
         self.sender_address = sender_address
-        self.window = ReceiveWindow(seq_bits, size=window_size)
+        self.window = ReceiveWindow(16, size=62, max_seq=0xfffe)
         self.timeout = timeout
         self.buffer_size = buffer_size
         self.stop_flag = False
@@ -214,7 +210,6 @@ class ReceiveThread(Thread):
         else:
             self.window.put(pkt.seq, pkt)
             self.deliver_sequence()
-
 
     def deliver_sequence(self) -> None:
         while True:
