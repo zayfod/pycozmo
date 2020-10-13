@@ -3,22 +3,22 @@
 Animation clip preprocessing and playback.
 
 """
-
-from typing import Optional, Dict, List, Iterable
-from collections import defaultdict
 import math
+import os
 import time
+from collections import defaultdict
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from PIL import Image
 import numpy as np
 
-from . import protocol_encoder
+from . import anim_encoder
+from . import image_encoder
 from . import lights
 from . import procedural_face
-from . import image_encoder
-from . import anim_encoder
+from . import protocol_encoder
 from . import robot
-
+from .json_loader import find_file, load_json_file
 
 __all__ = [
     "PreprocessedClip",
@@ -26,7 +26,8 @@ __all__ = [
     "AnimationGroup",
 
     "load_animation_groups",
-    "load_cube_animation_group",
+    "load_cube_animation_groups",
+    "load_backpack_light_patterns"
 ]
 
 
@@ -142,6 +143,76 @@ class PreprocessedClip(object):
         cli.conn.send(protocol_encoder.EndAnimation())
 
 
+class LightAnimation:
+    # TODO: create play method for light animations
+    __slots__ = [
+        "on_colors",
+        "off_colors",
+        "on_period",
+        "off_period",
+        "transition_on_period",
+        "transition_off_period",
+        "offset",
+    ]
+
+    def __init__(self,
+                 on_colors: List[List],
+                 off_colors: List[List],
+                 on_period: List[int],
+                 off_period: List[int],
+                 transition_on_period: List[int],
+                 transition_off_period: List[int],
+                 offset: List[int]):
+        self.on_colors = on_colors
+        self.off_colors = off_colors
+        self.on_period = on_period
+        self.off_period = off_period
+        self.transition_on_period = transition_on_period
+        self.transition_off_period = transition_off_period
+        self.offset = offset
+
+
+class CubeAnimation(LightAnimation):
+    __slots__ = [
+        "duration",
+        "rotation_period"
+    ]
+
+    def __init__(self, duration: int, rotation_period: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.duration = int(duration)
+        self.rotation_period = int(rotation_period)
+
+    @classmethod
+    def from_json(cls, data: Dict):
+        return cls(on_colors=data['pattern']['onColors'],
+                   off_colors=data['pattern']['offColors'],
+                   on_period=data['pattern']['onPeriod_ms'],
+                   off_period=data['pattern']['offPeriod_ms'],
+                   transition_on_period=data['pattern']['transitionOnPeriod_ms'],
+                   transition_off_period=data['pattern']['transitionOffPeriod_ms'],
+                   offset=data['pattern']['offset'],
+                   rotation_period=data['pattern']['rotationPeriod_ms'],
+                   duration=data['duration_ms'])
+
+
+class BackpackAnimation(LightAnimation):
+    __slots__ = []
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @classmethod
+    def from_json(cls, data: Dict):
+        return cls(on_colors=data['onColors'],
+                   off_colors=data['offColors'],
+                   on_period=data['onPeriod_ms'],
+                   off_period=data['offPeriod_ms'],
+                   transition_on_period=data['transitionOnPeriod_ms'],
+                   transition_off_period=data['transitionOffPeriod_ms'],
+                   offset=data['offset'])
+
+
 class AnimationGroupMember:
 
     __slots__ = [
@@ -149,14 +220,38 @@ class AnimationGroupMember:
         "weight",
         "cooldown_time",
         "mood",
+        "use_head_angle",
+        "head_angle_max",
+        "head_angle_min",
     ]
 
-    def __init__(self, name: str, weight: float, cooldown_time: float, mood: str) -> None:
+    def __init__(self,
+                 name: str,
+                 weight: float,
+                 cooldown_time: float,
+                 mood: str,
+                 use_head_angle: Optional[bool] = False,
+                 head_angle_min: Optional[float] = 0.0,
+                 head_angle_max: Optional[float] = 0.0) -> None:
         self.name = str(name)
         self.weight = float(weight)
+        self.mood = str(mood)
+        self.use_head_angle = bool(use_head_angle)
         # seconds
         self.cooldown_time = float(cooldown_time)
-        self.mood = str(mood)
+        # Degrees
+        self.head_angle_min = float(head_angle_min)
+        self.head_angle_max = float(head_angle_max)
+
+    @classmethod
+    def from_json(cls, data: Dict):
+        return cls(name=data['Name'],
+                   weight=data['Weight'],
+                   cooldown_time=data['CooldownTime_Sec'],
+                   mood=data['Mood'],
+                   use_head_angle=data.get('UseHeadAngle', False),
+                   head_angle_min=data.get('HeadAngleMin_Deg', 0.0),
+                   head_angle_max=data.get('HeadAngleMax_Deg', 0.0))
 
 
 class AnimationGroup:
@@ -168,14 +263,48 @@ class AnimationGroup:
     def __init__(self, members: Iterable[AnimationGroupMember]) -> None:
         self.members = members
 
+    @classmethod
+    def from_json(cls, data: Dict):
+        animations = [AnimationGroupMember.from_json(a) for a in data['Animations']]
+        return cls(animations)
 
-def load_animation_groups() -> Dict[str, AnimationGroup]:
-    # TODO: Load cozmo_resources/assets/animationGroups/*/*.json
+
+def load_trigger_map(resource_dir: str, map_relative_path: str) -> Tuple[str, str, Dict]:
+    json_data = load_json_file(os.path.join(resource_dir, map_relative_path))
+    for pair in json_data['Pairs']:
+        anim_file = find_file(resource_dir, pair['AnimName'] + '.json')
+        if anim_file:
+            yield pair['CladEvent'], pair['AnimName'], load_json_file(anim_file)
+
+
+def load_animation_groups(resource_dir: str) -> Dict[str, AnimationGroup]:
     animation_groups = {}
+    trigger_map_loader = load_trigger_map(resource_dir, os.path.join('cozmo_resources', 'assets',
+                                                                     'animationGroupMaps', 'AnimationTriggerMap.json'))
+    for evt, name, json_data in trigger_map_loader:
+        animation_groups[evt] = AnimationGroup.from_json(json_data)
+
     return animation_groups
 
 
-def load_cube_animation_group() -> Dict[str, AnimationGroup]:
-    # TODO: Load cozmo_resources/assets/cubeAnimationGroupMap/CubeAnimationTriggerMap.json
-    cube_animation_groups = {}
-    return cube_animation_groups
+def load_cube_animation_groups(resource_dir: str) -> Dict[str, List[CubeAnimation]]:
+    cube_animation_group = {}
+    trigger_map_loader = load_trigger_map(resource_dir,
+                                          os.path.join('cozmo_resources', 'assets',
+                                                       'cubeAnimationGroupMaps', 'CubeAnimationTriggerMap.json'))
+    for evt, name, json_data in trigger_map_loader:
+        cube_animation_group[evt] = []
+        for cube_anim in json_data[name]:
+            cube_animation_group[evt].append(CubeAnimation.from_json(cube_anim))
+
+    return cube_animation_group
+
+
+def load_backpack_light_patterns(resource_dir: str) -> Dict[str, BackpackAnimation]:
+    backpack_light_patterns = {}
+    json_data = load_json_file(os.path.join(resource_dir, 'cozmo_resources', 'config',
+                               'engine', 'lights', 'backpackLights', 'backpackLightPatterns.json'))
+
+    for key in json_data:
+        backpack_light_patterns[key] = BackpackAnimation.from_json(json_data[key])
+    return backpack_light_patterns
