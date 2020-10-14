@@ -263,6 +263,8 @@ class Behavior:
 
 def load_behaviors(resource_dir: str) -> Dict[str, Behavior]:
 
+    # TODO: Load cozmo_resources/config/engine/behaviorSystem/behavior_system_config.json
+
     start_time = time.time()
 
     behavior_files = get_json_files(resource_dir,

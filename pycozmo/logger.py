@@ -29,3 +29,5 @@ logger_reaction = logging.getLogger("pycozmo.reaction")
 logger_behavior = logging.getLogger("pycozmo.behavior")
 # Animation logger.
 logger_animation = logging.getLogger("pycozmo.animation")
+
+# TODO: See cozmo_resources/config/engine/console_filter_config.json

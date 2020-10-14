@@ -433,6 +433,9 @@ def from_dict(info: Dict) -> Activity:
 def load_activities(resource_dir: str) -> Dict[str, Activity]:
     """ Load activity map from cozmo resources. """
 
+    # TODO: cozmo_resources/config/engine/needs_action_config.json
+    # TODO: cozmo_resources/config/engine/do_a_trick_weights.json
+
     start_time = time.time()
 
     activity_folders = [os.path.join('cozmo_resources', 'config', 'engine', 'behaviorSystem', 'activities_config.json'),

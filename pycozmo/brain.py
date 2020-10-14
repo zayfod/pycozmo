@@ -30,6 +30,8 @@ class Brain:
 
         self.cli = cli
 
+        # TODO: Load configuration. See cozmo_resources/config/features.json
+
         start_time = time.time()
         resource_dir = str(util.get_cozmo_asset_dir())
         self.activities = activity.load_activities(resource_dir)
@@ -70,6 +72,7 @@ class Brain:
 
     def on_camera_image(self, cli, new_im) -> None:
         """ Process images, coming from the robot camera. """
+        # TODO: See cozmo_resources/config/engine/vision_config.json
         # TODO: motion detection
         # self.process_reaction_trigger("UnexpectedMovement")
         # TODO: face detection
