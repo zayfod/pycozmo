@@ -3,10 +3,13 @@
 Behavior classes.
 
 """
+
 import os
+import time
 import re
 from typing import Dict, List, Optional
 
+from . import logger
 from .json_loader import get_json_files, load_json_file
 
 
@@ -169,7 +172,7 @@ class BehaviorParameters:
         self.sequence = sequence
         self.motion_profile = motion_profile
 
-    r = re.compile('^s\d_.*')  # noqa: W605
+    r = re.compile(r'^s\d_.*')
 
     @classmethod
     def from_json(cls, data: Dict):
@@ -223,33 +226,6 @@ class Behavior:
         "needs_action_id",
         "display_name_key",
         "params",
-    ]
-
-    def __init__(self,
-                 behavior_class: str,
-                 behavior_id: str,
-                 needs_action_id: str,
-                 display_name_key,
-                 params: BehaviorParameters) -> None:
-        self.behavior_class = str(behavior_class)
-        self.id = str(behavior_id)
-        self.needs_action_id = str(needs_action_id)
-        self.display_name_key = str(display_name_key)
-        self.params = params
-
-    @classmethod
-    def from_json(cls, data: Dict):
-        return cls(behavior_class=data['behaviorClass'],
-                   behavior_id=data['behaviorID'],
-                   needs_action_id=data.get('needsActionID', ''),
-                   display_name_key=data.get('displayNameKey', ''),
-                   params=BehaviorParameters.from_json(data.get('params')) if 'params' in data else None)
-
-
-class TestBehavior:
-    __slots__ = [
-        "behavior_class",
-        "id",
         "loop_forever",
         "test_gap",
         "runs_per_test",
@@ -258,27 +234,37 @@ class TestBehavior:
     def __init__(self,
                  behavior_class: str,
                  behavior_id: str,
+                 needs_action_id: str,
+                 display_name_key,
+                 params: Optional[BehaviorParameters],
                  loop_forever: Optional[bool] = False,
                  test_gap: Optional[float] = 0.0,
                  runs_per_test: Optional[int] = 1) -> None:
         self.behavior_class = str(behavior_class)
         self.id = str(behavior_id)
+        self.needs_action_id = str(needs_action_id)
+        self.display_name_key = str(display_name_key)
+        self.params = params
         self.loop_forever = bool(loop_forever)
         self.test_gap = float(test_gap) if test_gap is not None else 0.0
         self.runs_per_test = int(runs_per_test) if runs_per_test is not None else 1
 
     @classmethod
     def from_json(cls, data: Dict):
-        # Behavior class seems to always match ID. Remove class?
-        assert data['behaviorClass'] == data['behaviorID']
         return cls(behavior_class=data['behaviorClass'],
                    behavior_id=data['behaviorID'],
+                   needs_action_id=data.get('needsActionID', ''),
+                   display_name_key=data.get('displayNameKey', ''),
+                   params=BehaviorParameters.from_json(data.get('params')) if 'params' in data else None,
                    loop_forever=data.get('loopForever', False),
                    test_gap=data.get('gapBetweenTests_s', 0.0),
                    runs_per_test=data.get('nRunsPerTest', 1))
 
 
 def load_behaviors(resource_dir: str) -> Dict[str, Behavior]:
+
+    start_time = time.time()
+
     behavior_files = get_json_files(resource_dir,
                                     [os.path.join('cozmo_resources', 'config', 'engine',
                                                   'behaviorSystem', 'behaviors')])
@@ -286,25 +272,17 @@ def load_behaviors(resource_dir: str) -> Dict[str, Behavior]:
 
     for filename in behavior_files:
         json_data = load_json_file(filename)
-        if 'Test' not in json_data['behaviorID']:
-            behaviors[json_data['behaviorID']] = Behavior.from_json(json_data)
-    return behaviors
+        behaviors[json_data['behaviorID']] = Behavior.from_json(json_data)
 
+    logger.debug("Loaded {} behaviors in {:.02f} s.".format(len(behaviors), time.time() - start_time))
 
-def load_test_behaviors(resource_dir: str) -> Dict[str, Behavior]:
-    behavior_files = get_json_files(resource_dir,
-                                    [os.path.join('cozmo_resources', 'config', 'engine',
-                                                  'behaviorSystem', 'behaviors')])
-    behaviors = {}
-
-    for filename in behavior_files:
-        json_data = load_json_file(filename)
-        if 'Test' in json_data['behaviorID']:
-            behaviors[json_data['behaviorID']] = TestBehavior.from_json(json_data)
     return behaviors
 
 
 def load_reaction_trigger_behavior_map(resource_dir: str) -> Dict[str, ReactionTrigger]:
+
+    start_time = time.time()
+
     reaction_trigger_behavior_map = {}
     filename = os.path.join(resource_dir, 'cozmo_resources', 'config',
                             'engine', 'behaviorSystem', 'reactionTrigger_behavior_map.json')
@@ -312,5 +290,8 @@ def load_reaction_trigger_behavior_map(resource_dir: str) -> Dict[str, ReactionT
     json_data = load_json_file(filename)
     for trigger in json_data['reactionTriggerBehaviorMap']:
         reaction_trigger_behavior_map[trigger['reactionTrigger']] = ReactionTrigger.from_json(trigger)
+
+    logger.debug("Loaded {} entry reaction trigger behavior map in {:.02f} s.".format(
+        len(reaction_trigger_behavior_map), time.time() - start_time))
 
     return reaction_trigger_behavior_map

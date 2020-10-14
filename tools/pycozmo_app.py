@@ -26,6 +26,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
 def parse_args():
     """ Parse command-line arguments. """
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose")
     args = parser.parse_args()
     return args
 
@@ -37,6 +38,7 @@ def main():
     try:
         pycozmo.run_program(
             pycozmo_program,
+            log_level="DEBUG" if args.verbose else "INFO",
             protocol_log_level="INFO",
             robot_log_level="INFO")
     except Exception as e:

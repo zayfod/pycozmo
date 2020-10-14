@@ -3,6 +3,7 @@
 Animation clip preprocessing and playback.
 
 """
+
 import math
 import os
 import time
@@ -12,6 +13,7 @@ from typing import Dict, Iterable, List, Optional, Tuple
 from PIL import Image
 import numpy as np
 
+from . import logger
 from . import anim_encoder
 from . import image_encoder
 from . import lights
@@ -19,6 +21,7 @@ from . import procedural_face
 from . import protocol_encoder
 from . import robot
 from .json_loader import find_file, load_json_file
+
 
 __all__ = [
     "PreprocessedClip",
@@ -299,26 +302,29 @@ def load_trigger_map(resource_dir: str, map_relative_path: str) -> Tuple[str, st
 
 
 def load_animation_groups(resource_dir: str) -> Dict[str, AnimationGroup]:
+    start_time = time.time()
     animation_groups = {}
     trigger_map_loader = load_trigger_map(resource_dir, os.path.join('cozmo_resources', 'assets',
                                                                      'animationGroupMaps', 'AnimationTriggerMap.json'))
     for evt, name, json_data in trigger_map_loader:
         animation_groups[evt] = AnimationGroup.from_json(json_data)
-
+    logger.debug("Loaded {} animation groups in {:.02f} s.".format(len(animation_groups), time.time() - start_time))
     return animation_groups
 
 
 def load_cube_animation_groups(resource_dir: str) -> Dict[str, List[CubeAnimation]]:
-    cube_animation_group = {}
+    start_time = time.time()
+    cube_animation_groups = {}
     trigger_map_loader = load_trigger_map(resource_dir,
                                           os.path.join('cozmo_resources', 'assets',
                                                        'cubeAnimationGroupMaps', 'CubeAnimationTriggerMap.json'))
     for evt, name, json_data in trigger_map_loader:
-        cube_animation_group[evt] = []
+        cube_animation_groups[evt] = []
         for cube_anim in json_data[name]:
-            cube_animation_group[evt].append(CubeAnimation.from_json(cube_anim))
-
-    return cube_animation_group
+            cube_animation_groups[evt].append(CubeAnimation.from_json(cube_anim))
+    logger.debug("Loaded {} cube animation groups in {:.02f} s.".format(
+        len(cube_animation_groups), time.time() - start_time))
+    return cube_animation_groups
 
 
 def load_backpack_light_patterns(resource_dir: str) -> Dict[str, BackpackAnimation]:

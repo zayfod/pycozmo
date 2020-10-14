@@ -5,11 +5,14 @@ Emotion classes.
 """
 
 import os
+import time
 from typing import Dict, List, Tuple
 
 import numpy as np
 
+from . import logger
 from .json_loader import get_json_files, load_json_file
+
 
 __all__ = [
     "EmotionType",
@@ -95,6 +98,9 @@ class EmotionEvent:
 
 
 def load_emotion_types(resource_dir: str) -> Dict[str, EmotionType]:
+
+    start_time = time.time()
+
     # TODO: Load actionResultEmotionEvents from cozmo_resources/config/engine/mood_config.json.
     json_data = load_json_file(
         os.path.join(resource_dir, 'cozmo_resources', 'config', 'engine', 'mood_config.json'))
@@ -117,10 +123,15 @@ def load_emotion_types(resource_dir: str) -> Dict[str, EmotionType]:
         "Brave": EmotionType("Brave", decay_graphs.get('Brave', decay_graphs['default']), default_rp),
     }
 
+    logger.debug("Loaded emotion types in {:.02f} s.".format(time.time() - start_time))
+
     return emotion_types
 
 
 def load_emotion_events(resource_dir: str) -> Dict[str, EmotionEvent]:
+
+    start_time = time.time()
+
     emotion_files = get_json_files(resource_dir,
                                    [os.path.join('cozmo_resources', 'config', 'engine', 'emotionevents/')])
     emotion_events = {}
@@ -132,5 +143,7 @@ def load_emotion_events(resource_dir: str) -> Dict[str, EmotionEvent]:
         else:
             for event in json_data['emotionEvents']:
                 emotion_events[event['name']] = EmotionEvent.from_json(event)
+
+    logger.debug("Loaded {} emotion events in {:.02f} s.".format(len(emotion_events), time.time() - start_time))
 
     return emotion_events

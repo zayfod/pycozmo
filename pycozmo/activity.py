@@ -5,8 +5,10 @@ Activity classes.
 """
 
 import os
+import time
 from typing import Dict, List, Optional
 
+from . import logger
 from .json_loader import get_json_files, load_json_file
 
 
@@ -62,7 +64,7 @@ class BehaviorChooser:
 class Objective:
     __slots__ = [
         "objective",
-        "behavior_ID",
+        "behavior_id",
         "ignore_if_locked",
         "probability_to_require_objective",
         "random_completions_needed_min",
@@ -71,13 +73,13 @@ class Objective:
 
     def __init__(self,
                  objective: str,
-                 behavior_ID: str,
+                 behavior_id: str,
                  ignore_if_locked: str,
                  probability_to_require_objective: float,
                  random_completions_needed_min: Optional[int] = 0,
                  random_completions_needed_max: Optional[int] = 0) -> None:
         self.objective = str(objective)
-        self.behavior_ID = str(behavior_ID)
+        self.behavior_id = str(behavior_id)
         self.ignore_if_locked = str(ignore_if_locked)
         self.probability_to_require_objective = float(probability_to_require_objective)
         self.random_completions_needed_min = \
@@ -88,7 +90,7 @@ class Objective:
     @classmethod
     def from_json(cls, data: Dict):
         return cls(objective=data['objective'],
-                   behavior_ID=data['behaviorID'],
+                   behavior_id=data['behaviorID'],
                    ignore_if_locked=data['ignoreIfLocked'],
                    probability_to_require_objective=data['probabilityToRequireObjective'],
                    random_completions_needed_min=data.get('randomCompletionsNeededMin', 0),
@@ -431,6 +433,8 @@ def from_dict(info: Dict) -> Activity:
 def load_activities(resource_dir: str) -> Dict[str, Activity]:
     """ Load activity map from cozmo resources. """
 
+    start_time = time.time()
+
     activity_folders = [os.path.join('cozmo_resources', 'config', 'engine', 'behaviorSystem', 'activities_config.json'),
                         os.path.join('cozmo_resources', 'config', 'engine', 'behaviorSystem', 'activities')]
     activity_files = get_json_files(resource_dir, activity_folders)
@@ -444,5 +448,7 @@ def load_activities(resource_dir: str) -> Dict[str, Activity]:
                 activities[activity['activityID']] = from_dict(activity)
         else:
             activities[json_data['activityID']] = from_dict(json_data)
+
+    logger.debug("Loaded {} activities in {:.02f} s.".format(len(activities), time.time() - start_time))
 
     return activities

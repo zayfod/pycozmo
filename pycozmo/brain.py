@@ -28,6 +28,8 @@ class Brain:
     def __init__(self, cli):
         super().__init__()
 
+        self.cli = cli
+
         start_time = time.time()
         resource_dir = str(util.get_cozmo_asset_dir())
         self.activities = activity.load_activities(resource_dir)
@@ -36,12 +38,9 @@ class Brain:
         self.animation_groups = anim.load_animation_groups(resource_dir)    # TODO: Move to Client?
         self.emotion_types = emotions.load_emotion_types(resource_dir)
         self.emotion_events = emotions.load_emotion_events(resource_dir)
+        self.cli.load_anims(str(util.get_cozmo_anim_dir()))
         logger.info("Loaded resources in {:.02f} s.".format(time.time() - start_time))
 
-        self.cli = cli
-        start_time = time.time()
-        self.cli.load_anims(str(util.get_cozmo_anim_dir()))
-        logger.info("Loaded animations in {:.02f} s.".format(time.time() - start_time))
         self.cli.add_handler(event.EvtCliffDetectedChange, self.on_cliff_detected)
         # TODO: ...
 

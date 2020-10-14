@@ -4,6 +4,7 @@ Exceptions declaration.
 
 """
 
+
 __all__ = [
     "PyCozmoException",
     "PyCozmoConnectionError",
