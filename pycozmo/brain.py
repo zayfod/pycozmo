@@ -8,7 +8,7 @@ from threading import Thread
 from queue import Queue, Empty
 import time
 
-from . import logger
+from . import logger, logger_reaction, logger_behavior, logger_animation
 from . import event
 from . import emotions
 from . import behavior
@@ -28,15 +28,20 @@ class Brain:
     def __init__(self, cli):
         super().__init__()
 
-        self.activities = activity.load_activities()
-        self.behaviors = behavior.load_behaviors()
-        self.reaction_trigger_beahvior_map = behavior.load_reaction_trigger_behavior_map()
-        self.animation_groups = anim.load_animation_groups()    # TODO: Move to Client?
-        self.emotion_types = emotions.load_emotion_types()
-        self.emotion_events = emotions.load_emotion_events()
+        start_time = time.time()
+        resource_dir = str(util.get_cozmo_asset_dir())
+        self.activities = activity.load_activities(resource_dir)
+        self.behaviors = behavior.load_behaviors(resource_dir)
+        self.reaction_trigger_beahvior_map = behavior.load_reaction_trigger_behavior_map(resource_dir)
+        self.animation_groups = anim.load_animation_groups(resource_dir)    # TODO: Move to Client?
+        self.emotion_types = emotions.load_emotion_types(resource_dir)
+        self.emotion_events = emotions.load_emotion_events(resource_dir)
+        logger.info("Loaded resources in {:.02f} s.".format(time.time() - start_time))
 
         self.cli = cli
+        start_time = time.time()
         self.cli.load_anims(str(util.get_cozmo_anim_dir()))
+        logger.info("Loaded animations in {:.02f} s.".format(time.time() - start_time))
         self.cli.add_handler(event.EvtCliffDetectedChange, self.on_cliff_detected)
         # TODO: ...
 
@@ -83,6 +88,7 @@ class Brain:
 
     def post_reaction(self, reaction_trigger: str) -> None:
         """ Post a reaction trigger to the reaction trigger queue. """
+        logger_reaction.debug("Posting {}".format(reaction_trigger))
         self.reaction_queue.put(reaction_trigger)
 
     def reaction_thread_run(self) -> None:
@@ -104,17 +110,30 @@ class Brain:
                 continue
 
     def process_reaction(self, reaction_trigger: str) -> None:
-        # TODO: Look up in reaction trigger behavior map and call activate_behavior()
-        pass
+        logger_reaction.info("Processing {}".format(reaction_trigger))
+        reaction = self.reaction_trigger_beahvior_map.get(reaction_trigger)
+        if reaction:
+            self.activate_behavior(reaction.behavior_id)
+        else:
+            logger_reaction.error("Failed to find reaction for {}.".format(reaction_trigger))
 
     def activate_behavior(self, behavior_id: str) -> None:
-        # TODO: Look up in behavior map and call play_anim_group
-        pass
+        logger_behavior.info("Activating {}".format(behavior_id))
+        behavior = self.behaviors.get(behavior_id)
+        if behavior:
+            self.play_anim_group(behavior.id)
+        else:
+            logger_reaction.error("Failed to find behavior {}.".format(behavior_id))
 
     def play_anim_group(self, anim_group_name: str) -> None:
-        # TODO: Look up in animation groups and choose animation.
-        anim_name = "test"
-        self.cli.play_anim(anim_name)
+        logger_animation.info("Playing animation group {}".format(anim_group_name))
+        animation_group = self.animation_groups.get(anim_group_name)
+        if not animation_group:
+            logger_animation.error("Failed to find animation group {}.".format(anim_group_name))
+            return
+        member = animation_group.choose_member()
+        logger_animation.info("Playing animation {}".format(member.name))
+        self.cli.play_anim(member.name)
 
     def heartbeat_thread_run(self) -> None:
         """ Heartbeat thread loop. """
@@ -124,7 +143,7 @@ class Brain:
 
             self.update_emotion_types()
             self.update_face()
-            # TODO: hiccups
+
             if cnt % (30 * 60) == 0:
                 self.post_reaction("Hiccup")
 

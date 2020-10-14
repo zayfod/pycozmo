@@ -257,16 +257,37 @@ class AnimationGroupMember:
 class AnimationGroup:
 
     __slots__ = [
-        "members"
+        "members",
+        "member_probabilities",
     ]
 
     def __init__(self, members: Iterable[AnimationGroupMember]) -> None:
-        self.members = members
+        self.members = list(members)
+        self.member_probabilities = []
+
+        # Calculate normalized probabilities for members.
+        weight_sum = 0.0
+        for member in self.members:
+            self.member_probabilities.append(member.weight)
+            weight_sum += member.weight
+        if not weight_sum and len(self.members) == 1:
+            # Fix special case of a single member with weight 0.
+            weight_sum = 1.0
+            self.member_probabilities[0] = 1.0
+        for i in range(len(self.member_probabilities)):
+            self.member_probabilities[i] /= weight_sum
+        assert math.isclose(sum(self.member_probabilities), 1.0)
 
     @classmethod
     def from_json(cls, data: Dict):
         animations = [AnimationGroupMember.from_json(a) for a in data['Animations']]
         return cls(animations)
+
+    def choose_member(self):
+        """ Choose member by weight. """
+        i = np.random.choice(len(self.members), p=self.member_probabilities)
+        member = self.members[i]
+        return member
 
 
 def load_trigger_map(resource_dir: str, map_relative_path: str) -> Tuple[str, str, Dict]:

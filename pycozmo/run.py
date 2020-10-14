@@ -9,7 +9,7 @@ import sys
 import os
 import logging
 
-from . import logger, logger_protocol, logger_robot
+from . import logger, logger_protocol, logger_robot, logger_reaction, logger_behavior, logger_animation
 from . import client
 from . import exception
 
@@ -44,6 +44,12 @@ def setup_basic_logging(
     logger_protocol.setLevel(protocol_log_level)
     logger_robot.addHandler(handler)
     logger_robot.setLevel(robot_log_level)
+    logger_reaction.addHandler(handler)
+    logger_reaction.setLevel(robot_log_level)
+    logger_behavior.addHandler(handler)
+    logger_behavior.setLevel(robot_log_level)
+    logger_animation.addHandler(handler)
+    logger_animation.setLevel(robot_log_level)
 
 
 def run_program(

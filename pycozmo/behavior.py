@@ -36,7 +36,7 @@ class ReactionTrigger:
     def from_json(cls, data: Dict):
         return cls(name=data['reactionTrigger'],
                    behavior_id=data['behaviorID'],
-                   should_resume_last=data.get('genericStrategyParams').get('shouldResumeLast'))
+                   should_resume_last=data.get('genericStrategyParams', {}).get('shouldResumeLast'))
 
 
 class MotionProfile:
@@ -269,6 +269,8 @@ class TestBehavior:
 
     @classmethod
     def from_json(cls, data: Dict):
+        # Behavior class seems to always match ID. Remove class?
+        assert data['behaviorClass'] == data['behaviorID']
         return cls(behavior_class=data['behaviorClass'],
                    behavior_id=data['behaviorID'],
                    loop_forever=data.get('loopForever', False),

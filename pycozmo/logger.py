@@ -11,6 +11,9 @@ __all__ = [
     "logger",
     "logger_protocol",
     "logger_robot",
+    "logger_reaction",
+    "logger_behavior",
+    "logger_animation",
 ]
 
 
@@ -20,3 +23,9 @@ logger = logging.getLogger("pycozmo.general")
 logger_protocol = logging.getLogger("pycozmo.protocol")
 # Robot logger - log messages coming from the robot microcontrollers.
 logger_robot = logging.getLogger("pycozmo.robot")
+# Reaction logger.
+logger_reaction = logging.getLogger("pycozmo.reaction")
+# Behavior logger.
+logger_behavior = logging.getLogger("pycozmo.behavior")
+# Animation logger.
+logger_animation = logging.getLogger("pycozmo.animation")
