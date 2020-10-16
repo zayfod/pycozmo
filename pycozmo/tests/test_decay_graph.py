@@ -16,10 +16,10 @@ class TestDecayGraph(unittest.TestCase):
 
     def test_increment_calculation(self):
         # negative values
-        self.assertAlmostEqual(self.graph.get_increment(-1), 0.0)
+        self.assertAlmostEqual(self.graph.get_increment(-1), 1.0)
         # value between nodes
-        self.assertAlmostEqual(self.graph.get_increment(40), 0.24)
+        self.assertAlmostEqual(self.graph.get_increment(40), 0.76)
         # value matches node
-        self.assertAlmostEqual(self.graph.get_increment(60), 0.4)
+        self.assertAlmostEqual(self.graph.get_increment(60), 0.6)
         # value is higher than last node
-        self.assertAlmostEqual(self.graph.get_increment(200), 1.8)
+        self.assertAlmostEqual(self.graph.get_increment(200), -0.8)
