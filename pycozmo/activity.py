@@ -80,8 +80,7 @@ class BehaviorChooser:
             else:
                 raise TypeError('Invalid behavior index: {}'.format(ref))
             self.behavior_repetitions[idx] += 1
-            inc = self.repetition_penaltys[idx].get_increment(self.behavior_repetitions[idx])
-            self.behavior_scores[idx] -= inc
+            self.behavior_scores[idx] -= self.repetition_penaltys[idx].get_increment(self.behavior_repetitions[idx])
             self.behavior_scores[idx] = max(0, self.behavior_scores[idx])
             self.total_score = sum(self.behavior_scores)
 
