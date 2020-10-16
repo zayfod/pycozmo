@@ -52,7 +52,7 @@ class BehaviorChooser:
         self.iteration = 0
         self.init_scores()
 
-    def init_scores(self):
+    def init_scores(self) -> None:
         self.behavior_scores = []
         self.behavior_names = []
         self.behavior_repetitions = []
@@ -62,7 +62,7 @@ class BehaviorChooser:
             self.behavior_repetitions.append(0)
         self.total_score = sum(self.behavior_scores)
 
-    def init_repetition_penalty(self):
+    def init_repetition_penalty(self) -> None:
         self.repetition_penaltys = []
         for b in self.behaviors:
             if 'repetitionPenalty' in b['scoring']:
@@ -71,7 +71,7 @@ class BehaviorChooser:
             else:
                 self.repetition_penaltys.append(DecayGraph([Node(x=1, y=0)]))
 
-    def apply_repetition_penalty(self, ref):
+    def apply_repetition_penalty(self, ref) -> None:
         if self.choice_type == 'Scoring':
             if isinstance(ref, str):
                 idx = self.behavior_names.index(ref)
@@ -85,7 +85,7 @@ class BehaviorChooser:
             self.behavior_scores[idx] = max(0, self.behavior_scores[idx])
             self.total_score = sum(self.behavior_scores)
 
-    def get_sorted_choices(self):
+    def get_sorted_choices(self) -> List[str]:
         if self.choice_type == 'Selection':
             return None
         if self.choice_type == 'StrictPriority':

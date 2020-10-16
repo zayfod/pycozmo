@@ -36,7 +36,7 @@ class DecayGraph:
         "ext_line_params",
     ]
 
-    def __init__(self, nodes: List[Node]):
+    def __init__(self, nodes: List[Node]) -> None:
         self.nodes_x = [node.x for node in nodes]
         self.nodes_y = [node.y for node in nodes]
         self.ext_line_params = self.get_line_parameters(nodes[-2], nodes[-1]) if len(nodes) > 1 else None
