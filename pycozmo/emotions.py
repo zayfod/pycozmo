@@ -25,8 +25,8 @@ __all__ = [
 
 class Node:
     def __init__(self, x: float, y: float):
-        self.x = x
-        self.y = y
+        self.x = float(x)
+        self.y = float(y)
 
 
 class DecayGraph:
@@ -36,24 +36,27 @@ class DecayGraph:
         "ext_line_params",
     ]
 
-    def __init__(self, nodes: List[Node]):
+    def __init__(self, nodes: List[Node]) -> None:
         self.nodes_x = [node.x for node in nodes]
         self.nodes_y = [node.y for node in nodes]
         self.ext_line_params = self.get_line_parameters(nodes[-2], nodes[-1]) if len(nodes) > 1 else None
 
     def get_increment(self, val) -> float:
         if self.ext_line_params is None:
-            f_out = self.nodes_y
+            f_out = self.nodes_y[0]
         elif val <= self.nodes_x[-1]:
             f_out = np.interp(val, self.nodes_x, self.nodes_y)
         else:
             f_out = self.ext_line_params[0] * val + self.ext_line_params[1]
-        return 1 - f_out
+        return f_out
 
     @staticmethod
     def get_line_parameters(p1: Node, p2: Node) -> Tuple[float]:
-        m = (p1.y - p2.y) / (p1.x - p2.x)
-        b = p1.y - m * p1.x
+        try:
+            m = (p1.y - p2.y) / (p1.x - p2.x)
+            b = p1.y - m * p1.x
+        except ZeroDivisionError:
+            m, b = 0, p1.y
         return m, b
 
 

@@ -8,7 +8,10 @@ import os
 import time
 from typing import Dict, List, Optional
 
+import numpy as np
+
 from . import logger
+from .emotions import DecayGraph, Node
 from .json_loader import get_json_files, load_json_file
 
 
@@ -24,6 +27,7 @@ class BehaviorChooser:
         "choice_type",
         "behaviors",
         "iteration",
+        "__dict__",
     ]
 
     def __init__(self,
@@ -32,7 +36,10 @@ class BehaviorChooser:
 
         self.choice_type = str(choice_type)
         self.behaviors = behaviors
-        self.iteration = 0
+
+        if self.choice_type == 'Scoring':
+            self.init_scores()
+            self.init_repetition_penalty()
 
     @classmethod
     def from_json(cls, data: Dict):
@@ -43,20 +50,59 @@ class BehaviorChooser:
 
     def reset(self):
         self.iteration = 0
+        self.init_scores()
 
-    def choose(self):
+    def init_scores(self) -> None:
+        self.behavior_scores = []
+        self.behavior_names = []
+        self.behavior_repetitions = []
+        for b in self.behaviors:
+            self.behavior_scores.append(b['scoring']['flatScore'])
+            self.behavior_names.append(b['behaviorID'])
+            self.behavior_repetitions.append(0)
+        self.total_score = sum(self.behavior_scores)
+
+    def init_repetition_penalty(self) -> None:
+        self.repetition_penaltys = []
+        for b in self.behaviors:
+            if 'repetitionPenalty' in b['scoring']:
+                self.repetition_penaltys.append(
+                    DecayGraph([Node(x=n['x'], y=n['y']) for n in b['scoring']['repetitionPenalty']['nodes']]))
+            else:
+                self.repetition_penaltys.append(DecayGraph([Node(x=1, y=0)]))
+
+    def apply_repetition_penalty(self, ref) -> None:
+        if self.choice_type == 'Scoring':
+            if isinstance(ref, str):
+                idx = self.behavior_names.index(ref)
+            elif isinstance(ref, int):
+                idx = ref
+            else:
+                raise TypeError('Invalid behavior index: {}'.format(ref))
+            self.behavior_repetitions[idx] += 1
+            self.behavior_scores[idx] -= self.repetition_penaltys[idx].get_increment(self.behavior_repetitions[idx])
+            self.behavior_scores[idx] = max(0, self.behavior_scores[idx])
+            self.total_score = sum(self.behavior_scores)
+
+    def get_sorted_choices(self) -> List[str]:
         if self.choice_type == 'Selection':
             return None
         if self.choice_type == 'StrictPriority':
             if self.iteration <= len(self.behaviors):
-                out = self.behaviors[self.iteration]
-                self.iteration += 1
-                return out
+                return self.behaviors
             else:
                 return None
         elif self.choice_type == 'Scoring':
-            # TODO: add score based choice method
-            return None
+            if self.behavior_names and self.behavior_scores:
+                probability_distribution = []
+                for s in self.behavior_scores:
+                    probability_distribution.append(float(s) / self.total_score)
+
+                val = np.random.choice(self.behavior_names, p=probability_distribution,
+                                       size=len(np.nonzero(probability_distribution)[0]), replace=False)
+                return val
+            else:
+                return None
         else:
             raise ValueError('Unknown choice type: {}'.format(self.choice_type))
 
@@ -116,6 +162,14 @@ class Activity:
         self.strategy = str(strategy)
 
     def choose(self):
+        # TODO: method to choose from list of options
+        # Some notes for this:
+        # The Behavior chooser will provide a list of behaviors to try one at the time.
+        # Since some behaviors will not always be available (like DriveOffCharger or ReactToObstacle), a method is
+        # required to check wether a behavior can be run or not, and then execute it.
+        # Once a behavior is executed, the behavior chooser needs to be notified of the action using
+        # apply_repetition_penalty()
+        # Until we have a better defined structure of the brain, this cannot be finished.
         pass
 
 
@@ -129,10 +183,6 @@ class BehaviorsActivity(Activity):
                  *args, **kwargs):
         self.behavior_chooser = behavior_chooser
         super().__init__(*args, **kwargs)
-
-    def choose(self):
-        if self.behavior_chooser:
-            return self.behavior_chooser.choose()
 
     @classmethod
     def from_json(cls, data: Dict):
@@ -166,10 +216,6 @@ class FeedingActivity(Activity):
                  *args, **kwargs) -> None:
         self.universal_chooser = universal_chooser
         super().__init__(*args, **kwargs)
-
-    def choose(self):
-        # TODO: method to choose from list of options
-        pass
 
     @classmethod
     def from_json(cls, data: Dict):
@@ -268,10 +314,6 @@ class SparkedActivity(Activity):
 
         super().__init__(*args, **kwargs)
 
-    def choose(self):
-        if self.behavior_chooser:
-            return self.behavior_chooser.choose()
-
     @classmethod
     def from_json(cls, data: Dict):
         if 'subActivityDelegate' in data:
@@ -319,10 +361,6 @@ class PyramidActivity(Activity):
 
         super().__init__(*args, **kwargs)
 
-    def choose(self):
-        if self.setup_chooser:
-            return self.setup_chooser.choose()
-
     @classmethod
     def from_json(cls, data: Dict):
         return cls(
@@ -357,10 +395,6 @@ class SocializeActivity(Activity):
 
         super().__init__(*args, **kwargs)
 
-    def choose(self):
-        if self.behavior_chooser:
-            return self.behavior_chooser.choose()
-
     @classmethod
     def from_json(cls, data: Dict):
         return cls(
@@ -383,10 +417,6 @@ class NeedsActivity(Activity):
                  *args, **kwargs):
         self.behavior_chooser = behavior_chooser
         super().__init__(*args, **kwargs)
-
-    def choose(self):
-        if self.behavior_chooser:
-            return self.behavior_chooser.choose()
 
     @classmethod
     def from_json(cls, data: Dict):
