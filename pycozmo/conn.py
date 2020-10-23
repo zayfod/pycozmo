@@ -124,10 +124,7 @@ class SendThread(Thread):
     @staticmethod
     def _build_frame(pkts: list, first_seq: int, seq: int, ack: int):
         try:
-            if len(pkts) == 1:
-                frame = Frame(protocol_declaration.FrameType.ENGINE_ACT, first_seq, seq, ack, pkts)
-            else:
-                frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, ack, pkts)
+            frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, ack, pkts)
             return frame.to_bytes()
         except Exception as e:
             logger.error("Failed to serialize frame. {}".format(e))
