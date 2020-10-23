@@ -105,6 +105,8 @@ class SendThread(Thread):
                         to_frame = []
                         framelen = 0
                         first_seq = None
+                    if len(raw_frames) >= 3:
+                        break
                 if len(to_frame):
                     raw_frames.append(self._build_frame(to_frame, first_seq, seq, last_ack))
 
