@@ -80,7 +80,7 @@ class SendThread(Thread):
                     continue
                 except Exception as e:
                     logger.error("Failed to get from output queue. {}".format(e))
-                    # Fall through to service window.
+                    continue
 
             try:
                 # Construct frames
@@ -133,12 +133,9 @@ class SendThread(Thread):
     def send(self, data: Any) -> None:
         self.queue.put(data)
 
-    def ack(self, seq: int) -> None:
+    def ack(self, seq: int, last_ack: int) -> None:
         with self.lock:
             self.window.acknowledge(seq)
-
-    def set_last_recv_ack(self, last_ack: int) -> None:
-        with self.lock:
             self.last_ack = last_ack
 
     def reset(self) -> None:
@@ -197,27 +194,23 @@ class ReceiveThread(Thread):
                 continue
 
     def handle_frame(self, frame: Frame) -> None:
+        self.send_thread.ack(frame.ack, frame.seq)
         for pkt in frame.pkts:
             self.handle_pkt(pkt)
-        self.send_thread.ack(frame.ack)
+        self.deliver_sequence()
 
     def handle_pkt(self, pkt: Packet) -> None:
         if pkt.is_oob():
-            self.deliver(pkt)
+            self.queue.put(pkt)
         else:
             self.window.put(pkt.seq, pkt)
-            self.deliver_sequence()
 
     def deliver_sequence(self) -> None:
         while True:
             pkt = self.window.get()
             if pkt is None:
                 break
-            self.send_thread.set_last_recv_ack(pkt.seq)
-            self.deliver(pkt)
-
-    def deliver(self, pkt: Packet) -> None:
-        self.queue.put(pkt)
+            self.queue.put(pkt)
 
     def reset(self):
         self.window.reset()
