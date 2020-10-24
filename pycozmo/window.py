@@ -31,7 +31,7 @@ class BaseWindow(object):
         # Size of the window.
         self.size = size
         # Next expected sequence number (0, max_seq-1).
-        self.expected_seq = 1
+        self.expected_seq = 0
         # Maximum sequence number (first invalid).
         self.max_seq = max_seq or int(math.pow(2, seq_bits))
         if self.max_seq % self.size != 0:
@@ -46,7 +46,7 @@ class BaseWindow(object):
 
     def reset(self) -> None:
         """ Reset the window. """
-        self.expected_seq = 1
+        self.expected_seq = 0
         self.window = [None for _ in range(self.size)]
 
 
@@ -118,7 +118,7 @@ class SendWindow(BaseWindow):
     def __init__(self, seq_bits: int, size: Optional[int] = None, max_seq: Optional[int] = None) -> None:
         """ Crate a window by specifying either sequence number bits or size of the window. """
         super().__init__(seq_bits, size, max_seq)
-        self.next_seq = 1
+        self.next_seq = 0
 
     def is_out_of_order(self, seq: int) -> bool:
         """ Check whether a sequence number is outside the current window (assuming it is valid). """
@@ -168,4 +168,4 @@ class SendWindow(BaseWindow):
     def reset(self):
         """ Reset the window. """
         super().reset()
-        self.next_seq = 1
+        self.next_seq = 0

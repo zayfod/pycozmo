@@ -8,7 +8,7 @@ from typing import Optional
 from abc import ABC, abstractmethod
 
 from .protocol_ast import PacketType
-from .protocol_declaration import FIRST_ROBOT_PACKET_ID
+from .protocol_declaration import FIRST_ROBOT_PACKET_ID, OOB_SEQ
 from .protocol_utils import BinaryReader, BinaryWriter
 from .util import hex_dump
 
@@ -63,8 +63,8 @@ class Packet(Struct, ABC):
     def __init__(self, packet_type: PacketType, packet_id: Optional[int] = None):
         self.type = packet_type
         self.id = packet_id
-        self.seq = 0
-        self.ack = 0
+        self.seq = OOB_SEQ
+        self.ack = OOB_SEQ
 
     @property
     def type(self) -> PacketType:
