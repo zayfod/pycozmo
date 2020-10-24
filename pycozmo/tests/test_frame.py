@@ -14,9 +14,9 @@ class TestFrame(unittest.TestCase):
             b'\x00\x00\x00\x00\x04\x16\x00\x11\x1f\x80\x1f\x80\t\x00\x00\x00\x00\x00\x1f\x80\x1f\x80\t\x00'
             b'\x00\x00\x00\x00\x00')
         self.assertEqual(f.type.value, 7)
-        self.assertEqual(f.first_seq, 2717)
-        self.assertEqual(f.seq, 2720)
-        self.assertEqual(f.ack, 143)
+        self.assertEqual(f.first_seq, 2716)
+        self.assertEqual(f.seq, 2719)
+        self.assertEqual(f.ack, 142)
         self.assertEqual(len(f.pkts), 4)
 
     def test_encode_decode(self):

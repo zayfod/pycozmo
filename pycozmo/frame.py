@@ -8,7 +8,7 @@ from typing import List
 
 from .logger import logger_protocol
 from .protocol_ast import FrameType, PacketType
-from .protocol_declaration import FRAME_ID, MIN_FRAME_SIZE
+from .protocol_declaration import FRAME_ID, MIN_FRAME_SIZE, MAX_SEQ, OOB_SEQ
 from .protocol_base import Packet, UnknownCommand, UnknownEvent
 from .protocol_utils import BinaryReader, BinaryWriter
 from .protocol_encoder import Connect, Disconnect, Ping, Keyframe, PACKETS_BY_ID
@@ -55,9 +55,9 @@ class Frame(object):
     def to_writer(self, writer: BinaryWriter) -> None:
         writer.write_bytes(FRAME_ID)
         writer.write(self.type.value, "B")
-        writer.write(self.first_seq, "H")
-        writer.write(self.seq, "H")
-        writer.write(self.ack, "H")
+        writer.write((self.first_seq + 1) % 0x10000, "H")
+        writer.write((self.seq + 1) % 0x10000, "H")
+        writer.write((self.ack + 1) % 0x10000, "H")
         if self.type == FrameType.ENGINE or self.type == FrameType.ROBOT:
             for pkt in self.pkts:
                 self._encode_packet(pkt, writer)
@@ -120,9 +120,9 @@ class Frame(object):
 
         reader.seek_set(7)
         frame_type = FrameType(reader.read("B"))
-        first_seq = reader.read("H")
-        seq = reader.read("H")
-        ack = reader.read("H")
+        first_seq = (reader.read("H") - 1) % 0x10000
+        seq = (reader.read("H") - 1) % 0x10000
+        ack = (reader.read("H") - 1) % 0x10000
         pkts = []
 
         if frame_type == FrameType.ENGINE or frame_type == FrameType.ROBOT:
@@ -139,12 +139,12 @@ class Frame(object):
                     pkt.seq = pkt_seq
                     pkt.ack = ack
                     if not pkt.is_oob():
-                        pkt_seq = (pkt_seq + 1) % 0xffff
+                        pkt_seq = (pkt_seq + 1) % MAX_SEQ
                     pkts.append(pkt)
                 except (ValueError, IndexError) as e:
                     logger_protocol.debug("Failed to decode packet. Ignoring. {}".format(e))
                     reader.seek_set(expected_offset)
-            # assert not seq or seq == 2 or seq + 1 == pkt_seq
+            assert seq == OOB_SEQ or seq + 1 == pkt_seq
         elif frame_type == FrameType.PING:
             pkt = Ping.from_reader(reader)
             pkts.append(pkt)
@@ -157,11 +157,11 @@ class Frame(object):
                 pkt.seq = pkt_seq
                 pkt.ack = ack
                 if not pkt.is_oob():
-                    pkt_seq = (pkt_seq + 1) % 0xffff
+                    pkt_seq = (pkt_seq + 1) % MAX_SEQ
                 pkts.append(pkt)
             except (ValueError, IndexError) as e:
                 logger_protocol.debug("Failed to decode packet. Ignoring. {}".format(e))
-            # assert not seq or seq == 2 or seq + 1 == pkt_seq
+            assert seq == OOB_SEQ or seq + 1 == pkt_seq
         elif frame_type == FrameType.RESET:
             # No packets
             assert reader.tell() == len(reader)

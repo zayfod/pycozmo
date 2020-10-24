@@ -15,7 +15,7 @@ from .logger import logger, logger_protocol
 from .frame import Frame
 from .protocol_ast import PacketType
 from .protocol_base import Packet
-from .protocol_declaration import MAX_FRAME_PAYLOAD_SIZE
+from .protocol_declaration import MAX_FRAME_PAYLOAD_SIZE, MAX_SEQ, OOB_SEQ
 from .window import ReceiveWindow, SendWindow
 from . import protocol_encoder
 from . import event
@@ -49,12 +49,12 @@ class SendThread(Thread):
         self.sock = sock
         self.lock = Lock()
         self.receiver_address = receiver_address
-        self.window = SendWindow(16, size=62, max_seq=0xfffe)
+        self.window = SendWindow(16, size=62, max_seq=MAX_SEQ)
         self.loop_timeout = loop_timeout
         self.stop_flag = False
         self.queue = Queue()
         self.queue_timeout = queue_timeout
-        self.last_ack = 1
+        self.last_ack = 0
         self.last_send_timestamp = datetime.now() - timedelta(days=1)
 
     def stop(self) -> None:
@@ -68,10 +68,8 @@ class SendThread(Thread):
                     pkt = self.queue.get(timeout=self.queue_timeout)
                     self.queue.task_done()
                     if isinstance(pkt, protocol_encoder.Ping):
-                        raw_frame = Frame(protocol_declaration.FrameType.PING,
-                                          0, 0,
-                                          self.last_ack, [pkt]
-                                          ).to_bytes()
+                        raw_frame = Frame(
+                            protocol_declaration.FrameType.PING, OOB_SEQ, OOB_SEQ, self.last_ack, [pkt]).to_bytes()
                         self._send_frame(raw_frame)
                     else:
                         with self.lock:
@@ -142,7 +140,7 @@ class SendThread(Thread):
 
     def reset(self) -> None:
         self.window.reset()
-        self.last_ack = 1
+        self.last_ack = 0
         self.last_send_timestamp = datetime.now() - timedelta(days=1)
 
 
@@ -157,7 +155,7 @@ class ReceiveThread(Thread):
         super().__init__(daemon=True, name=__class__.__name__)
         self.sock = sock
         self.sender_address = sender_address
-        self.window = ReceiveWindow(16, size=62, max_seq=0xfffe)
+        self.window = ReceiveWindow(16, size=62, max_seq=MAX_SEQ)
         self.timeout = timeout
         self.buffer_size = buffer_size
         self.stop_flag = False
@@ -282,11 +280,11 @@ class ClientConnection(Thread, event.Dispatcher):
                 if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
                     logger_protocol.debug("Got  %s", pkt)
 
-            try:
-                self.dispatch(pkt.__class__, self, pkt)
-            except Exception as e:
-                logger.error("Failed to dispatch packet. {}".format(e))
-                continue
+                try:
+                    self.dispatch(pkt.__class__, self, pkt)
+                except Exception as e:
+                    logger.error("Failed to dispatch packet. {}".format(e))
+                    continue
 
     def connect(self) -> None:
         logger.debug("Connecting...")
@@ -294,7 +292,7 @@ class ClientConnection(Thread, event.Dispatcher):
 
         self.send_thread.reset()
 
-        frame = Frame(protocol_declaration.FrameType.RESET, 1, 1, 0, [])
+        frame = Frame(protocol_declaration.FrameType.RESET, 0, 0, OOB_SEQ, [])
         raw_frame = frame.to_bytes()
         try:
             self.sock.sendto(raw_frame, self.robot_addr)

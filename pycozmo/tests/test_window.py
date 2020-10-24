@@ -10,19 +10,19 @@ class TestBaseWindowCreate(unittest.TestCase):
     def test_create_1(self):
         w = BaseWindow(1)
         self.assertEqual(w.size, 1)
-        self.assertEqual(w.expected_seq, 1)
+        self.assertEqual(w.expected_seq, 0)
         self.assertEqual(w.max_seq, 2)
 
     def test_create_4(self):
         w = BaseWindow(4)
         self.assertEqual(w.size, 8)
-        self.assertEqual(w.expected_seq, 1)
+        self.assertEqual(w.expected_seq, 0)
         self.assertEqual(w.max_seq, 16)
 
     def test_create_4_limited(self):
         w = BaseWindow(4, size=8)
         self.assertEqual(w.size, 8)
-        self.assertEqual(w.expected_seq, 1)
+        self.assertEqual(w.expected_seq, 0)
         self.assertEqual(w.max_seq, 16)
 
     def test_create_invalid(self):
@@ -111,10 +111,9 @@ class TestReceiveWindow(unittest.TestCase):
         self.w = ReceiveWindow(3, size=4)
 
     def test_is_out_of_order(self):
-        self.assertTrue(self.w.is_out_of_order(0))
-        self.assertFalse(self.w.is_out_of_order(1))
-        self.assertFalse(self.w.is_out_of_order(4))
-        self.assertTrue(self.w.is_out_of_order(5))
+        self.assertFalse(self.w.is_out_of_order(0))
+        self.assertFalse(self.w.is_out_of_order(3))
+        self.assertTrue(self.w.is_out_of_order(4))
         self.assertTrue(self.w.is_out_of_order(7))
 
     def test_is_out_of_order_wrapped(self):
@@ -136,10 +135,10 @@ class TestReceiveWindow(unittest.TestCase):
 
     def test_put_get(self):
         self.assertIsNone(self.w.get())
-        self.w.put(2, "2")
         self.w.put(1, "1")
+        self.w.put(0, "0")
+        self.assertEqual(self.w.get(), "0")
         self.assertEqual(self.w.get(), "1")
-        self.assertEqual(self.w.get(), "2")
         self.assertIsNone(self.w.get())
 
     def test_sequence(self):
@@ -147,7 +146,7 @@ class TestReceiveWindow(unittest.TestCase):
         expected_sequence = list(range(1, 100))
         received_sequence = []
         for seq, data in enumerate(sequence):
-            self.w.put((seq + 1) % self.w.max_seq, data)
+            self.w.put(seq % self.w.max_seq, data)
             data = self.w.get()
             if data:
                 received_sequence.append(data)
@@ -155,16 +154,16 @@ class TestReceiveWindow(unittest.TestCase):
 
     def test_sequence2(self):
         sequence = [
-            (1, 1),
-            (2, 2),
-            (3, 3),
-            (5, 5),
-            (4, 4),
-            (6, 6),
-            (0, 8),
-            (7, 7),
-            (1, 9),
-            (2, 10),
+            (0, 1),
+            (1, 2),
+            (2, 3),
+            (4, 5),
+            (3, 4),
+            (5, 6),
+            (7, 8),
+            (6, 7),
+            (0, 9),
+            (1, 10),
         ]
         expected_sequence = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         received_sequence = []
@@ -192,11 +191,11 @@ class TestSendWindow(unittest.TestCase):
         self.w.put("x")
         self.w.put("y")
         self.w.put("z")
-        self.assertTrue(self.w.is_out_of_order(0))
+        self.assertTrue(self.w.is_out_of_order(7))
+        self.assertFalse(self.w.is_out_of_order(0))
         self.assertFalse(self.w.is_out_of_order(1))
         self.assertFalse(self.w.is_out_of_order(2))
-        self.assertFalse(self.w.is_out_of_order(3))
-        self.assertTrue(self.w.is_out_of_order(4))
+        self.assertTrue(self.w.is_out_of_order(3))
 
     def test_is_out_of_order_full_wrapped(self):
         self.w.expected_seq = 6
@@ -214,9 +213,9 @@ class TestSendWindow(unittest.TestCase):
 
     def test_is_out_of_order_one(self):
         self.w.put("1")
-        self.assertTrue(self.w.is_out_of_order(0))
-        self.assertFalse(self.w.is_out_of_order(1))
-        self.assertTrue(self.w.is_out_of_order(2))
+        self.assertTrue(self.w.is_out_of_order(7))
+        self.assertFalse(self.w.is_out_of_order(0))
+        self.assertTrue(self.w.is_out_of_order(1))
 
     def test_is_full(self):
         self.assertFalse(self.w.is_full())
@@ -245,18 +244,18 @@ class TestSendWindow(unittest.TestCase):
     def test_put(self):
         self.assertEqual(self.w.window, [None, None, None, None])
         self.w.put("x")
-        self.assertEqual(self.w.expected_seq, 1)
-        self.assertEqual(self.w.next_seq, 2)
-        self.assertEqual(self.w.window, [None, "x", None, None])
+        self.assertEqual(self.w.expected_seq, 0)
+        self.assertEqual(self.w.next_seq, 1)
+        self.assertEqual(self.w.window, ["x", None, None, None])
 
     def test_put_full(self):
         self.w.put("w")
         self.w.put("x")
         self.w.put("y")
         self.w.put("z")
-        self.assertEqual(self.w.expected_seq, 1)
-        self.assertEqual(self.w.next_seq, 5)
-        self.assertEqual(self.w.window, ["z", "w", "x", "y"])
+        self.assertEqual(self.w.expected_seq, 0)
+        self.assertEqual(self.w.next_seq, 4)
+        self.assertEqual(self.w.window, ["w", "x", "y", "z"])
 
     def test_put_full_exception(self):
         self.w.put("w")
@@ -269,17 +268,17 @@ class TestSendWindow(unittest.TestCase):
     def test_acknowledge_empty(self):
         self.w.acknowledge(5)
         self.assertEqual(self.w.window, [None, None, None, None])
-        self.assertEqual(self.w.expected_seq, 1)
-        self.assertEqual(self.w.next_seq, 1)
+        self.assertEqual(self.w.expected_seq, 0)
+        self.assertEqual(self.w.next_seq, 0)
 
     def test_acknowledge(self):
         self.w.put("x")
         self.w.put("y")
         self.w.put("z")
-        self.w.acknowledge(2)
-        self.assertEqual(self.w.window, [None, None, None, "z"])
-        self.assertEqual(self.w.expected_seq, 3)
-        self.assertEqual(self.w.next_seq, 4)
+        self.w.acknowledge(1)
+        self.assertEqual(self.w.window, [None, None, "z", None])
+        self.assertEqual(self.w.expected_seq, 2)
+        self.assertEqual(self.w.next_seq, 3)
 
     def test_acknowledge_wrapped(self):
         self.w.expected_seq = 6
@@ -299,7 +298,7 @@ class TestSendWindow(unittest.TestCase):
         self.w.put("x")
         self.w.put("y")
         self.w.put("z")
-        self.assertEqual(self.w.get(), [(1, "x"), (2, "y"), (3, "z")])
+        self.assertEqual(self.w.get(), [(0, "x"), (1, "y"), (2, "z")])
 
     def test_get_wrapped(self):
         self.w.expected_seq = 6
