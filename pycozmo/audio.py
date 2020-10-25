@@ -8,16 +8,23 @@ References:
 
 """
 
+from typing import List
 import struct
-import time
 import wave
-from datetime import datetime, timedelta
-from threading import Thread, Lock
+from threading import Thread
 
-from .conn import ClientConnection
-from .protocol_encoder import OutputAudio
+from . import conn
+from . import protocol_encoder
+from . import anim
+from . import util
 
-MIN_WAIT = 0.033
+
+__all__ = [
+    "AudioManager",
+
+    "load_wav",
+]
+
 
 MULAW_MAX = 0x7FFF
 MULAW_BIAS = 132
@@ -31,17 +38,16 @@ class AudioManager:
     The play() method can be used to play an audio file or list of OutputAudio messages.
 
     Args:
-        conn (ClientConnection): client managing the communication with the robot
+        connection (ClientConnection): client managing the communication with the robot
     """
-    def __init__(self, conn: ClientConnection):
-        self.stream = []
+
+    def __init__(self, connection: conn.ClientConnection) -> None:
+        self.conn = connection
         self._stop = False
-        self.conn = conn
         self.thread = None
-        self.lock = Lock()
         self.audio_stream = []
 
-    def start_stream(self):
+    def start_stream(self) -> None:
         self._stop = False
         if not self.thread:
             self.thread = Thread(target=self.run, name=__class__.__name__)
@@ -55,26 +61,22 @@ class AudioManager:
         self.audio_stream = []
 
     def run(self) -> None:
+        timer = util.FPSTimer(anim.FRAME_RATE)
         while len(self.audio_stream) > 0 and not self._stop:
-            next_trigger_time = datetime.now() + timedelta(seconds=MIN_WAIT)
-            with self.lock:
-                pkt = self.audio_stream.pop(0)
+            pkt = self.audio_stream.pop(0)
             self.conn.send(pkt)
+            self.log.append(datetime.datetime.now().timestamp())
+            timer.sleep()
 
-            resting_time = (next_trigger_time - datetime.now()).total_seconds()
-            if resting_time > 0:
-                time.sleep(resting_time)
-
-    def play(self, audio):
-        if audio and isinstance(audio, list) and isinstance(audio[0], OutputAudio):
-            with self.lock:
-                self.audio_stream += audio
+    def play(self, audio) -> None:
+        if audio and isinstance(audio, list) and isinstance(audio[0], protocol_encoder.OutputAudio):
+            self.audio_stream += audio
         else:
             raise TypeError('Invalid audio: {}'.format(type(audio)))
 
         self.start_stream()
 
-    def play_file(self, filename):
+    def play_file(self, filename: str) -> None:
         if isinstance(filename, str):
             if '.wav' == filename[-4:]:
                 self.play(load_wav(filename))
@@ -86,13 +88,13 @@ class AudioManager:
 
         self.start_stream()
 
-    def wait_until_complete(self):
+    def wait_until_complete(self) -> None:
         if self.thread:
             self.thread.join()
             self.thread = None
 
 
-def load_wav(filename: str):
+def load_wav(filename: str) -> List[protocol_encoder.OutputAudio]:
     with wave.open(filename, "r") as w:
         sampwidth = w.getsampwidth()
         framerate = w.getframerate()
@@ -111,11 +113,11 @@ def load_wav(filename: str):
                 frame += [0] * (744 - len(frame))
                 done = True
 
-            pkt_list.append(OutputAudio(frame))
+            pkt_list.append(protocol_encoder.OutputAudio(frame))
         return pkt_list
 
 
-def bytes_to_cozmo(byte_string: bytes, rate_correction: int, channels: int):
+def bytes_to_cozmo(byte_string: bytes, rate_correction: int, channels: int) -> List[int]:
     out = []
     n = channels * rate_correction
     bs = struct.unpack('{}h'.format(int(len(byte_string) / 2)), byte_string)[0::n]

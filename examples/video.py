@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import time
-
 import pycozmo
 
 
@@ -32,6 +30,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
     pkt = pycozmo.protocol_encoder.EnableCamera()
     cli.conn.send(pkt)
 
+    timer = pycozmo.util.FPSTimer(pycozmo.anim.FRAME_RATE)
     while True:
 
         if last_im:
@@ -47,8 +46,8 @@ def pycozmo_program(cli: pycozmo.client.Client):
             # Display the result image.
             cli.display_image(im)
 
-        # Run with 25 FPS.
-        time.sleep(1 / 25)
+        # Run with 30 FPS.
+        timer.sleep()
 
 
 pycozmo.run_program(pycozmo_program, protocol_log_level="INFO", robot_log_level="DEBUG")

@@ -6,7 +6,7 @@ Cozmo protocol connection.
 
 import select
 import socket
-from datetime import datetime, timedelta
+import time
 from queue import Queue, Empty
 from threading import Thread, Lock
 from typing import Optional, Tuple, Any
@@ -56,7 +56,7 @@ class SendThread(Thread):
         self.queue = Queue()
         self.queue_timeout = queue_timeout
         self.last_ack = 0
-        self.last_send_timestamp = datetime.now() - timedelta(days=1)
+        self.last_send_timestamp = 0
         # Number of packets received from the application layer.
         self.outgoing_packets = 0
         # Number of packets sent (includes resends).
@@ -74,7 +74,7 @@ class SendThread(Thread):
 
     def run(self) -> None:
         while not self.stop_flag:
-            while datetime.now() - self.last_send_timestamp < timedelta(seconds=self.loop_timeout):
+            while time.perf_counter() - self.last_send_timestamp < self.loop_timeout:
                 try:
                     pkt = self.queue.get(timeout=self.queue_timeout)
                     self.queue.task_done()
@@ -124,7 +124,7 @@ class SendThread(Thread):
                 for raw_frame in raw_frames:
                     self._send_frame(raw_frame)
 
-                self.last_send_timestamp = datetime.now()
+                self.last_send_timestamp = time.perf_counter()
             except Exception:
                 continue
 
@@ -157,7 +157,7 @@ class SendThread(Thread):
     def reset(self) -> None:
         self.window.reset()
         self.last_ack = 0
-        self.last_send_timestamp = datetime.now() - timedelta(days=1)
+        self.last_send_timestamp = 0
         self.outgoing_packets = 0
         self.sent_packets = 0
         self.sent_frames = 0
@@ -285,9 +285,9 @@ class ClientConnection(Thread, event.Dispatcher):
         self.send_thread = SendThread(self.sock, self.robot_addr)
         self.recv_thread = ReceiveThread(self.sock, self.send_thread, self.robot_addr)
         self.stop_flag = False
-        self.send_last = datetime.now() - timedelta(days=1)
-        self.ping_last = datetime.now() - timedelta(days=1)
-        self.stats_last = datetime.now()
+        self.send_last = 0
+        self.ping_last = 0
+        self.stats_last = 0
 
     def start(self) -> None:
         logger.debug("Starting...")
@@ -318,11 +318,13 @@ class ClientConnection(Thread, event.Dispatcher):
                 continue
 
             if self.state == self.CONNECTED:
-                now = datetime.now()
-                if now - self.ping_last > timedelta(seconds=PING_INTERVAL):
+                now = time.perf_counter()
+                if now - self.ping_last > PING_INTERVAL:
                     self._send_ping()
-                if now - self.stats_last > timedelta(seconds=STATS_INTERVAL):
+                    self.ping_last = now
+                if now - self.stats_last > STATS_INTERVAL:
                     self.log_stats()
+                    self.stats_last = now
 
             if pkt is not None:
                 if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
@@ -348,7 +350,7 @@ class ClientConnection(Thread, event.Dispatcher):
             pass
 
     def send(self, pkt: Packet) -> None:
-        self.send_last = datetime.now()
+        self.send_last = time.perf_counter()
         self.send_thread.send(pkt)
         if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
             logger_protocol.debug("Sent %s", pkt)
@@ -361,7 +363,6 @@ class ClientConnection(Thread, event.Dispatcher):
         self.send(pkt)
 
     def _send_ping(self) -> None:
-        self.ping_last = datetime.now()
         pkt = protocol_encoder.Ping(0, 1, 0)
         self.send(pkt)
 
@@ -376,7 +377,6 @@ class ClientConnection(Thread, event.Dispatcher):
         # TODO: Calculate round-trip time
 
     def log_stats(self):
-        self.stats_last = datetime.now()
         logger_protocol.info("Recv: {}B, {}F (disc.), {}F, {}P, {}P ({:.02f}%); "
                              "Sent: {}P, {}P ({:.02f}%), {}F, {}F (disc.), {}B;".format(
                                 self.recv_thread.received_bytes,

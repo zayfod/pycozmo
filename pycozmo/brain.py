@@ -32,7 +32,7 @@ class Brain:
 
         # TODO: Load configuration. See cozmo_resources/config/features.json
 
-        start_time = time.time()
+        start_time = time.perf_counter()
         resource_dir = str(util.get_cozmo_asset_dir())
         self.activities = activity.load_activities(resource_dir)
         self.behaviors = behavior.load_behaviors(resource_dir)
@@ -41,7 +41,7 @@ class Brain:
         self.emotion_types = emotions.load_emotion_types(resource_dir)
         self.emotion_events = emotions.load_emotion_events(resource_dir)
         self.cli.load_anims(str(util.get_cozmo_anim_dir()))
-        logger.info("Loaded resources in {:.02f} s.".format(time.time() - start_time))
+        logger.info("Loaded resources in {:.02f} s.".format(time.perf_counter() - start_time))
 
         self.cli.add_handler(event.EvtCliffDetectedChange, self.on_cliff_detected)
         # TODO: ...
@@ -141,6 +141,7 @@ class Brain:
         """ Heartbeat thread loop. """
 
         cnt = 1
+        timer = util.FPSTimer(anim.FRAME_RATE)
         while not self.stop_flag:
 
             self.update_emotion_types()
@@ -150,7 +151,7 @@ class Brain:
                 self.post_reaction("Hiccup")
 
             cnt += 1
-            time.sleep(1/30)
+            timer.sleep()
 
     def update_emotion_types(self) -> None:
         """ Update emotion types from their decay functions. """

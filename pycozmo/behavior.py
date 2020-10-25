@@ -265,7 +265,7 @@ def load_behaviors(resource_dir: str) -> Dict[str, Behavior]:
 
     # TODO: Load cozmo_resources/config/engine/behaviorSystem/behavior_system_config.json
 
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     behavior_files = get_json_files(resource_dir,
                                     [os.path.join('cozmo_resources', 'config', 'engine',
@@ -276,14 +276,14 @@ def load_behaviors(resource_dir: str) -> Dict[str, Behavior]:
         json_data = load_json_file(filename)
         behaviors[json_data['behaviorID']] = Behavior.from_json(json_data)
 
-    logger.debug("Loaded {} behaviors in {:.02f} s.".format(len(behaviors), time.time() - start_time))
+    logger.debug("Loaded {} behaviors in {:.02f} s.".format(len(behaviors), time.perf_counter() - start_time))
 
     return behaviors
 
 
 def load_reaction_trigger_behavior_map(resource_dir: str) -> Dict[str, ReactionTrigger]:
 
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     reaction_trigger_behavior_map = {}
     filename = os.path.join(resource_dir, 'cozmo_resources', 'config',
@@ -294,6 +294,6 @@ def load_reaction_trigger_behavior_map(resource_dir: str) -> Dict[str, ReactionT
         reaction_trigger_behavior_map[trigger['reactionTrigger']] = ReactionTrigger.from_json(trigger)
 
     logger.debug("Loaded {} entry reaction trigger behavior map in {:.02f} s.".format(
-        len(reaction_trigger_behavior_map), time.time() - start_time))
+        len(reaction_trigger_behavior_map), time.perf_counter() - start_time))
 
     return reaction_trigger_behavior_map

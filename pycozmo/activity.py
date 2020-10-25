@@ -466,7 +466,7 @@ def load_activities(resource_dir: str) -> Dict[str, Activity]:
     # TODO: cozmo_resources/config/engine/needs_action_config.json
     # TODO: cozmo_resources/config/engine/do_a_trick_weights.json
 
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     activity_folders = [os.path.join('cozmo_resources', 'config', 'engine', 'behaviorSystem', 'activities_config.json'),
                         os.path.join('cozmo_resources', 'config', 'engine', 'behaviorSystem', 'activities')]
@@ -482,6 +482,6 @@ def load_activities(resource_dir: str) -> Dict[str, Activity]:
         else:
             activities[json_data['activityID']] = from_dict(json_data)
 
-    logger.debug("Loaded {} activities in {:.02f} s.".format(len(activities), time.time() - start_time))
+    logger.debug("Loaded {} activities in {:.02f} s.".format(len(activities), time.perf_counter() - start_time))
 
     return activities

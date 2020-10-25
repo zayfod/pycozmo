@@ -102,7 +102,7 @@ class EmotionEvent:
 
 def load_emotion_types(resource_dir: str) -> Dict[str, EmotionType]:
 
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     # TODO: Load actionResultEmotionEvents from cozmo_resources/config/engine/mood_config.json.
     json_data = load_json_file(
@@ -126,14 +126,14 @@ def load_emotion_types(resource_dir: str) -> Dict[str, EmotionType]:
         "Brave": EmotionType("Brave", decay_graphs.get('Brave', decay_graphs['default']), default_rp),
     }
 
-    logger.debug("Loaded emotion types in {:.02f} s.".format(time.time() - start_time))
+    logger.debug("Loaded emotion types in {:.02f} s.".format(time.perf_counter() - start_time))
 
     return emotion_types
 
 
 def load_emotion_events(resource_dir: str) -> Dict[str, EmotionEvent]:
 
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     emotion_files = get_json_files(resource_dir,
                                    [os.path.join('cozmo_resources', 'config', 'engine', 'emotionevents/')])
@@ -147,6 +147,7 @@ def load_emotion_events(resource_dir: str) -> Dict[str, EmotionEvent]:
             for event in json_data['emotionEvents']:
                 emotion_events[event['name']] = EmotionEvent.from_json(event)
 
-    logger.debug("Loaded {} emotion events in {:.02f} s.".format(len(emotion_events), time.time() - start_time))
+    logger.debug("Loaded {} emotion events in {:.02f} s.".format(
+        len(emotion_events), time.perf_counter() - start_time))
 
     return emotion_events

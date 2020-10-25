@@ -24,6 +24,8 @@ from .json_loader import find_file, load_json_file
 
 
 __all__ = [
+    "FRAME_RATE",
+
     "PreprocessedClip",
     "AnimationGroupMember",
     "AnimationGroup",
@@ -32,6 +34,10 @@ __all__ = [
     "load_cube_animation_groups",
     "load_backpack_light_patterns"
 ]
+
+
+# Number of frames per second for animations.
+FRAME_RATE = 30
 
 
 class PreprocessedClip(object):
@@ -302,18 +308,19 @@ def load_trigger_map(resource_dir: str, map_relative_path: str) -> Tuple[str, st
 
 
 def load_animation_groups(resource_dir: str) -> Dict[str, AnimationGroup]:
-    start_time = time.time()
+    start_time = time.perf_counter()
     animation_groups = {}
     trigger_map_loader = load_trigger_map(resource_dir, os.path.join('cozmo_resources', 'assets',
                                                                      'animationGroupMaps', 'AnimationTriggerMap.json'))
     for evt, name, json_data in trigger_map_loader:
         animation_groups[evt] = AnimationGroup.from_json(json_data)
-    logger.debug("Loaded {} animation groups in {:.02f} s.".format(len(animation_groups), time.time() - start_time))
+    logger.debug("Loaded {} animation groups in {:.02f} s.".format(
+        len(animation_groups), time.perf_counter() - start_time))
     return animation_groups
 
 
 def load_cube_animation_groups(resource_dir: str) -> Dict[str, List[CubeAnimation]]:
-    start_time = time.time()
+    start_time = time.perf_counter()
     cube_animation_groups = {}
     trigger_map_loader = load_trigger_map(resource_dir,
                                           os.path.join('cozmo_resources', 'assets',
@@ -323,7 +330,7 @@ def load_cube_animation_groups(resource_dir: str) -> Dict[str, List[CubeAnimatio
         for cube_anim in json_data[name]:
             cube_animation_groups[evt].append(CubeAnimation.from_json(cube_anim))
     logger.debug("Loaded {} cube animation groups in {:.02f} s.".format(
-        len(cube_animation_groups), time.time() - start_time))
+        len(cube_animation_groups), time.perf_counter() - start_time))
     return cube_animation_groups
 
 
