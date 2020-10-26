@@ -65,7 +65,6 @@ class AudioManager:
         while len(self.audio_stream) > 0 and not self._stop:
             pkt = self.audio_stream.pop(0)
             self.conn.send(pkt)
-            self.log.append(datetime.datetime.now().timestamp())
             timer.sleep()
 
     def play(self, audio) -> None:

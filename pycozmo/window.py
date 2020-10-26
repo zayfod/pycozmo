@@ -136,12 +136,14 @@ class SendWindow(BaseWindow):
             res = (self.next_seq - self.expected_seq) >= self.size
         return res
 
-    def put(self, data: Any) -> None:
+    def put(self, data: Any) -> int:
         """ Add data to the window. Raises NoSpace exception if the window is full. """
         if self.is_full():
             raise exception.NoSpace("Send window full.")
         self.window[self.next_seq % self.size] = data
+        seq = self.next_seq
         self.next_seq = (self.next_seq + 1) % self.max_seq
+        return seq
 
     def acknowledge(self, seq: int) -> None:
         """ Acknowledge a sequence number and remove any associated data from the window. """
