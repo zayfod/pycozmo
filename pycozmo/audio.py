@@ -103,25 +103,23 @@ def load_wav(filename: str) -> List[protocol_encoder.OutputAudio]:
 
         ratediv = 2 if framerate == 48000 else 1
         channels = w.getnchannels()
-        done = False
         pkt_list = []
 
-        while not done:
-            frame = bytes_to_cozmo(w.readframes(744 * ratediv), ratediv, channels)
-            if len(frame) < 744:
-                frame += [0] * (744 - len(frame))
-                done = True
-
-            pkt_list.append(protocol_encoder.OutputAudio(frame))
+        while True:
+            frame_in = w.readframes(744 * ratediv)
+            if not frame_in:
+                break
+            frame_out = bytes_to_cozmo(frame_in, ratediv, channels)
+            pkt_list.append(protocol_encoder.OutputAudio(frame_out))
         return pkt_list
 
 
-def bytes_to_cozmo(byte_string: bytes, rate_correction: int, channels: int) -> List[int]:
-    out = []
+def bytes_to_cozmo(byte_string: bytes, rate_correction: int, channels: int) -> bytearray:
+    out = bytearray(744)
     n = channels * rate_correction
     bs = struct.unpack('{}h'.format(int(len(byte_string) / 2)), byte_string)[0::n]
-    for s in bs:
-        out.append(u_law_encoding(s))
+    for i, s in enumerate(bs):
+        out[i] = u_law_encoding(s)
     return out
 
 

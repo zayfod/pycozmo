@@ -229,7 +229,7 @@ class Client(event.Dispatcher):
             return
 
         offset = self._partial_size
-        self._partial_data[offset:offset + len(pkt.data)] = pkt.data
+        self._partial_data[offset:offset + len(pkt.data)] = np.frombuffer(pkt.data, dtype=np.uint8)
         self._partial_size += len(pkt.data)
         self._last_chunk_id = pkt.chunk_id
 

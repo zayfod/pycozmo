@@ -77,27 +77,39 @@ def validate_object(name, value, expected_type):
 
 
 def validate_farray(name, value, length, element_validation):
-    try:
-        value = tuple(value)
-    except ValueError:
-        raise ValueError("{name} must be a sequence. Got a {type}.".format(name=name, type=type(value).__name__))
+    if not isinstance(value, (bytes, bytearray)):
+        try:
+            value = tuple(value)
+        except ValueError:
+            raise ValueError("{name} must be a sequence. Got a {type}.".format(name=name, type=type(value).__name__))
     if len(value) != length:
         raise ValueError(("{name} must be a sequence of length {expected_length}. "
                           "Got a sequence of length {value_length}.").format(
             name=name, expected_length=length, value_length=len(value)))
-    return [element_validation((name, i), element) for i, element in enumerate(value)]
+    if isinstance(value, (bytes, bytearray)):
+        # Do not validate byte arrays.
+        res = value
+    else:
+        res = [element_validation((name, i), element) for i, element in enumerate(value)]
+    return res
 
 
 def validate_varray(name, value, maximum_length, element_validation):
-    try:
-        value = tuple(value)
-    except ValueError:
-        raise ValueError("{name} must be a sequence. Got a {type}.".format(name=name, type=type(value).__name__))
+    if not isinstance(value, (bytes, bytearray)):
+        try:
+            value = tuple(value)
+        except ValueError:
+            raise ValueError("{name} must be a sequence. Got a {type}.".format(name=name, type=type(value).__name__))
     if len(value) > maximum_length:
         raise ValueError(("{name} must be a sequence with length less than or equal to {maximum_length}. "
                           "Got a sequence of length {value_length}.").format(
             name=name, maximum_length=maximum_length, value_length=len(value)))
-    return [element_validation((name, i), element) for i, element in enumerate(value)]
+    if isinstance(value, (bytes, bytearray)):
+        # Do not validate byte arrays.
+        res = value
+    else:
+        res = [element_validation((name, i), element) for i, element in enumerate(value)]
+    return res
 
 
 def validate_string(name, value, maximum_length):
@@ -179,12 +191,19 @@ class BinaryReader(object):
 
     def read_farray(self, fmt, length):
         """ Reads in a fixed-length array of the given format and length. """
-        reader = _get_struct(fmt, length)
-        if self._index + reader.size > len(self._buffer):
-            raise IndexError('Buffer not large enough to read serialized message. Received {0} bytes.'.format(
-                len(self._buffer)))
-        result = reader.unpack_from(self._buffer, self._index)
-        self._index += reader.size
+        if fmt == "B" and length > 1:
+            if self._index + length > len(self._buffer):
+                raise IndexError('Buffer not large enough to read serialized message. Received {0} bytes.'.format(
+                    len(self._buffer)))
+            result = self._buffer[self._index:self._index+length]
+            self._index += length
+        else:
+            reader = _get_struct(fmt, length)
+            if self._index + reader.size > len(self._buffer):
+                raise IndexError('Buffer not large enough to read serialized message. Received {0} bytes.'.format(
+                    len(self._buffer)))
+            result = reader.unpack_from(self._buffer, self._index)
+            self._index += reader.size
         return result
 
     def read_varray(self, data_format, length_format):
@@ -246,8 +265,13 @@ class BinaryWriter(object):
 
     def write_farray(self, value, fmt, length):
         """ Writes out a fixed-length array of the given format and length. """
-        writer = _get_struct(fmt, length)
-        self._buffer.append(writer.pack(*value))
+        if fmt == "B" and isinstance(value, (bytes, bytearray)):
+            if len(value) != length:
+                raise ValueError('The given byte sequence has the wrong length.')
+            self._buffer.append(value)
+        else:
+            writer = _get_struct(fmt, length)
+            self._buffer.append(writer.pack(*value))
 
     def write_varray(self, value, data_format, length_format):
         """ Writes out a variable-length array with the given length format and data format. """

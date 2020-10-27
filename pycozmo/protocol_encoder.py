@@ -15,7 +15,7 @@ from .protocol_base import Struct, Packet
 from .protocol_utils import \
     validate_float, validate_bool, validate_integer, validate_object, \
     validate_farray, validate_varray, validate_string, \
-    get_size, get_farray_size, get_varray_size, get_string_size, get_object_farray_size, \
+    get_varray_size, get_string_size, get_object_farray_size, \
     BinaryReader, BinaryWriter
 
 
@@ -293,13 +293,13 @@ class LightState(Struct):
 
     def __len__(self):
         return \
-            get_size('H') + \
-            get_size('H') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('h')
+            2 + \
+            2 + \
+            1 + \
+            1 + \
+            1 + \
+            1 + \
+            2
 
     def __repr__(self):
         return "{type}(" \
@@ -403,9 +403,9 @@ class PathSegmentSpeed(Struct):
 
     def __len__(self):
         return \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f')
+            4 + \
+            4 + \
+            4
 
     def __repr__(self):
         return "{type}(" \
@@ -570,10 +570,10 @@ class Ping(Packet):
 
     def __len__(self):
         return \
-            get_size('d') + \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('B')
+            8 + \
+            4 + \
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -688,7 +688,7 @@ class LightStateCenter(Packet):
     def __len__(self):
         return \
             get_object_farray_size(self._states, 3) + \
-            get_size('B')
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -805,8 +805,8 @@ class ObjectConnect(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('b')
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -872,8 +872,8 @@ class StreamObjectAccel(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('b')
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -928,7 +928,7 @@ class SetAccessoryDiscovery(Packet):
 
     def __len__(self):
         return \
-            get_size('b')
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -978,7 +978,7 @@ class SetHeadLight(Packet):
 
     def __len__(self):
         return \
-            get_size('b')
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -1039,8 +1039,8 @@ class CubeId(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('B')
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -1109,7 +1109,7 @@ class LightStateSide(Packet):
     def __len__(self):
         return \
             get_object_farray_size(self._states, 2) + \
-            get_size('B')
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -1233,10 +1233,10 @@ class DriveWheels(Packet):
 
     def __len__(self):
         return \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f')
+            4 + \
+            4 + \
+            4 + \
+            4
 
     def __repr__(self):
         return "{type}(" \
@@ -1323,9 +1323,9 @@ class TurnInPlaceAtSpeed(Packet):
 
     def __len__(self):
         return \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('h')
+            4 + \
+            4 + \
+            2
 
     def __repr__(self):
         return "{type}(" \
@@ -1385,7 +1385,7 @@ class MoveLift(Packet):
 
     def __len__(self):
         return \
-            get_size('f')
+            4
 
     def __repr__(self):
         return "{type}(" \
@@ -1435,7 +1435,7 @@ class MoveHead(Packet):
 
     def __len__(self):
         return \
-            get_size('f')
+            4
 
     def __repr__(self):
         return "{type}(" \
@@ -1530,11 +1530,11 @@ class SetLiftHeight(Packet):
 
     def __len__(self):
         return \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('B')
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -1649,11 +1649,11 @@ class SetHeadAngle(Packet):
 
     def __len__(self):
         return \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('B')
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -1800,14 +1800,14 @@ class TurnInPlace(Packet):
 
     def __len__(self):
         return \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('b') + \
-            get_size('B')
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            1 + \
+            1 + \
+            1 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -1928,7 +1928,7 @@ class ClearPath(Packet):
 
     def __len__(self):
         return \
-            get_size('H')
+            2
 
     def __repr__(self):
         return "{type}(" \
@@ -2044,13 +2044,13 @@ class AppendPathSegLine(Packet):
 
     def __len__(self):
         return \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f')
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4
 
     def __repr__(self):
         return "{type}(" \
@@ -2207,14 +2207,14 @@ class AppendPathSegArc(Packet):
 
     def __len__(self):
         return \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f')
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4
 
     def __repr__(self):
         return "{type}(" \
@@ -2376,14 +2376,14 @@ class AppendPathSegPointTurn(Packet):
 
     def __len__(self):
         return \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('b')
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -2479,8 +2479,8 @@ class TrimPath(Packet):
 
     def __len__(self):
         return \
-            get_size('B') + \
-            get_size('B')
+            1 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -2546,8 +2546,8 @@ class ExecutePath(Packet):
 
     def __len__(self):
         return \
-            get_size('H') + \
-            get_size('b')
+            2 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -2657,12 +2657,12 @@ class SetOrigin(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('L')
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4
 
     def __repr__(self):
         return "{type}(" \
@@ -2748,8 +2748,8 @@ class SyncTime(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L')
+            4 + \
+            4
 
     def __repr__(self):
         return "{type}(" \
@@ -2817,8 +2817,8 @@ class EnableCamera(Packet):
 
     def __len__(self):
         return \
-            get_size('b') + \
-            get_size('b')
+            1 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -2895,9 +2895,9 @@ class SetCameraParams(Packet):
 
     def __len__(self):
         return \
-            get_size('f') + \
-            get_size('H') + \
-            get_size('b')
+            4 + \
+            2 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -2968,8 +2968,8 @@ class StartMotorCalibration(Packet):
 
     def __len__(self):
         return \
-            get_size('b') + \
-            get_size('b')
+            1 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -3024,7 +3024,7 @@ class EnableStopOnCliff(Packet):
 
     def __len__(self):
         return \
-            get_size('b')
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -3074,7 +3074,7 @@ class SetRobotVolume(Packet):
 
     def __len__(self):
         return \
-            get_size('H')
+            2
 
     def __repr__(self):
         return "{type}(" \
@@ -3124,7 +3124,7 @@ class EnableColorImages(Packet):
 
     def __len__(self):
         return \
-            get_size('b')
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -3221,10 +3221,10 @@ class NvStorageOp(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('l') + \
-            get_size('B') + \
-            get_size('B') + \
+            4 + \
+            4 + \
+            1 + \
+            1 + \
             get_varray_size(self._data, 'H', 'B')
 
     def __repr__(self):
@@ -3332,7 +3332,7 @@ class OutputAudio(Packet):
 
     def __len__(self):
         return \
-            get_farray_size('B', 744)
+            744
 
     def __repr__(self):
         return "{type}(" \
@@ -3512,9 +3512,9 @@ class AnimHead(Packet):
 
     def __len__(self):
         return \
-            get_size('B') + \
-            get_size('b') + \
-            get_size('b')
+            1 + \
+            1 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -3596,9 +3596,9 @@ class AnimLift(Packet):
 
     def __len__(self):
         return \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B')
+            1 + \
+            1 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -3711,7 +3711,7 @@ class AnimBackpackLights(Packet):
 
     def __len__(self):
         return \
-            get_farray_size('H', 5)
+            10
 
     def __repr__(self):
         return "{type}(" \
@@ -3772,8 +3772,8 @@ class AnimBody(Packet):
 
     def __len__(self):
         return \
-            get_size('h') + \
-            get_size('h')
+            2 + \
+            2
 
     def __repr__(self):
         return "{type}(" \
@@ -3864,7 +3864,7 @@ class StartAnimation(Packet):
 
     def __len__(self):
         return \
-            get_size('B')
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -3986,7 +3986,7 @@ class WifiOff(Packet):
 
     def __len__(self):
         return \
-            get_size('b')
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -4048,8 +4048,8 @@ class FirmwareUpdate(Packet):
 
     def __len__(self):
         return \
-            get_size('H') + \
-            get_farray_size('B', 1024)
+            2 + \
+            1024
 
     def __repr__(self):
         return "{type}(" \
@@ -4153,10 +4153,10 @@ class DebugData(Packet):
 
     def __len__(self):
         return \
-            get_size('H') + \
-            get_size('H') + \
-            get_size('H') + \
-            get_size('b') + \
+            2 + \
+            2 + \
+            2 + \
+            1 + \
             get_varray_size(self._args, 'B', 'L')
 
     def __repr__(self):
@@ -4283,12 +4283,12 @@ class ObjectMoved(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('B')
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -4374,8 +4374,8 @@ class ObjectStoppedMoving(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L')
+            4 + \
+            4
 
     def __repr__(self):
         return "{type}(" \
@@ -4485,12 +4485,12 @@ class ObjectTapped(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('b') + \
-            get_size('b')
+            4 + \
+            4 + \
+            1 + \
+            1 + \
+            1 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -4598,10 +4598,10 @@ class ObjectTapFiltered(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('B') + \
-            get_size('B')
+            4 + \
+            4 + \
+            1 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -4666,7 +4666,7 @@ class AcknowledgeAction(Packet):
 
     def __len__(self):
         return \
-            get_size('B')
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -4800,8 +4800,8 @@ class PathFollowingEvent(Packet):
 
     def __len__(self):
         return \
-            get_size('H') + \
-            get_size('B')
+            2 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -4878,9 +4878,9 @@ class HardwareInfo(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('B') + \
-            get_size('B')
+            4 + \
+            1 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -4940,7 +4940,7 @@ class AnimationStarted(Packet):
 
     def __len__(self):
         return \
-            get_size('B')
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -4990,7 +4990,7 @@ class AnimationEnded(Packet):
 
     def __len__(self):
         return \
-            get_size('B')
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -5088,10 +5088,10 @@ class NvStorageOpResult(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('l') + \
-            get_size('B') + \
-            get_size('b') + \
+            4 + \
+            4 + \
+            1 + \
+            1 + \
             get_varray_size(self._data, 'H', 'B')
 
     def __repr__(self):
@@ -5184,9 +5184,9 @@ class ObjectPowerLevel(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('B')
+            4 + \
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -5280,10 +5280,10 @@ class ObjectConnectionState(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('l') + \
-            get_size('b')
+            4 + \
+            4 + \
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -5371,9 +5371,9 @@ class MotorCalibration(Packet):
 
     def __len__(self):
         return \
-            get_size('B') + \
-            get_size('b') + \
-            get_size('b')
+            1 + \
+            1 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -5456,9 +5456,9 @@ class ObjectUpAxisChanged(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('B')
+            4 + \
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -5518,7 +5518,7 @@ class ButtonPressed(Packet):
 
     def __len__(self):
         return \
-            get_size('b')
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -5568,7 +5568,7 @@ class FallingStarted(Packet):
 
     def __len__(self):
         return \
-            get_size('L')
+            4
 
     def __repr__(self):
         return "{type}(" \
@@ -5640,9 +5640,9 @@ class FallingStopped(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('f')
+            4 + \
+            4 + \
+            4
 
     def __repr__(self):
         return "{type}(" \
@@ -5726,9 +5726,9 @@ class BodyInfo(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('l')
+            4 + \
+            4 + \
+            4
 
     def __repr__(self):
         return "{type}(" \
@@ -5800,7 +5800,7 @@ class FirmwareSignature(Packet):
 
     def __len__(self):
         return \
-            get_size('H') + \
+            2 + \
             get_string_size(self._signature, 'H')
 
     def __repr__(self):
@@ -5879,9 +5879,9 @@ class FirmwareUpdateResult(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('H') + \
-            get_size('B')
+            4 + \
+            2 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -6184,29 +6184,29 @@ class RobotState(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('L') + \
-            get_farray_size('H', 4) + \
-            get_size('H') + \
-            get_size('B')
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            8 + \
+            2 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -6422,12 +6422,12 @@ class AnimationState(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('l') + \
-            get_size('l') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('B')
+            4 + \
+            4 + \
+            4 + \
+            1 + \
+            1 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -6593,14 +6593,14 @@ class ImageChunk(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('b') + \
-            get_size('b') + \
-            get_size('B') + \
-            get_size('B') + \
-            get_size('H') + \
+            4 + \
+            4 + \
+            4 + \
+            1 + \
+            1 + \
+            1 + \
+            1 + \
+            2 + \
             get_varray_size(self._data, 'H', 'B')
 
     def __repr__(self):
@@ -6714,9 +6714,9 @@ class ObjectAvailable(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('l') + \
-            get_size('b')
+            4 + \
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -6820,11 +6820,11 @@ class ImageImuData(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('B')
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            1
 
     def __repr__(self):
         return "{type}(" \
@@ -6938,11 +6938,11 @@ class ObjectAccel(Packet):
 
     def __len__(self):
         return \
-            get_size('L') + \
-            get_size('L') + \
-            get_size('f') + \
-            get_size('f') + \
-            get_size('f')
+            4 + \
+            4 + \
+            4 + \
+            4 + \
+            4
 
     def __repr__(self):
         return "{type}(" \

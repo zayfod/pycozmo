@@ -118,7 +118,7 @@ def update(cli: pycozmo.client.Client):
     cli.conn.send(pkt)
     wait_for_result(10.0)
     if last_status != 10:
-        raise UpdateError("Failed to receive update confirmation.")
+        raise UpdateError("Failed to receive update confirmation (status {}).".format(last_status))
 
     time.sleep(15.0)
 

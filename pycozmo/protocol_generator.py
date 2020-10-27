@@ -9,6 +9,7 @@ import os
 from collections import defaultdict
 
 from . import protocol_declaration
+from . import protocol_utils
 
 
 __all__ = [
@@ -257,31 +258,30 @@ class ProtocolGenerator(object):
             statements = []
             for argument in struct.arguments:
                 if isinstance(argument, protocol_declaration.FloatArgument):
-                    statements.append("get_size('f')")
+                    statements.append(str(protocol_utils.get_size('f')))
                 elif isinstance(argument, protocol_declaration.DoubleArgument):
-                    statements.append("get_size('d')")
+                    statements.append(str(protocol_utils.get_size('d')))
                 elif isinstance(argument, protocol_declaration.BoolArgument):
-                    statements.append("get_size('b')")
+                    statements.append(str(protocol_utils.get_size('b')))
                 elif isinstance(argument, protocol_declaration.UInt8Argument):
-                    statements.append("get_size('B')")
+                    statements.append(str(protocol_utils.get_size('B')))
                 elif isinstance(argument, protocol_declaration.UInt16Argument):
-                    statements.append("get_size('H')")
+                    statements.append(str(protocol_utils.get_size('H')))
                 elif isinstance(argument, protocol_declaration.UInt32Argument):
-                    statements.append("get_size('L')")
+                    statements.append(str(protocol_utils.get_size('L')))
                 elif isinstance(argument, protocol_declaration.Int8Argument):
-                    statements.append("get_size('b')")
+                    statements.append(str(protocol_utils.get_size('b')))
                 elif isinstance(argument, protocol_declaration.Int16Argument):
-                    statements.append("get_size('h')")
+                    statements.append(str(protocol_utils.get_size('h')))
                 elif isinstance(argument, protocol_declaration.Int32Argument):
-                    statements.append("get_size('l')")
+                    statements.append(str(protocol_utils.get_size('l')))
                 elif isinstance(argument, protocol_declaration.FArrayArgument):
                     if isinstance(argument.data_type, protocol_declaration.Struct):
                         statements.append("get_object_farray_size(self._{name}, {length})".format(
                             name=argument.name, length=argument.length))
                     else:
                         data_fmt = get_farray_fmt(argument)
-                        statements.append("get_farray_size('{data_fmt}', {length})".format(
-                            data_fmt=data_fmt, length=argument.length))
+                        statements.append(str(protocol_utils.get_farray_size(data_fmt, argument.length)))
                 elif isinstance(argument, protocol_declaration.VArrayArgument):
                     length_fmt, data_fmt = get_varray_fmts(argument)
                     statements.append("get_varray_size(self._{name}, '{length_fmt}', '{data_fmt}')".format(
@@ -292,7 +292,7 @@ class ProtocolGenerator(object):
                         name=argument.name, length_fmt=length_fmt))
                 elif isinstance(argument, protocol_declaration.EnumArgument):
                     data_fmt = get_enum_fmt(argument)
-                    statements.append("get_size('{}')".format(data_fmt))
+                    statements.append(str(protocol_utils.get_size(data_fmt)))
                 else:
                     raise NotImplementedError("Unexpected argument type '{}' for '{}'".format(
                         argument.__class__.__name__, argument.name))
@@ -558,7 +558,7 @@ from .protocol_base import Struct, Packet
 from .protocol_utils import \
     validate_float, validate_bool, validate_integer, validate_object, \
     validate_farray, validate_varray, validate_string, \
-    get_size, get_farray_size, get_varray_size, get_string_size, get_object_farray_size, \
+    get_varray_size, get_string_size, get_object_farray_size, \
     BinaryReader, BinaryWriter
 '''.format(declaration=os.path.basename(protocol_declaration.__file__), generator=os.path.basename(__file__),
            version=protocol_declaration.FIRMWARE_VERSION)
