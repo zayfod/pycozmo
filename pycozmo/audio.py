@@ -38,10 +38,10 @@ class AudioManager:
     The play() method can be used to play an audio file or list of OutputAudio messages.
 
     Args:
-        connection (ClientConnection): client managing the communication with the robot
+        connection (Connection): client managing the communication with the robot
     """
 
-    def __init__(self, connection: conn.ClientConnection) -> None:
+    def __init__(self, connection: conn.Connection) -> None:
         self.conn = connection
         self._stop = False
         self.thread = None

@@ -47,7 +47,7 @@ class Client(event.Dispatcher):
         # Whether to automatically initialize the robot when connection is established.
         self.auto_initialize = bool(auto_initialize)
 
-        self.conn = conn.ClientConnection(robot_addr, protocol_log_messages)
+        self.conn = conn.Connection(robot_addr, protocol_log_messages)
         self.audio = audio.AudioManager(self.conn)
 
         self.serial_number_head = None

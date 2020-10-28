@@ -21,6 +21,7 @@ from . import protocol_encoder
 from . import event
 from . import filter
 from . import protocol_declaration
+from . import exception
 
 
 __all__ = [
@@ -28,12 +29,14 @@ __all__ = [
 
     "ReceiveThread",
     "SendThread",
-    "ClientConnection",
+    "Connection",
 ]
 
 
 #: Default robot address (IP, port).
 ROBOT_ADDR = ("172.31.1.1", 5551)
+#: Default server address (IP, port).
+SERVER_ADDR = ("127.0.0.1", 5551)
 
 
 class SendThread(Thread):
@@ -43,11 +46,12 @@ class SendThread(Thread):
 
     def __init__(self,
                  sock: socket.socket,
-                 receiver_address: Tuple[str, int]) -> None:
+                 receiver_address: Optional[Tuple[str, int]]) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         self.sock = sock
         self.lock = Lock()
         self.receiver_address = receiver_address
+        self.server = receiver_address is None
         self.window = SendWindow(16, size=62, max_seq=MAX_SEQ)
         self.stop_flag = False
         self.queue = Queue()
@@ -90,7 +94,7 @@ class SendThread(Thread):
                 continue
             self.queue.task_done()
             self.outgoing_packets += 1
-            if isinstance(pkt, protocol_encoder.Ping):
+            if not self.server and isinstance(pkt, protocol_encoder.Ping):
                 self._send_ping(pkt)
             else:
                 with self.lock:
@@ -178,9 +182,12 @@ class SendThread(Thread):
             self.last_ack_time = now
 
     def reset(self) -> None:
-        self.window.reset()
-        self.last_ack = 0
-        self.last_ack_time = 0
+        with self.lock:
+            self.window.reset()
+            self.last_ack = 0
+            self.last_ack_time = 0
+        if self.server:
+            self.receiver_address = None
         self.outgoing_packets = 0
         self.sent_packets = 0
         self.sent_frames = 0
@@ -198,6 +205,7 @@ class ReceiveThread(Thread):
         super().__init__(daemon=True, name=__class__.__name__)
         self.sock = sock
         self.sender_address = sender_address
+        self.server = sender_address is None
         self.window = ReceiveWindow(16, size=62, max_seq=MAX_SEQ)
         self.buffer_size = buffer_size
         self.stop_flag = False
@@ -227,13 +235,9 @@ class ReceiveThread(Thread):
 
                 raw_frame, address = self.sock.recvfrom(self.buffer_size)
                 self.received_bytes += len(raw_frame)
-                if self.sender_address and self.sender_address != address:
-                    self.discarded_frames += 1
-                    logger_protocol.debug("Received a UDP datagram from unexpected address {}.".format(address))
-                    continue
             except Exception as e:
                 self.discarded_frames += 1
-                logger.error("Failed to receive frame. {}".format(e))
+                logger_protocol.error("Failed to receive frame. {}".format(e))
                 continue
 
             try:
@@ -244,21 +248,65 @@ class ReceiveThread(Thread):
                 continue
 
             try:
-                self.handle_frame(frame)
+                if frame.type == protocol_declaration.FrameType.RESET:
+                    self.handle_reset(address)
+                elif self.sender_address:
+                    if self.sender_address != address:
+                        logger_protocol.debug("Received a UDP datagram from unexpected address {}.".format(address))
+                    elif frame.type == protocol_declaration.FrameType.FIN:
+                        self.handle_fin()
+                    else:
+                        self.handle_frame(frame)
+                else:
+                    logger_protocol.debug("Got unexpected {} from {}".format(frame.type, address))
             except Exception as e:
-                logger.error("Failed to handle frame. {}".format(e))
+                logger_protocol.error("Failed to handle frame. {}".format(e))
                 continue
+
+    def handle_reset(self, address):
+        if not self.server:
+            logger_protocol.debug("Got unexpected reset from {}.".format(address))
+            return
+        logger_protocol.debug("Got reset from {}.".format(address))
+        self.sender_address = address
+        self.reset()
+        self.send_thread.reset()
+        self.send_thread.receiver_address = address
+        pkt = protocol_encoder.Connect()
+        self.send_thread.send(pkt)
+        self.deliver(pkt)
+
+    def handle_fin(self):
+        if not self.server:
+            logger_protocol.debug("Got unexpected FIN.")
+            return
+        logger_protocol.debug("Got FIN.")
+        self.disconnect()
+
+    def disconnect(self):
+        if not self.server:
+            logger_protocol.debug("Got unexpected disconnect.")
+            return
+        self.sender_address = None
+        self.reset()
+        self.send_thread.reset()
+        pkt = protocol_encoder.Disconnect()
+        self.deliver(pkt)
 
     def handle_frame(self, frame: Frame) -> None:
         self.received_frames += 1
         self.send_thread.ack(frame.ack, frame.seq)
         for pkt in frame.pkts:
+            if isinstance(pkt, protocol_encoder.Disconnect):
+                self.disconnect()
+                return
             self.handle_pkt(pkt)
         self.deliver_sequence()
 
     def handle_pkt(self, pkt: Packet) -> None:
         self.received_packets += 1
         if pkt.is_oob():
+            # Deliver out-of-band packets immediately.
             self.deliver(pkt)
         else:
             self.window.put(pkt.seq, pkt)
@@ -283,7 +331,7 @@ class ReceiveThread(Thread):
         self.delivered_packets = 0
 
 
-class ClientConnection(Thread, event.Dispatcher):
+class Connection(Thread, event.Dispatcher):
 
     IDLE = 1
     CONNECTING = 2
@@ -293,12 +341,15 @@ class ClientConnection(Thread, event.Dispatcher):
     PING_INTERVAL = 0.5
     STATS_INTERVAL = 60.0
 
-    def __init__(self, robot_addr: Optional[Tuple[str, int]] = None,
-                 protocol_log_messages: Optional[list] = None) -> None:
+    def __init__(self,
+                 robot_addr: Optional[Tuple[str, int]] = None,
+                 protocol_log_messages: Optional[list] = None,
+                 server: bool = False) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         # Thread is an old-style class and does not propagate initialization.
         event.Dispatcher.__init__(self)
-        self.robot_addr = robot_addr or ROBOT_ADDR
+        self.robot_addr = robot_addr or (SERVER_ADDR if server else ROBOT_ADDR)
+        self.server = server
         # Filters
         self.packet_type_filter = filter.Filter()
         self.packet_type_filter.deny_ids({PacketType.PING.value})
@@ -308,24 +359,28 @@ class ClientConnection(Thread, event.Dispatcher):
                 self.packet_id_filter.deny_ids(protocol_encoder.PACKETS_BY_GROUP[i])
         self.state = self.IDLE
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        if server:
+            self.sock.bind(self.robot_addr)
         self.sock.setblocking(False)
-        self.send_thread = SendThread(self.sock, self.robot_addr)
-        self.recv_thread = ReceiveThread(self.sock, self.send_thread, self.robot_addr)
+        self.send_thread = SendThread(self.sock, None if server else self.robot_addr)
+        self.recv_thread = ReceiveThread(self.sock, self.send_thread, None if server else self.robot_addr)
         self.stop_flag = False
         self.send_last = 0
         self.ping_last = 0
         self.stats_last = 0
+        self.ping_counter = 0
 
     def start(self) -> None:
         logger.debug("Starting...")
         self.add_handler(protocol_encoder.Connect, self._on_connect)
+        self.add_handler(protocol_encoder.Disconnect, self._on_disconnect)
         self.add_handler(protocol_encoder.Ping, self._on_ping)
         self.recv_thread.start()
         self.send_thread.start()
         super().start()
 
     def stop(self) -> None:
-        logger.debug("Stopping client...")
+        logger.debug("Stopping...")
         self.stop_flag = True
         self.join()
         self.send_thread.stop()
@@ -344,7 +399,7 @@ class ClientConnection(Thread, event.Dispatcher):
                 logger.error("Failed to get from incoming queue. {}".format(e))
                 continue
 
-            if self.state == self.CONNECTED:
+            if not self.server and self.state == self.CONNECTED:
                 now = time.perf_counter()
                 if now - self.ping_last > self.PING_INTERVAL:
                     self._send_ping()
@@ -364,7 +419,10 @@ class ClientConnection(Thread, event.Dispatcher):
                     continue
 
     def connect(self) -> None:
-        logger.debug("Connecting...")
+        if self.server:
+            raise exception.InvalidOperation("connect() not available on server connections.")
+
+        logger_protocol.debug("Connecting...")
         self.state = self.CONNECTING
 
         self.send_thread.reset()
@@ -383,25 +441,37 @@ class ClientConnection(Thread, event.Dispatcher):
             logger_protocol.debug("Sent %s", pkt)
 
     def disconnect(self) -> None:
-        logger.debug("Disconnecting...")
+        if self.server:
+            raise exception.InvalidOperation("disconnect() not available on server connections.")
+        logger_protocol.debug("Disconnecting...")
         if self.state != self.CONNECTED:
             return
         pkt = protocol_encoder.Disconnect()
         self.send(pkt)
+        self.state = self.IDLE
 
     def _send_ping(self) -> None:
-        pkt = protocol_encoder.Ping(0, 1, 0)
+        pkt = protocol_encoder.Ping(time.perf_counter(), self.ping_counter, 0)
         self.send(pkt)
+        self.ping_counter += 1
 
     def _on_connect(self, cli, pkt: protocol_encoder.Connect):
         del cli, pkt
         self.state = self.CONNECTED
-        logger.debug("Connected.")
+        self.ping_counter = 0
+        logger_protocol.debug("Connected.")
 
-    @staticmethod
-    def _on_ping(cli, pkt: protocol_encoder.Ping):
+    def _on_disconnect(self, cli, pkt: protocol_encoder.Disconnect):
         del cli, pkt
-        # TODO: Calculate round-trip time
+        self.state = self.IDLE
+        logger_protocol.debug("Disconnected.")
+
+    def _on_ping(self, cli, pkt: protocol_encoder.Ping):
+        if self.server:
+            self.send(pkt)
+        else:
+            # TODO: Calculate round-trip time
+            pass
 
     def log_stats(self):
         logger_protocol.info("Recv: {}B, {}F (disc.), {}F, {}P, {}P ({:.02f}%); "

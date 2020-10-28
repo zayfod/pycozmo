@@ -144,7 +144,7 @@ class Frame(object):
                 except (ValueError, IndexError) as e:
                     logger_protocol.debug("Failed to decode packet. Ignoring. {}".format(e))
                     reader.seek_set(expected_offset)
-            assert seq == OOB_SEQ or seq + 1 == pkt_seq
+            assert seq == OOB_SEQ or seq + 1 == pkt_seq or pkt.type == PacketType.PING
         elif frame_type == FrameType.PING:
             pkt = Ping.from_reader(reader)
             pkts.append(pkt)

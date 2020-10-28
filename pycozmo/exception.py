@@ -32,3 +32,7 @@ class Timeout(PyCozmoException):
 
 class NoSpace(PyCozmoException):
     """ Out of space. """
+
+
+class InvalidOperation(PyCozmoException):
+    """ Invalid operation. """
