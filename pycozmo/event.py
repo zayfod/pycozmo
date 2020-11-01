@@ -37,6 +37,8 @@ __all__ = [
     "EvtRobotWheelsMovingChange",
     "EvtChargerOOSChange",
     "EvtRobotStateUpdated",
+    "EvtAudioCompleted",
+    "EvtAnimationCompleted",
 
     "STATUS_EVENTS",
 
@@ -137,6 +139,14 @@ class EvtRobotWheelsMovingChange(Event):
 
 
 class EvtChargerOOSChange(Event):
+    pass
+
+
+class EvtAudioCompleted(Event):
+    pass
+
+
+class EvtAnimationCompleted(Event):
     pass
 
 

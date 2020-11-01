@@ -1,11 +1,13 @@
 
-import time
-import datetime
+from typing import List, Tuple
 from threading import Thread, Lock
 from collections import deque
 
 from . import logger
 from . import protocol_encoder
+from . import util
+from . import anim
+from . import event
 
 
 class AnimationQueue:
@@ -13,7 +15,7 @@ class AnimationQueue:
     MAXLEN = 4500   # ~2.5 min of frames
 
     def __init__(self):
-        self.mutex = Lock()
+        self.lock = Lock()
         self.audio_queue = deque(maxlen=self.MAXLEN)
         self.image_queue = deque(maxlen=self.MAXLEN)
         self.other_queue = deque(maxlen=self.MAXLEN)
@@ -22,16 +24,28 @@ class AnimationQueue:
         pass
 
     def is_empty(self):
-        with self.mutex:
+        with self.lock:
             return not len(self.audio_queue) and \
                    not len(self.image_queue) and \
                    not len(self.other_queue)
 
-    def put(self, item):
-        pass
+    def put_audio(self, sample_list: List[bytes]) -> None:
+        with self.lock:
+            self.audio_queue.extend(sample_list)
 
-    def get(self):
-        self.audio_queue.popleft()
+    def get(self) -> Tuple[bytes, bytes]:
+        with self.lock:
+            # Audio
+            try:
+                samples = self.audio_queue.popleft()
+            except IndexError:
+                samples = None
+            # Image
+            try:
+                image = self.image_queue.popleft()
+            except IndexError:
+                image = None
+        return samples, image
 
 
 class AnimationController:
@@ -40,28 +54,27 @@ class AnimationController:
         self.cli = cli
         self.thread = None
         self.stop_flag = False
+        self.queue = AnimationQueue()
         self.num_audio_frames_played = -1
+        self.playing_audio = False
 
     def start(self):
         self.thread = Thread(daemon=True, name=__class__.__name__, target=self._run)
         self.stop_flag = False
         self.thread.start()
-        self.cli.conn.add_handler(protocol_encoder.AnimationState, self._on_animation_state)
-        self.cli.conn.add_handler(protocol_encoder.Keyframe, self._on_keyframe)
+        self.cli.add_handler(protocol_encoder.AnimationState, self._on_animation_state)
+        self.cli.add_handler(protocol_encoder.Keyframe, self._on_keyframe)
 
     def stop(self):
         self.stop_flag = True
         self.thread.join()
+        self.thread = None
 
     def _on_animation_state(self, cli, pkt: protocol_encoder.AnimationState):
-        # logger.info(pkt)
-        # logger.info("+ {}".format(pkt.num_audio_frames_played))
         self.num_audio_frames_played = pkt.num_audio_frames_played
         pass
 
     def _on_keyframe(self, cli, pkt: protocol_encoder.Keyframe):
-        # logger.info(pkt)
-        logger.info("** K **")
         pass
 
     def _run(self):
@@ -72,27 +85,41 @@ class AnimationController:
         self.cli.conn.send(pkt)
 
         num_audio_frames = 0
-        next_frame = datetime.datetime.now()
 
+        timer = util.FPSTimer(anim.FRAME_RATE)
         while not self.stop_flag:
 
-            while True:
-                now = datetime.datetime.now()
-                if now >= next_frame:  # or (num_audio_frames - self.num_audio_frames_played) < 2:
-                    break
-                time.sleep(0.010)
-                # logger.info(".")
-            if now - next_frame > datetime.timedelta(seconds=1.0):
-                # More than 30 frames behind.
-                next_frame = now
-            next_frame += datetime.timedelta(seconds=1/30)
+            samples, image = self.queue.get()
 
-            pkt = protocol_encoder.NextFrame()
+            if samples:
+                pkt = protocol_encoder.OutputAudio(samples=samples)
+                if not self.playing_audio:
+                    self.playing_audio = True
+            else:
+                pkt = protocol_encoder.NextFrame()
+                if self.playing_audio:
+                    self.playing_audio = False
+                    self.cli.conn.post_event(event.EvtAudioCompleted, self.cli)
             self.cli.conn.send(pkt)
-            pkt = protocol_encoder.DisplayImage(b"\x3f\x3f")
-            self.cli.conn.send(pkt)
+
+            if image:
+                pkt = protocol_encoder.DisplayImage(image=image)
+                self.cli.conn.send(pkt)
+            # pkt = protocol_encoder.DisplayImage(b"\x3f\x3f")
 
             num_audio_frames += 1
-            # logger.info(num_audio_frames)
+
+            timer.sleep()
 
         logger.debug("Animation controller stopped...")
+
+    def play_audio(self, sample_list: List[bytes]) -> None:
+        self.queue.put_audio(sample_list)
+
+    def display_image(self, buf: bytes) -> None:
+        # TODO: See client.display_image()
+        pass
+
+    def play_anim(self, ppclip: anim.PreprocessedClip) -> None:
+        # TODO: See anim.PreprocessedClip.play()
+        pass

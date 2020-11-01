@@ -9,7 +9,8 @@ def pycozmo_program(cli: pycozmo.client.Client):
     cli.conn.send(pkt)
 
     # A 22 kHz, 16-bit, mono file is required.
-    cli.play_audio("hello.wav").wait_until_complete()
+    cli.play_audio("hello.wav")
+    cli.wait_for(pycozmo.event.EvtAudioCompleted)
 
 
 pycozmo.run_program(pycozmo_program)

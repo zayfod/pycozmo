@@ -49,7 +49,6 @@ class Client(event.Dispatcher):
         self.auto_initialize = bool(auto_initialize)
 
         self.conn = conn.Connection(robot_addr, protocol_log_messages)
-        self.audio = audio.AudioManager(self.conn)
         self.conn.add_child_dispatcher(self)
         self.anim_controller = anim_controller.AnimationController(self)
 
@@ -108,7 +107,6 @@ class Client(event.Dispatcher):
 
     def stop(self) -> None:
         logger.debug("Stopping client...")
-        self.audio.stop()
         self.conn.stop()
         self.anim_controller.stop()
         self.del_all_handlers()
@@ -475,6 +473,6 @@ class Client(event.Dispatcher):
     def anim_names(self) -> set:
         return self.get_anim_names()
 
-    def play_audio(self, fspec: str) -> audio.AudioManager:
-        self.audio.play_file(fspec)
-        return self.audio
+    def play_audio(self, fspec: str) -> None:
+        sample_list = audio.load_wav(fspec)
+        self.anim_controller.play_audio(sample_list)
