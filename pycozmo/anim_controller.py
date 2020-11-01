@@ -33,6 +33,10 @@ class AnimationQueue:
         with self.lock:
             self.audio_queue.extend(sample_list)
 
+    def put_image(self, buf: bytes) -> None:
+        with self.lock:
+            self.image_queue.append(buf)
+
     def get(self) -> Tuple[bytes, bytes]:
         with self.lock:
             # Audio
@@ -57,6 +61,7 @@ class AnimationController:
         self.queue = AnimationQueue()
         self.num_audio_frames_played = -1
         self.playing_audio = False
+        self.last_image = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
 
     def start(self):
         self.thread = Thread(daemon=True, name=__class__.__name__, target=self._run)
@@ -105,7 +110,10 @@ class AnimationController:
             if image:
                 pkt = protocol_encoder.DisplayImage(image=image)
                 self.cli.conn.send(pkt)
-            # pkt = protocol_encoder.DisplayImage(b"\x3f\x3f")
+                self.last_image = pkt
+            else:
+                # If not refreshed, the robot stops displaying image after 30 s.
+                self.cli.conn.send(self.last_image)
 
             num_audio_frames += 1
 
@@ -117,8 +125,7 @@ class AnimationController:
         self.queue.put_audio(sample_list)
 
     def display_image(self, buf: bytes) -> None:
-        # TODO: See client.display_image()
-        pass
+        self.queue.put_image(buf)
 
     def play_anim(self, ppclip: anim.PreprocessedClip) -> None:
         # TODO: See anim.PreprocessedClip.play()

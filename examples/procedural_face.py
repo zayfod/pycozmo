@@ -23,7 +23,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
     np_im2 = np_im[::2]
     im2 = Image.fromarray(np_im2)
 
-    cli.display_image(im2, 10)
+    cli.display_image(im2, 5.0)
 
 
 pycozmo.run_program(pycozmo_program)

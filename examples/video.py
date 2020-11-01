@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from PIL import Image
 import pycozmo
 
 
@@ -30,7 +31,8 @@ def pycozmo_program(cli: pycozmo.client.Client):
     pkt = pycozmo.protocol_encoder.EnableCamera()
     cli.conn.send(pkt)
 
-    timer = pycozmo.util.FPSTimer(pycozmo.anim.FRAME_RATE)
+    # Run with 14 FPS. This is the frame rate of the robot camera.
+    timer = pycozmo.util.FPSTimer(14)
     while True:
 
         if last_im:
@@ -38,15 +40,18 @@ def pycozmo_program(cli: pycozmo.client.Client):
             # Get last image.
             im = last_im
 
-            # Resize from 320x240 to 128x32.
-            im = im.resize((128, 32))
+            # Resize from 320x240 to 68x17. Larger image sometime are too big for the robot receive buffer.
+            im = im.resize((68, 17))
             # Convert to binary image.
             im = im.convert('1')
-
+            # Mirror the image.
+            im = im.transpose(Image.FLIP_LEFT_RIGHT)
+            # Construct a 128x32 image that the robot can display.
+            im2 = Image.new("1", (128, 32))
+            im2.paste(im, (30, 7))
             # Display the result image.
-            cli.display_image(im)
+            cli.display_image(im2)
 
-        # Run with 30 FPS.
         timer.sleep()
 
 

@@ -424,14 +424,16 @@ class Client(event.Dispatcher):
         pkt = protocol_encoder.SetHeadLight(enable=enable)
         self.conn.send(pkt)
 
+    def clear_screen(self) -> None:
+        self.anim_controller.display_image(b"\x3f\x3f")
+
     def display_image(self, im: Image, duration: Optional[float] = None) -> None:
         encoder = image_encoder.ImageEncoder(im)
         buf = bytes(encoder.encode())
-        pkt = protocol_encoder.DisplayImage(image=buf)
-        self.conn.send(pkt)
-        self.next_frame()
+        self.anim_controller.display_image(buf)
         if duration is not None:
             time.sleep(duration)
+            self.clear_screen()
 
     def next_frame(self):
         pkt = protocol_encoder.NextFrame()

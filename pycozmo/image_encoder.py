@@ -165,7 +165,8 @@ class ImageEncoder(object):
 
     def __init__(self, im: Image):
         if im.size[0] != 128 or im.size[1] != 32:
-            raise ValueError("Invalid image dimensions. Only 128x32 images are supported.")
+            raise ValueError("Invalid image dimensions. Only 128x32 images are supported. {}x{} given.".format(
+                im.size[0], im.size[1]))
         if im.mode != "1":
             raise ValueError("Invalid pixel format. Only binary images are supported.")
         self.px = im.load()

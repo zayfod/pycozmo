@@ -19,7 +19,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
     # Convert to binary image.
     im = im.convert('1')
 
-    cli.display_image(im, 10)
+    cli.display_image(im, 5.0)
 
 
 pycozmo.run_program(pycozmo_program)

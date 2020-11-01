@@ -393,7 +393,7 @@ class Connection(Thread, event.Dispatcher):
         self.del_all_handlers()
 
     def _on_packet(self, pkt) -> None:
-        self.queue.put((event.EvtPacketReceived, [pkt], {}, ))
+        self.queue.put((event.EvtPacketReceived, [pkt], {}))
 
     def run(self) -> None:
         while not self.stop_flag:
@@ -443,7 +443,7 @@ class Connection(Thread, event.Dispatcher):
             logger_protocol.debug("Sent %s", pkt)
 
     def post_event(self, evt, *args, **kwargs) -> None:
-        self.queue.put((evt, args, kwargs, ))
+        self.queue.put((evt, args, kwargs))
 
     def disconnect(self) -> None:
         if self.server:
