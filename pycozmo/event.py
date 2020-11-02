@@ -37,6 +37,7 @@ __all__ = [
     "EvtRobotWheelsMovingChange",
     "EvtChargerOOSChange",
     "EvtRobotStateUpdated",
+    "EvtRobotOrientationChange",
     "EvtAudioCompleted",
     "EvtAnimationCompleted",
 
@@ -173,6 +174,10 @@ STATUS_EVENTS = {
 
 class EvtRobotStateUpdated(Event):
     """ Triggered when a new robot state is received. """
+
+
+class EvtRobotOrientationChange(Event):
+    """ Triggered when the robot orientation changes. """
 
 
 class Dispatcher(object):

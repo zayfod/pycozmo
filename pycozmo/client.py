@@ -70,6 +70,7 @@ class Client(event.Dispatcher):
         self.accel = util.Vector3(0.0, 0.0, 0.0)
         self.gyro = util.Vector3(0.0, 0.0, 0.0)
         self.robot_status = 0
+        self.robot_orientation = robot.RobotOrientation.ON_THREADS
         # Animation state
         self.num_anim_bytes_played = 0
         self.num_audio_frames_played = 0
@@ -287,6 +288,20 @@ class Client(event.Dispatcher):
                 state = (pkt.status & flag) != 0
                 logger.debug("%s: %i", robot.RobotStatusFlagNames[flag], state)
                 self.dispatch(evt, self, state)
+        # Orientation
+        if pkt.pose_angle_rad < -0.4:
+            robot_orientation = robot.RobotOrientation.ON_LEFT_SIDE
+        elif pkt.pose_angle_rad > 0.4:
+            robot_orientation = robot.RobotOrientation.ON_RIGHT_SIDE
+        elif pkt.pose_pitch_rad < -1.0:
+            robot_orientation = robot.RobotOrientation.ON_FACE
+        elif pkt.pose_pitch_rad > 1.0:
+            robot_orientation = robot.RobotOrientation.ON_BACK
+        else:
+            robot_orientation = robot.RobotOrientation.ON_THREADS
+        if self.robot_orientation != robot_orientation:
+            self.robot_orientation = robot_orientation
+            self.dispatch(event.EvtRobotOrientationChange, self, robot_orientation)
 
     def _on_robot_picked_up(self, cli, state):
         del cli

@@ -15,6 +15,7 @@ from . import behavior
 from . import activity
 from . import anim
 from . import util
+from . import robot
 
 
 __all__ = [
@@ -44,6 +45,10 @@ class Brain:
         logger.info("Loaded resources in {:.02f} s.".format(time.perf_counter() - start_time))
 
         self.cli.add_handler(event.EvtCliffDetectedChange, self.on_cliff_detected)
+        self.cli.add_handler(event.EvtRobotOrientationChange, self.on_robot_orientation_change)
+        self.cli.add_handler(event.EvtRobotPickedUpChange, self.on_robot_picked_up_change)
+        self.cli.add_handler(event.EvtRobotFallingChange, self.on_robot_falling_change)
+        self.cli.add_handler(event.EvtRobotOnChargerChange, self.on_robot_on_charger_change)
         # TODO: ...
 
         # Reaction trigger queue
@@ -69,6 +74,28 @@ class Brain:
     def on_cliff_detected(self, cli, state: bool) -> None:
         if state:
             self.post_reaction("CliffDetected")
+
+    def on_robot_orientation_change(self, cli, orientation: robot.RobotOrientation) -> None:
+        if orientation == robot.RobotOrientation.ON_THREADS:
+            self.post_reaction("ReturnedToTreads")
+        elif orientation == robot.RobotOrientation.ON_BACK:
+            self.post_reaction("RobotOnBack")
+        elif orientation == robot.RobotOrientation.ON_FACE:
+            self.post_reaction("RobotOnFace")
+        elif orientation == robot.RobotOrientation.ON_LEFT_SIDE or orientation == robot.RobotOrientation.ON_RIGHT_SIDE:
+            self.post_reaction("RobotOnSide")
+
+    def on_robot_picked_up_change(self, cli, state: bool) -> None:
+        if state:
+            self.post_reaction("RobotPickedUp")
+
+    def on_robot_falling_change(self, cli, state: bool):
+        if state:
+            self.post_reaction("RobotFalling")
+
+    def on_robot_on_charger_change(self, cli, state: bool) -> None:
+        if state:
+            self.post_reaction("PlacedOnCharger")
 
     def on_camera_image(self, cli, new_im) -> None:
         """ Process images, coming from the robot camera. """

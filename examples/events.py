@@ -63,6 +63,20 @@ def on_robot_wheels_moving(cli, state: bool):
         print("Stopped moving.")
 
 
+def on_robot_orientation_change(cli, orientation: pycozmo.robot.RobotOrientation):
+    del cli
+    if orientation == pycozmo.robot.RobotOrientation.ON_THREADS:
+        print("On threads.")
+    elif orientation == pycozmo.robot.RobotOrientation.ON_BACK:
+        print("On back.")
+    elif orientation == pycozmo.robot.RobotOrientation.ON_FACE:
+        print("On front.")
+    elif orientation == pycozmo.robot.RobotOrientation.ON_LEFT_SIDE:
+        print("On left side.")
+    elif orientation == pycozmo.robot.RobotOrientation.ON_RIGHT_SIDE:
+        print("On right side.")
+
+
 def pycozmo_program(cli: pycozmo.client.Client):
 
     cli.add_handler(pycozmo.protocol_encoder.RobotState, on_robot_state, one_shot=True)
@@ -74,6 +88,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
     cli.add_handler(pycozmo.event.EvtRobotChargingChange, on_robot_charging)
     cli.add_handler(pycozmo.event.EvtCliffDetectedChange, on_cliff_detected)
     cli.add_handler(pycozmo.event.EvtRobotWheelsMovingChange, on_robot_wheels_moving)
+    cli.add_handler(pycozmo.event.EvtRobotOrientationChange, on_robot_orientation_change)
 
     while True:
         try:

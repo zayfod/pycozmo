@@ -87,6 +87,9 @@ class AnimationController:
         self.cli.add_handler(protocol_encoder.Keyframe, self._on_keyframe)
         self.cli.add_handler(protocol_encoder.AnimationStarted, self._on_animation_started)
         self.cli.add_handler(protocol_encoder.AnimationEnded, self._on_animation_ended)
+        self.cli.add_handler(event.EvtRobotAnimatingChange, self._on_animating_change)
+        self.cli.add_handler(event.EvtRobotAnimBufferFullChange, self._on_anim_buffer_full_change)
+        self.cli.add_handler(event.EvtRobotAnimatingIdleChange, self._on_amimating_idle_change)
 
     def stop(self):
         self.stop_flag = True
@@ -105,6 +108,15 @@ class AnimationController:
     def _on_animation_ended(self, cli, pkt: protocol_encoder.AnimationEnded):
         self._clear_last_image_pkt()
         self.cli.conn.post_event(event.EvtAnimationCompleted, self.cli)
+
+    def _on_animating_change(self):
+        pass
+
+    def _on_anim_buffer_full_change(self):
+        pass
+
+    def _on_amimating_idle_change(self):
+        pass
 
     def _run(self):
         logger.debug("Animation controller started...")

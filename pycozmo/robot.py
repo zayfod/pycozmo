@@ -4,6 +4,7 @@ Robot constants and helper code.
 
 """
 
+import enum
 import math
 
 from . import util
@@ -101,6 +102,15 @@ RobotStatusFlagNames = {
     RobotStatusFlag.ARE_WHEELS_MOVING: "ARE_WHEELS_MOVING",
     RobotStatusFlag.IS_CHARGER_OOS: "IS_CHARGER_OOS",
 }
+
+
+class RobotOrientation(enum.Enum):
+    """ Robot orientation enumeration. """
+    ON_THREADS = 0
+    ON_BACK = 1
+    ON_FACE = 2
+    ON_LEFT_SIDE = 3
+    ON_RIGHT_SIDE = 4
 
 
 class LiftPosition(object):
