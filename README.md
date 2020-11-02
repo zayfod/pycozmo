@@ -188,7 +188,7 @@ Limitations
 Requirements
 ------------
 
-- Python 3.5.4
+- Python 3.6.0 or newer
 - [Pillow](https://github.com/python-pillow/Pillow) 6.0.0 - Python image library
 - [FlatBuffers](https://github.com/google/flatbuffers) - serialization library
 - [dpkt](https://github.com/kbandla/dpkt) - TCP/IP packet parsing library 
