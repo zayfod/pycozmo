@@ -29,7 +29,7 @@ def on_robot_pathing_change(cli, state: bool):
 
 def pycozmo_program(cli: pycozmo.client.Client):
 
-    cli.conn.add_handler(pycozmo.protocol_encoder.PathFollowingEvent, on_path_following_event)
+    cli.add_handler(pycozmo.protocol_encoder.PathFollowingEvent, on_path_following_event)
     cli.add_handler(pycozmo.event.EvtRobotPathingChange, on_robot_pathing_change)
 
     pkt = pycozmo.protocol_encoder.AppendPathSegLine(

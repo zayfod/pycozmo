@@ -17,6 +17,7 @@ __all__ = [
 
     "EvtRobotFound",
     "EvtRobotReady",
+    "EvtPacketReceived",
     "EvtNewRawCameraImage",
     "EvtRobotMovingChange",
     "EvtRobotCarryingBlockChange",
@@ -61,6 +62,10 @@ class EvtRobotFound(Event):
 
 class EvtRobotReady(Event):
     """ Triggered when the robot has been initialized and is ready for commands. """
+
+
+class EvtPacketReceived(Event):
+    """ Triggered when a new packet has been received from the robot. """
 
 
 class EvtNewRawCameraImage(Event):
@@ -165,7 +170,11 @@ class Dispatcher(object):
 
     def __init__(self):
         super().__init__()
+        self.dispatch_children = []
         self.dispatch_handlers = collections.defaultdict(list)
+
+    def add_child_dispatcher(self, child):
+        self.dispatch_children.append(child)
 
     def add_handler(self, event, f, one_shot=False):
         handler = Handler(f, one_shot=one_shot)
@@ -182,15 +191,18 @@ class Dispatcher(object):
         self.dispatch_handlers = collections.defaultdict(list)
 
     def dispatch(self, event, *args, **kwargs):
+        # Dispatch to handlers.
         handlers = []
         for i, handler in enumerate(self.dispatch_handlers[event]):
             if handler.one_shot:
                 # Delete one-shot handlers prior to actual dispatch
                 del self.dispatch_handlers[event][i]
             handlers.append(handler)
-
         for handler in handlers:
             handler.f(*args, **kwargs)
+        # Dispatch to child dispatchers.
+        for child in self.dispatch_children:
+            child.dispatch(event, *args, **kwargs)
 
     def wait_for(self, evt, timeout: Optional[float] = None) -> None:
         e = threading.Event()

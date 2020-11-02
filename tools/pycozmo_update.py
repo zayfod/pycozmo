@@ -87,7 +87,7 @@ def update(cli: pycozmo.client.Client):
     """ Perform robot OTA firmware update. """
 
     # Register for FirmwareUpdateResult packets.
-    cli.conn.add_handler(pycozmo.protocol_encoder.FirmwareUpdateResult, on_firmware_update_result)
+    cli.add_handler(pycozmo.protocol_encoder.FirmwareUpdateResult, on_firmware_update_result)
 
     safe_size = os.path.getsize(safe_file)
     total_chunks = math.ceil(safe_size / 1024)

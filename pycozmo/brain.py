@@ -98,7 +98,6 @@ class Brain:
         while not self.stop_flag:
             try:
                 reaction_trigger = self.reaction_queue.get(timeout=0.05)
-                self.reaction_queue.task_done()
             except Empty:
                 continue
             except Exception as e:

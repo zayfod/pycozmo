@@ -18,7 +18,7 @@ def on_nv_storage_op_result(cli: pycozmo.client.Client, pkt: pycozmo.protocol_en
 
 
 def pycozmo_program(cli: pycozmo.client.Client):
-    cli.conn.add_handler(pycozmo.protocol_encoder.NvStorageOpResult, on_nv_storage_op_result)
+    cli.add_handler(pycozmo.protocol_encoder.NvStorageOpResult, on_nv_storage_op_result)
 
     pkt = pycozmo.protocol_encoder.NvStorageOp(
         tag=pycozmo.protocol_encoder.NvEntryTag.NVEntry_CameraCalib,

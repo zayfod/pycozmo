@@ -29,6 +29,7 @@ from . import image_encoder
 from . import anim
 from . import anim_encoder
 from . import audio
+from . import anim_controller
 from . import robot_debug
 
 
@@ -49,6 +50,8 @@ class Client(event.Dispatcher):
 
         self.conn = conn.Connection(robot_addr, protocol_log_messages)
         self.audio = audio.AudioManager(self.conn)
+        self.conn.add_child_dispatcher(self)
+        self.anim_controller = anim_controller.AnimationController(self)
 
         self.serial_number_head = None
         self.robot_fw_sig = None
@@ -91,15 +94,15 @@ class Client(event.Dispatcher):
 
     def start(self) -> None:
         logger.debug("Starting client...")
-        self.conn.add_handler(protocol_encoder.HardwareInfo, self._on_hardware_info)
-        self.conn.add_handler(protocol_encoder.FirmwareSignature, self._on_firmware_signature)
-        self.conn.add_handler(protocol_encoder.BodyInfo, self._on_body_info)
-        self.conn.add_handler(protocol_encoder.ImageChunk, self._on_image_chunk)
-        self.conn.add_handler(protocol_encoder.RobotState, self._on_robot_state)
-        self.conn.add_handler(protocol_encoder.AnimationState, self._on_animation_state)
-        self.conn.add_handler(protocol_encoder.ObjectAvailable, self._on_object_available)
-        self.conn.add_handler(protocol_encoder.ObjectConnectionState, self._on_object_connection_state)
-        self.conn.add_handler(protocol_encoder.DebugData, self._on_debug_data)
+        self.add_handler(protocol_encoder.HardwareInfo, self._on_hardware_info)
+        self.add_handler(protocol_encoder.FirmwareSignature, self._on_firmware_signature)
+        self.add_handler(protocol_encoder.BodyInfo, self._on_body_info)
+        self.add_handler(protocol_encoder.ImageChunk, self._on_image_chunk)
+        self.add_handler(protocol_encoder.RobotState, self._on_robot_state)
+        self.add_handler(protocol_encoder.AnimationState, self._on_animation_state)
+        self.add_handler(protocol_encoder.ObjectAvailable, self._on_object_available)
+        self.add_handler(protocol_encoder.ObjectConnectionState, self._on_object_connection_state)
+        self.add_handler(protocol_encoder.DebugData, self._on_debug_data)
         self.add_handler(event.EvtRobotPickedUpChange, self._on_robot_picked_up)
         self.conn.start()
 
@@ -107,6 +110,7 @@ class Client(event.Dispatcher):
         logger.debug("Stopping client...")
         self.audio.stop()
         self.conn.stop()
+        self.anim_controller.stop()
         self.del_all_handlers()
 
     def connect(self) -> None:
@@ -131,18 +135,20 @@ class Client(event.Dispatcher):
         pkt = protocol_encoder.SyncTime()
         self.conn.send(pkt)
         # Enable animation playback and AnimationState events. Requires Enable (0x25).
-        pkt = protocol_encoder.EnableAnimationState()
-        self.conn.send(pkt)
+        # pkt = protocol_encoder.EnableAnimationState()
+        # self.conn.send(pkt)
 
         # Initialize display.
-        for _ in range(7):
-            pkt = protocol_encoder.NextFrame()
-            self.conn.send(pkt)
-            pkt = protocol_encoder.DisplayImage(b"\x3f\x3f")
-            self.conn.send(pkt)
+        # for _ in range(7):
+        #     pkt = protocol_encoder.NextFrame()
+        #     self.conn.send(pkt)
+        #     pkt = protocol_encoder.DisplayImage(b"\x3f\x3f")
+        #     self.conn.send(pkt)
 
         # TODO: This should not be necessary.
-        time.sleep(0.5)
+        # time.sleep(0.5)
+
+        self.anim_controller.start()
 
         self.dispatch(event.EvtRobotReady, self)
 
@@ -173,17 +179,23 @@ class Client(event.Dispatcher):
             self._initialize_robot()
         self.dispatch(event.EvtRobotFound, self)
 
+    def wait_for(self, evt, timeout: Optional[float] = None):
+        e = Event()
+        self.add_handler(evt, lambda cli: e.set(), one_shot=True)
+        if not e.wait(timeout):
+            raise exception.Timeout("Timeout waiting for event {}".format(evt))
+
     def wait_for_robot(self, timeout: float = 5.0) -> None:
         if not self.robot_fw_sig:
-            e = Event()
-            self.add_handler(event.EvtRobotFound, lambda cli: e.set(), one_shot=True)
-            if not e.wait(timeout):
-                raise exception.ConnectionTimeout("Failed to connect to Cozmo.")
+            try:
+                self.wait_for(event.EvtRobotFound, timeout=timeout)
+            except exception.Timeout as e:
+                raise exception.ConnectionTimeout("Failed to connect to Cozmo.") from e
 
         if not self.serial_number:
-            e = Event()
-            self.add_handler(event.EvtRobotReady, lambda cli: e.set(), one_shot=True)
-            if not e.wait(timeout):
+            try:
+                self.wait_for(event.EvtRobotReady, timeout=timeout)
+            except exception.Timeout as e:
                 raise exception.ConnectionTimeout("Failed to initialize Cozmo.")
 
     def _reset_partial_state(self):
@@ -391,7 +403,7 @@ class Client(event.Dispatcher):
             if pkt2.event_type != protocol_encoder.PathEventType.PATH_STARTED:
                 e.set()
 
-        self.conn.add_handler(protocol_encoder.PathFollowingEvent, event_wait)
+        self.add_handler(protocol_encoder.PathFollowingEvent, event_wait)
         e.wait()
 
     def set_backpack_lights(self, left_light, front_light, center_light, rear_light, right_light) -> None:

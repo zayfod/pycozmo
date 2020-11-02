@@ -92,7 +92,6 @@ class SendThread(Thread):
                 pkt = self.queue.get(timeout=self.COLLECT_INTERVAL)
             except Empty:
                 continue
-            self.queue.task_done()
             self.outgoing_packets += 1
             if not self.server and isinstance(pkt, protocol_encoder.Ping):
                 self._send_ping(pkt)
@@ -201,6 +200,7 @@ class ReceiveThread(Thread):
                  sock: socket.socket,
                  send_thread: SendThread,
                  sender_address: Optional[Tuple[str, int]],
+                 delivery_handler,
                  buffer_size: int = 2048) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         self.sock = sock
@@ -209,7 +209,7 @@ class ReceiveThread(Thread):
         self.window = ReceiveWindow(16, size=62, max_seq=MAX_SEQ)
         self.buffer_size = buffer_size
         self.stop_flag = False
-        self.queue = Queue()
+        self.delivery_handler = delivery_handler
         self.send_thread = send_thread
         # Received bytes.
         self.received_bytes = 0
@@ -320,7 +320,7 @@ class ReceiveThread(Thread):
 
     def deliver(self, pkt: Packet):
         self.delivered_packets += 1
-        self.queue.put(pkt)
+        self.delivery_handler(pkt)
 
     def reset(self):
         self.window.reset()
@@ -350,6 +350,8 @@ class Connection(Thread, event.Dispatcher):
         event.Dispatcher.__init__(self)
         self.robot_addr = robot_addr or (SERVER_ADDR if server else ROBOT_ADDR)
         self.server = server
+        # Event queue.
+        self.queue = Queue()
         # Filters
         self.packet_type_filter = filter.Filter()
         self.packet_type_filter.deny_ids({PacketType.PING.value})
@@ -363,7 +365,8 @@ class Connection(Thread, event.Dispatcher):
             self.sock.bind(self.robot_addr)
         self.sock.setblocking(False)
         self.send_thread = SendThread(self.sock, None if server else self.robot_addr)
-        self.recv_thread = ReceiveThread(self.sock, self.send_thread, None if server else self.robot_addr)
+        self.recv_thread = ReceiveThread(
+            self.sock, self.send_thread, None if server else self.robot_addr, self._on_packet)
         self.stop_flag = False
         self.send_last = 0
         self.ping_last = 0
@@ -372,6 +375,7 @@ class Connection(Thread, event.Dispatcher):
 
     def start(self) -> None:
         logger.debug("Starting...")
+        self.add_handler(event.EvtPacketReceived, self._on_packet_received)
         self.add_handler(protocol_encoder.Connect, self._on_connect)
         self.add_handler(protocol_encoder.Disconnect, self._on_disconnect)
         self.add_handler(protocol_encoder.Ping, self._on_ping)
@@ -388,15 +392,17 @@ class Connection(Thread, event.Dispatcher):
         self.sock.close()
         self.del_all_handlers()
 
+    def _on_packet(self, pkt) -> None:
+        self.queue.put((event.EvtPacketReceived, [pkt], {}, ))
+
     def run(self) -> None:
         while not self.stop_flag:
             try:
-                pkt = self.recv_thread.queue.get(timeout=self.RUN_INTERVAL)
-                self.recv_thread.queue.task_done()
+                evt, args, kwargs = self.queue.get(timeout=self.RUN_INTERVAL)
             except Empty:
-                pkt = None
+                evt, args, kwargs = None, [], {}
             except Exception as e:
-                logger.error("Failed to get from incoming queue. {}".format(e))
+                logger.error("Failed to get from event queue. {}".format(e))
                 continue
 
             if not self.server and self.state == self.CONNECTED:
@@ -408,15 +414,11 @@ class Connection(Thread, event.Dispatcher):
                     self.log_stats()
                     self.stats_last = now
 
-            if pkt is not None:
-                if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
-                    logger_protocol.debug("Got  %s", pkt)
-
+            if evt:
                 try:
-                    self.dispatch(pkt.__class__, self, pkt)
+                    self.dispatch(evt, *args, **kwargs)
                 except Exception as e:
-                    logger.error("Failed to dispatch packet. {}".format(e))
-                    continue
+                    logger.error("Failed to process event {}. {}".format(evt, e))
 
     def connect(self) -> None:
         if self.server:
@@ -440,6 +442,9 @@ class Connection(Thread, event.Dispatcher):
         if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
             logger_protocol.debug("Sent %s", pkt)
 
+    def post_event(self, evt, *args, **kwargs) -> None:
+        self.queue.put((evt, args, kwargs, ))
+
     def disconnect(self) -> None:
         if self.server:
             raise exception.InvalidOperation("disconnect() not available on server connections.")
@@ -454,6 +459,11 @@ class Connection(Thread, event.Dispatcher):
         pkt = protocol_encoder.Ping(time.perf_counter(), self.ping_counter, 0)
         self.send(pkt)
         self.ping_counter += 1
+
+    def _on_packet_received(self, pkt):
+        if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
+            logger_protocol.debug("Got  %s", pkt)
+        self.dispatch(pkt.__class__, self, pkt)
 
     def _on_connect(self, cli, pkt: protocol_encoder.Connect):
         del cli, pkt
