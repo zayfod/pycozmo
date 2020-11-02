@@ -186,7 +186,7 @@ class Client(event.Dispatcher):
             try:
                 self.wait_for(event.EvtRobotReady, timeout=timeout)
             except exception.Timeout as e:
-                raise exception.ConnectionTimeout("Failed to initialize Cozmo.")
+                raise exception.ConnectionTimeout("Failed to initialize Cozmo.") from e
 
     def _reset_partial_state(self):
         self._partial_image_timestamp = None
