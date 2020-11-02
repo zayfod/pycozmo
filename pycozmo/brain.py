@@ -135,6 +135,7 @@ class Brain:
         member = animation_group.choose_member()
         logger_animation.info("Playing animation {}".format(member.name))
         self.cli.play_anim(member.name)
+        self.cli.wait_for(event.EvtAnimationCompleted)
 
     def heartbeat_thread_run(self) -> None:
         """ Heartbeat thread loop. """

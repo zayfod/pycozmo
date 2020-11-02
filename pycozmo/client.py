@@ -90,6 +90,7 @@ class Client(event.Dispatcher):
         self._clip_metadata = {}
         self._clips = {}
         self._ppclips = {}
+        self._next_anim_id = 1
 
     def start(self) -> None:
         logger.debug("Starting client...")
@@ -132,19 +133,9 @@ class Client(event.Dispatcher):
         # Set timestamp to 0. Also enables RobotState and ObjectAvailable events. Requires Enable (0x25).
         pkt = protocol_encoder.SyncTime()
         self.conn.send(pkt)
-        # Enable animation playback and AnimationState events. Requires Enable (0x25).
-        # pkt = protocol_encoder.EnableAnimationState()
-        # self.conn.send(pkt)
 
-        # Initialize display.
-        # for _ in range(7):
-        #     pkt = protocol_encoder.NextFrame()
-        #     self.conn.send(pkt)
-        #     pkt = protocol_encoder.DisplayImage(b"\x3f\x3f")
-        #     self.conn.send(pkt)
-
-        # TODO: This should not be necessary.
-        # time.sleep(0.5)
+        # TODO: Proper waiting for motor calibration to complete.
+        time.sleep(0.5)
 
         self.anim_controller.start()
 
@@ -425,19 +416,17 @@ class Client(event.Dispatcher):
         self.conn.send(pkt)
 
     def clear_screen(self) -> None:
-        self.anim_controller.display_image(b"\x3f\x3f")
+        pkt = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
+        self.anim_controller.display_image(pkt)
 
     def display_image(self, im: Image, duration: Optional[float] = None) -> None:
         encoder = image_encoder.ImageEncoder(im)
         buf = bytes(encoder.encode())
-        self.anim_controller.display_image(buf)
+        pkt = protocol_encoder.DisplayImage(image=buf)
+        self.anim_controller.display_image(pkt)
         if duration is not None:
             time.sleep(duration)
             self.clear_screen()
-
-    def next_frame(self):
-        pkt = protocol_encoder.NextFrame()
-        self.conn.send(pkt)
 
     def _load_clips(self, fspec: str) -> None:
         if fspec.endswith(".bin"):
@@ -448,6 +437,41 @@ class Client(event.Dispatcher):
             raise ValueError("Unsupported animation file format.")
         for clip in clips.clips:
             self._clips[clip.name] = clip
+
+    def play_anim_ppclip(self, ppclip: anim.PreprocessedClip) -> None:
+        # Start animation.
+        pkt = protocol_encoder.StartAnimation(anim_id=self._next_anim_id)
+        self.anim_controller.play_anim_frame(None, None, (pkt, ))
+        self._next_anim_id += 1
+
+        # Send frames to the animation controller.
+        frames = list(sorted(ppclip.keyframes.keys()))
+        num_frames = len(frames)
+        time_ms = 0
+        for i in range(num_frames):
+            audio_pkt = None
+            image_pkt = None
+            pkts = []
+            for action in ppclip.keyframes[frames[i]]:
+                if isinstance(action, protocol_encoder.OutputAudio):
+                    audio_pkt = action
+                elif isinstance(action, protocol_encoder.DisplayImage):
+                    image_pkt = action
+                elif isinstance(action, protocol_encoder.Packet):
+                    pkts.append(action)
+            self.anim_controller.play_anim_frame(audio_pkt, image_pkt, pkts)
+            time_ms += 33
+
+            # Pause.
+            if i < num_frames - 1:
+                target_ms = time_ms + frames[i + 1] - frames[i]
+                while target_ms > time_ms:
+                    self.anim_controller.play_anim_frame(None, None, None)
+                    time_ms += 33
+
+        # End animation.
+        pkt = protocol_encoder.EndAnimation()
+        self.anim_controller.play_anim_frame(None, None, (pkt, ))
 
     def play_anim(self, name: str) -> None:
         if not self._clip_metadata:
@@ -462,7 +486,7 @@ class Client(event.Dispatcher):
             self._ppclips[name] = anim.PreprocessedClip.from_anim_clip(clip)
 
         ppclip = self._ppclips[name]
-        ppclip.play(self)
+        self.play_anim_ppclip(ppclip)
 
     def load_anims(self, dspec: str) -> None:
         self._clip_metadata = anim_encoder.get_clip_metadata(dspec)
@@ -476,5 +500,5 @@ class Client(event.Dispatcher):
         return self.get_anim_names()
 
     def play_audio(self, fspec: str) -> None:
-        sample_list = audio.load_wav(fspec)
-        self.anim_controller.play_audio(sample_list)
+        pkts = audio.load_wav(fspec)
+        self.anim_controller.play_audio(pkts)

@@ -12,6 +12,8 @@ from typing import List
 import struct
 import wave
 
+from . import protocol_encoder
+
 
 __all__ = [
     "load_wav",
@@ -22,7 +24,7 @@ MULAW_MAX = 0x7FFF
 MULAW_BIAS = 132
 
 
-def load_wav(filename: str) -> List[bytes]:
+def load_wav(filename: str) -> List[protocol_encoder.OutputAudio]:
     with wave.open(filename, "r") as w:
         sampwidth = w.getsampwidth()
         framerate = w.getframerate()
@@ -32,15 +34,16 @@ def load_wav(filename: str) -> List[bytes]:
 
         ratediv = 2 if framerate == 48000 else 1
         channels = w.getnchannels()
-        pkt_list = []
+        pkts = []
 
         while True:
             frame_in = w.readframes(744 * ratediv)
             if not frame_in:
                 break
             frame_out = bytes_to_cozmo(frame_in, ratediv, channels)
-            pkt_list.append(frame_out)
-        return pkt_list
+            pkt = protocol_encoder.OutputAudio(samples=frame_out)
+            pkts.append(pkt)
+        return pkts
 
 
 def bytes_to_cozmo(byte_string: bytes, rate_correction: int, channels: int) -> bytearray:

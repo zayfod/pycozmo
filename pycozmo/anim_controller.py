@@ -1,5 +1,5 @@
 
-from typing import List, Tuple
+from typing import List, Tuple, Any, Optional, Iterable
 from threading import Thread, Lock
 from collections import deque
 
@@ -18,38 +18,51 @@ class AnimationQueue:
         self.lock = Lock()
         self.audio_queue = deque(maxlen=self.MAXLEN)
         self.image_queue = deque(maxlen=self.MAXLEN)
-        self.other_queue = deque(maxlen=self.MAXLEN)
-
-    def join(self):
-        pass
+        self.pkt_queue = deque(maxlen=self.MAXLEN)
 
     def is_empty(self):
         with self.lock:
             return not len(self.audio_queue) and \
                    not len(self.image_queue) and \
-                   not len(self.other_queue)
+                   not len(self.pkt_queue)
 
-    def put_audio(self, sample_list: List[bytes]) -> None:
+    def put_audio(self, pkts: List[protocol_encoder.OutputAudio]) -> None:
         with self.lock:
-            self.audio_queue.extend(sample_list)
+            self.audio_queue.extend(pkts)
 
-    def put_image(self, buf: bytes) -> None:
+    def put_image(self, pkt: protocol_encoder.DisplayImage) -> None:
         with self.lock:
-            self.image_queue.append(buf)
+            self.image_queue.append(pkt)
 
-    def get(self) -> Tuple[bytes, bytes]:
+    def put_anim_frame(
+            self,
+            audio_pkt: Optional[protocol_encoder.OutputAudio],
+            image_pkt: Optional[protocol_encoder.DisplayImage],
+            pkts: Optional[Iterable[protocol_encoder.Packet]]) -> None:
+        with self.lock:
+            self.audio_queue.append(audio_pkt)
+            self.image_queue.append(image_pkt)
+            self.pkt_queue.append(pkts)
+
+    def get(self) -> Tuple[bytes, bytes, Tuple[Any]]:
         with self.lock:
             # Audio
             try:
-                samples = self.audio_queue.popleft()
+                audio_pkt = self.audio_queue.popleft()
             except IndexError:
-                samples = None
+                audio_pkt = None
             # Image
             try:
-                image = self.image_queue.popleft()
+                image_pkt = self.image_queue.popleft()
             except IndexError:
-                image = None
-        return samples, image
+                image_pkt = None
+            # Action
+            try:
+                pkts = self.pkt_queue.popleft()
+            except IndexError:
+                pkts = None
+
+        return audio_pkt, image_pkt, pkts
 
 
 class AnimationController:
@@ -61,7 +74,10 @@ class AnimationController:
         self.queue = AnimationQueue()
         self.num_audio_frames_played = -1
         self.playing_audio = False
-        self.last_image = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
+        self.last_image_pkt = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
+
+    def _clear_last_image_pkt(self):
+        self.last_image_pkt = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
 
     def start(self):
         self.thread = Thread(daemon=True, name=__class__.__name__, target=self._run)
@@ -69,6 +85,8 @@ class AnimationController:
         self.thread.start()
         self.cli.add_handler(protocol_encoder.AnimationState, self._on_animation_state)
         self.cli.add_handler(protocol_encoder.Keyframe, self._on_keyframe)
+        self.cli.add_handler(protocol_encoder.AnimationStarted, self._on_animation_started)
+        self.cli.add_handler(protocol_encoder.AnimationEnded, self._on_animation_ended)
 
     def stop(self):
         self.stop_flag = True
@@ -77,10 +95,16 @@ class AnimationController:
 
     def _on_animation_state(self, cli, pkt: protocol_encoder.AnimationState):
         self.num_audio_frames_played = pkt.num_audio_frames_played
-        pass
 
     def _on_keyframe(self, cli, pkt: protocol_encoder.Keyframe):
         pass
+
+    def _on_animation_started(self, cli, pkt: protocol_encoder.AnimationStarted):
+        pass
+
+    def _on_animation_ended(self, cli, pkt: protocol_encoder.AnimationEnded):
+        self._clear_last_image_pkt()
+        self.cli.conn.post_event(event.EvtAnimationCompleted, self.cli)
 
     def _run(self):
         logger.debug("Animation controller started...")
@@ -94,26 +118,28 @@ class AnimationController:
         timer = util.FPSTimer(anim.FRAME_RATE)
         while not self.stop_flag:
 
-            samples, image = self.queue.get()
+            audio_pkt, image_pkt, pkts = self.queue.get()
 
-            if samples:
-                pkt = protocol_encoder.OutputAudio(samples=samples)
+            if audio_pkt:
                 if not self.playing_audio:
                     self.playing_audio = True
             else:
-                pkt = protocol_encoder.NextFrame()
+                audio_pkt = protocol_encoder.NextFrame()
                 if self.playing_audio:
                     self.playing_audio = False
                     self.cli.conn.post_event(event.EvtAudioCompleted, self.cli)
-            self.cli.conn.send(pkt)
+            self.cli.conn.send(audio_pkt)
 
-            if image:
-                pkt = protocol_encoder.DisplayImage(image=image)
-                self.cli.conn.send(pkt)
-                self.last_image = pkt
+            if image_pkt:
+                self.cli.conn.send(image_pkt)
+                self.last_image_pkt = image_pkt
             else:
                 # If not refreshed, the robot stops displaying image after 30 s.
-                self.cli.conn.send(self.last_image)
+                self.cli.conn.send(self.last_image_pkt)
+
+            if pkts:
+                for pkt in pkts:
+                    self.cli.conn.send(pkt)
 
             num_audio_frames += 1
 
@@ -121,12 +147,15 @@ class AnimationController:
 
         logger.debug("Animation controller stopped...")
 
-    def play_audio(self, sample_list: List[bytes]) -> None:
-        self.queue.put_audio(sample_list)
+    def play_audio(self, pkts: List[protocol_encoder.OutputAudio]) -> None:
+        self.queue.put_audio(pkts)
 
-    def display_image(self, buf: bytes) -> None:
-        self.queue.put_image(buf)
+    def display_image(self, pkt: protocol_encoder.DisplayImage) -> None:
+        self.queue.put_image(pkt)
 
-    def play_anim(self, ppclip: anim.PreprocessedClip) -> None:
-        # TODO: See anim.PreprocessedClip.play()
-        pass
+    def play_anim_frame(
+            self,
+            audio_pkt: Optional[protocol_encoder.OutputAudio],
+            image_pkt: Optional[protocol_encoder.DisplayImage],
+            pkts: Optional[Iterable[protocol_encoder.Packet]]) -> None:
+        self.queue.put_anim_frame(audio_pkt, image_pkt, pkts)

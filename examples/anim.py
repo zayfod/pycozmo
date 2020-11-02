@@ -19,6 +19,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
 
     # Play an animation.
     cli.play_anim("anim_launch_wakeup_01")
+    cli.wait_for(pycozmo.event.EvtAnimationCompleted)
 
 
 pycozmo.run_program(pycozmo_program)

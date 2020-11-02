@@ -131,26 +131,6 @@ class PreprocessedClip(object):
         ppclip = cls(keyframes=keyframes)
         return ppclip
 
-    def play(self, cli):
-        cli.conn.send(protocol_encoder.StartAnimation(anim_id=1))
-
-        frames = list(sorted(self.keyframes.keys()))
-        num_frames = len(frames)
-        for i in range(num_frames):
-            keyframe = self.keyframes[frames[i]]
-            for action in keyframe:
-                if isinstance(action, protocol_encoder.Packet):
-                    cli.conn.send(action)
-
-            # Play keyframe
-            cli.conn.send(protocol_encoder.NextFrame())
-
-            if i < num_frames - 1:
-                delay_ms = (frames[i + 1] - frames[i]) / 1000.0
-                time.sleep(delay_ms)
-
-        cli.conn.send(protocol_encoder.EndAnimation())
-
 
 class LightAnimation:
     # TODO: create play method for light animations
