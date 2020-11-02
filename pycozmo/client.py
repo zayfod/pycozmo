@@ -430,6 +430,14 @@ class Client(event.Dispatcher):
         pkt = protocol_encoder.SetHeadLight(enable=enable)
         self.conn.send(pkt)
 
+    def enable_camera(self, enable: bool = True, color: bool = False) -> None:
+        """ Enable or disable camera image streaming in color or grayscale. """
+        image_send_mode = protocol_encoder.ImageSendMode.Stream if enable else protocol_encoder.ImageSendMode.Off
+        pkt = protocol_encoder.EnableCamera(image_send_mode=image_send_mode)
+        self.conn.send(pkt)
+        pkt = protocol_encoder.EnableColorImages(enable=color)
+        self.conn.send(pkt)
+
     def clear_screen(self) -> None:
         pkt = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
         self.anim_controller.display_image(pkt)
@@ -513,6 +521,11 @@ class Client(event.Dispatcher):
     @property
     def anim_names(self) -> set:
         return self.get_anim_names()
+
+    def set_volume(self, level: int) -> None:
+        """ Set audio output volume to a level in the range 0-65535. """
+        pkt = protocol_encoder.SetRobotVolume(level=level)
+        self.conn.send(pkt)
 
     def play_audio(self, fspec: str) -> None:
         pkts = audio.load_wav(fspec)

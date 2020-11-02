@@ -28,8 +28,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
     cli.add_handler(pycozmo.event.EvtNewRawCameraImage, on_camera_image)
 
     # Enable camera.
-    pkt = pycozmo.protocol_encoder.EnableCamera()
-    cli.conn.send(pkt)
+    cli.enable_camera()
 
     # Run with 14 FPS. This is the frame rate of the robot camera.
     timer = pycozmo.util.FPSTimer(14)
