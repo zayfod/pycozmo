@@ -190,7 +190,7 @@ resolution is 128x32.
 
 The Cozmo protocol uses a special run-length encoding to compress images.
 
-Display and audio are synchronized by the `NextFrame` message. 
+Display and audio are synchronized by audio messages (`OutputAudio` and `OutputSilence`). 
 
 `AnimationState` message which can be enabled using the `EnableAnimationState` message provide statistics on display
 usage.

@@ -136,7 +136,7 @@ class AnimationController:
                 if not self.playing_audio:
                     self.playing_audio = True
             else:
-                audio_pkt = protocol_encoder.NextFrame()
+                audio_pkt = protocol_encoder.OutputSilence()
                 if self.playing_audio:
                     self.playing_audio = False
                     self.cli.conn.post_event(event.EvtAudioCompleted, self.cli)

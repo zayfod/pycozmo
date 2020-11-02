@@ -134,7 +134,7 @@ ID                 Min     Max      Name
 0x81	     	    12	   144	*	NvStorageOp                   
 0x8d	     	     0	     0		                              
 0x8e	     	   744	   744		OutputAudio                   
-0x8f	     	     0	     0		NextFrame                     
+0x8f	     	     0	     0		OutputSilence                     
 0x93	     	     3	     3		                              
 0x94	     	     3	     3		                              
 0x97	     	     4	   188	*	DisplayImage                  

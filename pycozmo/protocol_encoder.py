@@ -3361,7 +3361,7 @@ class OutputAudio(Packet):
             samples=samples)
 
 
-class NextFrame(Packet):
+class OutputSilence(Packet):
 
     __slots__ = (
     )
@@ -7026,7 +7026,7 @@ PACKETS_BY_ID = {
     0x81: NvStorageOp,  # 129
     0x8d: AbortAnimation,  # 141
     0x8e: OutputAudio,  # 142
-    0x8f: NextFrame,  # 143
+    0x8f: OutputSilence,  # 143
     0x91: RecordHeading,  # 145
     0x92: TurnToRecordedHeading,  # 146
     0x93: AnimHead,  # 147
@@ -7089,6 +7089,7 @@ PACKETS_BY_GROUP = {
     "audio": {
         0x64,  # SetRobotVolume
         0x8e,  # OutputAudio
+        0x8f,  # OutputSilence
     },
     "camera": {
         0x0b,  # SetHeadLight
@@ -7100,7 +7101,6 @@ PACKETS_BY_GROUP = {
         0xb0,  # DebugData
     },
     "display": {
-        0x8f,  # NextFrame
         0x97,  # DisplayImage
     },
     "firmware": {

@@ -412,7 +412,7 @@ PROTOCOL = Protocol(
         Command(0x8e, "OutputAudio", group="audio", arguments=[
             FArrayArgument("samples", length=744),
         ]),
-        Command(0x8f, "NextFrame", group="display"),
+        Command(0x8f, "OutputSilence", group="audio"),
         Command(0x91, "RecordHeading", group="anim"),
         Command(0x92, "TurnToRecordedHeading", group="anim"),
         Command(0x93, "AnimHead", group="anim", arguments=[
