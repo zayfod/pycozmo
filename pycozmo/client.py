@@ -1,6 +1,6 @@
 """
 
-Cozmo protocol client.
+Cozmo protocol client and high-level API.
 
 """
 
@@ -39,6 +39,7 @@ __all__ = [
 
 
 class Client(event.Dispatcher):
+    """ Cozmo protocol client and high-level API class. """
 
     def __init__(self,
                  robot_addr: Optional[Tuple[str, int]] = None,

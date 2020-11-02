@@ -1,6 +1,6 @@
 """
 
-Exceptions declaration.
+Exception declarations.
 
 """
 

@@ -1,3 +1,8 @@
+"""
+
+Animation controller for audio, image, and animation playback.
+
+"""
 
 from typing import List, Tuple, Any, Optional, Iterable
 from threading import Thread, Lock
@@ -11,6 +16,7 @@ from . import event
 
 
 class AnimationQueue:
+    """ Synchronized animation queue class. """
 
     MAXLEN = 4500   # ~2.5 min of frames
 
@@ -66,6 +72,7 @@ class AnimationQueue:
 
 
 class AnimationController:
+    """ Animation controller class. """
 
     def __init__(self, cli):
         self.cli = cli

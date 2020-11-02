@@ -1,6 +1,6 @@
 """
 
-Emotion classes.
+Emotion representation and reading.
 
 """
 

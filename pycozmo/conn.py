@@ -1,6 +1,6 @@
 """
 
-Cozmo protocol connection.
+Cozmo protocol low-level client and server connection.
 
 """
 
@@ -40,6 +40,7 @@ SERVER_ADDR = ("127.0.0.1", 5551)
 
 
 class SendThread(Thread):
+    """ Cozmo protocol connection send thread. """
 
     COLLECT_INTERVAL = 1/30 / 3
     ACK_TIMEOUT = 3 * 1/30
@@ -195,6 +196,7 @@ class SendThread(Thread):
 
 
 class ReceiveThread(Thread):
+    """ Cozmo protocol connection receive thread. """
 
     def __init__(self,
                  sock: socket.socket,
@@ -332,6 +334,7 @@ class ReceiveThread(Thread):
 
 
 class Connection(Thread, event.Dispatcher):
+    """ Cozmo protocol low-level connection implementing bot client and server sides. """
 
     IDLE = 1
     CONNECTING = 2

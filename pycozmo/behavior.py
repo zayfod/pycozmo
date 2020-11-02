@@ -1,6 +1,6 @@
 """
 
-Behavior classes.
+Behavior representation and reading.
 
 """
 

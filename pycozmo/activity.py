@@ -1,6 +1,6 @@
 """
 
-Activity classes.
+Activity representation and reading.
 
 """
 

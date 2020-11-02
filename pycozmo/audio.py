@@ -25,6 +25,7 @@ MULAW_BIAS = 132
 
 
 def load_wav(filename: str) -> List[protocol_encoder.OutputAudio]:
+    """ Load a WAVE file into a list of OutputAudio packets. """
     with wave.open(filename, "r") as w:
         sampwidth = w.getsampwidth()
         framerate = w.getframerate()
@@ -47,6 +48,7 @@ def load_wav(filename: str) -> List[protocol_encoder.OutputAudio]:
 
 
 def bytes_to_cozmo(byte_string: bytes, rate_correction: int, channels: int) -> bytearray:
+    """ Convert a 744 sample, 16-bit audio frame into a U-law encoded frame. """
     out = bytearray(744)
     n = channels * rate_correction
     bs = struct.unpack('{}h'.format(int(len(byte_string) / 2)), byte_string)[0::n]

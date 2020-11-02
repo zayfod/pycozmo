@@ -1,6 +1,6 @@
 """
 
-AudioKinetic WWave exceptions.
+AudioKinetic WWise exceptions.
 
 """
 

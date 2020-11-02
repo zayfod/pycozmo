@@ -1,6 +1,6 @@
 """
 
-Brain class.
+Brain class - high level behavior and emotion engine.
 
 """
 

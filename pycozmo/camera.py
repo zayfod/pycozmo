@@ -113,6 +113,7 @@ def minicolor_to_jpeg(minicolor, width, height):
 
 
 def mini_to_jpeg_helper(mini, width, height, header):
+    """ Low-level mini*ToJpeg format to normal JPEG format conversion. """
     buffer_in = mini.tolist()
     curr_len = len(mini)
 

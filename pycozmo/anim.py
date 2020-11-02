@@ -1,6 +1,6 @@
 """
 
-Animation clip preprocessing and playback.
+Animation clip representation, reading, and preprocessing.
 
 """
 

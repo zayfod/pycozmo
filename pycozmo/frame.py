@@ -1,6 +1,6 @@
 """
 
-Cozmo protocol frame.
+Cozmo protocol frame representation and encoding and decoding.
 
 """
 
