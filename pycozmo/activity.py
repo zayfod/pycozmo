@@ -468,8 +468,11 @@ def load_activities(resource_dir: str) -> Dict[str, Activity]:
 
     start_time = time.perf_counter()
 
-    activity_folders = [os.path.join('cozmo_resources', 'config', 'engine', 'behaviorSystem', 'activities_config.json'),
-                        os.path.join('cozmo_resources', 'config', 'engine', 'behaviorSystem', 'activities')]
+    activity_folders = [
+        os.path.join('cozmo_resources', 'config', 'engine', 'behaviorSystem', 'activities_config.json'),
+        os.path.join('cozmo_resources', 'config', 'engine', 'behaviorSystem', 'behavior_system_config.json'),
+        os.path.join('cozmo_resources', 'config', 'engine', 'behaviorSystem', 'activities')
+    ]
     activity_files = get_json_files(resource_dir, activity_folders)
 
     activities = {}

@@ -70,6 +70,12 @@ class AnimationQueue:
 
         return audio_pkt, image_pkt, pkts
 
+    def clear(self):
+        with self.lock:
+            self.audio_queue.clear()
+            self.image_queue.clear()
+            self.pkt_queue.clear()
+
 
 class AnimationController:
     """ Animation controller class. """
@@ -178,3 +184,8 @@ class AnimationController:
             image_pkt: Optional[protocol_encoder.DisplayImage],
             pkts: Optional[Iterable[protocol_encoder.Packet]]) -> None:
         self.queue.put_anim_frame(audio_pkt, image_pkt, pkts)
+
+    def cancel_anim(self):
+        self.queue.clear()
+        pkt = protocol_encoder.EndAnimation()
+        self.cli.conn.send(pkt)

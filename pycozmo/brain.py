@@ -4,11 +4,13 @@ Brain class - high level behavior and emotion engine.
 
 """
 
+from typing import Optional
 from threading import Thread
 from queue import Queue, Empty
 import time
 
-from . import logger, logger_reaction, logger_behavior, logger_animation
+from . import logger, logger_reaction, logger_behavior
+from . import client
 from . import event
 from . import emotions
 from . import behavior
@@ -26,7 +28,7 @@ __all__ = [
 class Brain:
     """ Cozmo robot brain class. """
 
-    def __init__(self, cli):
+    def __init__(self, cli: client.Client):
         super().__init__()
 
         self.cli = cli
@@ -36,14 +38,14 @@ class Brain:
         start_time = time.perf_counter()
         resource_dir = str(util.get_cozmo_asset_dir())
         self.activities = activity.load_activities(resource_dir)
-        self.behaviors = behavior.load_behaviors(resource_dir)
+        self.behaviors = behavior.load_behaviors(resource_dir, self.cli)
         self.reaction_trigger_beahvior_map = behavior.load_reaction_trigger_behavior_map(resource_dir)
-        self.animation_groups = anim.load_animation_groups(resource_dir)    # TODO: Move to Client?
         self.emotion_types = emotions.load_emotion_types(resource_dir)
         self.emotion_events = emotions.load_emotion_events(resource_dir)
-        self.cli.load_anims(str(util.get_cozmo_anim_dir()))
+        self.cli.load_anims()
         logger.info("Loaded resources in {:.02f} s.".format(time.perf_counter() - start_time))
 
+        self.cli.add_handler(event.EvtBehaviorDone, self.on_behavior_done)
         self.cli.add_handler(event.EvtCliffDetectedChange, self.on_cliff_detected)
         self.cli.add_handler(event.EvtRobotOrientationChange, self.on_robot_orientation_change)
         self.cli.add_handler(event.EvtRobotPickedUpChange, self.on_robot_picked_up_change)
@@ -58,12 +60,18 @@ class Brain:
         self.reaction_thread = Thread(daemon=True, name="ReactionThread", target=self.reaction_thread_run)
         self.heartbeat_thread = Thread(daemon=True, name="HeartbeatThread", target=self.heartbeat_thread_run)
 
+        # Current activity
+        self.activity = self.activities["Freeplay"]
+        # Current behavior
+        self.behavior = None    # type: Optional[behavior.Behavior]
+
     def start(self):
         # Connect to robot
         self.reaction_thread.start()
         self.heartbeat_thread.start()
 
-        # TODO: Enable camera
+        # TODO: Enable stop on cliff.
+        # TODO: Enable camera.
 
     def stop(self):
         # Disconnect from robot
@@ -71,33 +79,41 @@ class Brain:
         self.heartbeat_thread.join()
         self.reaction_thread.join()
 
-    def on_cliff_detected(self, cli, state: bool) -> None:
+    def on_behavior_done(self, cli: client.Client) -> None:
+        if self.behavior:
+            logger_reaction.info("Done.")
+            self.deactivate_behavior()
+
+    def on_cliff_detected(self, cli: client.Client, state: bool) -> None:
         if state:
             self.post_reaction("CliffDetected")
 
-    def on_robot_orientation_change(self, cli, orientation: robot.RobotOrientation) -> None:
-        if orientation == robot.RobotOrientation.ON_THREADS:
-            self.post_reaction("ReturnedToTreads")
-        elif orientation == robot.RobotOrientation.ON_BACK:
-            self.post_reaction("RobotOnBack")
-        elif orientation == robot.RobotOrientation.ON_FACE:
-            self.post_reaction("RobotOnFace")
-        elif orientation == robot.RobotOrientation.ON_LEFT_SIDE or orientation == robot.RobotOrientation.ON_RIGHT_SIDE:
-            self.post_reaction("RobotOnSide")
+    def on_robot_orientation_change(self, cli: client.Client, orientation: robot.RobotOrientation) -> None:
+        # FIXME: These are not working well at present.
+        # if orientation == robot.RobotOrientation.ON_THREADS:
+        #     self.post_reaction("ReturnedToTreads")
+        # elif orientation == robot.RobotOrientation.ON_BACK:
+        #     self.post_reaction("RobotOnBack")
+        # elif orientation == robot.RobotOrientation.ON_FACE:
+        #     self.post_reaction("RobotOnFace")
+        # elif orientation == robot.RobotOrientation.ON_LEFT_SIDE or \
+        #         orientation == robot.RobotOrientation.ON_RIGHT_SIDE:
+        #     self.post_reaction("RobotOnSide")
+        pass
 
-    def on_robot_picked_up_change(self, cli, state: bool) -> None:
+    def on_robot_picked_up_change(self, cli: client.Client, state: bool) -> None:
         if state:
             self.post_reaction("RobotPickedUp")
 
-    def on_robot_falling_change(self, cli, state: bool):
+    def on_robot_falling_change(self, cli: client.Client, state: bool):
         if state:
             self.post_reaction("RobotFalling")
 
-    def on_robot_on_charger_change(self, cli, state: bool) -> None:
+    def on_robot_on_charger_change(self, cli: client.Client, state: bool) -> None:
         if state:
             self.post_reaction("PlacedOnCharger")
 
-    def on_camera_image(self, cli, new_im) -> None:
+    def on_camera_image(self, cli: client.Client, new_im) -> None:
         """ Process images, coming from the robot camera. """
         # TODO: See cozmo_resources/config/engine/vision_config.json
         # TODO: motion detection
@@ -146,23 +162,21 @@ class Brain:
             logger_reaction.error("Failed to find reaction for {}.".format(reaction_trigger))
 
     def activate_behavior(self, behavior_id: str) -> None:
-        logger_behavior.info("Activating {}".format(behavior_id))
         behavior = self.behaviors.get(behavior_id)
         if behavior:
-            self.play_anim_group(behavior.id)
+            self.deactivate_behavior()
+            logger_behavior.info("Activating {}".format(behavior_id))
+            self.behavior = behavior
+            self.cli.activate_behavior(self.behavior)
         else:
             logger_reaction.error("Failed to find behavior {}.".format(behavior_id))
 
-    def play_anim_group(self, anim_group_name: str) -> None:
-        logger_animation.info("Playing animation group {}".format(anim_group_name))
-        animation_group = self.animation_groups.get(anim_group_name)
-        if not animation_group:
-            logger_animation.error("Failed to find animation group {}.".format(anim_group_name))
-            return
-        member = animation_group.choose_member()
-        logger_animation.info("Playing animation {}".format(member.name))
-        self.cli.play_anim(member.name)
-        self.cli.wait_for(event.EvtAnimationCompleted)
+    def deactivate_behavior(self) -> None:
+        if self.behavior:
+            logger_behavior.info("Deactivating {}".format(self.behavior.get_id()))
+            self.cli.deactivate_behavior(self.behavior)
+            self.behavior = None
+            # TODO: Choose behavior from activity?
 
     def heartbeat_thread_run(self) -> None:
         """ Heartbeat thread loop. """

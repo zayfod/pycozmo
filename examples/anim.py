@@ -8,7 +8,7 @@ import pycozmo
 def pycozmo_program(cli: pycozmo.client.Client):
 
     # Load animations - one time.
-    cli.load_anims(str(pycozmo.util.get_cozmo_anim_dir()))
+    cli.load_anims()
 
     # Print the names of all available animations.
     names = cli.get_anim_names()

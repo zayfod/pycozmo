@@ -40,6 +40,8 @@ __all__ = [
     "EvtRobotOrientationChange",
     "EvtAudioCompleted",
     "EvtAnimationCompleted",
+    "EvtReactionTrigger",
+    "EvtBehaviorDone",
 
     "STATUS_EVENTS",
 
@@ -143,14 +145,6 @@ class EvtChargerOOSChange(Event):
     pass
 
 
-class EvtAudioCompleted(Event):
-    pass
-
-
-class EvtAnimationCompleted(Event):
-    pass
-
-
 STATUS_EVENTS = {
     robot.RobotStatusFlag.IS_MOVING: EvtRobotMovingChange,
     robot.RobotStatusFlag.IS_CARRYING_BLOCK: EvtRobotCarryingBlockChange,
@@ -180,6 +174,22 @@ class EvtRobotOrientationChange(Event):
     """ Triggered when the robot orientation changes. """
 
 
+class EvtAudioCompleted(Event):
+    pass
+
+
+class EvtAnimationCompleted(Event):
+    pass
+
+
+class EvtReactionTrigger(Event):
+    pass
+
+
+class EvtBehaviorDone(Event):
+    pass
+
+
 class Dispatcher(object):
     """ Event dispatcher class. """
 
@@ -190,6 +200,12 @@ class Dispatcher(object):
 
     def add_child_dispatcher(self, child):
         self.dispatch_children.append(child)
+
+    def del_child_dispatcher(self, child):
+        try:
+            self.dispatch_children.remove(child)
+        except ValueError:
+            pass
 
     def add_handler(self, event, f, one_shot=False):
         handler = Handler(f, one_shot=one_shot)
