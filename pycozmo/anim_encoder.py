@@ -13,9 +13,11 @@ from abc import ABC
 import os
 import json
 import glob
+import time
 
 import flatbuffers
 
+from . import logger
 from . import CozmoAnim
 
 
@@ -1072,6 +1074,9 @@ class ClipMetadata(object):
 
 def get_clip_metadata(dspec: str) -> Dict[str, ClipMetadata]:
     """ Retrieve clip metadata from animation FlatBuffers .bin files. """
+
+    start_time = time.perf_counter()
+
     res = {}
     # Find all animation files.
     for fspec in glob.glob(os.path.join(dspec, "*.bin")):
@@ -1097,4 +1102,7 @@ def get_clip_metadata(dspec: str) -> Dict[str, ClipMetadata]:
                 fbkfs.RobotAudioKeyFrameLength() > 0,
                 fbkfs.EventKeyFrameLength() > 0)
             res[metadata.name] = metadata
+
+    logger.debug("Loaded {} clip metadata in {:.02f} s.".format(len(res), time.perf_counter() - start_time))
+
     return res

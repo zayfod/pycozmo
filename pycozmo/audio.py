@@ -11,7 +11,9 @@ References:
 from typing import List
 import struct
 import wave
+import time
 
+from . import logger
 from . import protocol_encoder
 
 
@@ -26,6 +28,9 @@ MULAW_BIAS = 132
 
 def load_wav(filename: str) -> List[protocol_encoder.OutputAudio]:
     """ Load a WAVE file into a list of OutputAudio packets. """
+
+    start_time = time.perf_counter()
+
     with wave.open(filename, "r") as w:
         sampwidth = w.getsampwidth()
         framerate = w.getframerate()
@@ -44,7 +49,10 @@ def load_wav(filename: str) -> List[protocol_encoder.OutputAudio]:
             frame_out = bytes_to_cozmo(frame_in, ratediv, channels)
             pkt = protocol_encoder.OutputAudio(samples=frame_out)
             pkts.append(pkt)
-        return pkts
+
+    logger.debug("Loaded WAVE file in {:.02f} s.".format(time.perf_counter() - start_time))
+
+    return pkts
 
 
 def bytes_to_cozmo(byte_string: bytes, rate_correction: int, channels: int) -> bytearray:

@@ -13,7 +13,7 @@ import io
 import numpy as np
 from PIL import Image
 
-from . import logger, logger_robot
+from . import logger, logger_robot, logger_animation
 from . import protocol_encoder
 from . import event
 from . import camera
@@ -94,6 +94,7 @@ class Client(event.Dispatcher):
         self._clips = {}
         self._ppclips = {}
         self._next_anim_id = 1
+        self.animation_groups = {}
 
     def start(self) -> None:
         logger.debug("Starting client...")
@@ -457,6 +458,9 @@ class Client(event.Dispatcher):
             self.clear_screen()
 
     def _load_clips(self, fspec: str) -> None:
+
+        start_time = time.perf_counter()
+
         if fspec.endswith(".bin"):
             clips = anim_encoder.AnimClips.from_fb_file(fspec)
         elif fspec.endswith(".json"):
@@ -466,7 +470,13 @@ class Client(event.Dispatcher):
         for clip in clips.clips:
             self._clips[clip.name] = clip
 
+        logger.debug("Loaded {} in {:.02f} s.".format(fspec, time.perf_counter() - start_time))
+
     def play_anim_ppclip(self, ppclip: anim.PreprocessedClip) -> None:
+
+        # Ensure no other animation is playing.
+        self.cancel_anim()
+
         # Start animation.
         pkt = protocol_encoder.StartAnimation(anim_id=self._next_anim_id)
         self.anim_controller.play_anim_frame(None, None, (pkt, ))
@@ -516,9 +526,25 @@ class Client(event.Dispatcher):
         ppclip = self._ppclips[name]
         self.play_anim_ppclip(ppclip)
 
-    def load_anims(self, dspec: str) -> None:
-        self._clip_metadata = anim_encoder.get_clip_metadata(dspec)
+    def cancel_anim(self) -> None:
+        self.anim_controller.cancel_anim()
+
+    def play_anim_group(self, anim_group_name: str) -> None:
+        logger_animation.info("Playing animation group {}".format(anim_group_name))
+        animation_group = self.animation_groups.get(anim_group_name)
+        if not animation_group:
+            logger_animation.error("Failed to find animation group {}.".format(anim_group_name))
+            return
+        member = animation_group.choose_member()
+        logger_animation.info("Playing animation {}".format(member.name))
+        self.play_anim(member.name)
+
+    def load_anims(self) -> None:
+        anim_dir = str(util.get_cozmo_anim_dir())
+        self._clip_metadata = anim_encoder.get_clip_metadata(anim_dir)
         self._clips = {}
+        resource_dir = str(util.get_cozmo_asset_dir())
+        self.animation_groups = anim.load_animation_groups(resource_dir)
 
     def get_anim_names(self) -> set:
         return set(self._clip_metadata.keys())
@@ -535,3 +561,11 @@ class Client(event.Dispatcher):
     def play_audio(self, fspec: str) -> None:
         pkts = audio.load_wav(fspec)
         self.anim_controller.play_audio(pkts)
+
+    def activate_behavior(self, behavior):
+        self.add_child_dispatcher(behavior)
+        behavior.activate()
+
+    def deactivate_behavior(self, behavior):
+        self.del_child_dispatcher(behavior)
+        behavior.deactivate()

@@ -104,7 +104,6 @@ def load_emotion_types(resource_dir: str) -> Dict[str, EmotionType]:
 
     start_time = time.perf_counter()
 
-    # TODO: Load actionResultEmotionEvents from cozmo_resources/config/engine/mood_config.json.
     json_data = load_json_file(
         os.path.join(resource_dir, 'cozmo_resources', 'config', 'engine', 'mood_config.json'))
 
