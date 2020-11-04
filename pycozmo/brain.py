@@ -72,7 +72,8 @@ class Brain:
         self.reaction_thread.join()
 
     def on_cliff_detected(self, cli, state: bool) -> None:
-        if state:
+        if state and not cli.robot_picked_up \
+           and (int(cli.left_wheel_speed.mmps) != 0 or int(cli.right_wheel_speed.mmps) != 0):
             self.post_reaction("CliffDetected")
 
     def on_robot_orientation_change(self, cli, orientation: robot.RobotOrientation) -> None:

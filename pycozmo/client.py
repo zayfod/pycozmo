@@ -72,6 +72,7 @@ class Client(event.Dispatcher):
         self.gyro = util.Vector3(0.0, 0.0, 0.0)
         self.robot_status = 0
         self.robot_orientation = robot.RobotOrientation.ON_THREADS
+        self.robot_picked_up = False
         # Animation state
         self.num_anim_bytes_played = 0
         self.num_audio_frames_played = 0
@@ -306,8 +307,11 @@ class Client(event.Dispatcher):
 
     def _on_robot_picked_up(self, cli, state):
         del cli
-        if not state:
+        if state:
+            self.robot_picked_up = True
+        else:
             # Robot put down - reset world frame origin.
+            self.robot_picked_up = False
             pkt = protocol_encoder.SetOrigin(
                 pose_frame_id=self.pose_frame_id + 1, pose_origin_id=self.pose.origin_id + 1)
             self.conn.send(pkt)
