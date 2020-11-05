@@ -85,7 +85,7 @@ class Brain:
             self.deactivate_behavior()
 
     def on_cliff_detected(self, cli: client.Client, state: bool) -> None:
-        if state:
+        if state and not cli.robot_picked_up and cli.robot_moving:
             self.post_reaction("CliffDetected")
 
     def on_robot_orientation_change(self, cli: client.Client, orientation: robot.RobotOrientation) -> None:
