@@ -168,10 +168,10 @@ class ProceduralEye(ProceduralBase):
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
     def _render_center_rect(self, draw: ImageDraw, x1: int, y1: int, x2: int, y2: int) -> None:
-        x3 = x1 + int(self.corner_radius * max(self.upper_outer_radius_x, self.lower_outer_radius_x))
-        y3 = y1 + int(self.corner_radius * max(self.upper_outer_radius_y, self.upper_inner_radius_y))
-        x4 = x2 - int(self.corner_radius * max(self.upper_inner_radius_y, self.lower_inner_radius_y))
-        y4 = y2 - int(self.corner_radius * max(self.lower_outer_radius_y, self.lower_inner_radius_y))
+        x3 = x1 + int(self.corner_radius * max(self.upper_outer_radius_x, self.lower_outer_radius_x)) - 2
+        y3 = y1 + int(self.corner_radius * max(self.upper_outer_radius_y, self.upper_inner_radius_y)) - 1
+        x4 = x2 - int(self.corner_radius * max(self.upper_inner_radius_y, self.lower_inner_radius_y)) + 2
+        y4 = y2 - int(self.corner_radius * max(self.lower_outer_radius_y, self.lower_inner_radius_y)) + 1
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
     def _render_lower_inner_pie(self, draw: ImageDraw, x2: int, y2: int) -> None:
@@ -261,8 +261,8 @@ class ProceduralFace(ProceduralBase):
                  height: int = DEFAULT_HEIGHT
                  ):
         super(ProceduralFace, self).__init__(width, height)
-        self.left_eye_offset = -int(self.width / 6)
-        self.right_eye_offset = int(self.width / 6)
+        self.left_eye_offset = -int(self.width / 5)
+        self.right_eye_offset = int(self.width / 5)
         self.center_x = int(center_x)
         self.center_y = int(center_y)
         self.scale_x = float(scale_x)
