@@ -73,6 +73,7 @@ class Client(event.Dispatcher):
         self.robot_status = 0
         self.robot_orientation = robot.RobotOrientation.ON_THREADS
         self.robot_picked_up = False
+        self.robot_moving = False
         # Animation state
         self.num_anim_bytes_played = 0
         self.num_audio_frames_played = 0
@@ -108,6 +109,7 @@ class Client(event.Dispatcher):
         self.add_handler(protocol_encoder.ObjectConnectionState, self._on_object_connection_state)
         self.add_handler(protocol_encoder.DebugData, self._on_debug_data)
         self.add_handler(event.EvtRobotPickedUpChange, self._on_robot_picked_up)
+        self.add_handler(event.EvtRobotWheelsMovingChange, self._on_robot_moving)
         self.conn.start()
 
     def stop(self) -> None:
@@ -316,6 +318,9 @@ class Client(event.Dispatcher):
             pkt = protocol_encoder.SetOrigin(
                 pose_frame_id=self.pose_frame_id + 1, pose_origin_id=self.pose.origin_id + 1)
             self.conn.send(pkt)
+
+    def _on_robot_moving(self, cli, state):
+        self.robot_moving = state
 
     def _on_animation_state(self, cli, pkt: protocol_encoder.AnimationState):
         del cli
