@@ -48,11 +48,9 @@ class PreprocessedClip(object):
 
     @classmethod
     def keyframe_to_im(cls, keyframe) -> Image:
-        face = procedural_face.ProceduralFace(
-            center_x=keyframe.center_x, center_y=keyframe.center_y,
-            scale_x=keyframe.scale_x, scale_y=keyframe.scale_y,
-            angle=keyframe.angle,
-            left_eye=keyframe.left_eye, right_eye=keyframe.right_eye)
+        params = [keyframe.center_x, keyframe.center_y, keyframe.scale_x, keyframe.scale_y, keyframe.angle] + \
+                 keyframe.left_eye + keyframe.right_eye
+        face = procedural_face.ProceduralFace(params)
         im = face.render()
         # The Cozmo protocol expects a 128x32 image, so take only the even lines.
         np_im = np.array(im)
