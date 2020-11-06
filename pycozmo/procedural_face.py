@@ -43,7 +43,7 @@ class ProceduralBase(object):
 class ProceduralLid(ProceduralBase):
 
     def __init__(self,
-                 offset: int = 0,
+                 offset: float = 0.0,
                  angle_offset: float = 0.0,
                  y: float = 0.0,
                  angle: float = 0.0,
@@ -52,7 +52,7 @@ class ProceduralLid(ProceduralBase):
                  height: int = DEFAULT_HEIGHT
                  ):
         super(ProceduralLid, self).__init__(width, height)
-        self.offset = int(offset)
+        self.offset = float(offset)
         self.angle_offset = float(angle_offset)
         self.y = float(y)
         self.angle = float(angle)
@@ -84,17 +84,17 @@ class ProceduralLid(ProceduralBase):
         lid = lid.rotate(self.angle + self.angle_offset, resample=RESAMPLE, expand=0)
 
         # Translate and compose
-        location = ((im.size[0] - lid.size[0]) // 2,
-                    (im.size[1] - lid.size[1]) // 2 + self.offset)
+        location = (int((im.size[0] - lid.size[0]) / 2),
+                    int((im.size[1] - lid.size[1]) / 2 + self.offset))
         im.paste(self.black, location, lid)
 
 
 class ProceduralEye(ProceduralBase):
 
     def __init__(self,
-                 offset: int = 0,
-                 center_x: int = 0,
-                 center_y: int = 0,
+                 offset: float = 0.0,
+                 center_x: float = 0.0,
+                 center_y: float = 0.0,
                  scale_x: float = 1.0,
                  scale_y: float = 1.0,
                  angle: float = 0.0,
@@ -118,9 +118,9 @@ class ProceduralEye(ProceduralBase):
         self.x_factor = 0.55
         self.y_factor = 0.25
         self.corner_radius = (self.width / 20 + self.height / 10)
-        self.offset = int(offset)
-        self.center_x = int(center_x)
-        self.center_y = int(center_y)
+        self.offset = float(offset)
+        self.center_x = float(center_x)
+        self.center_y = float(center_y)
         self.scale_x = float(scale_x)
         self.scale_y = float(scale_y)
         self.angle = float(angle)
@@ -239,8 +239,8 @@ class ProceduralEye(ProceduralBase):
 
         # Translate and compose
         if eye:
-            location = ((im.size[0] - eye.size[0]) // 2 + int(self.center_x * self.x_factor) + self.offset,
-                        (im.size[1] - eye.size[1]) // 2 + int(self.center_y * self.y_factor))
+            location = (int((im.size[0] - eye.size[0]) / 2 + self.center_x * self.x_factor + self.offset),
+                        int((im.size[1] - eye.size[1]) / 2 + self.center_y * self.y_factor))
             im.paste(eye, location, eye)
 
 
@@ -250,8 +250,8 @@ class ProceduralFace(ProceduralBase):
     Y_FACTOR = 0.25
 
     def __init__(self,
-                 center_x: int = 0,
-                 center_y: int = 0,
+                 center_x: float = 0.0,
+                 center_y: float = 0.0,
                  scale_x: float = 1.0,
                  scale_y: float = 1.0,
                  angle: float = 0.0,
@@ -263,8 +263,8 @@ class ProceduralFace(ProceduralBase):
         super(ProceduralFace, self).__init__(width, height)
         self.left_eye_offset = -int(self.width / 5)
         self.right_eye_offset = int(self.width / 5)
-        self.center_x = int(center_x)
-        self.center_y = int(center_y)
+        self.center_x = float(center_x)
+        self.center_y = float(center_y)
         self.scale_x = float(scale_x)
         self.scale_y = float(scale_y)
         self.angle = float(angle)
@@ -328,8 +328,8 @@ class ProceduralFace(ProceduralBase):
 
         # Translate and compose
         if face:
-            location = ((im.size[0] - face.size[0]) // 2 + int(self.center_x * self.X_FACTOR),
-                        (im.size[1] - face.size[1]) // 2 + int(self.center_y * self.Y_FACTOR))
+            location = (int((im.size[0] - face.size[0]) / 2 + self.center_x * self.X_FACTOR),
+                        int((im.size[1] - face.size[1]) / 2 + self.center_y * self.Y_FACTOR))
             im.paste(face, location)
 
         return im
