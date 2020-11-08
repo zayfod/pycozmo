@@ -10,6 +10,7 @@ import pycozmo
 
 def pycozmo_program(cli: pycozmo.client.Client):
 
+    # Raise head.
     angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) / 2.0
     cli.set_head_angle(angle)
     time.sleep(1)

@@ -5,15 +5,20 @@ Cozmo procedural face rendering.
 """
 
 from functools import lru_cache
-from typing import Optional, List
+from typing import Optional, List, Generator
 
 from PIL import Image, ImageDraw
 
 
 __all__ = [
+    "DEFAULT_WIDTH",
+    "DEFAULT_HEIGHT",
+
     "ProceduralLid",
     "ProceduralEye",
     "ProceduralFace",
+
+    "interpolate",
 ]
 
 
@@ -484,3 +489,21 @@ class ProceduralFace(ProceduralBase):
             im.paste(face, location)
 
         return im
+
+
+def interpolate(
+        from_face: ProceduralFace,
+        to_face: ProceduralFace,
+        steps: int) -> Generator[ProceduralFace, None, None]:
+    """ Given two ProceduralFace objects, generate interpolated ProceduralFace objects in a number of steps. """
+    if steps < 2:
+        raise ValueError("At least 2 steps needed for interpolation.")
+    for step in range(steps):
+        x = step / (steps - 1)
+        params = []
+        for i in range(len(from_face.params)):
+            # https://en.wikipedia.org/wiki/Interpolation
+            y = from_face.params[i] + x * (to_face.params[i] - from_face.params[i])
+            params.append(y)
+        face = ProceduralFace(params)
+        yield face

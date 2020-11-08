@@ -9,6 +9,7 @@ pycozmo package
     pycozmo.audiokinetic.soundbank
     pycozmo.audiokinetic.soundbanksinfo
     pycozmo.audiokinetic.wem
+    pycozmo.expressions.expressions
     pycozmo.activity
     pycozmo.anim
     pycozmo.anim_controller

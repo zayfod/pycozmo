@@ -124,7 +124,9 @@ Advanced:
 - [audio.py](examples/audio.py) - demonstrates 22 kHz, 16-bit, mono WAVE file playback through Cozmo's speaker 
 - [nvram.py](examples/nvram.py) - demonstrates reading data from Cozmo's NVRAM (non-volatile memory)
 - [procedural_face.py](examples/procedural_face.py) - demonstrates drawing a procedural face on Cozmo's display
-- [procedural_face_show.py](examples/procedural_face_show.py) - demonstrates generating a procedural face 
+- [procedural_face_show.py](examples/procedural_face_show.py) - demonstrates generating a procedural face
+- [procedural_face_expressions.py](examples/procedural_face_expressions.py) - demonstrates displaying various facial
+    expressions 
 - [anim.py](examples/anim.py) - demonstrates animating Cozmo
 
 

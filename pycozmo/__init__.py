@@ -36,6 +36,7 @@ from . import behavior
 from . import emotions
 from . import brain
 from . import audiokinetic
+from . import expressions
 
 
 __version__ = "0.7.0"
