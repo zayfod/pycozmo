@@ -11,8 +11,10 @@ from collections import deque
 from . import logger
 from . import protocol_encoder
 from . import util
-from . import anim
+from . import robot
 from . import event
+from . import procedural_face
+from . import image_encoder
 
 
 class AnimationQueue:
@@ -85,9 +87,13 @@ class AnimationController:
         self.thread = None
         self.stop_flag = False
         self.queue = AnimationQueue()
-        self.num_audio_frames_played = -1
+        self.num_frames_played = -1
         self.playing_audio = False
+        self.playing_animation = False
         self.last_image_pkt = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
+        self.face_generator = iter(procedural_face.ProceduralFaceGenerator())
+        self.animations_enabled = False
+        self.procedural_face_enabled = False
 
     def _clear_last_image_pkt(self):
         self.last_image_pkt = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
@@ -116,9 +122,10 @@ class AnimationController:
         pass
 
     def _on_animation_started(self, cli, pkt: protocol_encoder.AnimationStarted):
-        pass
+        self.playing_animation = True
 
     def _on_animation_ended(self, cli, pkt: protocol_encoder.AnimationEnded):
+        self.playing_animation = False
         self._clear_last_image_pkt()
         self.cli.conn.post_event(event.EvtAnimationCompleted, self.cli)
 
@@ -131,6 +138,15 @@ class AnimationController:
     def _on_amimating_idle_change(self):
         pass
 
+    def _get_face_image(self):
+        im = next(self.face_generator)
+        if not im:
+            return None
+        encoder = image_encoder.ImageEncoder(im)
+        buf = bytes(encoder.encode())
+        image_pkt = protocol_encoder.DisplayImage(image=buf)
+        return image_pkt
+
     def _run(self):
         logger.debug("Animation controller started...")
 
@@ -138,35 +154,39 @@ class AnimationController:
         pkt = protocol_encoder.EnableAnimationState()
         self.cli.conn.send(pkt)
 
-        num_audio_frames = 0
+        num_frames = 0
 
-        timer = util.FPSTimer(anim.FRAME_RATE)
+        timer = util.FPSTimer(robot.FRAME_RATE)
         while not self.stop_flag:
 
             audio_pkt, image_pkt, pkts = self.queue.get()
 
-            if audio_pkt:
-                if not self.playing_audio:
-                    self.playing_audio = True
-            else:
-                audio_pkt = protocol_encoder.OutputSilence()
-                if self.playing_audio:
-                    self.playing_audio = False
-                    self.cli.conn.post_event(event.EvtAudioCompleted, self.cli)
-            self.cli.conn.send(audio_pkt)
+            if self.animations_enabled:
+                if audio_pkt:
+                    if not self.playing_audio:
+                        self.playing_audio = True
+                else:
+                    audio_pkt = protocol_encoder.OutputSilence()
+                    if self.playing_audio:
+                        self.playing_audio = False
+                        self.cli.conn.post_event(event.EvtAudioCompleted, self.cli)
+                self.cli.conn.send(audio_pkt)
 
-            if image_pkt:
-                self.cli.conn.send(image_pkt)
-                self.last_image_pkt = image_pkt
-            else:
-                # If not refreshed, the robot stops displaying image after 30 s.
-                self.cli.conn.send(self.last_image_pkt)
+                if not image_pkt and self.procedural_face_enabled and not self.playing_animation:
+                    image_pkt = self._get_face_image()
 
-            if pkts:
-                for pkt in pkts:
-                    self.cli.conn.send(pkt)
+                if image_pkt:
+                    self.cli.conn.send(image_pkt)
+                    self.last_image_pkt = image_pkt
+                else:
+                    # If not refreshed, the robot stops displaying an image after 30 s.
+                    self.cli.conn.send(self.last_image_pkt)
 
-            num_audio_frames += 1
+                if pkts:
+                    for pkt in pkts:
+                        self.cli.conn.send(pkt)
+
+                num_frames += 1
 
             timer.sleep()
 
@@ -189,3 +209,9 @@ class AnimationController:
         self.queue.clear()
         pkt = protocol_encoder.EndAnimation()
         self.cli.conn.send(pkt)
+
+    def enable_animations(self, enabled: bool = True) -> None:
+        self.animations_enabled = bool(enabled)
+
+    def enable_procedural_face(self, enabled: bool = True) -> None:
+        self.procedural_face_enabled = bool(enabled)

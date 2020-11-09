@@ -33,4 +33,4 @@ def pycozmo_program(cli: pycozmo.client.Client):
 
 
 # Change the robot log level to DEBUG to see robot debug messages related to events.
-pycozmo.run_program(pycozmo_program, robot_log_level="INFO")
+pycozmo.run_program(pycozmo_program, enable_animations=False, robot_log_level="INFO")

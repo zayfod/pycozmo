@@ -43,7 +43,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
         dot = Dot(x, y, vx, vy)
         dots.append(dot)
 
-    timer = pycozmo.util.FPSTimer(pycozmo.anim.FRAME_RATE)
+    timer = pycozmo.util.FPSTimer(pycozmo.robot.FRAME_RATE)
     while True:
 
         # Create a blank image.
@@ -77,4 +77,4 @@ def pycozmo_program(cli: pycozmo.client.Client):
         timer.sleep()
 
 
-pycozmo.run_program(pycozmo_program)
+pycozmo.run_program(pycozmo_program, enable_procedural_face=False)

@@ -46,7 +46,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
     # Base face expression.
     base_face = pycozmo.expressions.Neutral()
 
-    rate = pycozmo.anim.FRAME_RATE
+    rate = pycozmo.robot.FRAME_RATE
     timer = pycozmo.util.FPSTimer(rate)
     for expression in expressions:
 
@@ -79,4 +79,4 @@ def pycozmo_program(cli: pycozmo.client.Client):
                 timer.sleep()
 
 
-pycozmo.run_program(pycozmo_program)
+pycozmo.run_program(pycozmo_program, enable_procedural_face=False)

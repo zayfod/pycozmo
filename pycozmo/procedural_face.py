@@ -6,8 +6,12 @@ Cozmo procedural face rendering.
 
 from functools import lru_cache
 from typing import Optional, List, Generator
+import random
 
 from PIL import Image, ImageDraw
+import numpy as np
+
+from . import robot
 
 
 __all__ = [
@@ -507,3 +511,93 @@ def interpolate(
             params.append(y)
         face = ProceduralFace(params)
         yield face
+
+
+class ProceduralFaceGenerator:
+    """ A generator class to produce eye animation. """
+
+    MAX_X_OFFSET = 10.0
+    MAX_Y_OFFSET = 50.0
+    MAX_EYE_SCALE = 0.25
+    SACCADE_STEPS = robot.FRAME_RATE // 5
+
+    MAX_PAUSE_DURATION = robot.FRAME_RATE * 2
+
+    BLINK_FREQUENCY = 4
+    BLINK_SCALE_X = 15.0
+    BLINK_SCALE_Y = 0.01
+    BLINK_STEPS = robot.FRAME_RATE // 6
+
+    def __init__(self):
+        self.current_face = ProceduralFace()
+
+    def _blink(self):
+        """ Generate blink animation. """
+
+        # Create blink face at the position of the current face.
+        target_face = ProceduralFace(list(self.current_face.params))
+        target_face.scale_y = self.BLINK_SCALE_Y
+        target_face.eyes[0].scale_x = self.BLINK_SCALE_X
+        target_face.eyes[1].scale_x = self.BLINK_SCALE_X
+        target_face.eyes[0].scale_y = self.BLINK_SCALE_Y
+        target_face.eyes[1].scale_y = self.BLINK_SCALE_Y
+
+        # Transition form current face to blink face.
+        face_generator = interpolate(self.current_face, target_face, self.BLINK_STEPS)
+        for face in face_generator:
+            im = face.render()
+            np_im = np.array(im)
+            np_im2 = np_im[::2]
+            im2 = Image.fromarray(np_im2)
+            yield im2
+
+        # Transition form blink face back to the current face.
+        face_generator = interpolate(target_face, self.current_face, self.BLINK_STEPS)
+        for face in face_generator:
+            im = face.render()
+            np_im = np.array(im)
+            np_im2 = np_im[::2]
+            im2 = Image.fromarray(np_im2)
+            yield im2
+
+    def __iter__(self):
+        """ Generate eye animation. """
+
+        while True:
+
+            target_face = ProceduralFace()
+
+            # Place the face randomly to simulate - eye saccades.
+            target_face.center_x = random.uniform(-self.MAX_X_OFFSET, self.MAX_X_OFFSET)
+            target_face.center_y = random.uniform(-self.MAX_Y_OFFSET, self.MAX_Y_OFFSET)
+
+            # Bring eyes closer.
+            target_face.eyes[0].center_x += 12
+            target_face.eyes[1].center_x -= 12
+
+            # Scale the eyes proportional to the offset from the center.
+            scale_1 = 1.0 + abs(self.current_face.center_x) * self.MAX_EYE_SCALE / self.MAX_X_OFFSET
+            scale_2 = 1.0 - abs(self.current_face.center_x) * self.MAX_EYE_SCALE / self.MAX_Y_OFFSET
+            i = 0 if target_face.center_x < 0 else 1
+            target_face.eyes[i].scale_x = scale_1
+            target_face.eyes[i].scale_y = scale_1 - 0.2
+            target_face.eyes[1 - i].scale_x = scale_2
+            target_face.eyes[1 - i].scale_y = scale_2 - 0.2
+
+            face_generator = interpolate(self.current_face, target_face, self.SACCADE_STEPS)
+            for face in face_generator:
+                im = face.render()
+                np_im = np.array(im)
+                np_im2 = np_im[::2]
+                im2 = Image.fromarray(np_im2)
+                yield im2
+
+            self.current_face = target_face
+
+            # Random pause.
+            for i in range(random.randint(0, self.MAX_PAUSE_DURATION)):
+                yield None
+
+            # Random blink
+            if random.randint(0, self.BLINK_FREQUENCY) == 0:
+                yield from self._blink()

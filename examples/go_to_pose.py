@@ -9,4 +9,4 @@ def pycozmo_program(cli: pycozmo.client.Client):
     cli.go_to_pose(target, relative_to_robot=True)
 
 
-pycozmo.run_program(pycozmo_program, log_level="DEBUG")
+pycozmo.run_program(pycozmo_program, enable_animations=False, log_level="DEBUG")

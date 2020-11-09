@@ -13,19 +13,15 @@ from . import util
 __all__ = [
     "MIN_HEAD_ANGLE",
     "MAX_HEAD_ANGLE",
-
     "MIN_LIFT_HEIGHT",
     "MAX_LIFT_HEIGHT",
-
     "LIFT_ARM_LENGTH",
     "LIFT_PIVOT_HEIGHT",
-
     "MIN_LIFT_ANGLE",
     "MAX_LIFT_ANGLE",
-
     "MAX_WHEEL_SPEED",
-
     "TRACK_WIDTH",
+    "FRAME_RATE",
 
     "RobotStatusFlag",
     "RobotStatusFlagNames",
@@ -59,6 +55,9 @@ MAX_WHEEL_SPEED = util.Speed(mmps=200.0)
 
 #: Track width.
 TRACK_WIDTH = util.Distance(mm=45.0)
+
+#: Number of frames per second for animations.
+FRAME_RATE = 30
 
 
 class RobotStatusFlag(object):

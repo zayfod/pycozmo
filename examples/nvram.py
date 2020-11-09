@@ -29,4 +29,4 @@ def pycozmo_program(cli: pycozmo.client.Client):
     e.wait(timeout=20.0)
 
 
-pycozmo.run_program(pycozmo_program, log_level="DEBUG")
+pycozmo.run_program(pycozmo_program, enable_animations=False, log_level="DEBUG")

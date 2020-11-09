@@ -58,12 +58,18 @@ def run_program(
         protocol_log_level: Optional[str] = None,
         protocol_log_messages: Optional[list] = None,
         robot_log_level: Optional[str] = None,
-        auto_initialize: bool = True) -> None:
+        auto_initialize: bool = True,
+        enable_animations: bool = True,
+        enable_procedural_face: bool = True) -> None:
 
     setup_basic_logging(log_level=log_level, protocol_log_level=protocol_log_level, robot_log_level=robot_log_level)
 
     try:
-        cli = client.Client(protocol_log_messages=protocol_log_messages, auto_initialize=auto_initialize)
+        cli = client.Client(
+            protocol_log_messages=protocol_log_messages,
+            auto_initialize=auto_initialize,
+            enable_animations=enable_animations,
+            enable_procedural_face=enable_procedural_face)
         cli.start()
         cli.connect()
         cli.wait_for_robot()

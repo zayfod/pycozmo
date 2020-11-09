@@ -15,7 +15,6 @@ from . import event
 from . import emotions
 from . import behavior
 from . import activity
-from . import anim
 from . import util
 from . import robot
 
@@ -181,8 +180,12 @@ class Brain:
     def heartbeat_thread_run(self) -> None:
         """ Heartbeat thread loop. """
 
+        # Raise head.
+        angle = (robot.MAX_HEAD_ANGLE.radians - robot.MIN_HEAD_ANGLE.radians) / 2.0
+        self.cli.set_head_angle(angle)
+
         cnt = 1
-        timer = util.FPSTimer(anim.FRAME_RATE)
+        timer = util.FPSTimer(robot.FRAME_RATE)
         while not self.stop_flag:
 
             self.update_emotion_types()

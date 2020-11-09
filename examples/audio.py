@@ -12,4 +12,4 @@ def pycozmo_program(cli: pycozmo.client.Client):
     cli.wait_for(pycozmo.event.EvtAudioCompleted)
 
 
-pycozmo.run_program(pycozmo_program)
+pycozmo.run_program(pycozmo_program, enable_procedural_face=False)

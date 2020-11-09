@@ -24,8 +24,6 @@ from .json_loader import find_file, load_json_file
 
 
 __all__ = [
-    "FRAME_RATE",
-
     "PreprocessedClip",
     "AnimationGroupMember",
     "AnimationGroup",
@@ -34,10 +32,6 @@ __all__ = [
     "load_cube_animation_groups",
     "load_backpack_light_patterns"
 ]
-
-
-# Number of frames per second for animations.
-FRAME_RATE = 30
 
 
 class PreprocessedClip(object):

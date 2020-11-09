@@ -27,4 +27,4 @@ def pycozmo_program(cli: pycozmo.client.Client):
     cli.display_image(im2, 5.0)
 
 
-pycozmo.run_program(pycozmo_program)
+pycozmo.run_program(pycozmo_program, enable_procedural_face=False)

@@ -40,4 +40,4 @@ def pycozmo_program(cli: pycozmo.client.Client):
         time.sleep(2)
 
 
-pycozmo.run_program(pycozmo_program)
+pycozmo.run_program(pycozmo_program, enable_procedural_face=False)

@@ -44,7 +44,9 @@ class Client(event.Dispatcher):
     def __init__(self,
                  robot_addr: Optional[Tuple[str, int]] = None,
                  protocol_log_messages: Optional[list] = None,
-                 auto_initialize: bool = True) -> None:
+                 auto_initialize: bool = True,
+                 enable_animations: bool = True,
+                 enable_procedural_face: bool = True) -> None:
         super().__init__()
         # Whether to automatically initialize the robot when connection is established.
         self.auto_initialize = bool(auto_initialize)
@@ -52,6 +54,8 @@ class Client(event.Dispatcher):
         self.conn = conn.Connection(robot_addr, protocol_log_messages)
         self.conn.add_child_dispatcher(self)
         self.anim_controller = anim_controller.AnimationController(self)
+        self.anim_controller.enable_animations(auto_initialize and enable_animations)
+        self.anim_controller.enable_procedural_face(auto_initialize and enable_animations and enable_procedural_face)
 
         self.serial_number_head = None
         self.robot_fw_sig = None
@@ -574,3 +578,9 @@ class Client(event.Dispatcher):
     def deactivate_behavior(self, behavior):
         self.del_child_dispatcher(behavior)
         behavior.deactivate()
+
+    def enable_animations(self, enabled: bool = True) -> None:
+        self.anim_controller.enable_animations(enabled)
+
+    def enable_procedural_face(self, enabled: bool = True) -> None:
+        self.anim_controller.enable_procedural_face(enabled)
