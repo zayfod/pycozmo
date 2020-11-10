@@ -58,6 +58,7 @@ class SendThread(Thread):
         self.queue = Queue()
         self.last_ack = 0
         self.last_ack_time = 0
+        self.disconnected = False
         # Number of packets received from the application layer.
         self.outgoing_packets = 0
         # Number of packets sent (includes resends).
@@ -88,12 +89,16 @@ class SendThread(Thread):
             is_full = self.window.is_full()
         pkts = []
         start = time.perf_counter()
-        while not is_full and time.perf_counter() - start < self.COLLECT_INTERVAL:
+        while not is_full and not self.disconnected and time.perf_counter() - start < self.COLLECT_INTERVAL:
             try:
                 pkt = self.queue.get(timeout=self.COLLECT_INTERVAL)
             except Empty:
                 continue
             self.outgoing_packets += 1
+            if not self.server and isinstance(pkt, protocol_encoder.Disconnect):
+                # The robot does not expect packets after a disconnect. Sometimes this may lead to reboots or revert
+                #   to factory firmware.  Ensure this does not happen.
+                self.disconnected = True
             if not self.server and isinstance(pkt, protocol_encoder.Ping):
                 self._send_ping(pkt)
             else:
