@@ -780,7 +780,8 @@ def frange(start, stop, step):
 
 def get_pycozmo_dir() -> pathlib.Path:
     """ Get PyCozmo directory. """
-    default_dir = pathlib.Path.home() / ".pycozmo"
+    pycozmo_dir = ".pycozmo" if os.name != "nt" else "pycozmo"
+    default_dir = pathlib.Path.home() / pycozmo_dir
     path = pathlib.Path(os.environ.get('PYCOZMO_DIR', str(default_dir)))
     return path
 
