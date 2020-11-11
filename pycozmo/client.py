@@ -549,6 +549,7 @@ class Client(event.Dispatcher):
         self.play_anim(member.name)
 
     def load_anims(self) -> None:
+        util.check_assets()
         anim_dir = str(util.get_cozmo_anim_dir())
         self._clip_metadata = anim_encoder.get_clip_metadata(anim_dir)
         self._clips = {}

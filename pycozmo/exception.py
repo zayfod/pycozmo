@@ -36,3 +36,7 @@ class NoSpace(PyCozmoException):
 
 class InvalidOperation(PyCozmoException):
     """ Invalid operation. """
+
+
+class ResourcesNotFound(PyCozmoException):
+    """ Cozmo resources not found. """

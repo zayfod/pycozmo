@@ -10,6 +10,8 @@ import pathlib
 import math
 import time
 
+from . import exception
+
 
 __all__ = [
     'Angle',
@@ -27,6 +29,7 @@ __all__ = [
     'frange',
     'get_pycozmo_dir',
     'get_cozmo_asset_dir',
+    'check_assets',
     'get_cozmo_anim_dir',
 ]
 
@@ -786,6 +789,14 @@ def get_cozmo_asset_dir() -> pathlib.Path:
     """ Get Cozmo asset directory. """
     path = get_pycozmo_dir() / "assets"
     return path
+
+
+def check_assets() -> None:
+    """ Check whether Cozmo assets are available. """
+    asset_dir = get_cozmo_asset_dir()
+    if not os.path.exists(asset_dir / "resources.txt"):
+        raise exception.ResourcesNotFound(
+            f"Resources not found in {asset_dir} . Try running 'pycozmo_resources.py download'.")
 
 
 def get_cozmo_anim_dir() -> pathlib.Path:

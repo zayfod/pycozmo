@@ -62,5 +62,7 @@ setuptools.setup(
         "tools/pycozmo_dump.py",
         "tools/pycozmo_replay.py",
         "tools/pycozmo_update.py",
+        "tools/pycozmo_resources.py",
+        "tools/pycozmo_app.py",
     ],
 )

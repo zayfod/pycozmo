@@ -34,6 +34,8 @@ class Brain:
 
         # TODO: Load configuration. See cozmo_resources/config/features.json
 
+        util.check_assets()
+
         start_time = time.perf_counter()
         resource_dir = str(util.get_cozmo_asset_dir())
         self.activities = activity.load_activities(resource_dir)
@@ -71,6 +73,7 @@ class Brain:
 
         # TODO: Enable stop on cliff.
         # TODO: Enable camera.
+        # TODO: Drive off if on charger.
 
     def stop(self):
         # Disconnect from robot
@@ -156,6 +159,7 @@ class Brain:
         logger_reaction.info("Processing {}".format(reaction_trigger))
         reaction = self.reaction_trigger_beahvior_map.get(reaction_trigger)
         if reaction:
+            # TODO: Handle should_resume_last.
             self.activate_behavior(reaction.behavior_id)
         else:
             logger_reaction.error("Failed to find reaction for {}.".format(reaction_trigger))
@@ -189,7 +193,7 @@ class Brain:
         while not self.stop_flag:
 
             self.update_emotion_types()
-            self.update_face()
+            # TODO: Timers
 
             if cnt % (30 * 60) == 0:
                 self.post_reaction("Hiccup")
@@ -201,7 +205,3 @@ class Brain:
         """ Update emotion types from their decay functions. """
         for emotion_type in self.emotion_types.values():
             emotion_type.update()
-
-    def update_face(self) -> None:
-        """ Procedural face update when an animation is not running. """
-        pass
