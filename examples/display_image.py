@@ -8,7 +8,7 @@ from PIL import Image
 import pycozmo
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
+with pycozmo.connect() as cli:
 
     # Raise head.
     angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) / 2.0
@@ -21,6 +21,3 @@ def pycozmo_program(cli: pycozmo.client.Client):
     im = im.convert('1')
 
     cli.display_image(im, 5.0)
-
-
-pycozmo.run_program(pycozmo_program)

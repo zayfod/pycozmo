@@ -6,27 +6,22 @@ import pycozmo
 
 
 def on_robot_state(cli, pkt: pycozmo.protocol_encoder.RobotState):
-    del cli
     print("Battery level: {:.01f} V".format(pkt.battery_voltage))
 
 
 def on_robot_poked(cli, pkt: pycozmo.protocol_encoder.RobotPoked):
-    del cli, pkt
     print("Robot poked.")
 
 
 def on_robot_falling_started(cli, pkt: pycozmo.protocol_encoder.FallingStarted):
-    del cli, pkt
     print("Started falling.")
 
 
 def on_robot_falling_stopped(cli, pkt: pycozmo.protocol_encoder.FallingStopped):
-    del cli
     print("Falling stopped after {} ms. Impact intensity {:.01f}.".format(pkt.duration_ms, pkt.impact_intensity))
 
 
 def on_button_pressed(cli, pkt: pycozmo.protocol_encoder.ButtonPressed):
-    del cli
     if pkt.pressed:
         print("Button pressed.")
     else:
@@ -34,7 +29,6 @@ def on_button_pressed(cli, pkt: pycozmo.protocol_encoder.ButtonPressed):
 
 
 def on_robot_picked_up(cli, state: bool):
-    del cli
     if state:
         print("Picked up.")
     else:
@@ -42,7 +36,6 @@ def on_robot_picked_up(cli, state: bool):
 
 
 def on_robot_charging(cli, state: bool):
-    del cli
     if state:
         print("Started charging.")
     else:
@@ -50,13 +43,11 @@ def on_robot_charging(cli, state: bool):
 
 
 def on_cliff_detected(cli, state: bool):
-    del cli
     if state:
         print("Cliff detected.")
 
 
 def on_robot_wheels_moving(cli, state: bool):
-    del cli
     if state:
         print("Started moving.")
     else:
@@ -64,7 +55,6 @@ def on_robot_wheels_moving(cli, state: bool):
 
 
 def on_robot_orientation_change(cli, orientation: pycozmo.robot.RobotOrientation):
-    del cli
     if orientation == pycozmo.robot.RobotOrientation.ON_THREADS:
         print("On threads.")
     elif orientation == pycozmo.robot.RobotOrientation.ON_BACK:
@@ -77,7 +67,8 @@ def on_robot_orientation_change(cli, orientation: pycozmo.robot.RobotOrientation
         print("On right side.")
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
+# Change the robot log level to DEBUG to see robot debug messages related to events.
+with pycozmo.connect(enable_animations=False, robot_log_level="INFO") as cli:
 
     cli.add_handler(pycozmo.protocol_encoder.RobotState, on_robot_state, one_shot=True)
     cli.add_handler(pycozmo.protocol_encoder.RobotPoked, on_robot_poked)
@@ -91,11 +82,4 @@ def pycozmo_program(cli: pycozmo.client.Client):
     cli.add_handler(pycozmo.event.EvtRobotOrientationChange, on_robot_orientation_change)
 
     while True:
-        try:
-            time.sleep(0.1)
-        except KeyboardInterrupt:
-            break
-
-
-# Change the robot log level to DEBUG to see robot debug messages related to events.
-pycozmo.run_program(pycozmo_program, enable_animations=False, robot_log_level="INFO")
+        time.sleep(0.1)

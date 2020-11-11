@@ -51,7 +51,7 @@ __all__ = [
     "Client",
 
     "setup_basic_logging",
-    "run_program",
+    "connect",
 ]
 
 if sys.version_info < (3, 6, 0):

@@ -13,21 +13,19 @@ e = Event()
 
 
 def on_path_following_event(cli, pkt: pycozmo.protocol_encoder.PathFollowingEvent):
-    del cli
     print(pkt.event_type)
     if pkt.event_type != pycozmo.protocol_encoder.PathEventType.PATH_STARTED:
         e.set()
 
 
 def on_robot_pathing_change(cli, state: bool):
-    del cli
     if state:
         print("Started pathing.")
     else:
         print("Stopped pathing.")
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
+with pycozmo.connect() as cli:
 
     cli.add_handler(pycozmo.protocol_encoder.PathFollowingEvent, on_path_following_event)
     cli.add_handler(pycozmo.event.EvtRobotPathingChange, on_robot_pathing_change)
@@ -63,6 +61,3 @@ def pycozmo_program(cli: pycozmo.client.Client):
     cli.conn.send(pkt)
 
     e.wait(timeout=30.0)
-
-
-pycozmo.run_program(pycozmo_program, enable_animations=False, log_level="DEBUG")

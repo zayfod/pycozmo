@@ -83,7 +83,7 @@ def send_chunk(cli: pycozmo.client.Client, f) -> True:
     return res
 
 
-def update(cli: pycozmo.client.Client):
+def update(cli: pycozmo.client.Client) -> None:
     """ Perform robot OTA firmware update. """
 
     # Register for FirmwareUpdateResult packets.
@@ -173,11 +173,8 @@ def main():
 
     # Update robot.
     try:
-        pycozmo.run_program(
-            update,
-            protocol_log_level="INFO",
-            robot_log_level="DEBUG",
-            auto_initialize=False)
+        with pycozmo.connect(protocol_log_level="INFO", robot_log_level="DEBUG", auto_initialize=False) as cli:
+            update(cli)
     except Exception as e:
         print("ERROR: {}".format(e))
         sys.exit(3)

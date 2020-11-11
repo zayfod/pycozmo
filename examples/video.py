@@ -10,15 +10,11 @@ last_im = None
 
 def on_camera_image(cli, new_im):
     """ Handle new images, coming from the robot. """
-    del cli
-
     global last_im
     last_im = new_im
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
-
-    global last_im
+with pycozmo.connect(enable_procedural_face=False) as cli:
 
     # Raise head.
     angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) / 2.0
@@ -52,6 +48,3 @@ def pycozmo_program(cli: pycozmo.client.Client):
             cli.display_image(im2)
 
         timer.sleep()
-
-
-pycozmo.run_program(pycozmo_program, enable_procedural_face=False, protocol_log_level="INFO", robot_log_level="DEBUG")

@@ -22,11 +22,9 @@ Basic:
 import time
 import pycozmo
 
-def pycozmo_program(cli):
+with pycozmo.connect() as cli:
     cli.set_head_angle(angle=0.6)
     time.sleep(1)
-
-pycozmo.run_program(pycozmo_program)
 ```
 
 Advanced:

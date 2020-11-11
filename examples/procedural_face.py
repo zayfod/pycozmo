@@ -8,7 +8,7 @@ import numpy as np
 import pycozmo
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
+with pycozmo.connect(enable_procedural_face=False) as cli:
 
     # Raise head.
     angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) / 2.0
@@ -25,6 +25,3 @@ def pycozmo_program(cli: pycozmo.client.Client):
     im2 = Image.fromarray(np_im2)
 
     cli.display_image(im2, 5.0)
-
-
-pycozmo.run_program(pycozmo_program, enable_procedural_face=False)

@@ -26,7 +26,7 @@ class Dot(object):
         self.vy = vy
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
+with pycozmo.connect(enable_procedural_face=False) as cli:
 
     # Raise head.
     angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) / 2.0
@@ -75,6 +75,3 @@ def pycozmo_program(cli: pycozmo.client.Client):
 
         # Run with 30 FPS.
         timer.sleep()
-
-
-pycozmo.run_program(pycozmo_program, enable_procedural_face=False)

@@ -5,7 +5,8 @@ import time
 import pycozmo
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
+with pycozmo.connect() as cli:
+
     print("Waiting for cube...")
     cube_factory_id = None
     while not cube_factory_id:
@@ -38,6 +39,3 @@ def pycozmo_program(cli: pycozmo.client.Client):
         cli.conn.send(pkt)
 
         time.sleep(2)
-
-
-pycozmo.run_program(pycozmo_program, enable_procedural_face=False)
