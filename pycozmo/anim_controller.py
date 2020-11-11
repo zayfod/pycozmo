@@ -112,8 +112,9 @@ class AnimationController:
 
     def stop(self):
         self.stop_flag = True
-        self.thread.join()
-        self.thread = None
+        if self.thread:
+            self.thread.join()
+            self.thread = None
 
     def _on_animation_state(self, cli, pkt: protocol_encoder.AnimationState):
         self.num_audio_frames_played = pkt.num_audio_frames_played

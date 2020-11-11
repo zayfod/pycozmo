@@ -78,8 +78,12 @@ class Brain:
     def stop(self):
         # Disconnect from robot
         self.stop_flag = True
-        self.heartbeat_thread.join()
-        self.reaction_thread.join()
+        if self.heartbeat_thread:
+            self.heartbeat_thread.join()
+            self.heartbeat_thread = None
+        if self.reaction_thread:
+            self.reaction_thread.join()
+            self.reaction_thread = None
 
     def on_behavior_done(self, cli: client.Client) -> None:
         if self.behavior:
