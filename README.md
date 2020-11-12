@@ -113,7 +113,8 @@ If you have ideas for other functionality [share them via GitHub](https://github
 Tools
 -----
 
-- [pycozmo_app.py](tools/pycozmo_app.py) - an alternative Cozmo application, implementing off-board functions.
+- [pycozmo_app.py](tools/pycozmo_app.py) - an alternative Cozmo application, implementing off-board functions
+    ([video](https://youtu.be/gMEc6RzIm-E)).
 - [pycozmo_dump.py](tools/pycozmo_dump.py) - a command-line application that can read and annotate Cozmo communication
     from [pcap files](https://en.wikipedia.org/wiki/Pcap) or capture it live using
     [pypcap](https://github.com/pynetwork/pypcap).
@@ -144,6 +145,7 @@ Basic:
 Advanced:
 - [display_lines.py](examples/display_lines.py) - demonstrates 2D graphics, using
     [PIL.ImageDraw](https://pillow.readthedocs.io/en/stable/reference/ImageDraw.html) on Cozmo's display
+    ([video](https://youtu.be/ZT81PlmItrU))
 - [rc.py](examples/rc.py) - turns Cozmo into an RC tank that can be driven with an XBox 360 Wireless controller or 
     Logitech Gamepad F310
 - [video.py](examples/video.py) - demonstrates visualizing video captured from the camera back on display
@@ -155,7 +157,7 @@ Advanced:
 - [procedural_face.py](examples/procedural_face.py) - demonstrates drawing a procedural face on Cozmo's display
 - [procedural_face_show.py](examples/procedural_face_show.py) - demonstrates generating a procedural face
 - [procedural_face_expressions.py](examples/procedural_face_expressions.py) - demonstrates displaying various facial
-    expressions 
+    expressions ([video](https://youtu.be/UyMTEOG2FyU))
 - [anim.py](examples/anim.py) - demonstrates animating Cozmo
 
 
