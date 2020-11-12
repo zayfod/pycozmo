@@ -36,7 +36,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     version=get_package_variable("__version__"),
     license="MIT",
-    description="A pure-Python Cozmo robot communication library.",
+    description="A pure-Python communication library, alternative SDK, and application for the Cozmo robot.",
     long_description=get_readme(),
     long_description_content_type="text/markdown",
     author="Kaloyan Tenchov",

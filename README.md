@@ -2,13 +2,14 @@
 PyCozmo
 =======
 
-`PyCozmo` is a pure-Python [Cozmo robot](https://www.digitaldreamlabs.com/pages/cozmo) communication library.
-It allows controlling a Cozmo robot directly, without having to go through a mobile device, running the Cozmo app.
+`PyCozmo` is a pure-Python communication library, alternative SDK, and application for the
+[Cozmo robot](https://www.digitaldreamlabs.com/pages/cozmo) . It allows controlling a Cozmo robot directly, without
+having to go through a mobile device, running the Cozmo app.
 
 The library is loosely based on the [Anki Cozmo Python SDK](https://github.com/anki/cozmo-python-sdk) and the
 [cozmoclad](https://pypi.org/project/cozmoclad/) ("C-Like Abstract Data") library.
 
-This project is a tool for exploring the hardware and software of Digital Dream Labs (originally Anki) Cozmo robot.
+This project is a tool for exploring the hardware and software of the Digital Dream Labs (originally Anki) Cozmo robot.
 It is unstable and heavily under development.
 
 
@@ -16,6 +17,7 @@ Usage
 -----
 
 Basic:
+
 ```python
 import time
 import pycozmo
@@ -26,6 +28,7 @@ with pycozmo.connect() as cli:
 ```
 
 Advanced:
+
 ```python
 import pycozmo
 
@@ -58,36 +61,59 @@ Sensors:
 - [x] Battery voltage
 - [x] Cube battery voltage
 - [x] Cube accelerometers
+- [x] Backpack button (v1.5 hardware and newer)
 
 Actuators:
 - [x] Wheel motors
 - [x] Head motor
 - [x] Lift motor
-- [x] Backpack LEDs
-- [x] IR LED
 - [x] OLED display
 - [x] Speaker
+- [x] Backpack LEDs
+- [x] IR LED
 - [x] Cube LEDs
-- [x] Platform LEDs
+- [x] Platform LEDs (when available)
 
-Communication:
+On-board functions (see [docs/functions.md](docs/functions.md) for details:
 - [x] Wi-Fi AP
 - [x] Bluetooth LE
-
-Storage:
-- [x] NVRAM
-- [x] Firmware update
-
-Functions:
 - [x] Localization
 - [x] Path tracking
-- [x] Procedural faces
-- [x] Animations from FlatBuffers .bin files
+- [x] NV RAM storage
+- [x] Over-the-air (OTA) firmware updates
+
+Off-board functions (see [docs/offboard_functions.md](docs/offboard_functions.md) for details:
+- [x] Procedural face generation
+- [x] Cozmo animations from FlatBuffers .bin files
+- [ ] Personality engine - work in progress
+- [ ] Cozmo behaviors - work in progress
+- [ ] Motion detection
+- [ ] Object (cube and platform) detection
+- [ ] Cube marker recognition
+- [ ] Face detection
+- [ ] Face recognition
+- [ ] Facial expression estimation
+- [ ] Pet detection
+- [ ] Camera calibration
+- [ ] Navigation map building
+- [ ] Text-to-speech
+- [ ] Songs
+
+Extra off-board functions:
+- [ ] Vector animations from FlatBuffers .bin files
+- [ ] Vector behaviors
+- [ ] ArUco marker recognition
+- [ ] Cozmo and Vector robot detection
+- [ ] Drivable area estimation
+- [ ] Voice commands
+
+If you have ideas for other functionality [share them via GitHub](https://github.com/zayfod/pycozmo/issues).
 
 
 Tools
 -----
 
+- [pycozmo_app.py](tools/pycozmo_app.py) - an alternative Cozmo application, implementing off-board functions.
 - [pycozmo_dump.py](tools/pycozmo_dump.py) - a command-line application that can read and annotate Cozmo communication
     from [pcap files](https://en.wikipedia.org/wiki/Pcap) or capture it live using
     [pypcap](https://github.com/pynetwork/pypcap).
@@ -95,7 +121,12 @@ Tools
     Cozmo.
 - [pycozmo_anim.py](tools/pycozmo_anim.py) - a tool for examining and manipulating animation files.
 - [pycozmo_update.py](tools/pycozmo_update.py) - a tool for over-the-air (OTA) updates of Cozmo's firmware.
+- [pycozmo_protocol_generator.py](tools/pycozmo_protocol_generator.py) - a tool for generating Cozmo protocol encoder
+    code.
 
+**Note**: PyCozmo and `pycozmo_protocol_generator.py` in particular could be used as a base for creating a Cozmo protocol
+encoder code generator for languages other than Python (C/C++, Java, etc.).
+ 
 
 Examples
 --------
@@ -171,24 +202,10 @@ the low-level UDP communication with Cozmo.
 ```
 
 
-Limitations
------------
-
-- some high-level Cozmo SDK features are implemented in the Cozmo app and have no equivalent in PyCozmo, today:
-    - personality engine
-    - behaviors
-    - motion detection
-    - face detection
-    - facial expression estimation
-    - text-to-speech
-    - songs
-- there is no Wi-Fi control. The library assumes a Wi-Fi connection to Cozmo, established in advance.
-
-
 Requirements
 ------------
 
-- Python 3.6.0 or newer
+- [Python](https://www.python.org/downloads/) 3.6.0 or newer
 - [Pillow](https://github.com/python-pillow/Pillow) 6.0.0 - Python image library
 - [FlatBuffers](https://github.com/google/flatbuffers) - serialization library
 - [dpkt](https://github.com/kbandla/dpkt) - TCP/IP packet parsing library 
@@ -201,6 +218,8 @@ Using pip:
 
 ```
 pip install --user pycozmo
+
+pycozmo_resources.py download
 ```
 
 From source:
@@ -209,6 +228,8 @@ From source:
 git clone https://github.com/zayfod/pycozmo.git
 cd pycozmo
 python setup.py install --user
+
+pycozmo_resources.py download
 ```
 
 From source, for development:
@@ -218,6 +239,8 @@ git clone git@github.com:zayfod/pycozmo.git
 cd pycozmo
 python setup.py develop --user
 pip install --user -r requirements-dev.txt
+
+pycozmo_resources.py download
 ```
 
  
