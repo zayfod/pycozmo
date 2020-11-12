@@ -50,8 +50,7 @@ The body controller is in charge of:
 The body is powered on with the `Enable` message. The `BodyInfo` message communicates the body hardware version, 
 serial number, and color.
 
-Cubes are communicated with over Bluetooth LE and provide access to:
-
+Cubes use Nordic nRF31512 MCU. They are communicated with over Bluetooth LE and provide access to:
 - LEDs
 - Accelerometers
 - Battery voltage
@@ -89,7 +88,7 @@ See `examples/backpack_lights.py` for example usage.
 Backpack Button
 ---------------
 
-Newer Cozmo models have a backpack button. 
+v1.5 and newer Cozmo models have a backpack button. 
 
 Button press and release events are communicated by the `ButtonPressed` message. It is immediately available on
 connection and does not require `Enable` to be used.
@@ -190,7 +189,7 @@ resolution is 128x32.
 
 The Cozmo protocol uses a special run-length encoding to compress images.
 
-Display and audio are synchronized by the `NextFrame` message. 
+Display and audio are synchronized by audio messages (`OutputAudio` and `OutputSilence`). 
 
 `AnimationState` message which can be enabled using the `EnableAnimationState` message provide statistics on display
 usage.
@@ -402,30 +401,6 @@ messages:
 
 Animations
 ----------
-
-Cozmo "animations" allow animating the following aspects of the robot: 
-
-- body movement
-- lift movement
-- head movement
-- face images
-- backpack LED animations
-- audio
-
-Cozmo animations are series of keyframes, stored in binary files in [FlatBuffers](https://google.github.io/flatbuffers/)
-format. Animation data structures are declared in FlatBuffers format in
-`files/cozmo/cozmo_resources/config/cozmo_anim.fbs` . The animation files are available in the following directory of
-the Android mobile application:
-
-`files/cozmo/cozmo_resources/assets/animations`
-
-Face images are generated procedurally. They are described by 37 parameters - 5 for the face and 19 for each eye.
-The face as a whole can be translated, scaled, and rotated. Each individual eye can be translated, scaled, and rotated.
-The 4 corners of each eye can be controlled and each eye has a lower and upper lid.  
-
-The following presentation from Anki provides some background information on Cozmo animations:
-
-[Cozmo: Animation pipeline for a physical robot](https://www.gdcvault.com/play/1024488/Cozmo-Animation-Pipeline-for-a)
 
 To play animations, `AnimationState` message have to be enabled first using the `EnableAnimationState` message.
 

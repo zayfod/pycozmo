@@ -83,11 +83,11 @@ def send_chunk(cli: pycozmo.client.Client, f) -> True:
     return res
 
 
-def update(cli: pycozmo.client.Client):
+def update(cli: pycozmo.client.Client) -> None:
     """ Perform robot OTA firmware update. """
 
     # Register for FirmwareUpdateResult packets.
-    cli.conn.add_handler(pycozmo.protocol_encoder.FirmwareUpdateResult, on_firmware_update_result)
+    cli.add_handler(pycozmo.protocol_encoder.FirmwareUpdateResult, on_firmware_update_result)
 
     safe_size = os.path.getsize(safe_file)
     total_chunks = math.ceil(safe_size / 1024)
@@ -118,7 +118,7 @@ def update(cli: pycozmo.client.Client):
     cli.conn.send(pkt)
     wait_for_result(10.0)
     if last_status != 10:
-        raise UpdateError("Failed to receive update confirmation.")
+        raise UpdateError("Failed to receive update confirmation (status {}).".format(last_status))
 
     time.sleep(15.0)
 
@@ -173,11 +173,8 @@ def main():
 
     # Update robot.
     try:
-        pycozmo.run_program(
-            update,
-            protocol_log_level="INFO",
-            robot_log_level="DEBUG",
-            auto_initialize=False)
+        with pycozmo.connect(protocol_log_level="INFO", robot_log_level="DEBUG", auto_initialize=False) as cli:
+            update(cli)
     except Exception as e:
         print("ERROR: {}".format(e))
         sys.exit(3)

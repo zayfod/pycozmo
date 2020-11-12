@@ -13,6 +13,8 @@ __all__ = [
     "MAX_FRAME_PAYLOAD_SIZE",
     "FIRST_ROBOT_PACKET_ID",
     "FIRMWARE_VERSION",
+    "MAX_SEQ",
+    "OOB_SEQ",
 
     "PROTOCOL",
 ]
@@ -27,6 +29,11 @@ MAX_FRAME_PAYLOAD_SIZE = MAX_FRAME_SIZE - MIN_FRAME_SIZE
 FIRST_ROBOT_PACKET_ID = 0xb0
 
 FIRMWARE_VERSION = 2381
+
+# Maximum used sequence ID.
+MAX_SEQ = 0xfffe
+# Sequence ID used for out-of-band packets.
+OOB_SEQ = 0xffff
 
 
 BODY_COLOR = Enum("BodyColor", members=[
@@ -405,7 +412,7 @@ PROTOCOL = Protocol(
         Command(0x8e, "OutputAudio", group="audio", arguments=[
             FArrayArgument("samples", length=744),
         ]),
-        Command(0x8f, "NextFrame", group="display"),
+        Command(0x8f, "OutputSilence", group="audio"),
         Command(0x91, "RecordHeading", group="anim"),
         Command(0x92, "TurnToRecordedHeading", group="anim"),
         Command(0x93, "AnimHead", group="anim", arguments=[

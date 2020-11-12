@@ -5,7 +5,12 @@ Utility classes and functions.
 """
 
 from typing import Optional, Tuple
+import os
+import pathlib
 import math
+import time
+
+from . import exception
 
 
 __all__ = [
@@ -17,10 +22,15 @@ __all__ = [
     'Matrix44',
     'Quaternion',
     'Pose',
+    'FPSTimer',
 
     'hex_dump',
     'hex_load',
     'frange',
+    'get_pycozmo_dir',
+    'get_cozmo_asset_dir',
+    'check_assets',
+    'get_cozmo_anim_dir',
 ]
 
 
@@ -766,3 +776,60 @@ def frange(start, stop, step):
     while x < stop:
         yield x
         x += step
+
+
+def get_pycozmo_dir() -> pathlib.Path:
+    """ Get PyCozmo directory. """
+    pycozmo_dir = ".pycozmo" if os.name != "nt" else "pycozmo"
+    default_dir = pathlib.Path.home() / pycozmo_dir
+    path = pathlib.Path(os.environ.get('PYCOZMO_DIR', str(default_dir)))
+    return path
+
+
+def get_cozmo_asset_dir() -> pathlib.Path:
+    """ Get Cozmo asset directory. """
+    path = get_pycozmo_dir() / "assets"
+    return path
+
+
+def check_assets() -> None:
+    """ Check whether Cozmo assets are available. """
+    asset_dir = get_cozmo_asset_dir()
+    if not os.path.exists(asset_dir / "resources.txt"):
+        raise exception.ResourcesNotFound(
+            f"Resources not found in {asset_dir} . Try running 'pycozmo_resources.py download'.")
+
+
+def get_cozmo_anim_dir() -> pathlib.Path:
+    """ Get Cozmo animation asset directory. """
+    path = get_cozmo_asset_dir() / "cozmo_resources" / "assets" / "animations"
+    return path
+
+
+class FPSTimer:
+    """ A timer that maintains frame rate by sleeping for a variable amount of time. """
+
+    def __init__(self, fps: int) -> None:
+        if fps <= 0:
+            raise ValueError("Frame rate must be a positive integer.")
+        # Timer period in seconds.
+        self._period = 1.0 / int(fps)
+        # Start time of the last successfully maintained frame sequence.
+        self._start = None
+        # Number of successfully maintained frames.
+        self._frames = 1
+
+    def sleep(self):
+        """ Sleep to maintain the framerate. Should be called at the end of a frame. """
+        now = time.perf_counter()
+        if not self._start:
+            # First call.
+            self._start = now
+        delay = self._start + (self._frames * self._period) - now
+        if delay < 0:
+            # Too long since the last call. Don't sleep at all and reset the frame sequence.
+            self._start = now
+            self._frames = 1
+        else:
+            time.sleep(delay)
+            self._frames += 1

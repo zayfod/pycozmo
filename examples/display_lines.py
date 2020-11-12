@@ -15,7 +15,6 @@ MAX_SPEED = 2
 NUM_DOTS = 3
 DOT_SIZE = 1
 LINE_WIDTH = 1
-DELAY = 1 / 25
 
 
 class Dot(object):
@@ -27,8 +26,9 @@ class Dot(object):
         self.vy = vy
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
+with pycozmo.connect(enable_procedural_face=False) as cli:
 
+    # Raise head.
     angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) / 2.0
     cli.set_head_angle(angle)
     time.sleep(1)
@@ -43,6 +43,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
         dot = Dot(x, y, vx, vy)
         dots.append(dot)
 
+    timer = pycozmo.util.FPSTimer(pycozmo.robot.FRAME_RATE)
     while True:
 
         # Create a blank image.
@@ -70,7 +71,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
                 dot.y = HEIGHT - DOT_SIZE
                 dot.vy = -abs(dot.vy)
 
-        cli.display_image(im, DELAY)
+        cli.display_image(im)
 
-
-pycozmo.run_program(pycozmo_program)
+        # Run with 30 FPS.
+        timer.sleep()

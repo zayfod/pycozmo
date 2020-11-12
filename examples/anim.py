@@ -5,10 +5,10 @@ import time
 import pycozmo
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
+with pycozmo.connect() as cli:
 
     # Load animations - one time.
-    cli.load_anims("com.anki.cozmo/files/cozmo/cozmo_resources/assets/animations/")
+    cli.load_anims()
 
     # Print the names of all available animations.
     names = cli.get_anim_names()
@@ -19,6 +19,4 @@ def pycozmo_program(cli: pycozmo.client.Client):
 
     # Play an animation.
     cli.play_anim("anim_launch_wakeup_01")
-
-
-pycozmo.run_program(pycozmo_program)
+    cli.wait_for(pycozmo.event.EvtAnimationCompleted)

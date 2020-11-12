@@ -5,7 +5,7 @@ import time
 import pycozmo
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
+with pycozmo.connect() as cli:
 
     cli.set_head_angle(pycozmo.MAX_HEAD_ANGLE.radians)
     time.sleep(1)
@@ -16,6 +16,3 @@ def pycozmo_program(cli: pycozmo.client.Client):
     time.sleep(1)
     cli.set_lift_height(pycozmo.MIN_LIFT_HEIGHT.mm)
     time.sleep(1)
-
-
-pycozmo.run_program(pycozmo_program)

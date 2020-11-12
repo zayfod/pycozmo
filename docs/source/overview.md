@@ -4,13 +4,14 @@ Overview
 
 https://github.com/zayfod/pycozmo
 
-`PyCozmo` is a pure-Python [Cozmo robot](https://www.digitaldreamlabs.com/pages/cozmo) communication library.
-It allows controlling a Cozmo robot directly, without having to go through a mobile device, running the Cozmo app.
+`PyCozmo` is a pure-Python communication library, alternative SDK, and application for the
+[Cozmo robot](https://www.digitaldreamlabs.com/pages/cozmo) . It allows controlling a Cozmo robot directly, without
+having to go through a mobile device, running the Cozmo app.
 
 The library is loosely based on the [Anki Cozmo Python SDK](https://github.com/anki/cozmo-python-sdk) and the
 [cozmoclad](https://pypi.org/project/cozmoclad/) ("C-Like Abstract Data") library.
 
-This project is a tool for exploring the hardware and software of Digital Dream Labs (originally Anki) Cozmo robot.
+This project is a tool for exploring the hardware and software of the Digital Dream Labs (originally Anki) Cozmo robot.
 It is unstable and heavily under development.
 
 
@@ -18,18 +19,18 @@ Usage
 -----
 
 Basic:
+
 ```python
 import time
 import pycozmo
 
-def pycozmo_program(cli):
+with pycozmo.connect() as cli:
     cli.set_head_angle(angle=0.6)
     time.sleep(1)
-
-pycozmo.run_program(pycozmo_program)
 ```
 
 Advanced:
+
 ```python
 import pycozmo
 
@@ -67,7 +68,7 @@ the low-level UDP communication with Cozmo.
 Requirements
 ------------
 
-- Python 3.5.4
+- [Python](https://www.python.org/downloads/) 3.6.0 or newer
 - [Pillow](https://github.com/python-pillow/Pillow) 6.0.0 - Python image library
 - [FlatBuffers](https://github.com/google/flatbuffers) - serialization library
 - [dpkt](https://github.com/kbandla/dpkt) - TCP/IP packet parsing library 
@@ -80,6 +81,8 @@ Using pip:
 
 ```
 pip install --user pycozmo
+
+pycozmo_resources.py download
 ```
 
 From source:
@@ -88,6 +91,8 @@ From source:
 git clone https://github.com/zayfod/pycozmo.git
 cd pycozmo
 python setup.py install --user
+
+pycozmo_resources.py download
 ```
 
 From source, for development:
@@ -97,6 +102,8 @@ git clone git@github.com:zayfod/pycozmo.git
 cd pycozmo
 python setup.py develop --user
 pip install --user -r requirements-dev.txt
+
+pycozmo_resources.py download
 ```
 
  

@@ -1,6 +1,23 @@
 Revision History
 ================
 
+v0.8.0 (Nov 12, 2020)
+---------------------
+- New animation controller that synchronizes animations, audio playback, and image displaying.
+- Procedural face generation to bring the roboto to life.
+- Loading of Cozmo resource files - activities, behaviors, emotions, light animations
+    (thanks to Aitor Miguel Blanco / gimait)
+- pycozmo.audiokinetic module for working with Audiokinetic WWise SoundBank files.
+- New tool for managing Cozmo resources - pycozmo_resources.py .
+- Initial Cozmo application with rudimentary reactions and behaviors - pycozmo_app.py .
+- Cozmo protocol client robustness improvements.
+- CLAD encoding optimizations.
+- Cliff detection and procedural face rendering improvements (thanks to Aitor Miguel Blanco / gimait)
+- Replaced pycozmo.run_program() with pycozmo.connect() context manager. 
+- Renamed the NextFrame packet to OutputSilence to better describe its function.
+- Dropped support for Python 3.5 and added support for Python 3.9.
+- Bug fixes and documentation improvements.
+
 v0.7.0 (Sep 26, 2020)
 ---------------------
 - Full robot audio support and a new AudioManager class (thanks to Aitor Miguel Blanco / gimait).  

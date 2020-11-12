@@ -159,6 +159,15 @@ Seen on Cozmo with HW v1.5:
 }
 ```
 
+```json
+{
+    "build": "FACTORY",
+    "version": 10502,
+    "date": "Mon Aug  7 09:21:24 2017",
+    "time": 1502122884
+}
+```
+
 Seen on development Cozmo with HW v1.7:
 
 ```json

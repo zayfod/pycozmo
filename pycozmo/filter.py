@@ -1,6 +1,6 @@
 """
 
-ID filtering.
+ID filtering for logging.
 
 """
 

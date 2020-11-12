@@ -6,7 +6,7 @@ PyCozmo - a pure-Python Cozmo robot communication library.
 
 import sys
 
-from .logging import *
+from .logger import *
 from .run import *
 
 from .frame import Frame
@@ -17,6 +17,7 @@ from .event import *
 
 from . import exception
 from . import util
+from . import window
 from . import protocol_base
 from . import protocol_declaration
 from . import protocol_generator
@@ -30,9 +31,15 @@ from . import anim
 from . import anim_encoder
 from . import image_encoder
 from . import procedural_face
+from . import activity
+from . import behavior
+from . import emotions
+from . import brain
+from . import audiokinetic
+from . import expressions
 
 
-__version__ = "0.7.0"
+__version__ = "0.8.0"
 
 __all__ = [
     "logger",
@@ -44,9 +51,9 @@ __all__ = [
     "Client",
 
     "setup_basic_logging",
-    "run_program",
+    "connect",
 ]
 
-if sys.version_info < (3, 5, 4):
-    sys.exit("ERROR: PyCozmo requires Python 3.5.4 or newer.")
+if sys.version_info < (3, 6, 0):
+    sys.exit("ERROR: PyCozmo requires Python 3.6.0 or newer.")
 del sys

@@ -5,7 +5,8 @@ import time
 import pycozmo
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
+with pycozmo.connect() as cli:
+
     lights = [
         pycozmo.lights.red_light,
         pycozmo.lights.green_light,
@@ -13,9 +14,7 @@ def pycozmo_program(cli: pycozmo.client.Client):
         pycozmo.lights.white_light,
         pycozmo.lights.off_light,
     ]
+
     for light in lights:
         cli.set_all_backpack_lights(light)
         time.sleep(2)
-
-
-pycozmo.run_program(pycozmo_program)

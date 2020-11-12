@@ -3,13 +3,11 @@
 import pycozmo
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
+with pycozmo.connect() as cli:
 
-    pkt = pycozmo.protocol_encoder.SetRobotVolume(50000)
-    cli.conn.send(pkt)
+    # Set volume to ~75%.
+    cli.set_volume(50000)
 
     # A 22 kHz, 16-bit, mono file is required.
-    cli.play_audio("hello.wav").wait_until_complete()
-
-
-pycozmo.run_program(pycozmo_program)
+    cli.play_audio("hello.wav")
+    cli.wait_for(pycozmo.event.EvtAudioCompleted)

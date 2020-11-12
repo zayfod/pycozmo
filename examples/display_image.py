@@ -8,8 +8,9 @@ from PIL import Image
 import pycozmo
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
+with pycozmo.connect() as cli:
 
+    # Raise head.
     angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) / 2.0
     cli.set_head_angle(angle)
     time.sleep(1)
@@ -19,7 +20,4 @@ def pycozmo_program(cli: pycozmo.client.Client):
     # Convert to binary image.
     im = im.convert('1')
 
-    cli.display_image(im, 10)
-
-
-pycozmo.run_program(pycozmo_program)
+    cli.display_image(im, 5.0)

@@ -4,6 +4,7 @@ Robot constants and helper code.
 
 """
 
+import enum
 import math
 
 from . import util
@@ -12,19 +13,15 @@ from . import util
 __all__ = [
     "MIN_HEAD_ANGLE",
     "MAX_HEAD_ANGLE",
-
     "MIN_LIFT_HEIGHT",
     "MAX_LIFT_HEIGHT",
-
     "LIFT_ARM_LENGTH",
     "LIFT_PIVOT_HEIGHT",
-
     "MIN_LIFT_ANGLE",
     "MAX_LIFT_ANGLE",
-
     "MAX_WHEEL_SPEED",
-
     "TRACK_WIDTH",
+    "FRAME_RATE",
 
     "RobotStatusFlag",
     "RobotStatusFlagNames",
@@ -58,6 +55,9 @@ MAX_WHEEL_SPEED = util.Speed(mmps=200.0)
 
 #: Track width.
 TRACK_WIDTH = util.Distance(mm=45.0)
+
+#: Number of frames per second for animations.
+FRAME_RATE = 30
 
 
 class RobotStatusFlag(object):
@@ -101,6 +101,15 @@ RobotStatusFlagNames = {
     RobotStatusFlag.ARE_WHEELS_MOVING: "ARE_WHEELS_MOVING",
     RobotStatusFlag.IS_CHARGER_OOS: "IS_CHARGER_OOS",
 }
+
+
+class RobotOrientation(enum.Enum):
+    """ Robot orientation enumeration. """
+    ON_THREADS = 0
+    ON_BACK = 1
+    ON_FACE = 2
+    ON_LEFT_SIDE = 3
+    ON_RIGHT_SIDE = 4
 
 
 class LiftPosition(object):

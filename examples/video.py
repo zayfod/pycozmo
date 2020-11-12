@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-import time
-
+from PIL import Image
 import pycozmo
 
 
@@ -11,15 +10,11 @@ last_im = None
 
 def on_camera_image(cli, new_im):
     """ Handle new images, coming from the robot. """
-    del cli
-
     global last_im
     last_im = new_im
 
 
-def pycozmo_program(cli: pycozmo.client.Client):
-
-    global last_im
+with pycozmo.connect(enable_procedural_face=False) as cli:
 
     # Raise head.
     angle = (pycozmo.robot.MAX_HEAD_ANGLE.radians - pycozmo.robot.MIN_HEAD_ANGLE.radians) / 2.0
@@ -29,9 +24,10 @@ def pycozmo_program(cli: pycozmo.client.Client):
     cli.add_handler(pycozmo.event.EvtNewRawCameraImage, on_camera_image)
 
     # Enable camera.
-    pkt = pycozmo.protocol_encoder.EnableCamera()
-    cli.conn.send(pkt)
+    cli.enable_camera()
 
+    # Run with 14 FPS. This is the frame rate of the robot camera.
+    timer = pycozmo.util.FPSTimer(14)
     while True:
 
         if last_im:
@@ -39,16 +35,16 @@ def pycozmo_program(cli: pycozmo.client.Client):
             # Get last image.
             im = last_im
 
-            # Resize from 320x240 to 128x32.
-            im = im.resize((128, 32))
+            # Resize from 320x240 to 68x17. Larger image sometime are too big for the robot receive buffer.
+            im = im.resize((68, 17))
             # Convert to binary image.
             im = im.convert('1')
-
+            # Mirror the image.
+            im = im.transpose(Image.FLIP_LEFT_RIGHT)
+            # Construct a 128x32 image that the robot can display.
+            im2 = Image.new("1", (128, 32))
+            im2.paste(im, (30, 7))
             # Display the result image.
-            cli.display_image(im)
+            cli.display_image(im2)
 
-        # Run with 25 FPS.
-        time.sleep(1 / 25)
-
-
-pycozmo.run_program(pycozmo_program, protocol_log_level="INFO", robot_log_level="DEBUG")
+        timer.sleep()

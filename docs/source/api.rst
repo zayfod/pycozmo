@@ -5,12 +5,22 @@ pycozmo package
     :nosignatures:
     :toctree: generated
 
+    pycozmo.audiokinetic.exception
+    pycozmo.audiokinetic.soundbank
+    pycozmo.audiokinetic.soundbanksinfo
+    pycozmo.audiokinetic.wem
+    pycozmo.expressions.expressions
+    pycozmo.activity
     pycozmo.anim
+    pycozmo.anim_controller
     pycozmo.anim_encoder
     pycozmo.audio
+    pycozmo.behavior
+    pycozmo.brain
     pycozmo.camera
     pycozmo.client
     pycozmo.conn
+    pycozmo.emotions
     pycozmo.event
     pycozmo.exception
     pycozmo.filter

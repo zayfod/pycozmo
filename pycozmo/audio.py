@@ -8,91 +8,29 @@ References:
 
 """
 
+from typing import List
 import struct
-import time
 import wave
-from datetime import datetime, timedelta
-from threading import Thread, Lock
+import time
 
-from .conn import ClientConnection
-from .protocol_encoder import OutputAudio
+from . import logger
+from . import protocol_encoder
 
-MIN_WAIT = 0.033
+
+__all__ = [
+    "load_wav",
+]
+
 
 MULAW_MAX = 0x7FFF
 MULAW_BIAS = 132
 
 
-class AudioManager:
-    """
-    This class takes care of reading audio files and generating the OutputAudio messages sent to
-    cozmo.
+def load_wav(filename: str) -> List[protocol_encoder.OutputAudio]:
+    """ Load a WAVE file into a list of OutputAudio packets. """
 
-    The play() method can be used to play an audio file or list of OutputAudio messages.
+    start_time = time.perf_counter()
 
-    Args:
-        conn (ClientConnection): client managing the communication with the robot
-    """
-    def __init__(self, conn: ClientConnection):
-        self.stream = []
-        self._stop = False
-        self.conn = conn
-        self.thread = None
-        self.lock = Lock()
-        self.audio_stream = []
-
-    def start_stream(self):
-        self._stop = False
-        if not self.thread:
-            self.thread = Thread(target=self.run, name=__class__.__name__)
-            self.thread.start()
-
-    def stop(self) -> None:
-        self._stop = True
-        if self.thread:
-            self.thread.join()
-            self.thread = None
-        self.audio_stream = []
-
-    def run(self) -> None:
-        while len(self.audio_stream) > 0 and not self._stop:
-            next_trigger_time = datetime.now() + timedelta(seconds=MIN_WAIT)
-            with self.lock:
-                pkt = self.audio_stream.pop(0)
-            self.conn.send(pkt)
-
-            resting_time = (next_trigger_time - datetime.now()).total_seconds()
-            if resting_time > 0:
-                time.sleep(resting_time)
-
-    def play(self, audio):
-        if audio and isinstance(audio, list) and isinstance(audio[0], OutputAudio):
-            with self.lock:
-                self.audio_stream += audio
-        else:
-            raise TypeError('Invalid audio: {}'.format(type(audio)))
-
-        self.start_stream()
-
-    def play_file(self, filename):
-        if isinstance(filename, str):
-            if '.wav' == filename[-4:]:
-                self.play(load_wav(filename))
-            else:
-                raise ValueError(
-                    'Only WAV files are supported, invalid audio file: {}'.format(filename))
-        else:
-            raise TypeError('Expected path to audio file, invalid argument: {}'.format(filename))
-
-        self.start_stream()
-
-    def wait_until_complete(self):
-        if self.thread:
-            self.thread.join()
-            self.thread = None
-
-
-def load_wav(filename: str):
     with wave.open(filename, "r") as w:
         sampwidth = w.getsampwidth()
         framerate = w.getframerate()
@@ -102,25 +40,28 @@ def load_wav(filename: str):
 
         ratediv = 2 if framerate == 48000 else 1
         channels = w.getnchannels()
-        done = False
-        pkt_list = []
+        pkts = []
 
-        while not done:
-            frame = bytes_to_cozmo(w.readframes(744 * ratediv), ratediv, channels)
-            if len(frame) < 744:
-                frame += [0] * (744 - len(frame))
-                done = True
+        while True:
+            frame_in = w.readframes(744 * ratediv)
+            if not frame_in:
+                break
+            frame_out = bytes_to_cozmo(frame_in, ratediv, channels)
+            pkt = protocol_encoder.OutputAudio(samples=frame_out)
+            pkts.append(pkt)
 
-            pkt_list.append(OutputAudio(frame))
-        return pkt_list
+    logger.debug("Loaded WAVE file in {:.02f} s.".format(time.perf_counter() - start_time))
+
+    return pkts
 
 
-def bytes_to_cozmo(byte_string: bytes, rate_correction: int, channels: int):
-    out = []
+def bytes_to_cozmo(byte_string: bytes, rate_correction: int, channels: int) -> bytearray:
+    """ Convert a 744 sample, 16-bit audio frame into a U-law encoded frame. """
+    out = bytearray(744)
     n = channels * rate_correction
     bs = struct.unpack('{}h'.format(int(len(byte_string) / 2)), byte_string)[0::n]
-    for s in bs:
-        out.append(u_law_encoding(s))
+    for i, s in enumerate(bs):
+        out[i] = u_law_encoding(s)
     return out
 
 
