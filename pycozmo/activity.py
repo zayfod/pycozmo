@@ -63,13 +63,13 @@ class BehaviorChooser:
         self.total_score = sum(self.behavior_scores)
 
     def init_repetition_penalty(self) -> None:
-        self.repetition_penaltys = []
+        self.repetition_penalties = []
         for b in self.behaviors:
             if 'repetitionPenalty' in b['scoring']:
-                self.repetition_penaltys.append(
+                self.repetition_penalties.append(
                     DecayGraph([Node(x=n['x'], y=n['y']) for n in b['scoring']['repetitionPenalty']['nodes']]))
             else:
-                self.repetition_penaltys.append(DecayGraph([Node(x=1, y=0)]))
+                self.repetition_penalties.append(DecayGraph([Node(x=1, y=0)]))
 
     def apply_repetition_penalty(self, ref) -> None:
         if self.choice_type == 'Scoring':
@@ -80,7 +80,7 @@ class BehaviorChooser:
             else:
                 raise TypeError('Invalid behavior index: {}'.format(ref))
             self.behavior_repetitions[idx] += 1
-            self.behavior_scores[idx] -= self.repetition_penaltys[idx].get_increment(self.behavior_repetitions[idx])
+            self.behavior_scores[idx] -= self.repetition_penalties[idx].evaluate(self.behavior_repetitions[idx])
             self.behavior_scores[idx] = max(0, self.behavior_scores[idx])
             self.total_score = sum(self.behavior_scores)
 
