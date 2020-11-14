@@ -17,6 +17,7 @@ __all__ = [
     'Angle',
     'Distance',
     'Speed',
+    'Vector2',
     'Vector3',
     'angle_z_to_quaternion',
     'Matrix44',
@@ -221,6 +222,71 @@ class Speed:
     def mmps(self) -> float:
         """ Returns the speed in millimeters per second (mmps). """
         return self._mmps
+
+
+class Vector2:
+    """
+    Represents a 2D Vector (type/units aren't specified)
+
+    Args:
+        x (float): X component
+        y (float): Y component
+    """
+
+    __slots__ = ('_x', '_y')
+
+    def __init__(self, x: float, y: float):
+        self._x = x
+        self._y = y
+
+    def set_to(self, rhs) -> None:
+        """
+        Copy the x and y components of the given vector.
+
+        Args:
+            rhs (:class:`Vector2`): The right-hand-side of this assignment - the
+                source vector to copy into this vector.
+        """
+        self._x = rhs.x
+        self._y = rhs.y
+
+    @property
+    def x(self) -> float:
+        """ The x component. """
+        return self._x
+
+    @property
+    def y(self) -> float:
+        """ The y component. """
+        return self._y
+
+    @property
+    def x_y(self) -> Tuple[float, float]:
+        """ The X, Y elements of the Vector2 (x,y). """
+        return self._x, self._y
+
+    def __repr__(self):
+        return "<%s x: %.2f y: %.2f>" % (self.__class__.__name__, self.x, self.y)
+
+    def __add__(self, other):
+        if not isinstance(other, Vector2):
+            raise TypeError("Unsupported operand for + expected Vector2")
+        return Vector2(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        if not isinstance(other, Vector2):
+            raise TypeError("Unsupported operand for - expected Vector2")
+        return Vector2(self.x - other.x, self.y - other.y)
+
+    def __mul__(self, other):
+        if not isinstance(other, (int, float)):
+            raise TypeError("Unsupported operand for * expected number")
+        return Vector2(self.x * other, self.y * other)
+
+    def __truediv__(self, other):
+        if not isinstance(other, (int, float)):
+            raise TypeError("Unsupported operand for / expected number")
+        return Vector2(self.x / other, self.y / other)
 
 
 class Vector3:
