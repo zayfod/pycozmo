@@ -2,7 +2,7 @@
 Overview
 ========
 
-https://github.com/zayfod/pycozmo
+[https://github.com/zayfod/pycozmo](https://github.com/zayfod/pycozmo)
 
 `PyCozmo` is a pure-Python communication library, alternative SDK, and application for the
 [Cozmo robot](https://www.digitaldreamlabs.com/pages/cozmo) . It allows controlling a Cozmo robot directly, without
@@ -69,9 +69,10 @@ Requirements
 ------------
 
 - [Python](https://www.python.org/downloads/) 3.6.0 or newer
-- [Pillow](https://github.com/python-pillow/Pillow) 6.0.0 - Python image library
+- [Pillow](https://github.com/python-pillow/Pillow) 6.0.0 or newer - Python image library
 - [FlatBuffers](https://github.com/google/flatbuffers) - serialization library
 - [dpkt](https://github.com/kbandla/dpkt) - TCP/IP packet parsing library 
+- [OpenCV](https://opencv.org/) 4.0.0 or newer - computer vision library
 
 
 Installation
