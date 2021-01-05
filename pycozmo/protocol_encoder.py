@@ -6354,6 +6354,7 @@ class AnimationState(Packet):
         "_enabled_anim_tracks",  # uint8
         "_tag",  # uint8
         "_client_drop_count",  # uint8
+        "_junk",  # uint8
     )
 
     def __init__(self,
@@ -6362,7 +6363,8 @@ class AnimationState(Packet):
                  num_audio_frames_played=0,
                  enabled_anim_tracks=0,
                  tag=0,
-                 client_drop_count=0):
+                 client_drop_count=0,
+                 junk=0):
         super().__init__(PacketType.EVENT, packet_id=0xf1)
         self.timestamp = timestamp
         self.num_anim_bytes_played = num_anim_bytes_played
@@ -6371,6 +6373,7 @@ class AnimationState(Packet):
         self.tag = tag
         # Not present in v2214 and older.
         self.client_drop_count = client_drop_count
+        self.junk = junk
 
     @property
     def timestamp(self):
@@ -6420,11 +6423,20 @@ class AnimationState(Packet):
     def client_drop_count(self, value):
         self._client_drop_count = validate_integer("client_drop_count", value, 0, 255)
 
+    @property
+    def junk(self):
+        return self._junk
+
+    @junk.setter
+    def junk(self, value):
+        self._junk = validate_integer("junk", value, 0, 255)
+
     def __len__(self):
         return \
             4 + \
             4 + \
             4 + \
+            1 + \
             1 + \
             1 + \
             1
@@ -6436,14 +6448,16 @@ class AnimationState(Packet):
                "num_audio_frames_played={num_audio_frames_played}, " \
                "enabled_anim_tracks={enabled_anim_tracks}, " \
                "tag={tag}, " \
-               "client_drop_count={client_drop_count})".format(
+               "client_drop_count={client_drop_count}, " \
+               "junk={junk})".format(
                 type=type(self).__name__,
                 timestamp=self._timestamp,
                 num_anim_bytes_played=self._num_anim_bytes_played,
                 num_audio_frames_played=self._num_audio_frames_played,
                 enabled_anim_tracks=self._enabled_anim_tracks,
                 tag=self._tag,
-                client_drop_count=self._client_drop_count)
+                client_drop_count=self._client_drop_count,
+                junk=self._junk)
 
     def to_bytes(self):
         writer = BinaryWriter()
@@ -6457,6 +6471,7 @@ class AnimationState(Packet):
         writer.write(self._enabled_anim_tracks, "B")
         writer.write(self._tag, "B")
         writer.write(self._client_drop_count, "B")
+        writer.write(self._junk, "B")
 
     @classmethod
     def from_bytes(cls, buffer):
@@ -6472,13 +6487,15 @@ class AnimationState(Packet):
         enabled_anim_tracks = reader.read("B")
         tag = reader.read("B")
         client_drop_count = reader.read("B")
+        junk = reader.read("B")
         return cls(
             timestamp=timestamp,
             num_anim_bytes_played=num_anim_bytes_played,
             num_audio_frames_played=num_audio_frames_played,
             enabled_anim_tracks=enabled_anim_tracks,
             tag=tag,
-            client_drop_count=client_drop_count)
+            client_drop_count=client_drop_count,
+            junk=junk)
 
 
 class ImageChunk(Packet):
@@ -6491,7 +6508,6 @@ class ImageChunk(Packet):
         "_image_resolution",  # ImageResolution
         "_image_chunk_count",  # uint8
         "_chunk_id",  # uint8
-        "_status",  # uint16
         "_data",  # uint8[uint16]
     )
 
@@ -6503,7 +6519,6 @@ class ImageChunk(Packet):
                  image_resolution=0,
                  image_chunk_count=0,
                  chunk_id=0,
-                 status=0,
                  data=()):
         super().__init__(PacketType.EVENT, packet_id=0xf2)
         self.frame_timestamp = frame_timestamp
@@ -6513,7 +6528,6 @@ class ImageChunk(Packet):
         self.image_resolution = ImageResolution(image_resolution)
         self.image_chunk_count = image_chunk_count
         self.chunk_id = chunk_id
-        self.status = status
         self.data = data
 
     @property
@@ -6575,14 +6589,6 @@ class ImageChunk(Packet):
         self._chunk_id = validate_integer("chunk_id", value, 0, 255)
 
     @property
-    def status(self):
-        return self._status
-
-    @status.setter
-    def status(self, value):
-        self._status = validate_integer("status", value, 0, 65535)
-
-    @property
     def data(self):
         return self._data
 
@@ -6600,7 +6606,6 @@ class ImageChunk(Packet):
             1 + \
             1 + \
             1 + \
-            2 + \
             get_varray_size(self._data, 'H', 'B')
 
     def __repr__(self):
@@ -6612,7 +6617,6 @@ class ImageChunk(Packet):
                "image_resolution={image_resolution}, " \
                "image_chunk_count={image_chunk_count}, " \
                "chunk_id={chunk_id}, " \
-               "status={status}, " \
                "data={data})".format(
                 type=type(self).__name__,
                 frame_timestamp=self._frame_timestamp,
@@ -6622,7 +6626,6 @@ class ImageChunk(Packet):
                 image_resolution=self._image_resolution,
                 image_chunk_count=self._image_chunk_count,
                 chunk_id=self._chunk_id,
-                status=self._status,
                 data=self._data)
 
     def to_bytes(self):
@@ -6638,7 +6641,6 @@ class ImageChunk(Packet):
         writer.write(self._image_resolution.value, "b")
         writer.write(self._image_chunk_count, "B")
         writer.write(self._chunk_id, "B")
-        writer.write(self._status, "H")
         writer.write_varray(self._data, "B", "H")
 
     @classmethod
@@ -6656,7 +6658,6 @@ class ImageChunk(Packet):
         image_resolution = reader.read("b")
         image_chunk_count = reader.read("B")
         chunk_id = reader.read("B")
-        status = reader.read("H")
         data = reader.read_varray("B", "H")
         return cls(
             frame_timestamp=frame_timestamp,
@@ -6666,7 +6667,6 @@ class ImageChunk(Packet):
             image_resolution=image_resolution,
             image_chunk_count=image_chunk_count,
             chunk_id=chunk_id,
-            status=status,
             data=data)
 
 

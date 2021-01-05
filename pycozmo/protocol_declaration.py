@@ -589,6 +589,7 @@ PROTOCOL = Protocol(
             UInt8Argument("enabled_anim_tracks"),
             UInt8Argument("tag"),
             UInt8Argument("client_drop_count", description="Not present in v2214 and older."),
+            UInt8Argument("junk"),
         ]),
         Event(0xf2, "ImageChunk", group="state", arguments=[
             UInt32Argument("frame_timestamp"),
@@ -598,7 +599,7 @@ PROTOCOL = Protocol(
             EnumArgument("image_resolution", IMAGE_RESOLUTION),
             UInt8Argument("image_chunk_count"),
             UInt8Argument("chunk_id"),
-            UInt16Argument("status"),
+            # UInt16Argument("status"),
             VArrayArgument("data"),
         ]),
         Event(0xf3, "ObjectAvailable", group="state", arguments=[
