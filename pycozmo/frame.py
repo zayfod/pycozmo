@@ -142,7 +142,7 @@ class Frame(object):
                         pkt_seq = (pkt_seq + 1) % MAX_SEQ
                     pkts.append(pkt)
                 except (ValueError, IndexError) as e:
-                    logger_protocol.debug("Failed to decode packet. Ignoring. {}".format(e))
+                    logger_protocol.error("Failed to decode packet. Ignoring. {}".format(e))
                     reader.seek_set(expected_offset)
             # assert seq == OOB_SEQ or seq + 1 == pkt_seq or pkt.type == PacketType.PING
         elif frame_type == FrameType.PING:
@@ -160,7 +160,7 @@ class Frame(object):
                     pkt_seq = (pkt_seq + 1) % MAX_SEQ
                 pkts.append(pkt)
             except (ValueError, IndexError) as e:
-                logger_protocol.debug("Failed to decode packet. Ignoring. {}".format(e))
+                logger_protocol.error("Failed to decode packet. Ignoring. {}".format(e))
             assert seq == OOB_SEQ or seq + 1 == pkt_seq
         elif frame_type == FrameType.RESET:
             # No packets
