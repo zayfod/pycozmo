@@ -154,6 +154,7 @@ class Client(event.Dispatcher):
     def _on_hardware_info(self, cli, pkt: protocol_encoder.HardwareInfo):
         del cli
         self.serial_number_head = pkt.serial_number_head
+        self._enable_robot()
 
     def _on_firmware_signature(self, cli, pkt: protocol_encoder.FirmwareSignature):
         del cli
