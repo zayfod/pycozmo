@@ -22,6 +22,7 @@ from . import event
 from . import filter
 from . import protocol_declaration
 from . import exception
+from .util import hex_dump
 
 
 __all__ = [
@@ -246,6 +247,8 @@ class ReceiveThread(Thread):
                 self.discarded_frames += 1
                 logger_protocol.error("Failed to receive frame. {}".format(e))
                 continue
+
+            logger_protocol.info("raw_frame: {}".format(hex_dump(raw_frame)))
 
             try:
                 frame = Frame.from_bytes(raw_frame)
