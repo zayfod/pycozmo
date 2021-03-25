@@ -41,18 +41,25 @@ def on_camera_img(cli, image):
     # Convert the image into a numpy array so that OpenCV can manipulate it
     orig_img = np.array(image)
 
+
     # Check if we got a color image
     if orig_img.shape[-1] == 3:
         # The thing about OpenCV is that it uses BGR formatted images for
         # reasons
-        bgr_img = cv.cvtColor(orig_img, cv.COLOR_RGB2BGR)
-        # Send the image back to the main thread for display
-        IMG_QUEUE.put(bgr_img)
-    else:
-        # Nothing much to do here, simply send the image back to the main thread
-        # for display
-        IMG_QUEUE.put(orig_img)
+        orig_img = cv.cvtColor(orig_img, cv.COLOR_RGB2BGR)
 
+    # Resize the image
+    # The lanczos4 algorithm produces the best results, but might be slow
+    # you can use cv.INTER_LINEAR for poorer, but faster results
+    resized_img = cv.resize(orig_img, None, fx=2, fy=2,
+                         interpolation=cv.INTER_LANCZOS4)
+
+    # Try to reduce the noise using unsharp masking
+    blurred_img = cv.GaussianBlur(resized_img, (3,3), 0)
+    sharp_img = cv.addWeighted(resized_img, 1.5, blurred_img, -0.5, gamma=0.5)
+
+    # Send the image back to the main thread for display
+    IMG_QUEUE.put(sharp_img)
 
 def stop_all(cli, state):
     """
