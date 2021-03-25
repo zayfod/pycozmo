@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import math
 from queue import Queue, Empty
@@ -35,7 +35,11 @@ SHARP_GAMMA = 2.2
 
 # NOTE: This could be used with cv.filter2D() in place of the unsharp masking
 # However, controlling the amount of sharpening is more difficult
-# UNSHARP_KERNEL = -1 / 256 * np.array([[1,4,6,4,1], [4,16,24,16,4], [6,24,-476,24,6] , [4,16,24,16,4],  [1,4,6,4,1]])
+# UNSHARP_KERNEL = -1 / 256 * np.array([[1, 4, 6, 4, 1],
+#                                       [4, 16, 24, 16, 4],
+#                                       [6, 24, -476, 24, 6],
+#                                       [4, 16, 24, 16, 4],
+#                                       [1, 4, 6, 4, 1]])
 
 
 def on_camera_img(cli, image):
@@ -51,7 +55,6 @@ def on_camera_img(cli, image):
     # Convert the image into a numpy array so that OpenCV can manipulate it
     orig_img = np.array(image)
 
-
     # Check if we got a color image
     if orig_img.shape[-1] == 3:
         # The thing about OpenCV is that it uses BGR formatted images for
@@ -62,16 +65,18 @@ def on_camera_img(cli, image):
     # The lanczos4 algorithm produces the best results, but might be slow
     # you can use cv.INTER_LINEAR for poorer, but faster results
     resized_img = cv.resize(orig_img, None, fx=2, fy=2,
-                         interpolation=cv.INTER_LANCZOS4)
+                            interpolation=cv.INTER_LANCZOS4)
 
     # Try to reduce the noise using unsharp masking
     # An explanation for this technique can be found here:
     # https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
-    blurred_img = cv.GaussianBlur(resized_img, (3,3), 0)
-    sharp_img = cv.addWeighted(resized_img, 1 + SHARP_AMOUNT, blurred_img, -SHARP_AMOUNT, gamma=SHARP_GAMMA)
+    blurred_img = cv.GaussianBlur(resized_img, (3, 3), 0)
+    sharp_img = cv.addWeighted(resized_img, 1 + SHARP_AMOUNT, blurred_img,
+                               -SHARP_AMOUNT, gamma=SHARP_GAMMA)
 
     # Send the image back to the main thread for display
     IMG_QUEUE.put(sharp_img)
+
 
 def stop_all(cli, state):
     """
@@ -147,10 +152,12 @@ if __name__ == "__main__":
                     if key == ord('w'):
                         print('up')
                         # Increase the linear velocity
-                        LIN_VELOCITY = min(pc.MAX_WHEEL_SPEED.mmps, LIN_VELOCITY + LIN_INC)
+                        LIN_VELOCITY = min(pc.MAX_WHEEL_SPEED.mmps,
+                                           LIN_VELOCITY + LIN_INC)
                     elif key == ord('s'):
                         # Decrease the linear velocity
-                        LIN_VELOCITY = max(-pc.MAX_WHEEL_SPEED.mmps, LIN_VELOCITY - LIN_INC)
+                        LIN_VELOCITY = max(-pc.MAX_WHEEL_SPEED.mmps,
+                                           LIN_VELOCITY - LIN_INC)
                     elif key == ord('a'):
                         # Increase the angular velocity
                         ANG_VELOCITY = min(pc.MAX_WHEEL_SPEED.mmps / pc.TRACK_WIDTH.mm,
