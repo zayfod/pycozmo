@@ -27,6 +27,11 @@ HEAD_TILT = (pc.MAX_HEAD_ANGLE.radians - pc.MIN_HEAD_ANGLE.radians) * 0.1
 HEAD_LIGHT = False
 LIFT_HEIGHT = pc.MIN_LIFT_HEIGHT.mm
 
+# Those parameters are used to configure the unsharp masking algorithm
+# Play with them to get the best image you can
+SHARP_AMOUNT = 0.7
+SHARP_GAMMA = 2.2
+
 
 # NOTE: This could be used with cv.filter2D() in place of the unsharp masking
 # However, controlling the amount of sharpening is more difficult
@@ -60,8 +65,10 @@ def on_camera_img(cli, image):
                          interpolation=cv.INTER_LANCZOS4)
 
     # Try to reduce the noise using unsharp masking
+    # An explanation for this technique can be found here:
+    # https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
     blurred_img = cv.GaussianBlur(resized_img, (3,3), 0)
-    sharp_img = cv.addWeighted(resized_img, 1.5, blurred_img, -0.5, gamma=0.5)
+    sharp_img = cv.addWeighted(resized_img, 1 + SHARP_AMOUNT, blurred_img, -SHARP_AMOUNT, gamma=SHARP_GAMMA)
 
     # Send the image back to the main thread for display
     IMG_QUEUE.put(sharp_img)
