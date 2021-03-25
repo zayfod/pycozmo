@@ -28,6 +28,11 @@ HEAD_LIGHT = False
 LIFT_HEIGHT = pc.MIN_LIFT_HEIGHT.mm
 
 
+# NOTE: This could be used with cv.filter2D() in place of the unsharp masking
+# However, controlling the amount of sharpening is more difficult
+# UNSHARP_KERNEL = -1 / 256 * np.array([[1,4,6,4,1], [4,16,24,16,4], [6,24,-476,24,6] , [4,16,24,16,4],  [1,4,6,4,1]])
+
+
 def on_camera_img(cli, image):
     """
     A simple function that converts a frame from Cozmo's camera into a BGR
