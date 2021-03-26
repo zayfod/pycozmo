@@ -109,7 +109,6 @@ if __name__ == "__main__":
                     break
 
                 elif key in [ord('k'), ord('j')]:
-                    print('Set head angle')
                     if key == ord('k'):
                         # Increase head tilt
                         HEAD_TILT = min(pc.MAX_HEAD_ANGLE.radians,
@@ -122,7 +121,6 @@ if __name__ == "__main__":
                     cli.set_head_angle(HEAD_TILT)
 
                 elif key == ord('l'):
-                    print('Toggle light')
                     # Toggle the head light
                     HEAD_LIGHT = not HEAD_LIGHT
                     # Set the head light
