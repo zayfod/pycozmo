@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from os import uname
+from os import uname, path
 from random import randint
 from enum import IntEnum
 from itertools import chain
 import numpy as np
 import cv2 as cv
+
+BASE_DIR = path.abspath(path.dirname(__file__))
 
 
 class ObjCat(IntEnum):
@@ -27,8 +29,9 @@ class MultiTracker:
     def __init__(self, tracker_type: TrackType, skip_frames,
                  obj_cats, conf_thres=0.5, nms_thres=0.3, conf_decay_rate=0.998,
                  img_w=704,
-                 img_h=704, classes_name_file='openimages.names',
-                 model_conf_file='yolo.cfg', model_weight_file='yolo.weights'):
+                 img_h=704, classes_name_file=path.join(BASE_DIR, 'trackerCfg', 'openimages.names'),
+                 model_conf_file=path.join(BASE_DIR, 'trackerCfg', 'yolo.cfg'),
+                 model_weight_file=path.join(BASE_DIR, 'trackerCfg', 'yolo.weights')):
 
         # How many frames to skip between detection
         assert skip_frames > 0, "The number of frames skipped between " \
@@ -239,15 +242,17 @@ class MultiTracker:
 
 
 if __name__ == "__main__":
+    # Detect the type of processor we are running on
     machine = uname().machine
+
     # Initialize the video capturing device and the multi-tracker based on
     # the processor type
-    if machine == 'aarch64' or machine.startswith('arm'):
+    if machine == 'aarch64' or machine.startswith('arm'):  # Raspberry/Jetson and so on
         video = cv.VideoCapture('nvarguscamerasrc ! video/x-raw(memory:NVMM), width=3264, height=2464, format=(string)NV12, framerate=21/1 ! nvvidconv flip-method=2 ! video/x-raw, width=960, height=616, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink', cv.CAP_GSTREAMER)
 
         multi_tracker = MultiTracker(TrackType.MOSSE, skip_frames=5,
                                      obj_cats=[ObjCat.HAND, ObjCat.HEAD])
-    else:
+    else:  # Just your average computer with a webcam
         video = cv.VideoCapture(0)
         multi_tracker = MultiTracker(TrackType.KCF, skip_frames=5,
                                      obj_cats=[ObjCat.HAND, ObjCat.HEAD])
