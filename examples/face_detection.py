@@ -10,7 +10,7 @@ from pycozmo.multi_tracking import MultiTracker, ObjCat, TrackType
 
 # Instantiate a multi-tracker for detecting faces only
 TRACKER = MultiTracker(TrackType.MOSSE, skip_frames=5,
-                       obj_cats=[ObjCat.HEAD, ObjCat.HAND], conf_thres=0.5,
+                       obj_cats=[ObjCat.HEAD], conf_thres=0.5,
                        conf_decay_rate=0.995, img_w=480, img_h=480)
 
 # This is required since OpenCV can only display frames from the main thread
