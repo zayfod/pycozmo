@@ -7,6 +7,9 @@ from itertools import chain
 import numpy as np
 import cv2 as cv
 
+# TODO: Replace this monstrosity with util.get_cozmo_asset_dir()
+#       or util.get_cozmo_dir(), depending on where the weights
+#       and such configuration should live.
 BASE_DIR = path.abspath(path.dirname(__file__))
 
 
