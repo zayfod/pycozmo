@@ -37,6 +37,7 @@ from . import emotions
 from . import brain
 from . import audiokinetic
 from . import expressions
+from . import multi_tracking
 
 
 __version__ = "0.8.0"
