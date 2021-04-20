@@ -198,6 +198,12 @@ class AnimationController:
 
     def display_image(self, pkt: protocol_encoder.DisplayImage) -> None:
         self.queue.put_image(pkt)
+        self.playing_animation = True
+
+    def clear_screen(self) -> None:
+        pkt = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
+        self.queue.put_image(pkt)
+        self.playing_animation = False
 
     def play_anim_frame(
             self,
