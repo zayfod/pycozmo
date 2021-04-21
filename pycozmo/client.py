@@ -482,8 +482,7 @@ class Client(event.Dispatcher):
         self.conn.send(pkt)
 
     def clear_screen(self) -> None:
-        pkt = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
-        self.anim_controller.display_image(pkt)
+        self.anim_controller.clear_screen()
 
     def display_image(self, im: Image, duration: Optional[float] = None) -> None:
         encoder = image_encoder.ImageEncoder(im)
@@ -492,7 +491,7 @@ class Client(event.Dispatcher):
         self.anim_controller.display_image(pkt)
         if duration is not None:
             time.sleep(duration)
-            self.clear_screen()
+            self.anim_controller.clear_screen()
 
     def _load_clips(self, fspec: str) -> None:
 
