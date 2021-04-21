@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from time import sleep
+from threading import Event
 from enum import IntEnum, auto
 import numpy as np
 import cv2 as cv
@@ -527,11 +527,14 @@ if __name__ == "__main__":
     rc.init()
 
     try:
+        # Instantiate a dummy event
+        evt = Event()
+
         # Loop until told to stop
         while GO_ON:
 
             # Nothing to do here but wait
-            sleep(1)
+            evt.wait(timeout=1)
 
     finally:
         # Stop the remote controller and clean after ourselves
