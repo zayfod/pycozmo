@@ -315,7 +315,7 @@ class OpencvRC(object):
 
         # Set the new head tilt based on the value in parameter
         self.head_tilt = value * pc.MAX_HEAD_ANGLE.radians + \
-                         (1 - value) * pc.MIN_HEAD_ANGLE.radians
+            (1 - value) * pc.MIN_HEAD_ANGLE.radians
 
     def _on_lift_height_change(self, value):
         """
@@ -331,7 +331,7 @@ class OpencvRC(object):
 
         # Set the new lift's height based on the value in parameter
         self.lift_height = value * pc.MAX_LIFT_HEIGHT.mm + \
-                           (1 - value) * pc.MIN_LIFT_HEIGHT.mm
+            (1 - value) * pc.MIN_LIFT_HEIGHT.mm
 
     def _on_linear_velocity_change(self, value):
         """
@@ -356,7 +356,7 @@ class OpencvRC(object):
 
         # Set the new angular velocity
         self.angular_velocity = (pc.MAX_WHEEL_SPEED.mmps / pc.TRACK_WIDTH.mm) \
-                                * value / 100
+            * value / 100
 
     def _on_keypress(self, key):
         """
@@ -416,9 +416,9 @@ class OpencvRC(object):
         A callback handling keyrelease events. More specifically it is used to
         control the robot's movements.
         :param key: An instance of pynput.keyboard.Key, pynput.keyboard.KeyCode
-        or None. The Key class represent special keys, such as esc, alt, and so on.
-        The KeyCode class on the other hand is a simple wrapper converting keycodes
-        into characters.
+        or None. The Key class represent special keys, such as esc, alt, and so
+        on. The KeyCode class on the other hand is a simple wrapper converting
+        keycodes into characters.
         :return: None
         """
         global GO_ON
@@ -523,8 +523,9 @@ class OpencvRC(object):
 
     @angular_velocity.setter
     def angular_velocity(self, value):
-        self._velocity['angular'] = max(0, min(value,
-                                        pc.MAX_WHEEL_SPEED.mmps / pc.TRACK_WIDTH.mm))
+        self._velocity['angular'] = max(0,
+                                        min(value, pc.MAX_WHEEL_SPEED.mmps /
+                                            pc.TRACK_WIDTH.mm))
 
     @property
     def color(self):
