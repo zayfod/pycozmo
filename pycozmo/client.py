@@ -453,6 +453,9 @@ class Client(event.Dispatcher):
         pkt = protocol_encoder.EnableColorImages(enable=color)
         self.conn.send(pkt)
 
+    def clear_screen(self) -> None:
+        self.anim_controller.clear_screen()
+
     def display_image(self, im: Image, duration: Optional[float] = None) -> None:
         encoder = image_encoder.ImageEncoder(im)
         buf = bytes(encoder.encode())
