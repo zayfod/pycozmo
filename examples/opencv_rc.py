@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import logging
+from time import sleep
 from enum import IntEnum, auto
-from queue import Queue, Empty
 import numpy as np
 import cv2 as cv
 import pycozmo as pc
@@ -68,10 +67,6 @@ class OpencvRC(object):
         self._kbd_listener = kbd.Listener(on_press=self._on_keypress,
                                           on_release=self._on_keyrelease)
 
-        # Initialize a queue to pass images between the thread receiving them
-        # and the main loop
-        self._image_queue = Queue()
-
         # Other miscellaneous parameters to keep track of
         self._win_name = win_name
         self._sharp_amount = sharp_amount
@@ -131,25 +126,6 @@ class OpencvRC(object):
         self._kbd_listener.start()
         self._kbd_listener.wait()
 
-    def step(self):
-        """
-        Get the next frame from the queue and have OpenCV display it in a
-        window.
-        :return: None
-        """
-
-        # Get the next frame from the queue
-        img = self._image_queue.get()
-        # Display the frame in a window
-        cv.imshow(self._win_name, img)
-        self._image_queue.task_done()
-
-        # This looks might seem odd, but is required by OpenCV to actually draw
-        # the image on the window.
-        # See OpenCV's documentation on imshow for a more "in depth"
-        # explanation
-        cv.waitKey(1)
-
     def stop(self):
         """
         Clean up after execution to leave the program in a known and stable
@@ -181,12 +157,6 @@ class OpencvRC(object):
 
         # Close any display open by OpenCv
         cv.destroyAllWindows()
-
-        # Make sure the image queue is empty, even if this has no real impact
-        while not self._image_queue.empty():
-            self._image_queue.get()
-            self._image_queue.task_done()
-        self._image_queue.join()
 
     def _on_new_image(self, cli, frame):
         """
@@ -230,8 +200,10 @@ class OpencvRC(object):
         #                                       [4, 16, 24, 16, 4],
         #                                       [1, 4, 6, 4, 1]])
 
+        cv.imshow(self._win_name, sharp_img)
+        cv.waitKey(1)
         # Send the image back to the main thread for display
-        self._image_queue.put(sharp_img)
+        #self._image_queue.put(sharp_img)
 
     def _set_action(self, linear, angular):
         """
@@ -556,8 +528,8 @@ if __name__ == "__main__":
         # Loop until told to stop
         while GO_ON:
 
-            # Execute the next step
-            rc.step()
+            # Nothing to do here but wait
+            sleep(1)
 
     finally:
         # Stop the remote controller and clean after ourselves
