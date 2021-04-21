@@ -138,20 +138,17 @@ class OpencvRC(object):
         :return: None
         """
 
-        try:
-            # Get the next frame from the queue
-            img = self._image_queue.get(timeout=0.2)
-            # Display the frame in a window
-            cv.imshow(self._win_name, img)
-            self._image_queue.task_done()
-        except Empty:
-            logging.warning("Did not get any image from the robot.")
+        # Get the next frame from the queue
+        img = self._image_queue.get()
+        # Display the frame in a window
+        cv.imshow(self._win_name, img)
+        self._image_queue.task_done()
 
-        # This looks stupid, but is required by OpenCV to actually draw
+        # This looks might seem odd, but is required by OpenCV to actually draw
         # the image on the window.
         # See OpenCV's documentation on imshow for a more "in depth"
         # explanation
-        cv.waitKey(25)
+        cv.waitKey(1)
 
     def stop(self):
         """
