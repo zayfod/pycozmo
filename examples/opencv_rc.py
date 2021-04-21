@@ -200,10 +200,12 @@ class OpencvRC(object):
         #                                       [4, 16, 24, 16, 4],
         #                                       [1, 4, 6, 4, 1]])
 
+        # Display the image in the video feed window
         cv.imshow(self._win_name, sharp_img)
-        cv.waitKey(1)
-        # Send the image back to the main thread for display
-        #self._image_queue.put(sharp_img)
+        # This might seem odd, but is actually required by OpenCV to perform GUI
+        # housekeeping. See OpenCV's documentation for imshow() for more
+        # "in-depth" information.
+        cv.waitKey(25)
 
     def _set_action(self, linear, angular):
         """
