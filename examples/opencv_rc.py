@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from queue import Queue
 from threading import Event
 from enum import IntEnum, auto
 import numpy as np
@@ -39,16 +40,8 @@ class OpencvRC(object):
         # Declare a flag telling the program's main loop to stop
         self.go_on = True
 
-        # Should the camera image be displayed in color or grayscale
-        self._color = True
-
         # Initialize Cozmo's client
         self._cozmo_clt = pc.Client()
-
-        # Other miscellaneous parameters to keep track of
-        self._win_name = win_name
-        self._sharp_amount = sharp_amount
-        self._sharp_gamma = sharp_gamma
 
     def init(self):
         """
@@ -126,70 +119,6 @@ class OpencvRC(object):
 
         # Close any display open by OpenCv
         cv.destroyAllWindows()
-
-    def _on_new_image(self, cli, frame):
-        """
-        A simple function that converts a frame from Cozmo's camera into a up-scaled and BGR formatted image to be used
-        by OpenCV.
-        :param cli: An instance of the pycozmo. Client class representing the robot.
-        :param frame: A color/grayscale frame from Cozmo's camera.
-        :return: None
-        """
-
-        # Convert the image into a numpy array so that OpenCV can manipulate it
-        orig_img = np.array(frame)
-
-        # Check if we got a color image
-        if orig_img.shape[-1] == 3:
-            # The thing about OpenCV is that it uses BGR formatted images for
-            # reasons
-            orig_img = cv.cvtColor(orig_img, cv.COLOR_RGB2BGR)
-
-        # Resize the image
-        # The lanczos4 algorithm produces the best results, but might be slow you can use cv.INTER_LINEAR for poorer,
-        # but faster results
-        resized_img = cv.resize(orig_img, None, fx=2, fy=2, interpolation=cv.INTER_LANCZOS4)
-
-        # Try to reduce the noise using unsharp masking
-        # An explanation for this technique can be found here:
-        # https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
-        blurred_img = cv.GaussianBlur(resized_img, (3, 3), 0)
-        sharp_img = cv.addWeighted(resized_img, 1 + self._sharp_amount, blurred_img, -self._sharp_amount,
-                                   gamma=self._sharp_gamma)
-
-        # NOTE: This could be used with cv.filter2D() in place of the unsharp masking. However, controlling the amount
-        # of sharpening is more difficult
-        # UNSHARP_KERNEL = -1 / 256 * np.array([[1, 4, 6, 4, 1],
-        #                                       [4, 16, 24, 16, 4],
-        #                                       [6, 24, -476, 24, 6],
-        #                                       [4, 16, 24, 16, 4],
-        #                                       [1, 4, 6, 4, 1]])
-
-        # Display the image in the video feed window
-        cv.imshow(self._win_name, sharp_img)
-        # This might seem odd, but is actually required by OpenCV to perform GUI housekeeping. See OpenCV's
-        # documentation for imshow() for more "in-depth" information.
-        cv.waitKey(25)
-
-    @property
-    def color(self):
-        return self._color
-
-    @color.setter
-    def color(self, value):
-        """
-        Switch between colored and grayscale image for Cozmo's video feed.
-        :param value: Bool. True displays a colored image, a grayscale one
-        otherwise.
-        :return: None
-        """
-
-        if self._color != value:
-            # Set the new value for the color switch
-            self._color = value
-
-            # Tell cozmo to actually change the image
-            self._cozmo_clt.enable_camera(enable=True, color=value)
 
 
 class Controller(object):
@@ -554,6 +483,150 @@ class Controller(object):
     @angular_velocity.setter
     def angular_velocity(self, value):
         self._velocity['angular'] = max(0, min(value, pc.MAX_WHEEL_SPEED.mmps / pc.TRACK_WIDTH.mm))
+
+
+class Display(object):
+    """
+    Display the video retrieved from Cozmo's camera using OpenCV.
+    """
+
+    def __init__(self, clt, win_name='Camera', sharp_amount=0.7, sharp_gamma=2.2):
+        """
+        Initialize all the variables required to scale up the frames retrieved from Cozmo's camera and display them
+        using OpenCV.
+        :param clt: pycozmo.Client. The client used to communicate with Cozmo.
+        :param win_name: String. The name of the window in which the video feed will be displayed.
+        :param sharp_amount: Float. Used in the unsharp masking algorithm to dictate how much of the blurred image gets
+        added to scaled image.
+        :param sharp_gamma: Float. A scalar added during the summing process in the unsharp masking algorithm, to
+        effectively brighten or darken the overall image.
+        """
+
+        # Register Cozmo's client
+        self._cozmo_clt = clt
+
+        # Should the camera image be displayed in color or grayscale
+        self._color = True
+
+        # Keep track of the name of the window
+        self._win_name = win_name
+
+        # Save the parameters that will be used for the unsharp masking algorithm
+        self._sharp_amount = sharp_amount
+        self._sharp_gamma = sharp_gamma
+
+        # Declare an image queue to communicate between the call back retrieving and processing raw frames and the main
+        # thread
+        self._img_queue = Queue()
+
+    def init(self):
+        """
+        Create the window OpenCV will use to display the video feed, enable the camera, and provide a handler for new
+        raw frames.
+        :return: None
+        """
+
+        # Create a window for the video feed
+        cv.namedWindow(self._win_name)
+
+        # Enable the camera
+        self._cozmo_clt.enable_camera(enable=True, color=self._color)
+
+        # Handle new incoming images
+        self._cozmo_clt.add_handler(pc.event.EvtNewRawCameraImage, self._on_new_image)
+
+    def step(self):
+        """
+        Perform a single step in the video display process. This means that we are retrieving the next frame, displaying
+        it, and waiting before starting all over again.
+        :return: None
+        """
+
+        # Get the next frame from the queue
+        frame = self._img_queue.get()
+
+        # Display the frame in the video feed window
+        cv.imshow(self._win_name, frame)
+
+        # This might seem odd, but is actually required by OpenCV to perform GUI housekeeping. See OpenCV's
+        # documentation for imshow() for more "in-depth" information.
+        cv.waitKey(25)
+
+    def stop(self):
+        """
+        Clean up after execution to leave the program in a known and stable state (hopefully).
+        :return: None
+        """
+
+        # Make sure the image queue is empty before exiting
+        while not self._img_queue.empty():
+            self._img_queue.get()
+            self._img_queue.task_done()
+        self._img_queue.join()
+
+        # Close any display open by OpenCv
+        cv.destroyAllWindows()
+
+    def _on_new_image(self, cli, frame):
+        """
+        A simple function that converts a frame from Cozmo's camera into a up-scaled and BGR formatted image to be used
+        by OpenCV.
+        :param cli: An instance of the pycozmo. Client class representing the robot.
+        :param frame: A color/grayscale frame from Cozmo's camera.
+        :return: None
+        """
+
+        # Convert the image into a numpy array so that OpenCV can manipulate it
+        orig_img = np.array(frame)
+
+        # Check if we got a color image
+        if orig_img.shape[-1] == 3:
+            # The thing about OpenCV is that it uses BGR formatted images for
+            # reasons
+            orig_img = cv.cvtColor(orig_img, cv.COLOR_RGB2BGR)
+
+        # Resize the image
+        # The lanczos4 algorithm produces the best results, but might be slow you can use cv.INTER_LINEAR for poorer,
+        # but faster results
+        resized_img = cv.resize(orig_img, None, fx=2, fy=2, interpolation=cv.INTER_LANCZOS4)
+
+        # Try to reduce the noise using unsharp masking
+        # An explanation for this technique can be found here:
+        # https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
+        blurred_img = cv.GaussianBlur(resized_img, (3, 3), 0)
+        sharp_img = cv.addWeighted(resized_img, 1 + self._sharp_amount, blurred_img, -self._sharp_amount,
+                                   gamma=self._sharp_gamma)
+
+        # NOTE: This could be used with cv.filter2D() in place of the unsharp masking. However, controlling the amount
+        # of sharpening is more difficult
+        # UNSHARP_KERNEL = -1 / 256 * np.array([[1, 4, 6, 4, 1],
+        #                                       [4, 16, 24, 16, 4],
+        #                                       [6, 24, -476, 24, 6],
+        #                                       [4, 16, 24, 16, 4],
+        #                                       [1, 4, 6, 4, 1]])
+
+        # Send the processed image back to the main thread
+        self._img_queue.put(sharp_img)
+
+    @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, value):
+        """
+        Switch between colored and grayscale image for Cozmo's video feed.
+        :param value: Bool. True displays a colored image, a grayscale one
+        otherwise.
+        :return: None
+        """
+
+        if self._color != value:
+            # Set the new value for the color switch
+            self._color = value
+
+            # Tell cozmo to actually change the image
+            self._cozmo_clt.enable_camera(enable=True, color=value)
 
 
 if __name__ == "__main__":
