@@ -42,26 +42,8 @@ class OpencvRC(object):
         # Should the camera image be displayed in color or grayscale
         self._color = True
 
-        # Keep track of Cozmo's current action
-        self._action = {'linear': Direction.NONE, 'angular': Direction.NONE}
-
-        # Keep track of Cozmo's linear and angular velocities
-        self._velocity = {'linear': 0, 'angular': 0}
-
-        # Keep track of the head light state
-        self._head_light = False
-
-        # Keep track of the head tilt angle
-        self._head_tilt = pc.MIN_HEAD_ANGLE.radians
-
-        # Keep track of the lift's height
-        self._lift_height = pc.MIN_LIFT_HEIGHT.mm
-
         # Initialize Cozmo's client
         self._cozmo_clt = pc.Client()
-
-        # Initialize a listener to monitor keyboard events
-        self._kbd_listener = kbd.Listener(on_press=self._on_keypress, on_release=self._on_keyrelease)
 
         # Other miscellaneous parameters to keep track of
         self._win_name = win_name
@@ -188,6 +170,129 @@ class OpencvRC(object):
         # This might seem odd, but is actually required by OpenCV to perform GUI housekeeping. See OpenCV's
         # documentation for imshow() for more "in-depth" information.
         cv.waitKey(25)
+
+    @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, value):
+        """
+        Switch between colored and grayscale image for Cozmo's video feed.
+        :param value: Bool. True displays a colored image, a grayscale one
+        otherwise.
+        :return: None
+        """
+
+        if self._color != value:
+            # Set the new value for the color switch
+            self._color = value
+
+            # Tell cozmo to actually change the image
+            self._cozmo_clt.enable_camera(enable=True, color=value)
+
+
+class Controller(object):
+    """
+    Use the keyboard to control Cozmo's movements, as well as OpenCV's track bars to set the robot's head angle, lift
+    height, and both its linear and angular velocities.
+    """
+
+    def __init__(self, clt, win_name='Control Panel'):
+        """
+        Initialize the different variables required to remote control Cozmo using both keyboard events and OpenCV's
+        taskbars.
+        :param clt: pycozmo.Client. An instance of the client used to communicate with Cozmo.
+        :param win_name: String. A string representing the title of the window used to display OpenCV's track bars.
+        """
+
+        # Set the client used for communicating with Cozmo
+        self._cozmo_clt = clt
+
+        # Keep track of Cozmo's current action
+        self._action = {'linear': Direction.NONE, 'angular': Direction.NONE}
+
+        # Keep track of Cozmo's linear and angular velocities
+        self._velocity = {'linear': 0, 'angular': 0}
+
+        # Keep track of the head light state
+        self._head_light = False
+
+        # Keep track of the head tilt angle
+        self._head_tilt = pc.MIN_HEAD_ANGLE.radians
+
+        # Keep track of the lift's height
+        self._lift_height = pc.MIN_LIFT_HEIGHT.mm
+
+        # Initialize Cozmo's client
+        self._cozmo_clt = pc.Client()
+
+        # Initialize a listener to monitor keyboard events
+        self._kbd_listener = kbd.Listener(on_press=self._on_keypress, on_release=self._on_keyrelease)
+
+        # Other miscellaneous parameters to keep track of
+        self._win_name = win_name
+
+    def init(self):
+        """
+        Create the window OpenCV will use to display the different track bars, as well as start the keyboard listener.
+        :return: None
+        """
+
+        # Create a window for the control panel
+        cv.namedWindow(self._win_name)
+
+        # Create the different trackbars controlling the robot's velocities,
+        # head tilt, and lift height
+        cv.createTrackbar('Linear Velocity', self._win_name, 0, 100, self._on_linear_velocity_change)
+        cv.createTrackbar('Angular Velocity', self._win_name, 0, 100, self._on_angular_velocity_change)
+        cv.createTrackbar('Head tilt', self._win_name, 0, 100, self._on_head_tilt_change)
+        cv.createTrackbar('Lift height', self._win_name, 0, 100, self._on_lift_height_change)
+
+        # Set Cozmo in its initial state
+        # Look down
+        self.head_tilt = pc.MIN_HEAD_ANGLE.radians
+
+        # Set the lift in its minimum position
+        self.lift_height = pc.MIN_LIFT_HEIGHT.mm
+
+        # Make sure the light is off by default
+        self.head_light = False
+
+        # Handle cliff and pick-up detection
+        self._cozmo_clt.add_handler(pc.event.EvtCliffDetectedChange, self._stop_all)
+        self._cozmo_clt.add_handler(pc.event.EvtRobotPickedUpChange, self._stop_all)
+
+        # Start the keyboard event listener
+        self._kbd_listener.start()
+        self._kbd_listener.wait()
+
+    def stop(self):
+        """
+        Clean up after execution to leave the program in a known and stable state (hopefully).
+        :return: None
+        """
+
+        # This is to make sure that whatever happens during execution, the
+        # robot will always stop driving before exiting
+        self._stop_all()
+
+        # Bring the lift down
+        self.lift_height = pc.MIN_LIFT_HEIGHT.mm
+
+        # Set the head down as well
+        self.head_tilt = pc.MIN_HEAD_ANGLE.radians
+
+        # Turn off the light
+        self.head_light = False
+
+        # If the keyboard listener is still running
+        if self._kbd_listener.running:
+            self._kbd_listener.stop()
+            self._kbd_listener.join()
+
+        # Close any display open by OpenCv
+        cv.destroyAllWindows()
 
     def _set_action(self, linear, angular):
         """
@@ -449,26 +554,6 @@ class OpencvRC(object):
     @angular_velocity.setter
     def angular_velocity(self, value):
         self._velocity['angular'] = max(0, min(value, pc.MAX_WHEEL_SPEED.mmps / pc.TRACK_WIDTH.mm))
-
-    @property
-    def color(self):
-        return self._color
-
-    @color.setter
-    def color(self, value):
-        """
-        Switch between colored and grayscale image for Cozmo's video feed.
-        :param value: Bool. True displays a colored image, a grayscale one
-        otherwise.
-        :return: None
-        """
-
-        if self._color != value:
-            # Set the new value for the color switch
-            self._color = value
-
-            # Tell cozmo to actually change the image
-            self._cozmo_clt.enable_camera(enable=True, color=value)
 
 
 if __name__ == "__main__":
