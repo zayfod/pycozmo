@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from queue import Queue
-from threading import Event
 from enum import IntEnum, auto
 import numpy as np
 import cv2 as cv
@@ -24,70 +23,55 @@ class OpencvRC(object):
     and lift height. Movement and head light are controlled using the keyboard (W, A, S, D, and L).
     """
 
-    def __init__(self, win_name='Control Panel', sharp_amount=0.7,
-                 sharp_gamma=2.2):
+    def __init__(self, win_name_ctrl='Control Panel', win_name_video='Camera', sharp_amount=0.7, sharp_gamma=2.2):
         """
         Initialize all the variables required to remote control Cozmo using OpenCV's GUI and Pynput for handling
         keyboard events.
-        :param win_name: String. The title of the window in which OpenCV will display the camera feed, as well as the
-        different taskbars.
+        :param win_name_ctrl: String. The title of the window in which OpenCV will display the different taskbars.
+        :param win_name_video: String. The title of the window in which OpenCV will display the camera feed.
         :param sharp_amount: Float. Used in the unsharp masking algorithm to dictate how much of the blurred image gets
         added to scaled image.
         :param sharp_gamma: Float. A scalar added during the summing process in the unsharp masking algorithm, to
         effectively brighten or darken the overall image.
         """
 
-        # Declare a flag telling the program's main loop to stop
-        self.go_on = True
-
         # Initialize Cozmo's client
         self._cozmo_clt = pc.Client()
 
+        # Instantiate the controller
+        self._ctrl = Controller(self._cozmo_clt, win_name=win_name_ctrl)
+
+        # Instantiate the display
+        self._display = Display(self._cozmo_clt, win_name=win_name_video, sharp_amount=sharp_amount,
+                                sharp_gamma=sharp_gamma)
+
     def init(self):
         """
-        Create the window OpenCV will use to display the video feed and the different trackbars, as well as set and
-        start Cozmo's client, and the keyboard listener.
+        Connect to the robot, and initialize both the controller and the display.
         :return: None
         """
-
-        # Create a window for the control panel
-        cv.namedWindow(self._win_name)
-
-        # Create the different trackbars controlling the robot's velocities,
-        # head tilt, and lift height
-        cv.createTrackbar('Linear Velocity', self._win_name, 0, 100, self._on_linear_velocity_change)
-        cv.createTrackbar('Angular Velocity', self._win_name, 0, 100, self._on_angular_velocity_change)
-        cv.createTrackbar('Head tilt', self._win_name, 0, 100, self._on_head_tilt_change)
-        cv.createTrackbar('Lift height', self._win_name, 0, 100, self._on_lift_height_change)
 
         # Start Cozmo's client and connect to the robot
         self._cozmo_clt.start()
         self._cozmo_clt.connect()
         self._cozmo_clt.wait_for_robot()
 
-        # Set Cozmo in its initial state
-        # Look down
-        self.head_tilt = pc.MIN_HEAD_ANGLE.radians
+        # Initialize the controller
+        self._ctrl.init()
 
-        # Set the lift in its minimum position
-        self.lift_height = pc.MIN_LIFT_HEIGHT.mm
+        # Initialize the display
+        self._display.init()
 
-        # Make sure the light is off by default
-        self.head_light = False
+    def main(self):
+        """
+        This is where the magic happens. Loop through the display process, until the user stops the main thread.
+        :return: None
+        """
 
-        # Enable the camera
-        self._cozmo_clt.enable_camera(enable=True, color=self._color)
-
-        # Handle new incoming images
-        self._cozmo_clt.add_handler(pc.event.EvtNewRawCameraImage, self._on_new_image)
-
-        # Handle cliff and pick-up detection
-        self._cozmo_clt.add_handler(pc.event.EvtCliffDetectedChange, self._stop_all)
-        self._cozmo_clt.add_handler(pc.event.EvtRobotPickedUpChange, self._stop_all)
-
-        # Start the keyboard event listener
-        self._kbd_listener.start()
-        self._kbd_listener.wait()
+        # As long as the controller does not request for the thread to stop
+        while self._ctrl.go_on:
+            # Execute the display's next step
+            self._display.step()
 
     def stop(self):
         """
@@ -95,30 +79,15 @@ class OpencvRC(object):
         :return: None
         """
 
-        # This is to make sure that whatever happens during execution, the
-        # robot will always stop driving before exiting
-        self._stop_all()
+        # Stop the display
+        self._display.stop()
 
-        # Bring the lift down
-        self.lift_height = pc.MIN_LIFT_HEIGHT.mm
-
-        # Set the head down as well
-        self.head_tilt = pc.MIN_HEAD_ANGLE.radians
-
-        # Turn off the light
-        self.head_light = False
+        # Stop the controller
+        self._ctrl.stop()
 
         # Disconnect from Cozmo
         self._cozmo_clt.disconnect()
         self._cozmo_clt.stop()
-
-        # If the keyboard listener is still running
-        if self._kbd_listener.running:
-            self._kbd_listener.stop()
-            self._kbd_listener.join()
-
-        # Close any display open by OpenCv
-        cv.destroyAllWindows()
 
 
 class Controller(object):
@@ -637,14 +606,8 @@ if __name__ == "__main__":
     rc.init()
 
     try:
-        # Instantiate a dummy event
-        evt = Event()
-
-        # Loop until told to stop
-        while rc.go_on:
-
-            # Nothing to do here but wait
-            evt.wait(timeout=1)
+        # Execute the remote controller's main thread
+        rc.main()
 
     finally:
         # Stop the remote controller and clean after ourselves
