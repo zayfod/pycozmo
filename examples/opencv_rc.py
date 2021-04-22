@@ -192,8 +192,8 @@ class Controller(object):
             self._kbd_listener.stop()
             self._kbd_listener.join()
 
-        # Close any display open by OpenCv
-        cv.destroyAllWindows()
+        # Close the display open by OpenCv
+        cv.destroyWindow(self._win_name)
 
     def _set_action(self, linear, angular):
         """
@@ -536,8 +536,8 @@ class Display(object):
             self._img_queue.task_done()
         self._img_queue.join()
 
-        # Close any display open by OpenCv
-        cv.destroyAllWindows()
+        # Close the display open by OpenCv
+        cv.destroyWindow(self._win_name)
 
     def _on_new_image(self, cli, frame):
         """
