@@ -522,7 +522,7 @@ class Display(object):
 
         # This might seem odd, but is actually required by OpenCV to perform GUI housekeeping. See OpenCV's
         # documentation for imshow() for more "in-depth" information.
-        cv.waitKey(25)
+        cv.waitKey(1)
 
         # Indicate to the queue that the task is done
         self._img_queue.task_done()
