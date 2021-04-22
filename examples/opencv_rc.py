@@ -104,6 +104,9 @@ class Controller(object):
         :param win_name: String. A string representing the title of the window used to display OpenCV's track bars.
         """
 
+        # Declare a flag telling the main thread when to stop its execution
+        self.go_on = True
+
         # Set the client used for communicating with Cozmo
         self._cozmo_clt = clt
 
