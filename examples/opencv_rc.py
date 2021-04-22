@@ -524,6 +524,9 @@ class Display(object):
         # documentation for imshow() for more "in-depth" information.
         cv.waitKey(25)
 
+        # Indicate to the queue that the task is done
+        self._img_queue.task_done()
+
     def stop(self):
         """
         Clean up after execution to leave the program in a known and stable state (hopefully).
