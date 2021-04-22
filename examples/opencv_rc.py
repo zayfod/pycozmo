@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from queue import Queue
+from queue import Queue, Empty
 from enum import IntEnum, auto
+import logging
 import numpy as np
 import cv2 as cv
 import pycozmo as pc
@@ -511,18 +512,22 @@ class Display(object):
         :return: None
         """
 
-        # Get the next frame from the queue
-        frame = self._img_queue.get()
+        try:
+            # Get the next frame from the queue
+            # The timeout is actually required, otherwise this might block all other threads when trying to exit
+            frame = self._img_queue.get(timeout=0.2)
 
-        # Display the frame in the video feed window
-        cv.imshow(self._win_name, frame)
+            # Display the frame in the video feed window
+            cv.imshow(self._win_name, frame)
 
-        # This might seem odd, but is actually required by OpenCV to perform GUI housekeeping. See OpenCV's
-        # documentation for imshow() for more "in-depth" information.
-        cv.waitKey(1)
+            # This might seem odd, but is actually required by OpenCV to perform GUI housekeeping. See OpenCV's
+            # documentation for imshow() for more "in-depth" information.
+            cv.waitKey(1)
 
-        # Indicate to the queue that the task is done
-        self._img_queue.task_done()
+            # Indicate to the queue that the task is done
+            self._img_queue.task_done()
+        except Empty:
+            logging.warning("Did not get any image from the camera. So not displaying anything new.")
 
     def stop(self):
         """
