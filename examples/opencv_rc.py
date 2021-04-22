@@ -40,7 +40,7 @@ class OpencvRC(object):
         self._cozmo_clt = pc.Client()
 
         # Instantiate the controller
-        self._ctrl = Controller(self._cozmo_clt, win_name=win_name_ctrl)
+        self._ctrl = RemoteControl(self._cozmo_clt, win_name=win_name_ctrl)
 
         # Instantiate the display
         self._display = Display(self._cozmo_clt, win_name=win_name_video, sharp_amount=sharp_amount,
@@ -91,7 +91,7 @@ class OpencvRC(object):
         self._cozmo_clt.stop()
 
 
-class Controller(object):
+class RemoteControl(object):
     """
     Use the keyboard to control Cozmo's movements, as well as OpenCV's track bars to set the robot's head angle, lift
     height, and both its linear and angular velocities.
