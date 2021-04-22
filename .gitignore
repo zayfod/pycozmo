@@ -18,3 +18,5 @@ __pycache__/
 /.mypy_cache/
 
 /examples/*.png
+
+.pre-commit-config.yaml
