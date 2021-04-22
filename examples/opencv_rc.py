@@ -125,9 +125,6 @@ class Controller(object):
         # Keep track of the lift's height
         self._lift_height = pc.MIN_LIFT_HEIGHT.mm
 
-        # Initialize Cozmo's client
-        self._cozmo_clt = pc.Client()
-
         # Initialize a listener to monitor keyboard events
         self._kbd_listener = kbd.Listener(on_press=self._on_keypress, on_release=self._on_keyrelease)
 
