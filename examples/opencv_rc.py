@@ -19,23 +19,21 @@ class Direction(IntEnum):
 
 class OpencvRC(object):
     """
-    A remote controller using OpenCV's GUI to display Cozmo's video feed, as
-    well as set its velocities, head angle, and lift height. Movement and head
-    light are controlled using the keyboard (W, A, S, D, and L).
+    A remote controller using OpenCV's GUI to display Cozmo's video feed, as well as set its velocities, head angle,
+    and lift height. Movement and head light are controlled using the keyboard (W, A, S, D, and L).
     """
 
     def __init__(self, win_name='Control Panel', sharp_amount=0.7,
                  sharp_gamma=2.2):
         """
-        Initialize all the variables required to remote control Cozmo using
-        OpenCV's GUI and Pynput for handling keyboard events.
-        :param win_name: String. The title of the window in which OpenCV will
-        display the camera feed, as well as the different taskbars.
-        :param sharp_amount: Float. Used in the unsharp masking algorithm to
-        dictate how much of the blurred image gets added to scaled image.
-        :param sharp_gamma: Float. A scalar added during the summing process in
-        the unsharp masking algorithm, to effectively brighten or darken the
-        overall image.
+        Initialize all the variables required to remote control Cozmo using OpenCV's GUI and Pynput for handling
+        keyboard events.
+        :param win_name: String. The title of the window in which OpenCV will display the camera feed, as well as the
+        different taskbars.
+        :param sharp_amount: Float. Used in the unsharp masking algorithm to dictate how much of the blurred image gets
+        added to scaled image.
+        :param sharp_gamma: Float. A scalar added during the summing process in the unsharp masking algorithm, to
+        effectively brighten or darken the overall image.
         """
 
         # Declare a flag telling the program's main loop to stop
@@ -63,8 +61,7 @@ class OpencvRC(object):
         self._cozmo_clt = pc.Client()
 
         # Initialize a listener to monitor keyboard events
-        self._kbd_listener = kbd.Listener(on_press=self._on_keypress,
-                                          on_release=self._on_keyrelease)
+        self._kbd_listener = kbd.Listener(on_press=self._on_keypress, on_release=self._on_keyrelease)
 
         # Other miscellaneous parameters to keep track of
         self._win_name = win_name
@@ -73,9 +70,8 @@ class OpencvRC(object):
 
     def init(self):
         """
-        Create the window OpenCV will use to display the video feed and the
-        different trackbars, as well as set and start Cozmo's client, and the
-        keyboard listener.
+        Create the window OpenCV will use to display the video feed and the different trackbars, as well as set and
+        start Cozmo's client, and the keyboard listener.
         :return: None
         """
 
@@ -84,14 +80,10 @@ class OpencvRC(object):
 
         # Create the different trackbars controlling the robot's velocities,
         # head tilt, and lift height
-        cv.createTrackbar('Linear Velocity', self._win_name, 0, 100,
-                          self._on_linear_velocity_change)
-        cv.createTrackbar('Angular Velocity', self._win_name, 0, 100,
-                          self._on_angular_velocity_change)
-        cv.createTrackbar('Head tilt', self._win_name, 0, 100,
-                          self._on_head_tilt_change)
-        cv.createTrackbar('Lift height', self._win_name, 0, 100,
-                          self._on_lift_height_change)
+        cv.createTrackbar('Linear Velocity', self._win_name, 0, 100, self._on_linear_velocity_change)
+        cv.createTrackbar('Angular Velocity', self._win_name, 0, 100, self._on_angular_velocity_change)
+        cv.createTrackbar('Head tilt', self._win_name, 0, 100, self._on_head_tilt_change)
+        cv.createTrackbar('Lift height', self._win_name, 0, 100, self._on_lift_height_change)
 
         # Start Cozmo's client and connect to the robot
         self._cozmo_clt.start()
@@ -112,14 +104,11 @@ class OpencvRC(object):
         self._cozmo_clt.enable_camera(enable=True, color=self._color)
 
         # Handle new incoming images
-        self._cozmo_clt.add_handler(pc.event.EvtNewRawCameraImage,
-                                    self._on_new_image)
+        self._cozmo_clt.add_handler(pc.event.EvtNewRawCameraImage, self._on_new_image)
 
         # Handle cliff and pick-up detection
-        self._cozmo_clt.add_handler(pc.event.EvtCliffDetectedChange,
-                                    self._stop_all)
-        self._cozmo_clt.add_handler(pc.event.EvtRobotPickedUpChange,
-                                    self._stop_all)
+        self._cozmo_clt.add_handler(pc.event.EvtCliffDetectedChange, self._stop_all)
+        self._cozmo_clt.add_handler(pc.event.EvtRobotPickedUpChange, self._stop_all)
 
         # Start the keyboard event listener
         self._kbd_listener.start()
@@ -127,8 +116,7 @@ class OpencvRC(object):
 
     def stop(self):
         """
-        Clean up after execution to leave the program in a known and stable
-        state (hopefully).
+        Clean up after execution to leave the program in a known and stable state (hopefully).
         :return: None
         """
 
@@ -159,10 +147,9 @@ class OpencvRC(object):
 
     def _on_new_image(self, cli, frame):
         """
-        A simple function that converts a frame from Cozmo's camera into a
-        up-scaled and BGR formatted image to be used by OpenCV.
-        :param cli: An instance of the pycozmo. Client class representing the
-        robot.
+        A simple function that converts a frame from Cozmo's camera into a up-scaled and BGR formatted image to be used
+        by OpenCV.
+        :param cli: An instance of the pycozmo. Client class representing the robot.
         :param frame: A color/grayscale frame from Cozmo's camera.
         :return: None
         """
@@ -177,22 +164,19 @@ class OpencvRC(object):
             orig_img = cv.cvtColor(orig_img, cv.COLOR_RGB2BGR)
 
         # Resize the image
-        # The lanczos4 algorithm produces the best results, but might be slow
-        # you can use cv.INTER_LINEAR for poorer, but faster results
-        resized_img = cv.resize(orig_img, None, fx=2, fy=2,
-                                interpolation=cv.INTER_LANCZOS4)
+        # The lanczos4 algorithm produces the best results, but might be slow you can use cv.INTER_LINEAR for poorer,
+        # but faster results
+        resized_img = cv.resize(orig_img, None, fx=2, fy=2, interpolation=cv.INTER_LANCZOS4)
 
         # Try to reduce the noise using unsharp masking
         # An explanation for this technique can be found here:
         # https://en.wikipedia.org/wiki/Unsharp_masking#Digital_unsharp_masking
         blurred_img = cv.GaussianBlur(resized_img, (3, 3), 0)
-        sharp_img = cv.addWeighted(resized_img, 1 + self._sharp_amount,
-                                   blurred_img, -self._sharp_amount,
+        sharp_img = cv.addWeighted(resized_img, 1 + self._sharp_amount, blurred_img, -self._sharp_amount,
                                    gamma=self._sharp_gamma)
 
-        # NOTE: This could be used with cv.filter2D() in place of the unsharp
-        # masking. However, controlling the amount of sharpening is more
-        # difficult
+        # NOTE: This could be used with cv.filter2D() in place of the unsharp masking. However, controlling the amount
+        # of sharpening is more difficult
         # UNSHARP_KERNEL = -1 / 256 * np.array([[1, 4, 6, 4, 1],
         #                                       [4, 16, 24, 16, 4],
         #                                       [6, 24, -476, 24, 6],
@@ -201,34 +185,28 @@ class OpencvRC(object):
 
         # Display the image in the video feed window
         cv.imshow(self._win_name, sharp_img)
-        # This might seem odd, but is actually required by OpenCV to perform GUI
-        # housekeeping. See OpenCV's documentation for imshow() for more
-        # "in-depth" information.
+        # This might seem odd, but is actually required by OpenCV to perform GUI housekeeping. See OpenCV's
+        # documentation for imshow() for more "in-depth" information.
         cv.waitKey(25)
 
     def _set_action(self, linear, angular):
         """
-        Set the directions of Cozmo's movement and send the corresponding
-        command to spin the motors at the right speed.
-        :param linear: Direction. An instance of the Direction enumeration.
-        Either Forward, Backward, or None.
-        :param angular: Direction. An instance of the Direction enumeration.
-        Either Left, Right, or None.
+        Set the directions of Cozmo's movement and send the corresponding command to spin the motors at the right speed.
+        :param linear: Direction. An instance of the Direction enumeration. Either Forward, Backward, or None.
+        :param angular: Direction. An instance of the Direction enumeration. Either Left, Right, or None.
         :return: None
         """
 
         # Check if the new values are different from the old ones before doing
         # any complex calculations and send motor commands
-        if self._action['linear'] != linear or \
-                self._action['angular'] != angular:
+        if self._action['linear'] != linear or self._action['angular'] != angular:
 
             # Set the value of the new action
             self._action['linear'] = linear
             self._action['angular'] = angular
 
             # If Cozmo is not doing anything, simply stop all the motors
-            if self._action['linear'] == Direction.NONE and \
-                    self._action['angular'] == Direction.NONE:
+            if self._action['linear'] == Direction.NONE and self._action['angular'] == Direction.NONE:
                 self._cozmo_clt.stop_all_motors()
 
             # Compute the speed of each wheel depending on Cozmo's action and
@@ -243,8 +221,7 @@ class OpencvRC(object):
                 else:
                     lin_vel = 0
 
-                # Are we going left, right, or not moving in this direction at
-                # all?
+                # Are we going left, right, or not moving in this direction at all?
                 if self._action['angular'] == Direction.LEFT:
                     ang_vel = self._velocity['angular']
                 elif self._action['angular'] == Direction.RIGHT:
@@ -253,19 +230,16 @@ class OpencvRC(object):
                     ang_vel = 0
 
                 # Compute the actual speed of each wheel
-                left = min(pc.MAX_WHEEL_SPEED.mmps, lin_vel -
-                           (pc.TRACK_WIDTH.mm * ang_vel) / 2)
-                right = min(pc.MAX_WHEEL_SPEED.mmps, lin_vel +
-                            (pc.TRACK_WIDTH.mm * ang_vel) / 2)
+                left = min(pc.MAX_WHEEL_SPEED.mmps, lin_vel - (pc.TRACK_WIDTH.mm * ang_vel) / 2)
+                right = min(pc.MAX_WHEEL_SPEED.mmps, lin_vel + (pc.TRACK_WIDTH.mm * ang_vel) / 2)
 
                 # Send the command to the motors
-                self._cozmo_clt.drive_wheels(lwheel_speed=left,
-                                             rwheel_speed=right)
+                self._cozmo_clt.drive_wheels(lwheel_speed=left, rwheel_speed=right)
 
     def _stop_all(self, *args):
         """
-        Simply stop all motors and set both linear and angular actions to NONE.
-        This is a wrapper for ease of use as a callback.
+        Simply stop all motors and set both linear and angular actions to NONE. This is a wrapper for ease of use as a
+        callback.
         :return: None
         """
 
@@ -275,8 +249,7 @@ class OpencvRC(object):
     def _on_head_tilt_change(self, value):
         """
         Simply change the head tilt based on the value given in parameter.
-        :param value: Float. A value between 0: head fully down,
-        and 100: head fully up.
+        :param value: Float. A value between 0: head fully down, and 100: head fully up.
         :return: None
         """
 
@@ -284,15 +257,12 @@ class OpencvRC(object):
         value /= 100
 
         # Set the new head tilt based on the value in parameter
-        self.head_tilt = value * pc.MAX_HEAD_ANGLE.radians + \
-            (1 - value) * pc.MIN_HEAD_ANGLE.radians
+        self.head_tilt = value * pc.MAX_HEAD_ANGLE.radians + (1 - value) * pc.MIN_HEAD_ANGLE.radians
 
     def _on_lift_height_change(self, value):
         """
-        Simply update the height of Cozmo's lift based on the value given in
-        parameter.
-        :param value: Float. A value between 0: lift fully down,
-        and 100: lift fully up.
+        Simply update the height of Cozmo's lift based on the value given in parameter.
+        :param value: Float. A value between 0: lift fully down, and 100: lift fully up.
         :return: None
         """
 
@@ -300,15 +270,12 @@ class OpencvRC(object):
         value /= 100
 
         # Set the new lift's height based on the value in parameter
-        self.lift_height = value * pc.MAX_LIFT_HEIGHT.mm + \
-            (1 - value) * pc.MIN_LIFT_HEIGHT.mm
+        self.lift_height = value * pc.MAX_LIFT_HEIGHT.mm + (1 - value) * pc.MIN_LIFT_HEIGHT.mm
 
     def _on_linear_velocity_change(self, value):
         """
-        Simply update Cozmo's linear velocity based on the value given in
-        parameter.
-        :param value: Float. A value between 0: Stopped, and 100: Full speed
-        ahead.
+        Simply update Cozmo's linear velocity based on the value given in parameter.
+        :param value: Float. A value between 0: Stopped, and 100: Full speed ahead.
         :return: None
         """
 
@@ -317,25 +284,21 @@ class OpencvRC(object):
 
     def _on_angular_velocity_change(self, value):
         """
-        Simply update Cozmo's angular velocity based on the value given in
-        parameter.
-        :param value: Float. A value between 0: Stopped, and
-        100: I gonna throw-up-make-it-stop.
+        Simply update Cozmo's angular velocity based on the value given in parameter.
+        :param value: Float. A value between 0: Stopped, and 100: I gonna throw-up-make-it-stop.
         :return: None
         """
 
         # Set the new angular velocity
-        self.angular_velocity = (pc.MAX_WHEEL_SPEED.mmps / pc.TRACK_WIDTH.mm) \
-            * value / 100
+        self.angular_velocity = (pc.MAX_WHEEL_SPEED.mmps / pc.TRACK_WIDTH.mm) * value / 100
 
     def _on_keypress(self, key):
         """
-        A callback handling keypress events. More specifically it is used to
-        exit the program, and control the robot's movements.
-        :param key: An instance of pynput.keyboard.Key, pynput.keyboard.KeyCode
-        or None. The Key class represent special keys, such as esc, alt, and so
-        on. The KeyCode class on the other hand is a simple wrapper converting
-        keycodes into characters.
+        A callback handling keypress events. More specifically it is used to exit the program, and control the robot's
+        movements.
+        :param key: An instance of pynput.keyboard.Key, pynput.keyboard.KeyCode or None. The Key class represent special
+        keys, such as esc, alt, and so on. The KeyCode class on the other hand is a simple wrapper converting keycodes
+        into characters.
         :return: None
         """
 
@@ -349,10 +312,8 @@ class OpencvRC(object):
                 # Tell the main loop to stop
                 self.go_on = False
 
-            if (char in ['w', 's'] and
-                self._action['linear'] == Direction.NONE) or \
-                    (char in ['a', 'd'] and
-                     self._action['angular'] == Direction.NONE):
+            if (char in ['w', 's'] and self._action['linear'] == Direction.NONE) or \
+                    (char in ['a', 'd'] and self._action['angular'] == Direction.NONE):
 
                 # Initialize the new action
                 linear, angular = self._action.values()
@@ -382,18 +343,15 @@ class OpencvRC(object):
 
     def _on_keyrelease(self, key):
         """
-        A callback handling keyrelease events. More specifically it is used to
-        control the robot's movements.
-        :param key: An instance of pynput.keyboard.Key, pynput.keyboard.KeyCode
-        or None. The Key class represent special keys, such as esc, alt, and so
-        on. The KeyCode class on the other hand is a simple wrapper converting
-        keycodes into characters.
+        A callback handling keyrelease events. More specifically it is used to control the robot's movements.
+        :param key: An instance of pynput.keyboard.Key, pynput.keyboard.KeyCode or None. The Key class represent special
+        keys, such as esc, alt, and so on. The KeyCode class on the other hand is a simple wrapper converting keycodes
+        into characters.
         :return: None
         """
-        global GO_ON
 
         # Ignore any event if the program is in the process of exiting
-        if GO_ON:
+        if self.go_on:
             # Ignore any None or pynput.keyboard.Key instances
             if key is not None and not isinstance(key, kbd.Key):
                 # Get the character corresponding to the released key
@@ -453,8 +411,7 @@ class OpencvRC(object):
         """
 
         # Set the value of the head tilt
-        self._head_tilt = max(pc.MIN_HEAD_ANGLE.radians,
-                              min(pc.MAX_HEAD_ANGLE.radians, value))
+        self._head_tilt = max(pc.MIN_HEAD_ANGLE.radians, min(pc.MAX_HEAD_ANGLE.radians, value))
 
         # Send the command to cozmo
         self._cozmo_clt.set_head_angle(self._head_tilt)
@@ -472,8 +429,7 @@ class OpencvRC(object):
         """
 
         # Set the value of the lift height
-        self._lift_height = max(pc.MIN_LIFT_HEIGHT.mm,
-                                min(pc.MAX_LIFT_HEIGHT.mm, value))
+        self._lift_height = max(pc.MIN_LIFT_HEIGHT.mm, min(pc.MAX_LIFT_HEIGHT.mm, value))
 
         # Send the command to cozmo
         self._cozmo_clt.set_lift_height(height=self._lift_height)
@@ -492,9 +448,7 @@ class OpencvRC(object):
 
     @angular_velocity.setter
     def angular_velocity(self, value):
-        self._velocity['angular'] = max(0,
-                                        min(value, pc.MAX_WHEEL_SPEED.mmps /
-                                            pc.TRACK_WIDTH.mm))
+        self._velocity['angular'] = max(0, min(value, pc.MAX_WHEEL_SPEED.mmps / pc.TRACK_WIDTH.mm))
 
     @property
     def color(self):
