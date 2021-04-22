@@ -17,10 +17,6 @@ class Direction(IntEnum):
     RIGHT = auto()
 
 
-# Declare a flag telling the program's main loop to stop
-GO_ON = True
-
-
 class OpencvRC(object):
     """
     A remote controller using OpenCV's GUI to display Cozmo's video feed, as
@@ -41,6 +37,9 @@ class OpencvRC(object):
         the unsharp masking algorithm, to effectively brighten or darken the
         overall image.
         """
+
+        # Declare a flag telling the program's main loop to stop
+        self.go_on = True
 
         # Should the camera image be displayed in color or grayscale
         self._color = True
@@ -339,7 +338,6 @@ class OpencvRC(object):
         keycodes into characters.
         :return: None
         """
-        global GO_ON
 
         # Ignore any None or pynput.keyboard.Key instances
         if key is not None and not isinstance(key, kbd.Key):
@@ -349,7 +347,7 @@ class OpencvRC(object):
 
             if char == 'q':
                 # Tell the main loop to stop
-                GO_ON = False
+                self.go_on = False
 
             if (char in ['w', 's'] and
                 self._action['linear'] == Direction.NONE) or \
@@ -531,7 +529,7 @@ if __name__ == "__main__":
         evt = Event()
 
         # Loop until told to stop
-        while GO_ON:
+        while rc.go_on:
 
             # Nothing to do here but wait
             evt.wait(timeout=1)
