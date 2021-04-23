@@ -149,6 +149,7 @@ class RemoteControl(object):
         cv.createTrackbar('Angular Velocity', self._win_name, 0, 100, self._on_angular_velocity_change)
         cv.createTrackbar('Head tilt', self._win_name, 0, 100, self._on_head_tilt_change)
         cv.createTrackbar('Lift height', self._win_name, 0, 100, self._on_lift_height_change)
+        cv.createTrackbar('Head light', self._win_name, 0, 1, self.head_light)
 
         # Set Cozmo in its initial state
         # Look down
@@ -343,10 +344,6 @@ class RemoteControl(object):
                 # Set the new actions
                 self._set_action(linear, angular)
 
-            elif char == 'l':
-                # Toggle the head light
-                self.head_light = not self.head_light
-
     def _on_keyrelease(self, key):
         """
         A callback handling keyrelease events. More specifically it is used to control the robot's movements.
@@ -396,6 +393,9 @@ class RemoteControl(object):
         :param value: Bool. True for turning the light on, False otherwise.
         :return: None
         """
+
+        # Make sure the value is a boolean
+        value = bool(value)
 
         if self._head_light != value:
             # Set the value
