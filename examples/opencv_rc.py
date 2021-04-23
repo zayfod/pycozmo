@@ -145,8 +145,8 @@ class RemoteControl(object):
 
         # Create the different trackbars controlling the robot's velocities,
         # head tilt, and lift height
-        cv.createTrackbar('Linear Velocity', self._win_name, 0, 100, self._on_linear_velocity_change)
-        cv.createTrackbar('Angular Velocity', self._win_name, 0, 100, self._on_angular_velocity_change)
+        cv.createTrackbar('Linear velocity', self._win_name, 0, 100, self._on_linear_velocity_change)
+        cv.createTrackbar('Angular velocity', self._win_name, 0, 100, self._on_angular_velocity_change)
         cv.createTrackbar('Head tilt', self._win_name, 0, 100, self._on_head_tilt_change)
         cv.createTrackbar('Lift height', self._win_name, 0, 100, self._on_lift_height_change)
         cv.createTrackbar('Head light', self._win_name, 0, 1, self.head_light)
