@@ -138,6 +138,8 @@ class RemoteControl(object):
         :return: None
         """
 
+        # Create a new thread for the window containing the task bars to prevent any lag issues due to key events
+        cv.startWindowThread()
         # Create a window for the control panel
         cv.namedWindow(self._win_name)
 
@@ -496,6 +498,8 @@ class Display(object):
         :return: None
         """
 
+        # Create a new thread for the window, to prevent any freezing of the video feed
+        cv.startWindowThread()
         # Create a window for the video feed
         cv.namedWindow(self._win_name)
 
@@ -519,10 +523,6 @@ class Display(object):
 
             # Display the frame in the video feed window
             cv.imshow(self._win_name, frame)
-
-            # This might seem odd, but is actually required by OpenCV to perform GUI housekeeping. See OpenCV's
-            # documentation for imshow() for more "in-depth" information.
-            cv.waitKey(1)
 
             # Indicate to the queue that the task is done
             self._img_queue.task_done()
