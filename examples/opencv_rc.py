@@ -149,7 +149,7 @@ class RemoteControl(object):
         cv.createTrackbar('Angular velocity', self._win_name, 0, 100, self._on_angular_velocity_change)
         cv.createTrackbar('Head tilt', self._win_name, 0, 100, self._on_head_tilt_change)
         cv.createTrackbar('Lift height', self._win_name, 0, 100, self._on_lift_height_change)
-        cv.createTrackbar('Head light', self._win_name, 0, 1, self.head_light)
+        cv.createTrackbar('Head light', self._win_name, 0, 1, self._on_head_light_change)
 
         # Set Cozmo in its initial state
         # Look down
@@ -299,6 +299,19 @@ class RemoteControl(object):
         # Set the new angular velocity
         self.angular_velocity = (pc.MAX_WHEEL_SPEED.mmps / pc.TRACK_WIDTH.mm) * value / 100
 
+    def _on_head_light_change(self, value):
+        """
+        Update Cozmo's head light state based on the value given in parameter.
+        :param value: Int. Either 0: Off or 1: On.
+        :return: None
+        """
+
+        # Transform the value from an integer into a boolean
+        value = bool(value)
+
+        # Set the new head light state
+        self.head_light = value
+
     def _on_keypress(self, key):
         """
         A callback handling keypress events. More specifically it is used to exit the program, and control the robot's
@@ -393,9 +406,6 @@ class RemoteControl(object):
         :param value: Bool. True for turning the light on, False otherwise.
         :return: None
         """
-
-        # Make sure the value is a boolean
-        value = bool(value)
 
         if self._head_light != value:
             # Set the value
