@@ -40,11 +40,11 @@ class OpencvRC(object):
         self._cozmo_clt = pc.Client()
 
         # Instantiate the controller
-        self._ctrl = RemoteControl(self._cozmo_clt, win_name=win_name_ctrl)
+        self._ctrl = RemoteControl(self._cozmo_clt)
 
         # Instantiate the display
-        self._display = Display(self._cozmo_clt, win_name=win_name_video, sharp_amount=sharp_amount,
-                                sharp_gamma=sharp_gamma)
+        self._display = Display(self._cozmo_clt, win_name_video=win_name_video, win_name_ctrl=win_name_ctrl,
+                                sharp_amount=sharp_amount, sharp_gamma=sharp_gamma)
 
     def init(self):
         """
@@ -61,7 +61,11 @@ class OpencvRC(object):
         self._ctrl.init()
 
         # Initialize the display
-        self._display.init()
+        self._display.init(self._ctrl.on_linear_velocity_change,
+                           self._ctrl.on_angular_velocity_change,
+                           self._ctrl.on_head_tilt_change,
+                           self._ctrl.on_lift_height_change,
+                           self._ctrl.on_head_light_change)
 
     def main(self):
         """
@@ -97,12 +101,11 @@ class RemoteControl(object):
     height, and both its linear and angular velocities.
     """
 
-    def __init__(self, clt, win_name='Control Panel'):
+    def __init__(self, clt):
         """
         Initialize the different variables required to remote control Cozmo using both keyboard events and OpenCV's
         taskbars.
         :param clt: pycozmo.Client. An instance of the client used to communicate with Cozmo.
-        :param win_name: String. A string representing the title of the window used to display OpenCV's track bars.
         """
 
         # Declare a flag telling the main thread when to stop its execution
@@ -129,27 +132,11 @@ class RemoteControl(object):
         # Initialize a listener to monitor keyboard events
         self._kbd_listener = kbd.Listener(on_press=self._on_keypress, on_release=self._on_keyrelease)
 
-        # Other miscellaneous parameters to keep track of
-        self._win_name = win_name
-
     def init(self):
         """
         Create the window OpenCV will use to display the different track bars, as well as start the keyboard listener.
         :return: None
         """
-
-        # Create a new thread for the window containing the task bars to prevent any lag issues due to key events
-        cv.startWindowThread()
-        # Create a window for the control panel
-        cv.namedWindow(self._win_name)
-
-        # Create the different trackbars controlling the robot's velocities,
-        # head tilt, and lift height
-        cv.createTrackbar('Linear velocity', self._win_name, 0, 100, self._on_linear_velocity_change)
-        cv.createTrackbar('Angular velocity', self._win_name, 0, 100, self._on_angular_velocity_change)
-        cv.createTrackbar('Head tilt', self._win_name, 0, 100, self._on_head_tilt_change)
-        cv.createTrackbar('Lift height', self._win_name, 0, 100, self._on_lift_height_change)
-        cv.createTrackbar('Head light', self._win_name, 0, 1, self._on_head_light_change)
 
         # Set Cozmo in its initial state
         # Look down
@@ -192,9 +179,6 @@ class RemoteControl(object):
         if self._kbd_listener.running:
             self._kbd_listener.stop()
             self._kbd_listener.join()
-
-        # Close the display open by OpenCv
-        cv.destroyWindow(self._win_name)
 
     def _set_action(self, linear, angular):
         """
@@ -253,7 +237,7 @@ class RemoteControl(object):
         # Set both actions to NONE, which will stop the motors
         self._set_action(Direction.NONE, Direction.NONE)
 
-    def _on_head_tilt_change(self, value):
+    def on_head_tilt_change(self, value):
         """
         Simply change the head tilt based on the value given in parameter.
         :param value: Float. A value between 0: head fully down, and 100: head fully up.
@@ -266,7 +250,7 @@ class RemoteControl(object):
         # Set the new head tilt based on the value in parameter
         self.head_tilt = value * pc.MAX_HEAD_ANGLE.radians + (1 - value) * pc.MIN_HEAD_ANGLE.radians
 
-    def _on_lift_height_change(self, value):
+    def on_lift_height_change(self, value):
         """
         Simply update the height of Cozmo's lift based on the value given in parameter.
         :param value: Float. A value between 0: lift fully down, and 100: lift fully up.
@@ -279,7 +263,7 @@ class RemoteControl(object):
         # Set the new lift's height based on the value in parameter
         self.lift_height = value * pc.MAX_LIFT_HEIGHT.mm + (1 - value) * pc.MIN_LIFT_HEIGHT.mm
 
-    def _on_linear_velocity_change(self, value):
+    def on_linear_velocity_change(self, value):
         """
         Simply update Cozmo's linear velocity based on the value given in parameter.
         :param value: Float. A value between 0: Stopped, and 100: Full speed ahead.
@@ -289,7 +273,7 @@ class RemoteControl(object):
         # Set the new linear velocity
         self.linear_velocity = pc.MAX_WHEEL_SPEED.mmps * value / 100
 
-    def _on_angular_velocity_change(self, value):
+    def on_angular_velocity_change(self, value):
         """
         Simply update Cozmo's angular velocity based on the value given in parameter.
         :param value: Float. A value between 0: Stopped, and 100: I gonna throw-up-make-it-stop.
@@ -299,7 +283,7 @@ class RemoteControl(object):
         # Set the new angular velocity
         self.angular_velocity = (pc.MAX_WHEEL_SPEED.mmps / pc.TRACK_WIDTH.mm) * value / 100
 
-    def _on_head_light_change(self, value):
+    def on_head_light_change(self, value):
         """
         Update Cozmo's head light state based on the value given in parameter.
         :param value: Int. Either 0: Off or 1: On.
@@ -472,12 +456,14 @@ class Display(object):
     Display the video retrieved from Cozmo's camera using OpenCV.
     """
 
-    def __init__(self, clt, win_name='Camera', sharp_amount=0.7, sharp_gamma=2.2):
+    def __init__(self, clt, win_name_video='Camera', win_name_ctrl='Control Panel', sharp_amount=0.7, sharp_gamma=2.2):
         """
         Initialize all the variables required to scale up the frames retrieved from Cozmo's camera and display them
         using OpenCV.
         :param clt: pycozmo.Client. The client used to communicate with Cozmo.
-        :param win_name: String. The name of the window in which the video feed will be displayed.
+        :param win_name_video: String. The name of the window in which the video feed will be displayed.
+        :param win_name_ctrl: String. The name of the window in which the different track bars controlling Cozmo's head
+        tilt, head light, and lift height will be displayed.
         :param sharp_amount: Float. Used in the unsharp masking algorithm to dictate how much of the blurred image gets
         added to scaled image.
         :param sharp_gamma: Float. A scalar added during the summing process in the unsharp masking algorithm, to
@@ -491,7 +477,8 @@ class Display(object):
         self._color = True
 
         # Keep track of the name of the window
-        self._win_name = win_name
+        self._win_name_video = win_name_video
+        self._win_name_ctrl = win_name_ctrl
 
         # Save the parameters that will be used for the unsharp masking algorithm
         self._sharp_amount = sharp_amount
@@ -501,23 +488,54 @@ class Display(object):
         # thread
         self._img_queue = Queue()
 
-    def init(self):
+    def init(self, lin_velocity_callback=None, ang_velocity_callback=None, head_tilt_callback=None,
+             lift_height_callback=None, head_light_callback=None):
         """
         Create the window OpenCV will use to display the video feed, enable the camera, and provide a handler for new
         raw frames.
+        :param lin_velocity_callback: A function called whenever the value of the linear velocity is changed via
+        OpenCV's track bar.
+        :param ang_velocity_callback: A function called whenever the value of the angular velocity is changed via
+        OpenCV's track bar.
+        :param head_tilt_callback: A function called whenever the value of the head's angle is changed via
+        OpenCV's track bar.
+        :param lift_height_callback: A function called whenever the value of the lift's height is changed via
+        OpenCV's track bar.
+        :param head_light_callback: A function called whenever the value of the light is changed via
+        OpenCV's track bar.
         :return: None
         """
 
         # Create a new thread for the window, to prevent any freezing of the video feed
         cv.startWindowThread()
         # Create a window for the video feed
-        cv.namedWindow(self._win_name)
+        cv.namedWindow(self._win_name_video)
 
         # Enable the camera
         self._cozmo_clt.enable_camera(enable=True, color=self._color)
 
         # Handle new incoming images
         self._cozmo_clt.add_handler(pc.event.EvtNewRawCameraImage, self._on_new_image)
+
+        if lin_velocity_callback is not None or ang_velocity_callback is not None or head_tilt_callback is not None or \
+                lift_height_callback is not None or head_light_callback is not None:
+            # Create a new thread for the window containing the task bars to prevent any lag issues due to key events
+            cv.startWindowThread()
+            # Create a window for the control panel
+            cv.namedWindow(self._win_name_ctrl)
+
+            # Create the different trackbars controlling the robot's velocities,
+            # head tilt, and lift height
+            if lin_velocity_callback is not None:
+                cv.createTrackbar('Linear velocity', self._win_name_ctrl, 0, 100, lin_velocity_callback)
+            if ang_velocity_callback is not None:
+                cv.createTrackbar('Angular velocity', self._win_name_ctrl, 0, 100, ang_velocity_callback)
+            if head_tilt_callback is not None:
+                cv.createTrackbar('Head tilt', self._win_name_ctrl, 0, 100, head_tilt_callback)
+            if lift_height_callback is not None:
+                cv.createTrackbar('Lift height', self._win_name_ctrl, 0, 100, lift_height_callback)
+            if head_light_callback is not None:
+                cv.createTrackbar('Head light', self._win_name_ctrl, 0, 1, head_light_callback)
 
     def step(self):
         """
@@ -532,7 +550,7 @@ class Display(object):
             frame = self._img_queue.get(timeout=0.2)
 
             # Display the frame in the video feed window
-            cv.imshow(self._win_name, frame)
+            cv.imshow(self._win_name_video, frame)
 
             # Indicate to the queue that the task is done
             self._img_queue.task_done()
@@ -552,7 +570,8 @@ class Display(object):
         self._img_queue.join()
 
         # Close the display open by OpenCv
-        cv.destroyWindow(self._win_name)
+        cv.destroyWindow(self._win_name_video)
+        cv.destroyWindow(self._win_name_ctrl)
 
     def _on_new_image(self, cli, frame):
         """
