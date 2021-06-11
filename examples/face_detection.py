@@ -1,20 +1,22 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from queue import Queue, Empty
+from queue import Empty
 import math
 import time
 import numpy as np
 import cv2 as cv
 import pycozmo as pc
-from pycozmo.multi_tracking import MultiTracker, ObjCat, TrackType
+from pycozmo.object_detection_n_tracking import ObjectDetectionNTracking
+from pycozmo.object_tracker import TrackType
+from pycozmo.object_detector import ObjCat
+from pycozmo.display import Display
 
-# Instantiate a multi-tracker for detecting faces only
-TRACKER = MultiTracker(TrackType.MOSSE, skip_frames=5,
-                       obj_cats=[ObjCat.HEAD], conf_thres=0.5,
-                       conf_decay_rate=0.995, img_w=480, img_h=480)
+# Instantiate a face detection and tracking object
+TRACKER = ObjectDetectionNTracking(TrackType.MOSSE, skip_frames=5, obj_cats=[ObjCat.HEAD], conf_thres=0.5,
+                                   conf_decay_rate=0.995, img_w=480, img_h=480)
 
-# This is required since OpenCV can only display frames from the main thread
-IMG_QUEUE = Queue()
+# Instantiate a display
+DISPLAY = Display(win_name='Tracker')
 
 # Those two constants are used when sharpening the image with the unsharp mask
 # algorithm
@@ -38,7 +40,7 @@ def on_camera_img(cli, image):
     :param image:
     :return: None
     """
-    global IMG_QUEUE, TRACKER, SHARP_AMOUNT, SHARP_GAMMA
+    global TRACKER, SHARP_AMOUNT, SHARP_GAMMA
 
     # Convert the image to a numpy array
     frame = np.array(image)
@@ -61,13 +63,7 @@ def on_camera_img(cli, image):
 
     # Let the tracker detect the different faces
     # (this is where the heavy lifting happens)
-    TRACKER.step(sharp_frame)
-
-    # The draw the bounding boxes on the frame
-    TRACKER.draw_bounding_boxes(sharp_frame)
-
-    # Finally send the result back to the main thread
-    IMG_QUEUE.put(sharp_frame)
+    TRACKER.process_frame(sharp_frame)
 
 
 if __name__ == "__main__":
@@ -92,16 +88,14 @@ if __name__ == "__main__":
                     # Get the next frame with the bounding boxes
                     # A timeout is applied so that the robot might still be
                     # controlled even if no image can be displayed
-                    img = IMG_QUEUE.get(timeout=0.5)
+                    img = TRACKER.get_next_frame(block=False)
                     # Display the image in a dedicated window
-                    cv.imshow('Camera', img)
-                    IMG_QUEUE.task_done()
+                    DISPLAY.step(img)
                 except Empty:
-                    pc.logger.warning('Did not get any image from the camera so'
-                                      ' not displaying any.')
+                    pass
 
                 # Read the next key event received by OpenCV's main window
-                key = cv.waitKey(1)
+                key = cv.waitKey(25)
 
                 # Act accordingly
                 if key == ord('q'):
@@ -135,11 +129,8 @@ if __name__ == "__main__":
             # Set the head down
             cli.set_head_angle(pc.MIN_HEAD_ANGLE.radians)
 
-            # Close all displays opened by OpenCV
-            cv.destroyAllWindows()
+            # Close the display
+            DISPLAY.stop()
 
-            # Empty the image queue
-            while not IMG_QUEUE.empty():
-                IMG_QUEUE.get()
-                IMG_QUEUE.task_done()
-            IMG_QUEUE.join()
+            # Stop the face detection and tracking process
+            TRACKER.stop()
