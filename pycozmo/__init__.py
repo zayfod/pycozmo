@@ -37,6 +37,10 @@ from . import emotions
 from . import brain
 from . import audiokinetic
 from . import expressions
+from . import object_detector
+from . import object_tracker
+from . import object_detection_n_tracking
+from . import display
 
 
 __version__ = "0.8.0"

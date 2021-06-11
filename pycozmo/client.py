@@ -15,6 +15,7 @@ from PIL import Image
 
 from . import logger, logger_robot, logger_animation
 from . import protocol_encoder
+from . import protocol_utils
 from . import event
 from . import camera
 from . import object
@@ -62,6 +63,10 @@ class Client(event.Dispatcher):
         self.serial_number = None
         self.body_hw_version = None
         self.body_color = None
+        # Camera parameters.
+        self.camera_config = None
+        # Saved object IDs.
+        self.saved_objects = []
         # Robot state
         # Heading in X-Y plane.
         self.pose_frame_id = 0
@@ -112,6 +117,7 @@ class Client(event.Dispatcher):
         self.add_handler(protocol_encoder.ObjectAvailable, self._on_object_available)
         self.add_handler(protocol_encoder.ObjectConnectionState, self._on_object_connection_state)
         self.add_handler(protocol_encoder.DebugData, self._on_debug_data)
+        self.add_handler(protocol_encoder.NvStorageOpResult, self._on_nv_storage_op_result)
         self.add_handler(event.EvtRobotPickedUpChange, self._on_robot_picked_up)
         self.add_handler(event.EvtRobotWheelsMovingChange, self._on_robot_moving)
         self.conn.start()
@@ -137,6 +143,10 @@ class Client(event.Dispatcher):
         self.conn.send(pkt)  # This repetition seems to trigger BodyInfo
 
     def _initialize_robot(self):
+        # Get camera configuration
+        pkt = protocol_encoder.NvStorageOp(
+            tag=protocol_encoder.NvEntryTag.NVEntry_CameraCalib, length=1, op=protocol_encoder.NvOperation.NVOP_READ)
+        self.conn.send(pkt)
         # Set world frame origin to (0,0,0), frame ID to 0, and origin ID to 1.
         pkt = protocol_encoder.SetOrigin()
         self.conn.send(pkt)
@@ -177,12 +187,6 @@ class Client(event.Dispatcher):
         if self.auto_initialize:
             self._initialize_robot()
         self.dispatch(event.EvtRobotFound, self)
-
-    def wait_for(self, evt, timeout: Optional[float] = None):
-        e = Event()
-        self.add_handler(evt, lambda cli: e.set(), one_shot=True)
-        if not e.wait(timeout):
-            raise exception.Timeout("Timeout waiting for event {}".format(evt))
 
     def wait_for_robot(self, timeout: float = 5.0) -> None:
         if not self.robot_fw_sig:
@@ -360,6 +364,30 @@ class Client(event.Dispatcher):
         del cli
         msg = robot_debug.get_debug_message(pkt.name_id, pkt.format_id, pkt.args)
         logger_robot.log(robot_debug.get_log_level(pkt.level), msg)
+
+    def _on_nv_storage_op_result(self, cli, pkt: protocol_encoder.NvStorageOpResult):
+        print(pkt)
+        if pkt.op == protocol_encoder.NvOperation.NVOP_READ:
+            if pkt.result == protocol_encoder.NvResult.NV_OKAY:
+                if pkt.tag == protocol_encoder.NvEntryTag.NVEntry_CameraCalib and len(pkt.data) == 56:
+                    values = protocol_utils.BinaryReader(pkt.data).read_farray("f", 14)
+                    self.camera_config = camera.CameraConfig(
+                        values[0], values[1],
+                        values[2], values[3],
+                        57.82, 45.0, 1, 67, 0.1, 3.984375)
+                    # Get saved cube IDs
+                    pkt = protocol_encoder.NvStorageOp(
+                        tag=protocol_encoder.NvEntryTag.NVEntry_SavedCubeIDs, length=28,
+                        op=protocol_encoder.NvOperation.NVOP_READ)
+                    self.conn.send(pkt)
+                elif pkt.tag == protocol_encoder.NvEntryTag.NVEntry_SavedCubeIDs and len(pkt.data) == 28:
+                    values = protocol_utils.BinaryReader(pkt.data).read_farray("L", 7)
+                    self.saved_objects = [value for value in values[-3:] if value]
+                    print(self.saved_objects)
+                    for i in self.saved_objects:
+                        print("0x{:08x}".format(i))
+                    # Remove handler.
+                    self.del_handler(protocol_encoder.NvStorageOpResult, self._on_nv_storage_op_result)
 
     def set_head_angle(self, angle: float, accel: float = 10.0, max_speed: float = 10.0,
                        duration: float = 0.0):
