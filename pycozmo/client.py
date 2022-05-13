@@ -222,7 +222,6 @@ class Client(event.Dispatcher):
                 return
             # Discard any previous in-progress image
             self._reset_partial_state()
-            self._partial_image_timestamp = pkt.frame_timestamp
             self._partial_image_id = pkt.image_id
             self._partial_image_encoding = protocol_encoder.ImageEncoding(pkt.image_encoding)
             self._partial_image_resolution = protocol_encoder.ImageResolution(pkt.image_resolution)
@@ -243,6 +242,7 @@ class Client(event.Dispatcher):
         self._partial_data[offset:offset + len(pkt.data)] = np.frombuffer(pkt.data, dtype=np.uint8)
         self._partial_size += len(pkt.data)
         self._last_chunk_id = pkt.chunk_id
+        self._partial_image_timestamp = pkt.frame_timestamp
 
         if pkt.chunk_id == pkt.image_chunk_count - 1:
             self._process_completed_image()
