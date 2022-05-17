@@ -46,7 +46,9 @@ class Client(event.Dispatcher):
                  protocol_log_messages: Optional[list] = None,
                  auto_initialize: bool = True,
                  enable_animations: bool = True,
-                 enable_procedural_face: bool = True) -> None:
+                 enable_procedural_face: bool = True,
+                 enable_jpeg_decoding: bool = True) -> None:
+
         super().__init__()
         # Whether to automatically initialize the robot when connection is established.
         self.auto_initialize = bool(auto_initialize)
@@ -86,6 +88,7 @@ class Client(event.Dispatcher):
         self.client_drop_count = 0
         # Camera state
         self.last_image_timestamp = None
+        self.enable_jpeg_decoding = enable_jpeg_decoding
         # Object state
         self.available_objects = dict()
         self.connected_objects = dict()
@@ -264,12 +267,13 @@ class Client(event.Dispatcher):
             else:
                 data = camera.minigray_to_jpeg(data, width, height)
 
-        image = Image.open(io.BytesIO(data)).convert('RGB')
+        if self.enable_jpeg_decoding:
+            image = Image.open(io.BytesIO(data)).convert('RGB')
 
-        # Color images need to be resized to the proper resolution
-        if is_color_image:
-            size = camera.RESOLUTIONS[self._partial_image_resolution]
-            image = image.resize(size)
+            # Color images need to be resized to the proper resolution
+            if is_color_image:
+                size = camera.RESOLUTIONS[self._partial_image_resolution]
+                image = image.resize(size)
 
         self._latest_image = image
         self.last_image_timestamp = self._partial_image_timestamp
