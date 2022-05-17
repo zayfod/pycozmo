@@ -253,7 +253,6 @@ class Client(event.Dispatcher):
 
     def _process_completed_image(self):
         data = self._partial_data[0:self._partial_size]
-
         # The first byte of the image is whether or not it is in color
         is_color_image = data[0] != 0
 
@@ -269,11 +268,12 @@ class Client(event.Dispatcher):
 
         if self.enable_jpeg_decoding:
             image = Image.open(io.BytesIO(data)).convert('RGB')
-
             # Color images need to be resized to the proper resolution
             if is_color_image:
                 size = camera.RESOLUTIONS[self._partial_image_resolution]
-                image = image.resize(size)
+                image = image.resize(size)  
+        else:
+            image = data
 
         self._latest_image = image
         self.last_image_timestamp = self._partial_image_timestamp

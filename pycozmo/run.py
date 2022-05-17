@@ -61,7 +61,8 @@ def connect(
         robot_log_level: Optional[str] = None,
         auto_initialize: bool = True,
         enable_animations: bool = True,
-        enable_procedural_face: bool = True) -> client.Client:
+        enable_procedural_face: bool = True,
+        *args, **kwargs) -> client.Client:
 
     setup_basic_logging(log_level=log_level, protocol_log_level=protocol_log_level, robot_log_level=robot_log_level)
 
@@ -70,7 +71,8 @@ def connect(
             protocol_log_messages=protocol_log_messages,
             auto_initialize=auto_initialize,
             enable_animations=enable_animations,
-            enable_procedural_face=enable_procedural_face)
+            enable_procedural_face=enable_procedural_face,
+            *args, **kwargs)
         cli.start()
         cli.connect()
         cli.wait_for_robot()
