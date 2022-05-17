@@ -46,7 +46,9 @@ class Client(event.Dispatcher):
                  protocol_log_messages: Optional[list] = None,
                  auto_initialize: bool = True,
                  enable_animations: bool = True,
-                 enable_procedural_face: bool = True) -> None:
+                 enable_procedural_face: bool = True,
+                 enable_jpeg_decoding: bool = True) -> None:
+
         super().__init__()
         # Whether to automatically initialize the robot when connection is established.
         self.auto_initialize = bool(auto_initialize)
@@ -86,6 +88,7 @@ class Client(event.Dispatcher):
         self.client_drop_count = 0
         # Camera state
         self.last_image_timestamp = None
+        self.enable_jpeg_decoding = enable_jpeg_decoding
         # Object state
         self.available_objects = dict()
         self.connected_objects = dict()
@@ -222,7 +225,6 @@ class Client(event.Dispatcher):
                 return
             # Discard any previous in-progress image
             self._reset_partial_state()
-            self._partial_image_timestamp = pkt.frame_timestamp
             self._partial_image_id = pkt.image_id
             self._partial_image_encoding = protocol_encoder.ImageEncoding(pkt.image_encoding)
             self._partial_image_resolution = protocol_encoder.ImageResolution(pkt.image_resolution)
@@ -243,6 +245,7 @@ class Client(event.Dispatcher):
         self._partial_data[offset:offset + len(pkt.data)] = np.frombuffer(pkt.data, dtype=np.uint8)
         self._partial_size += len(pkt.data)
         self._last_chunk_id = pkt.chunk_id
+        self._partial_image_timestamp = pkt.frame_timestamp
 
         if pkt.chunk_id == pkt.image_chunk_count - 1:
             self._process_completed_image()
@@ -250,7 +253,6 @@ class Client(event.Dispatcher):
 
     def _process_completed_image(self):
         data = self._partial_data[0:self._partial_size]
-
         # The first byte of the image is whether or not it is in color
         is_color_image = data[0] != 0
 
@@ -264,12 +266,14 @@ class Client(event.Dispatcher):
             else:
                 data = camera.minigray_to_jpeg(data, width, height)
 
-        image = Image.open(io.BytesIO(data)).convert('RGB')
-
-        # Color images need to be resized to the proper resolution
-        if is_color_image:
-            size = camera.RESOLUTIONS[self._partial_image_resolution]
-            image = image.resize(size)
+        if self.enable_jpeg_decoding:
+            image = Image.open(io.BytesIO(data)).convert('RGB')
+            # Color images need to be resized to the proper resolution
+            if is_color_image:
+                size = camera.RESOLUTIONS[self._partial_image_resolution]
+                image = image.resize(size)  
+        else:
+            image = data
 
         self._latest_image = image
         self.last_image_timestamp = self._partial_image_timestamp
