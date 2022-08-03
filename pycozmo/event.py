@@ -126,11 +126,11 @@ class EvtRobotAnimatingIdleChange(Event):
 
 
 class EvtRobotOnChargerChange(Event):
-    pass
+    """ Triggered when the robot has moved on or off the charger. """
 
 
 class EvtRobotChargingChange(Event):
-    pass
+    """ Triggered when the robot has started or stopped charging. """
 
 
 class EvtCliffDetectedChange(Event):

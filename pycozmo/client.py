@@ -83,6 +83,8 @@ class Client(event.Dispatcher):
         self.robot_orientation = robot.RobotOrientation.ON_THREADS
         self.robot_picked_up = False
         self.robot_moving = False
+        self.is_on_charger = False
+        self.is_charging = False
         # Animation state
         self.num_anim_bytes_played = 0
         self.num_audio_frames_played = 0
@@ -120,6 +122,8 @@ class Client(event.Dispatcher):
         self.add_handler(protocol_encoder.NvStorageOpResult, self._on_nv_storage_op_result)
         self.add_handler(event.EvtRobotPickedUpChange, self._on_robot_picked_up)
         self.add_handler(event.EvtRobotWheelsMovingChange, self._on_robot_moving)
+        self.add_handler(event.EvtRobotOnChargerChange, self._on_charger_change)
+        self.add_handler(event.EvtRobotChargingChange, self._is_charging_change)
         self.conn.start()
 
     def stop(self) -> None:
@@ -329,6 +333,12 @@ class Client(event.Dispatcher):
 
     def _on_robot_moving(self, cli, state):
         self.robot_moving = state
+
+    def _on_charger_change(self, cli, state):
+        self.is_on_charger = state
+
+    def _is_charging_change(self, cli, state):
+        self.is_charging = state
 
     def _on_animation_state(self, cli, pkt: protocol_encoder.AnimationState):
         del cli
