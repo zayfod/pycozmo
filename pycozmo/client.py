@@ -83,6 +83,8 @@ class Client(event.Dispatcher):
         self.robot_orientation = robot.RobotOrientation.ON_THREADS
         self.robot_picked_up = False
         self.robot_moving = False
+        self.is_on_charger = False
+        self.is_charging = False
         # Animation state
         self.num_anim_bytes_played = 0
         self.num_audio_frames_played = 0
@@ -120,6 +122,8 @@ class Client(event.Dispatcher):
         self.add_handler(protocol_encoder.NvStorageOpResult, self._on_nv_storage_op_result)
         self.add_handler(event.EvtRobotPickedUpChange, self._on_robot_picked_up)
         self.add_handler(event.EvtRobotWheelsMovingChange, self._on_robot_moving)
+        self.add_handler(event.EvtRobotOnChargerChange, self._on_charger_change)
+        self.add_handler(event.EvtRobotChargingChange, self._is_charging_change)
         self.conn.start()
 
     def stop(self) -> None:
@@ -330,6 +334,12 @@ class Client(event.Dispatcher):
     def _on_robot_moving(self, cli, state):
         self.robot_moving = state
 
+    def _on_charger_change(self, cli, state):
+        self.is_on_charger = state
+
+    def _is_charging_change(self, cli, state):
+        self.is_charging = state
+
     def _on_animation_state(self, cli, pkt: protocol_encoder.AnimationState):
         del cli
         self.num_anim_bytes_played = pkt.num_anim_bytes_played
@@ -414,6 +424,35 @@ class Client(event.Dispatcher):
                      duration: Optional[float] = None) -> None:
         pkt = protocol_encoder.DriveWheels(lwheel_speed_mmps=lwheel_speed, rwheel_speed_mmps=rwheel_speed,
                                            lwheel_accel_mmps2=lwheel_acc, rwheel_accel_mmps2=rwheel_acc)
+        self.conn.send(pkt)
+        if duration is not None:
+            time.sleep(duration)
+            self.stop_all_motors()
+
+    def drive_straight(self, distance: float, speed: float) -> None:
+        if distance < 0.0:
+            speed = -speed
+        duration = np.abs(distance/speed)
+        self.drive_wheels(speed, speed, duration=duration)
+
+    def drive_off_charger_contacts(self) -> None:
+        self.conn.send(protocol_encoder.EnableStopOnCliff(False))
+        target_pose = util.Pose(100.0, 0.0, 0.0, angle_z=util.Angle(degrees=0.0))
+        self.go_to_pose(target_pose, relative_to_robot=True)
+        self.conn.send(protocol_encoder.EnableStopOnCliff(True))
+
+    def turn_in_place(self, angle_rad: float, speed: Optional[float] = 40.0,
+                      accel: Optional[float] = 0.0, angle_tolerance: Optional[float] = 0.02,
+                      is_absolute: Optional[bool] = False) -> None:
+        pkt = protocol_encoder.TurnInPlace(angle_rad=angle_rad, speed_rad_per_sec=speed,
+                                           accel_rad_per_sec2=accel, angle_tolerance_rad=angle_tolerance,
+                                           is_absolute=is_absolute)
+        self.conn.send(pkt)
+
+    def turn_in_place_at_speed(self, direction: int, speed: Optional[float] = 40.0,
+                               accel: Optional[float] = 0.0, duration: Optional[float] = None) -> None:
+        pkt = protocol_encoder.TurnInPlaceAtSpeed(wheel_speed_mmps=speed, wheel_accel_mmps2=accel,
+                                                  direction=direction)
         self.conn.send(pkt)
         if duration is not None:
             time.sleep(duration)
