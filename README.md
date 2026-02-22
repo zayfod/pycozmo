@@ -208,10 +208,9 @@ Requirements
 ------------
 
 - [Python](https://www.python.org/downloads/) 3.6.0 or newer
-- [Pillow](https://github.com/python-pillow/Pillow) 6.0.0 or newer - Python image library
+- [Pillow](https://github.com/python-pillow/Pillow) 6.0.0 - Python image library
 - [FlatBuffers](https://github.com/google/flatbuffers) - serialization library
-- [dpkt](https://github.com/kbandla/dpkt) - TCP/IP packet parsing library
-- [OpenCV](https://opencv.org/) 4.0.0 or newer - computer vision library
+- [dpkt](https://github.com/kbandla/dpkt) - TCP/IP packet parsing library 
 
 
 Installation

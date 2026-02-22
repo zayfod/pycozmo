@@ -6,7 +6,7 @@ Emotion representation and reading.
 
 import os
 import time
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import numpy as np
 
@@ -33,15 +33,31 @@ class DecayGraph:
     __slots__ = [
         "nodes_x",
         "nodes_y",
+        "ext_line_params",
     ]
 
     def __init__(self, nodes: List[Node]) -> None:
         self.nodes_x = [node.x for node in nodes]
         self.nodes_y = [node.y for node in nodes]
+        self.ext_line_params = self.get_line_parameters(nodes[-2], nodes[-1]) if len(nodes) > 1 else None
 
-    def evaluate(self, x: float) -> float:
-        y = np.interp(x, self.nodes_x, self.nodes_y)
-        return y
+    def get_increment(self, val) -> float:
+        if self.ext_line_params is None:
+            f_out = self.nodes_y[0]
+        elif val <= self.nodes_x[-1]:
+            f_out = np.interp(val, self.nodes_x, self.nodes_y)
+        else:
+            f_out = self.ext_line_params[0] * val + self.ext_line_params[1]
+        return f_out
+
+    @staticmethod
+    def get_line_parameters(p1: Node, p2: Node) -> Tuple[float]:
+        try:
+            m = (p1.y - p2.y) / (p1.x - p2.x)
+            b = p1.y - m * p1.x
+        except ZeroDivisionError:
+            m, b = 0, p1.y
+        return m, b
 
 
 class EmotionType:
@@ -50,46 +66,18 @@ class EmotionType:
     __slots__ = [
         "name",
         "decay_graph",
-        "repetition_penalty",
-        "min",
-        "max",
-        "last_change",
-        "last_value",
-        "value",
+        "repetition_penalty"
     ]
 
-    def __init__(
-            self, name: str,
-            decay_graph: DecayGraph,
-            repetition_penalty: DecayGraph,
-            default_value: float = 0.0,
-            min_value: float = -1.0,
-            max_value: float = 1.0) -> None:
+    def __init__(self, name: str, decay_graph: DecayGraph, repetition_penaly: DecayGraph) -> None:
         self.name = str(name)
         self.decay_graph = decay_graph
-        self.repetition_penalty = repetition_penalty
-        self.min = float(min_value)
-        self.max = float(max_value)
-        self.last_change = time.perf_counter()
-        self.last_value = float(default_value)
-        self.value = self.last_value
+        self.repetition_penalty = repetition_penaly
 
-    def set(self, value: float) -> None:
-        self.last_change = time.perf_counter()
-        self.last_value = np.clip(value, self.min, self.max)
-        self.value = self.last_value
-
-    def add(self, delta: float) -> None:
-        self.last_change = time.perf_counter()
-        self.last_value = np.clip(self.last_value + delta, self.min, self.max)
-        self.value = self.last_value
-
-    def update(self) -> None:
+    def update(self):
         """ Update from decay function. """
-        now = time.perf_counter()
-        x = now - self.last_change
-        y = self.decay_graph.evaluate(x)
-        self.value = np.clip(self.last_value * y, self.min, self.max)
+        # TODO
+        pass
 
 
 class EmotionEvent:
