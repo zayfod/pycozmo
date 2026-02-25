@@ -18,3 +18,13 @@ Anki cozmoclad library
 Copyright 2016-2019 Anki Inc.
 This product includes software developed as part of
 The Anki cozmoclad library (https://pypi.org/project/cozmoclad/).
+
+=========================================================================
+==  NOTICE file corresponding to the section 4 d of                    ==
+==  the Apache License, Version 2.0,                                   ==
+==  in this case for the goofy/py-espeak-ng code.                      ==
+=========================================================================
+py-espeak-ng
+Copyright Guenter Bartsch <guenter@zamia.org>
+This product includes software developed as part of
+the py-espeak-ng library (https://github.com/gooofy/py-espeak-ng).

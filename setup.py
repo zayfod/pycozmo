@@ -43,7 +43,7 @@ setuptools.setup(
     author_email="zayfod@gmail.com",
     url="https://github.com/zayfod/pycozmo/",
     python_requires=">=3.6.0",
-    install_requires=["dpkt", "numpy", "Pillow>=6.0.0", "flatbuffers", "opencv-python>=4.0.0"],
+    install_requires=["dpkt", "numpy>=1.24.0,<1.26.0", "Pillow>=6.0.0", "flatbuffers", "opencv-python>=4.0.0", "py-espeak-ng>=0.1.8", "torch>=2.6.0", "torchaudio>=2.6.0", "chatterbox-tts>=0.1.6"],
     keywords=["ddl", "anki", "cozmo", "robot", "robotics"],
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -64,5 +64,6 @@ setuptools.setup(
         "tools/pycozmo_update.py",
         "tools/pycozmo_resources.py",
         "tools/pycozmo_app.py",
+        "tools/pycozmo_load_voice_model.py"
     ],
 )

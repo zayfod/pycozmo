@@ -61,7 +61,9 @@ def bytes_to_cozmo(byte_string: bytes, rate_correction: int, channels: int) -> b
     n = channels * rate_correction
     bs = struct.unpack('{}h'.format(int(len(byte_string) / 2)), byte_string)[0::n]
     for i, s in enumerate(bs):
-        out[i] = u_law_encoding(s)
+        encoded = u_law_encoding(s)
+        # FIX Clamp to valid byte range. Guarantee valid 0-255 range
+        out[i] = max(0, min(255, int(encoded)))
     return out
 
 
