@@ -10,10 +10,36 @@ References:
 
 from typing import BinaryIO, Iterable, Dict, Any
 import struct
-from chunk import Chunk
 
 from . import exception
 from . import soundbanksinfo
+
+
+class _Chunk:
+    """Read a RIFF-style chunk without relying on the removed ``chunk`` module."""
+
+    def __init__(self, f: BinaryIO) -> None:
+        header = f.read(8)
+        if len(header) != 8:
+            raise EOFError("Incomplete chunk header")
+        self._file = f
+        self._name, self._size = struct.unpack("<4sL", header)
+        self._data_start = f.tell()
+
+    def getname(self) -> bytes:
+        return self._name
+
+    def getsize(self) -> int:
+        return self._size
+
+    def read(self, size: int = -1) -> bytes:
+        remaining = max(0, self._size - (self._file.tell() - self._data_start))
+        if size < 0 or size > remaining:
+            size = remaining
+        return self._file.read(size)
+
+    def skip(self) -> None:
+        self._file.seek(self._data_start + self._size)
 
 
 class File:
@@ -158,18 +184,18 @@ class SoundBankReader:
         self._soundbank = None
 
     @staticmethod
-    def _read_uint8(chunk: Chunk) -> int:
+    def _read_uint8(chunk: _Chunk) -> int:
         """ Read uint8 value from chunk. """
         return struct.unpack('B', chunk.read(1))[0]
 
     @staticmethod
-    def _read_uint32(chunk: Chunk) -> int:
+    def _read_uint32(chunk: _Chunk) -> int:
         """ Read uint32 value from chunk. """
         return struct.unpack('<L', chunk.read(4))[0]
 
     def _read_header(self, f: BinaryIO) -> None:
         """ Read Bank Header (BKHD) chunk. """
-        chunk = Chunk(f, bigendian=False, align=False)
+        chunk = _Chunk(f)
         if chunk.getname() != b"BKHD":
             raise exception.AudioKineticFormatError("Not an AudioKinetic WWise SoundBank file.")
         self._soundbank.version = self._read_uint32(chunk)
@@ -180,7 +206,7 @@ class SoundBankReader:
         info = self.soundbankinfo.get(self._soundbank.id)
         self._soundbank.name = info.name if isinstance(info, soundbanksinfo.SoundBankInfo) else ""
 
-    def _read_data_index(self, chunk: Chunk) -> None:
+    def _read_data_index(self, chunk: _Chunk) -> None:
         """ Read Data Index (DIDX) chunk."""
         num_objects = chunk.getsize() // 12
         for i in range(num_objects):
@@ -193,7 +219,7 @@ class SoundBankReader:
             assert file_id not in self._soundbank.objs
             self._soundbank.objs[file_id] = File(self._soundbank.id, file_id, offset, length)
 
-    def _read_hirc(self, chunk: Chunk) -> None:
+    def _read_hirc(self, chunk: _Chunk) -> None:
         """ Read HIRC chunk. """
         num_objects = self._read_uint32(chunk)
         for i in range(num_objects):
@@ -273,7 +299,7 @@ class SoundBankReader:
         # Read subsequent chunks.
         while True:
             try:
-                chunk = Chunk(f, bigendian=False, align=False)
+                chunk = _Chunk(f)
                 chunkname = chunk.getname()
                 if chunkname == b"DIDX":
                     self._read_data_index(chunk)

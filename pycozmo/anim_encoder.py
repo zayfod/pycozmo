@@ -202,53 +202,53 @@ class AnimClip(AnimBase):
         CozmoAnim.Keyframes.KeyframesStartHeadAngleKeyFrameVector(builder, len(head_angle_arr))
         for i in reversed(range(len(head_angle_arr))):
             builder.PrependUOffsetTRelative(head_angle_arr[i])
-        head_angle_vector = builder.EndVector(len(head_angle_arr))
+        head_angle_vector = builder.EndVector()
 
         CozmoAnim.Keyframes.KeyframesStartLiftHeightKeyFrameVector(builder, len(lift_height_arr))
         for i in reversed(range(len(lift_height_arr))):
             builder.PrependUOffsetTRelative(lift_height_arr[i])
-        lift_height_vector = builder.EndVector(len(lift_height_arr))
+        lift_height_vector = builder.EndVector()
 
         CozmoAnim.Keyframes.KeyframesStartRecordHeadingKeyFrameVector(builder, len(record_heading_arr))
         for i in reversed(range(len(record_heading_arr))):
             builder.PrependUOffsetTRelative(record_heading_arr[i])
-        record_heading_vector = builder.EndVector(len(record_heading_arr))
+        record_heading_vector = builder.EndVector()
 
         CozmoAnim.Keyframes.KeyframesStartTurnToRecordedHeadingKeyFrameVector(builder,
                                                                               len(turn_to_recorded_heading_arr))
         for i in reversed(range(len(turn_to_recorded_heading_arr))):
             builder.PrependUOffsetTRelative(turn_to_recorded_heading_arr[i])
-        turn_to_recorded_heading_vector = builder.EndVector(len(turn_to_recorded_heading_arr))
+        turn_to_recorded_heading_vector = builder.EndVector()
 
         CozmoAnim.Keyframes.KeyframesStartBackpackLightsKeyFrameVector(builder, len(backpack_lights_arr))
         for i in reversed(range(len(backpack_lights_arr))):
             builder.PrependUOffsetTRelative(backpack_lights_arr[i])
-        backpack_lights_vector = builder.EndVector(len(backpack_lights_arr))
+        backpack_lights_vector = builder.EndVector()
 
         CozmoAnim.Keyframes.KeyframesStartBodyMotionKeyFrameVector(builder, len(body_motion_arr))
         for i in reversed(range(len(body_motion_arr))):
             builder.PrependUOffsetTRelative(body_motion_arr[i])
-        body_motion_vector = builder.EndVector(len(body_motion_arr))
+        body_motion_vector = builder.EndVector()
 
         CozmoAnim.Keyframes.KeyframesStartFaceAnimationKeyFrameVector(builder, len(face_animation_arr))
         for i in reversed(range(len(face_animation_arr))):
             builder.PrependUOffsetTRelative(face_animation_arr[i])
-        face_animation_vector = builder.EndVector(len(face_animation_arr))
+        face_animation_vector = builder.EndVector()
 
         CozmoAnim.Keyframes.KeyframesStartProceduralFaceKeyFrameVector(builder, len(procedural_face_arr))
         for i in reversed(range(len(procedural_face_arr))):
             builder.PrependUOffsetTRelative(procedural_face_arr[i])
-        procedural_face_vector = builder.EndVector(len(procedural_face_arr))
+        procedural_face_vector = builder.EndVector()
 
         CozmoAnim.Keyframes.KeyframesStartRobotAudioKeyFrameVector(builder, len(robot_audio_arr))
         for i in reversed(range(len(robot_audio_arr))):
             builder.PrependUOffsetTRelative(robot_audio_arr[i])
-        robot_audio_vector = builder.EndVector(len(robot_audio_arr))
+        robot_audio_vector = builder.EndVector()
 
         CozmoAnim.Keyframes.KeyframesStartEventKeyFrameVector(builder, len(event_arr))
         for i in reversed(range(len(event_arr))):
             builder.PrependUOffsetTRelative(event_arr[i])
-        event_vector = builder.EndVector(len(event_arr))
+        event_vector = builder.EndVector()
 
         CozmoAnim.Keyframes.KeyframesStart(builder)
         CozmoAnim.Keyframes.KeyframesAddHeadAngleKeyFrame(builder, head_angle_vector)
@@ -364,7 +364,7 @@ class AnimClips(AnimBase):
         CozmoAnim.AnimClips.AnimClipsStartClipsVector(builder, len(clips_arr))
         for i in reversed(range(len(clips_arr))):
             builder.PrependUOffsetTRelative(clips_arr[i])
-        clips_vector = builder.EndVector(len(clips_arr))
+        clips_vector = builder.EndVector()
 
         CozmoAnim.AnimClips.AnimClipsStart(builder)
         CozmoAnim.AnimClips.AnimClipsAddClips(builder, clips_vector)
@@ -769,7 +769,7 @@ class AnimBackpackLights(AnimKeyframe):
             builder.PrependFloat32(led.blue)
             builder.PrependFloat32(led.green)
             builder.PrependFloat32(led.red)
-            led_vectors.append(builder.EndVector(4))
+            led_vectors.append(builder.EndVector())
 
         CozmoAnim.BackpackLights.BackpackLightsStart(builder)
         CozmoAnim.BackpackLights.BackpackLightsAddTriggerTimeMs(builder, self.trigger_time_ms)
@@ -896,7 +896,7 @@ class AnimProceduralFace(AnimKeyframe):
             CozmoAnim.ProceduralFace.ProceduralFaceStartLeftEyeVector(builder, 19)
             for i in reversed(range(19)):
                 builder.PrependFloat32(eye[i])
-            eye_vectors.append(builder.EndVector(19))
+            eye_vectors.append(builder.EndVector())
 
         CozmoAnim.ProceduralFace.ProceduralFaceStart(builder)
         CozmoAnim.ProceduralFace.ProceduralFaceAddTriggerTimeMs(builder, self.trigger_time_ms)
@@ -968,12 +968,12 @@ class AnimRobotAudio(AnimKeyframe):
         CozmoAnim.RobotAudio.RobotAudioStartAudioEventIdVector(builder, len(self.audio_event_ids))
         for i in reversed(range(len(self.audio_event_ids))):
             builder.PrependInt64(self.audio_event_ids[i])
-        audio_event_id_vector = builder.EndVector(len(self.audio_event_ids))
+        audio_event_id_vector = builder.EndVector()
 
         CozmoAnim.RobotAudio.RobotAudioStartProbabilityVector(builder, len(self.probabilities))
         for i in reversed(range(len(self.probabilities))):
             builder.PrependFloat32(self.probabilities[i])
-        probability_vector = builder.EndVector(len(self.probabilities))
+        probability_vector = builder.EndVector()
 
         CozmoAnim.RobotAudio.RobotAudioStart(builder)
         CozmoAnim.RobotAudio.RobotAudioAddTriggerTimeMs(builder, self.trigger_time_ms)
