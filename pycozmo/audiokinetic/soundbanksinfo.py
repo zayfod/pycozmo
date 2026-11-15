@@ -6,7 +6,7 @@ See assets/cozmo_resources/sound/SoundbanksInfo.xml
 
 """
 
-from typing import Dict, Any, Union, TextIO
+from typing import Any, TextIO
 import xml.etree.ElementTree as et  # noqa
 
 from . import exception
@@ -88,7 +88,7 @@ class SoundBankInfo:
         self.object_path = str(object_path)
 
 
-def load_soundbanksinfo(fspec: Union[str, TextIO]) -> Dict[int, Any]:
+def load_soundbanksinfo(fspec: str | TextIO) -> dict[int, Any]:
     """ Load SoundbanksInfo.xml and return a dictionary of parsed Info objects. """
 
     try:

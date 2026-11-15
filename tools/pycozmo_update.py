@@ -5,7 +5,6 @@ Cozmo robot over-the-air (OTA) firmware update application.
 
 """
 
-from typing import Optional
 import sys
 import os
 import json
@@ -47,7 +46,7 @@ def on_firmware_update_result(_, pkt: pycozmo.protocol_encoder.FirmwareUpdateRes
     evt.set()
 
 
-def wait_for_result(timeout: Optional[float] = None) -> None:
+def wait_for_result(timeout: float | None = None) -> None:
     """ Wait for result message. """
 
     evt.wait(timeout=timeout)

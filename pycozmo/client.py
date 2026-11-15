@@ -5,7 +5,6 @@ Cozmo protocol client and high-level API.
 """
 
 from threading import Event
-from typing import Optional, Tuple
 import json
 import time
 import io
@@ -43,8 +42,8 @@ class Client(event.Dispatcher):
     """ Cozmo protocol client and high-level API class. """
 
     def __init__(self,
-                 robot_addr: Optional[Tuple[str, int]] = None,
-                 protocol_log_messages: Optional[list] = None,
+                 robot_addr: tuple[str, int] | None = None,
+                 protocol_log_messages: list | None = None,
                  auto_initialize: bool = True,
                  enable_animations: bool = True,
                  enable_procedural_face: bool = True) -> None:
@@ -409,8 +408,8 @@ class Client(event.Dispatcher):
         self.conn.send(pkt)
 
     def drive_wheels(self, lwheel_speed: float, rwheel_speed: float,
-                     lwheel_acc: Optional[float] = 0.0, rwheel_acc: Optional[float] = 0.0,
-                     duration: Optional[float] = None) -> None:
+                     lwheel_acc: float | None = 0.0, rwheel_acc: float | None = 0.0,
+                     duration: float | None = None) -> None:
         pkt = protocol_encoder.DriveWheels(lwheel_speed_mmps=lwheel_speed, rwheel_speed_mmps=rwheel_speed,
                                            lwheel_accel_mmps2=lwheel_acc, rwheel_accel_mmps2=rwheel_acc)
         self.conn.send(pkt)
@@ -484,7 +483,7 @@ class Client(event.Dispatcher):
         pkt = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
         self.anim_controller.display_image(pkt)
 
-    def display_image(self, im: Image.Image, duration: Optional[float] = None) -> None:
+    def display_image(self, im: Image.Image, duration: float | None = None) -> None:
         encoder = image_encoder.ImageEncoder(im)
         buf = bytes(encoder.encode())
         pkt = protocol_encoder.DisplayImage(image=buf)

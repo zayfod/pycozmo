@@ -4,7 +4,6 @@ Utility classes and functions.
 
 """
 
-from typing import Optional, Tuple
 import os
 import pathlib
 import math
@@ -48,7 +47,7 @@ class Angle:
 
     __slots__ = '_radians'
 
-    def __init__(self, radians: Optional[float] = None, degrees: Optional[float] = None):
+    def __init__(self, radians: float | None = None, degrees: float | None = None):
         if radians is None and degrees is None:
             raise ValueError("Expected either the degrees or radians keyword argument")
         if radians and degrees:
@@ -138,7 +137,7 @@ class Distance:
 
     __slots__ = '_mm'
 
-    def __init__(self, mm: Optional[float] = None, inches: Optional[float] = None):
+    def __init__(self, mm: float | None = None, inches: float | None = None):
         if mm is None and inches is None:
             raise ValueError("Expected either the mm or inches keyword argument")
         if mm and inches:
@@ -261,7 +260,7 @@ class Vector2:
         return self._y
 
     @property
-    def x_y(self) -> Tuple[float, float]:
+    def x_y(self) -> tuple[float, float]:
         """ The X, Y elements of the Vector2 (x,y). """
         return self._x, self._y
 
@@ -334,7 +333,7 @@ class Vector3:
         return self._z
 
     @property
-    def x_y_z(self) -> Tuple[float, float, float]:
+    def x_y_z(self) -> tuple[float, float, float]:
         """ The X, Y, Z elements of the Vector3 (x,y,z). """
         return self._x, self._y, self._z
 
@@ -362,7 +361,7 @@ class Vector3:
         return Vector3(self.x / other, self.y / other, self.z / other)
 
 
-def angle_z_to_quaternion(angle_z: Angle) -> Tuple[float, float, float, float]:
+def angle_z_to_quaternion(angle_z: Angle) -> tuple[float, float, float, float]:
     """
     Converts an angle in the z axis (Euler angle z component) to a quaternion.
     """
@@ -430,7 +429,7 @@ class Matrix44:
                 "%.1f\t%.1f\t%.1f\t%.1f" % self.in_row_order)
 
     @property
-    def in_row_order(self) -> Tuple[float, float, float, float,
+    def in_row_order(self) -> tuple[float, float, float, float,
                                     float, float, float, float,
                                     float, float, float, float,
                                     float, float, float, float]:
@@ -443,7 +442,7 @@ class Matrix44:
             self.m30, self.m31, self.m32, self.m33
 
     @property
-    def in_column_order(self) -> Tuple[float, float, float, float,
+    def in_column_order(self) -> tuple[float, float, float, float,
                                        float, float, float, float,
                                        float, float, float, float,
                                        float, float, float, float]:
@@ -456,28 +455,28 @@ class Matrix44:
             self.m03, self.m13, self.m23, self.m33
 
     @property
-    def forward_xyz(self) -> Tuple[float, float, float]:
+    def forward_xyz(self) -> tuple[float, float, float]:
         """
         Returns the x,y,z components representing the matrix's forward vector.
         """
         return self.m00, self.m01, self.m02
 
     @property
-    def left_xyz(self) -> Tuple[float, float, float]:
+    def left_xyz(self) -> tuple[float, float, float]:
         """
         Returns the x,y,z components representing the matrix's left vector.
         """
         return self.m10, self.m11, self.m12
 
     @property
-    def up_xyz(self) -> Tuple[float, float, float]:
+    def up_xyz(self) -> tuple[float, float, float]:
         """
         Returns the x,y,z components representing the matrix's up vector.
         """
         return self.m20, self.m21, self.m22
 
     @property
-    def pos_xyz(self) -> Tuple[float, float, float]:
+    def pos_xyz(self) -> tuple[float, float, float]:
         """
         Returns the x,y,z components representing the matrix's position vector.
         """
@@ -524,11 +523,11 @@ class Quaternion:
     __slots__ = ('_q0', '_q1', '_q2', '_q3')
 
     def __init__(self,
-                 q0: Optional[float] = None,
-                 q1: Optional[float] = None,
-                 q2: Optional[float] = None,
-                 q3: Optional[float] = None,
-                 angle_z: Optional[Angle] = None):
+                 q0: float | None = None,
+                 q1: float | None = None,
+                 q2: float | None = None,
+                 q3: float | None = None,
+                 angle_z: Angle | None = None):
 
         is_quaternion = (q0 is not None) and (q1 is not None) and (q2 is not None) and (q3 is not None)
 
@@ -631,7 +630,7 @@ class Quaternion:
         return self._q3
 
     @property
-    def q0_q1_q2_q3(self) -> Tuple[float, float, float, float]:
+    def q0_q1_q2_q3(self) -> tuple[float, float, float, float]:
         return self._q0, self._q1, self._q2, self._q3
 
     @property
@@ -641,7 +640,7 @@ class Quaternion:
         return Angle(radians=radians)
 
     @property
-    def euler_angles(self) -> Tuple[float, float, float]:
+    def euler_angles(self) -> tuple[float, float, float]:
         """
         Returns the pitch, yaw, roll Euler components of the object's
         rotation defined as rotations in the x, y, and z axis respectively.
@@ -686,9 +685,9 @@ class Pose:
 
     def __init__(self,
                  x: float, y: float, z: float,
-                 q0: Optional[float] = None, q1: Optional[float] = None,
-                 q2: Optional[float] = None, q3: Optional[float] = None,
-                 angle_z: Optional[Angle] = None, origin_id: int = -1, is_accurate: bool = True):
+                 q0: float | None = None, q1: float | None = None,
+                 q2: float | None = None, q3: float | None = None,
+                 angle_z: Angle | None = None, origin_id: int = -1, is_accurate: bool = True):
         self._position = Vector3(x, y, z)
         self._rotation = Quaternion(q0, q1, q2, q3, angle_z)
         self._origin_id = origin_id

@@ -4,7 +4,8 @@ Animation controller for audio, image, and animation playback.
 
 """
 
-from typing import List, Tuple, Any, Optional, Iterable
+from typing import Any
+from collections.abc import Iterable
 from threading import Thread, Lock
 from collections import deque
 
@@ -34,7 +35,7 @@ class AnimationQueue:
                    not len(self.image_queue) and \
                    not len(self.pkt_queue)
 
-    def put_audio(self, pkts: List[protocol_encoder.OutputAudio]) -> None:
+    def put_audio(self, pkts: list[protocol_encoder.OutputAudio]) -> None:
         with self.lock:
             self.audio_queue.extend(pkts)
 
@@ -44,15 +45,15 @@ class AnimationQueue:
 
     def put_anim_frame(
             self,
-            audio_pkt: Optional[protocol_encoder.OutputAudio],
-            image_pkt: Optional[protocol_encoder.DisplayImage],
-            pkts: Optional[Iterable[protocol_encoder.Packet]]) -> None:
+            audio_pkt: protocol_encoder.OutputAudio | None,
+            image_pkt: protocol_encoder.DisplayImage | None,
+            pkts: Iterable[protocol_encoder.Packet] | None) -> None:
         with self.lock:
             self.audio_queue.append(audio_pkt)
             self.image_queue.append(image_pkt)
             self.pkt_queue.append(pkts)
 
-    def get(self) -> Tuple[bytes, bytes, Tuple[Any]]:
+    def get(self) -> tuple[bytes, bytes, tuple[Any]]:
         with self.lock:
             # Audio
             try:
@@ -193,7 +194,7 @@ class AnimationController:
 
         logger.debug("Animation controller stopped...")
 
-    def play_audio(self, pkts: List[protocol_encoder.OutputAudio]) -> None:
+    def play_audio(self, pkts: list[protocol_encoder.OutputAudio]) -> None:
         self.queue.put_audio(pkts)
 
     def display_image(self, pkt: protocol_encoder.DisplayImage) -> None:
@@ -201,9 +202,9 @@ class AnimationController:
 
     def play_anim_frame(
             self,
-            audio_pkt: Optional[protocol_encoder.OutputAudio],
-            image_pkt: Optional[protocol_encoder.DisplayImage],
-            pkts: Optional[Iterable[protocol_encoder.Packet]]) -> None:
+            audio_pkt: protocol_encoder.OutputAudio | None,
+            image_pkt: protocol_encoder.DisplayImage | None,
+            pkts: Iterable[protocol_encoder.Packet] | None) -> None:
         self.queue.put_anim_frame(audio_pkt, image_pkt, pkts)
 
     def cancel_anim(self):

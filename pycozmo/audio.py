@@ -8,7 +8,6 @@ References:
 
 """
 
-from typing import List
 import struct
 import wave
 import time
@@ -26,7 +25,7 @@ MULAW_MAX = 0x7FFF
 MULAW_BIAS = 132
 
 
-def load_wav(filename: str) -> List[protocol_encoder.OutputAudio]:
+def load_wav(filename: str) -> list[protocol_encoder.OutputAudio]:
     """ Load a WAVE file into a list of OutputAudio packets. """
 
     start_time = time.perf_counter()

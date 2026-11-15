@@ -4,8 +4,6 @@ Helper routines for working with colors and lights.
 
 """
 
-from typing import Optional, Tuple
-
 from . import protocol_encoder
 
 
@@ -51,9 +49,9 @@ class Color:
     """
 
     def __init__(self,
-                 int_color: Optional[int] = None,
-                 rgb: Optional[Tuple[int, int, int]] = None,
-                 name: str = Optional[None]) -> None:
+                 int_color: int | None = None,
+                 rgb: tuple[int, int, int] | None = None,
+                 name: str | None = None) -> None:
         self.name = name
         if int_color is not None:
             self._int_color = int(int_color) | 0xff

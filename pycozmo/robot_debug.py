@@ -6,7 +6,7 @@ Based on AnkiLogStringTables.json .
 
 """
 
-from typing import List, Any, Optional
+from typing import Any
 import logging
 
 
@@ -1654,7 +1654,7 @@ def get_log_level(robot_level: int) -> int:
     return ROBOT_LOG_LEVELS.get(robot_level, logging.DEBUG)
 
 
-def get_debug_message(name_id: int, format_id: int, args: List[Any]) -> Optional[str]:
+def get_debug_message(name_id: int, format_id: int, args: list[Any]) -> str | None:
     """ Generate a log message from robot debug name and format IDs. """
     fmt = ROBOT_FORMAT_IDS.get(format_id)
     if fmt:

@@ -8,7 +8,7 @@ import math
 import os
 import time
 from collections import defaultdict
-from typing import Dict, Iterable, List, Optional, Tuple
+from collections.abc import Iterable
 
 from PIL import Image
 import numpy as np
@@ -37,7 +37,7 @@ __all__ = [
 class PreprocessedClip(object):
     """ Preprocessed animation clip that can be played back. """
 
-    def __init__(self, keyframes: Optional[Dict[int, List[protocol_encoder.Packet]]] = None):
+    def __init__(self, keyframes: dict[int, list[protocol_encoder.Packet]] | None = None):
         self.keyframes = keyframes or defaultdict(list)
 
     @classmethod
@@ -54,7 +54,7 @@ class PreprocessedClip(object):
 
     @classmethod
     def from_anim_clip(cls, clip: anim_encoder.AnimClip) -> "PreprocessedClip":
-        keyframes: Dict[int, List[protocol_encoder.Packet]] = defaultdict(list)
+        keyframes: dict[int, list[protocol_encoder.Packet]] = defaultdict(list)
         for keyframe in clip.keyframes:
             if isinstance(keyframe, anim_encoder.AnimHeadAngle):
                 # FIXME: Why can duration be larger than 255?
@@ -137,13 +137,13 @@ class LightAnimation:
     ]
 
     def __init__(self,
-                 on_colors: List[List],
-                 off_colors: List[List],
-                 on_period: List[int],
-                 off_period: List[int],
-                 transition_on_period: List[int],
-                 transition_off_period: List[int],
-                 offset: List[int]):
+                 on_colors: list[list],
+                 off_colors: list[list],
+                 on_period: list[int],
+                 off_period: list[int],
+                 transition_on_period: list[int],
+                 transition_off_period: list[int],
+                 offset: list[int]):
         self.on_colors = on_colors
         self.off_colors = off_colors
         self.on_period = on_period
@@ -165,7 +165,7 @@ class CubeAnimation(LightAnimation):
         self.rotation_period = int(rotation_period)
 
     @classmethod
-    def from_json(cls, data: Dict):
+    def from_json(cls, data: dict):
         return cls(on_colors=data['pattern']['onColors'],
                    off_colors=data['pattern']['offColors'],
                    on_period=data['pattern']['onPeriod_ms'],
@@ -184,7 +184,7 @@ class BackpackAnimation(LightAnimation):
         super().__init__(*args, **kwargs)
 
     @classmethod
-    def from_json(cls, data: Dict):
+    def from_json(cls, data: dict):
         return cls(on_colors=data['onColors'],
                    off_colors=data['offColors'],
                    on_period=data['onPeriod_ms'],
@@ -211,9 +211,9 @@ class AnimationGroupMember:
                  weight: float,
                  cooldown_time: float,
                  mood: str,
-                 use_head_angle: Optional[bool] = False,
-                 head_angle_min: Optional[float] = 0.0,
-                 head_angle_max: Optional[float] = 0.0) -> None:
+                 use_head_angle: bool | None = False,
+                 head_angle_min: float | None = 0.0,
+                 head_angle_max: float | None = 0.0) -> None:
         self.name = str(name)
         self.weight = float(weight)
         self.mood = str(mood)
@@ -225,7 +225,7 @@ class AnimationGroupMember:
         self.head_angle_max = float(head_angle_max)
 
     @classmethod
-    def from_json(cls, data: Dict):
+    def from_json(cls, data: dict):
         return cls(name=data['Name'],
                    weight=data['Weight'],
                    cooldown_time=data['CooldownTime_Sec'],
@@ -260,7 +260,7 @@ class AnimationGroup:
         assert math.isclose(sum(self.member_probabilities), 1.0)
 
     @classmethod
-    def from_json(cls, data: Dict):
+    def from_json(cls, data: dict):
         animations = [AnimationGroupMember.from_json(a) for a in data['Animations']]
         return cls(animations)
 
@@ -271,7 +271,7 @@ class AnimationGroup:
         return member
 
 
-def load_trigger_map(resource_dir: str, map_relative_path: str) -> Tuple[str, str, Dict]:
+def load_trigger_map(resource_dir: str, map_relative_path: str) -> tuple[str, str, dict]:
     json_data = load_json_file(os.path.join(resource_dir, map_relative_path))
     for pair in json_data['Pairs']:
         anim_file = find_file(resource_dir, pair['AnimName'] + '.json')
@@ -279,7 +279,7 @@ def load_trigger_map(resource_dir: str, map_relative_path: str) -> Tuple[str, st
             yield pair['CladEvent'], pair['AnimName'], load_json_file(anim_file)
 
 
-def load_animation_groups(resource_dir: str) -> Dict[str, AnimationGroup]:
+def load_animation_groups(resource_dir: str) -> dict[str, AnimationGroup]:
     start_time = time.perf_counter()
     animation_groups = {}
     trigger_map_loader = load_trigger_map(resource_dir, os.path.join('cozmo_resources', 'assets',
@@ -291,7 +291,7 @@ def load_animation_groups(resource_dir: str) -> Dict[str, AnimationGroup]:
     return animation_groups
 
 
-def load_cube_animation_groups(resource_dir: str) -> Dict[str, List[CubeAnimation]]:
+def load_cube_animation_groups(resource_dir: str) -> dict[str, list[CubeAnimation]]:
     start_time = time.perf_counter()
     cube_animation_groups = {}
     trigger_map_loader = load_trigger_map(resource_dir,
@@ -306,7 +306,7 @@ def load_cube_animation_groups(resource_dir: str) -> Dict[str, List[CubeAnimatio
     return cube_animation_groups
 
 
-def load_backpack_light_patterns(resource_dir: str) -> Dict[str, BackpackAnimation]:
+def load_backpack_light_patterns(resource_dir: str) -> dict[str, BackpackAnimation]:
     backpack_light_patterns = {}
     json_data = load_json_file(os.path.join(resource_dir, 'cozmo_resources', 'config',
                                'engine', 'lights', 'backpackLights', 'backpackLightPatterns.json'))

@@ -8,7 +8,8 @@ References:
 
 """
 
-from typing import BinaryIO, Iterable, Dict, Any
+from typing import BinaryIO, Any
+from collections.abc import Iterable
 import struct
 
 from . import exception
@@ -153,7 +154,7 @@ class SoundBank:
 
 class SoundBankReader:
 
-    def __init__(self, soundbankinfo: Dict[int, Any]) -> None:
+    def __init__(self, soundbankinfo: dict[int, Any]) -> None:
         self.soundbankinfo = soundbankinfo
         self._soundbank = None
 

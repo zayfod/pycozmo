@@ -4,7 +4,6 @@ Cozmo protocol implementation base.
 
 """
 
-from typing import Optional
 from abc import ABC, abstractmethod
 
 from .protocol_ast import PacketType
@@ -60,7 +59,7 @@ class Packet(Struct, ABC):
         "ack",
     )
 
-    def __init__(self, packet_type: PacketType, packet_id: Optional[int] = None):
+    def __init__(self, packet_type: PacketType, packet_id: int | None = None):
         self.type = packet_type
         self.id = packet_id
         self.seq = OOB_SEQ
@@ -75,11 +74,11 @@ class Packet(Struct, ABC):
         self._type = PacketType(value)
 
     @property
-    def id(self) -> Optional[int]:
+    def id(self) -> int | None:
         return self._id
 
     @id.setter
-    def id(self, value: Optional[int]) -> None:
+    def id(self, value: int | None) -> None:
         self._id = value
 
     def is_oob(self) -> bool:
@@ -103,7 +102,7 @@ class UnknownPacket(Packet):
         "_data",
     )
 
-    def __init__(self, packet_type: PacketType, data: bytes, packet_id: Optional[int] = None):
+    def __init__(self, packet_type: PacketType, data: bytes, packet_id: int | None = None):
         super().__init__(packet_type, packet_id)
         self.data = data
 

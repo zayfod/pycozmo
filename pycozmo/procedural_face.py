@@ -5,7 +5,7 @@ Cozmo procedural face rendering.
 """
 
 from functools import lru_cache
-from typing import Optional, List, Generator
+from collections.abc import Generator
 import random
 
 from PIL import Image, ImageDraw
@@ -54,7 +54,7 @@ class ProceduralBase:
     )
 
     def __init__(self,
-                 params: List[float],
+                 params: list[float],
                  offset: int,
                  width: int,
                  height: int):
@@ -78,7 +78,7 @@ class ProceduralLid(ProceduralBase):
     )
 
     def __init__(self,
-                 params: List[float],
+                 params: list[float],
                  offset: int,
                  y_offset: float,
                  angle_offset: float,
@@ -158,7 +158,7 @@ class ProceduralEye(ProceduralBase):
     )
 
     def __init__(self,
-                 params: List[float],
+                 params: list[float],
                  offset: int,
                  x_offset: float = 0.0,
                  width: int = DEFAULT_WIDTH,
@@ -387,7 +387,7 @@ class ProceduralFace(ProceduralBase):
     )
 
     def __init__(self,
-                 params: Optional[List[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):

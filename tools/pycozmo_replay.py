@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from typing import Optional
 import sys
 import time
 
@@ -11,7 +10,7 @@ import pycozmo
 
 class ReplayApp(object):
 
-    def __init__(self, log_messages: Optional[list] = None, replay_messages: Optional[list] = None):
+    def __init__(self, log_messages: list | None = None, replay_messages: list | None = None):
         self.log_messages = log_messages
         self.frame_count = 0
         self.pkts = []
