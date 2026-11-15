@@ -9,6 +9,7 @@ import socket
 import time
 from queue import Queue, Empty
 from threading import Thread, Lock
+from collections.abc import Callable
 from typing import Any
 
 from .logger import logger, logger_protocol
@@ -48,16 +49,16 @@ class SendThread(Thread):
     def __init__(self,
                  sock: socket.socket,
                  receiver_address: tuple[str, int] | None) -> None:
-        super().__init__(daemon=True, name=__class__.__name__)
+        super().__init__(daemon=True, name=SendThread.__name__)
         self.sock = sock
         self.lock = Lock()
         self.receiver_address = receiver_address
         self.server = receiver_address is None
         self.window = SendWindow(16, size=62, max_seq=MAX_SEQ)
         self.stop_flag = False
-        self.queue = Queue()
+        self.queue: Queue[Packet] = Queue()
         self.last_ack = 0
-        self.last_ack_time = 0
+        self.last_ack_time = 0.0
         self.disconnected = False
         # Number of packets received from the application layer.
         self.outgoing_packets = 0
@@ -83,11 +84,11 @@ class SendThread(Thread):
             except Exception:
                 pass
 
-    def _collect_messages(self) -> tuple[list, int]:
+    def _collect_messages(self) -> tuple[list[tuple[int, Packet]], int]:
         with self.lock:
             last_ack = self.last_ack
             is_full = self.window.is_full()
-        pkts = []
+        pkts: list[tuple[int, Packet]] = []
         start = time.perf_counter()
         while not is_full and not self.disconnected and time.perf_counter() - start < self.COLLECT_INTERVAL:
             try:
@@ -109,7 +110,7 @@ class SendThread(Thread):
                 pkts.append((seq, pkt))
         return pkts, last_ack
 
-    def _resend_messages(self) -> list:
+    def _resend_messages(self) -> list[tuple[int, Packet]]:
         with self.lock:
             pkts = self.window.get()
             last_ack_time = self.last_ack_time
@@ -120,11 +121,11 @@ class SendThread(Thread):
             pkts = []
         return pkts
 
-    def _send_packets(self, pkts, last_ack: int):
-        to_frame = []
+    def _send_packets(self, pkts: list[tuple[int, Packet]], last_ack: int) -> None:
+        to_frame: list[Packet] = []
         frame_len = 0
-        first_seq = None
-        seq = None
+        first_seq: int | None = None
+        seq = 0
         for seq, pkt in pkts:
 
             # First packet in a frame?
@@ -139,6 +140,7 @@ class SendThread(Thread):
                 to_frame.append(pkt)
             else:
                 # Send current frame.
+                assert first_seq is not None
                 self._send_frame(to_frame, first_seq, seq, last_ack)
                 # Start new frame.
                 to_frame = [pkt]
@@ -147,20 +149,21 @@ class SendThread(Thread):
 
         if len(to_frame):
             # Send current frame.
+            assert first_seq is not None
             self._send_frame(to_frame, first_seq, seq, last_ack)
 
-    def _send_ping(self, pkt) -> None:
+    def _send_ping(self, pkt: Packet) -> None:
         self.sent_packets += 1
         raw_frame = Frame(protocol_declaration.FrameType.PING, OOB_SEQ, OOB_SEQ, self.last_ack, [pkt]).to_bytes()
         self._send_raw_frame(raw_frame)
 
-    def _send_frame(self, pkts, first_seq: int, seq: int, ack: int) -> None:
+    def _send_frame(self, pkts: list[Packet], first_seq: int, seq: int, ack: int) -> None:
         self.sent_packets += len(pkts)
         raw_frame = self._build_frame(pkts, first_seq, seq, ack)
         self._send_raw_frame(raw_frame)
 
     @staticmethod
-    def _build_frame(pkts, first_seq: int, seq: int, ack: int) -> bytes:
+    def _build_frame(pkts: list[Packet], first_seq: int, seq: int, ack: int) -> bytes:
         try:
             frame = Frame(protocol_declaration.FrameType.ENGINE, first_seq, seq, ack, pkts)
             return frame.to_bytes()
@@ -169,6 +172,9 @@ class SendThread(Thread):
             raise
 
     def _send_raw_frame(self, raw_frame: bytes) -> None:
+        if self.receiver_address is None:
+            # Server without a connected client.
+            return
         try:
             self.sock.sendto(raw_frame, self.receiver_address)
             self.sent_frames += 1
@@ -176,7 +182,7 @@ class SendThread(Thread):
         except OSError:
             self.discarded_frames += 1
 
-    def send(self, data: Any) -> None:
+    def send(self, data: Packet) -> None:
         self.queue.put(data)
 
     def ack(self, seq: int, last_ack: int) -> None:
@@ -190,7 +196,7 @@ class SendThread(Thread):
         with self.lock:
             self.window.reset()
             self.last_ack = 0
-            self.last_ack_time = 0
+            self.last_ack_time = 0.0
         if self.server:
             self.receiver_address = None
         self.outgoing_packets = 0
@@ -207,9 +213,9 @@ class ReceiveThread(Thread):
                  sock: socket.socket,
                  send_thread: SendThread,
                  sender_address: tuple[str, int] | None,
-                 delivery_handler,
+                 delivery_handler: Callable[[Packet], None],
                  buffer_size: int = 2048) -> None:
-        super().__init__(daemon=True, name=__class__.__name__)
+        super().__init__(daemon=True, name=ReceiveThread.__name__)
         self.sock = sock
         self.sender_address = sender_address
         self.server = sender_address is None
@@ -270,7 +276,7 @@ class ReceiveThread(Thread):
                 logger_protocol.error("Failed to handle frame. {}".format(e))
                 continue
 
-    def handle_reset(self, address):
+    def handle_reset(self, address: tuple[str, int]) -> None:
         if not self.server:
             logger_protocol.debug("Got unexpected reset from {}.".format(address))
             return
@@ -283,14 +289,14 @@ class ReceiveThread(Thread):
         self.send_thread.send(pkt)
         self.deliver(pkt)
 
-    def handle_fin(self):
+    def handle_fin(self) -> None:
         if not self.server:
             logger_protocol.debug("Got unexpected FIN.")
             return
         logger_protocol.debug("Got FIN.")
         self.disconnect()
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         if not self.server:
             logger_protocol.debug("Got unexpected disconnect.")
             return
@@ -325,11 +331,11 @@ class ReceiveThread(Thread):
                 break
             self.deliver(pkt)
 
-    def deliver(self, pkt: Packet):
+    def deliver(self, pkt: Packet) -> None:
         self.delivered_packets += 1
         self.delivery_handler(pkt)
 
-    def reset(self):
+    def reset(self) -> None:
         self.window.reset()
         self.received_bytes = 0
         self.discarded_frames = 0
@@ -351,15 +357,15 @@ class Connection(Thread, event.Dispatcher):
 
     def __init__(self,
                  robot_addr: tuple[str, int] | None = None,
-                 protocol_log_messages: list | None = None,
+                 protocol_log_messages: list[str] | None = None,
                  server: bool = False) -> None:
-        super().__init__(daemon=True, name=__class__.__name__)
+        super().__init__(daemon=True, name=Connection.__name__)
         # Thread is an old-style class and does not propagate initialization.
         event.Dispatcher.__init__(self)
         self.robot_addr = robot_addr or (SERVER_ADDR if server else ROBOT_ADDR)
         self.server = server
         # Event queue.
-        self.queue = Queue()
+        self.queue: Queue[tuple[Any, Any, dict[str, Any]]] = Queue()
         # Filters
         self.packet_type_filter = filter.Filter()
         self.packet_type_filter.deny_ids({PacketType.PING.value})
@@ -376,9 +382,9 @@ class Connection(Thread, event.Dispatcher):
         self.recv_thread = ReceiveThread(
             self.sock, self.send_thread, None if server else self.robot_addr, self._on_packet)
         self.stop_flag = False
-        self.send_last = 0
-        self.ping_last = 0
-        self.stats_last = 0
+        self.send_last = 0.0
+        self.ping_last = 0.0
+        self.stats_last = 0.0
         self.ping_counter = 0
 
     def start(self) -> None:
@@ -400,7 +406,7 @@ class Connection(Thread, event.Dispatcher):
         self.sock.close()
         self.del_all_handlers()
 
-    def _on_packet(self, pkt) -> None:
+    def _on_packet(self, pkt: Packet) -> None:
         self.queue.put((event.EvtPacketReceived, [pkt], {}))
 
     def run(self) -> None:
@@ -450,7 +456,7 @@ class Connection(Thread, event.Dispatcher):
         if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
             logger_protocol.debug("Sent %s", pkt)
 
-    def post_event(self, evt, *args, **kwargs) -> None:
+    def post_event(self, evt: Any, *args: Any, **kwargs: Any) -> None:
         self.queue.put((evt, args, kwargs))
 
     def disconnect(self) -> None:
@@ -468,30 +474,30 @@ class Connection(Thread, event.Dispatcher):
         self.send(pkt)
         self.ping_counter += 1
 
-    def _on_packet_received(self, pkt):
+    def _on_packet_received(self, pkt: Packet) -> None:
         if not self.packet_type_filter.filter(pkt.type.value) and not self.packet_id_filter.filter(pkt.id):
             logger_protocol.debug("Got  %s", pkt)
         self.dispatch(pkt.__class__, self, pkt)
 
-    def _on_connect(self, cli, pkt: protocol_encoder.Connect):
+    def _on_connect(self, cli: Any, pkt: protocol_encoder.Connect) -> None:
         del cli, pkt
         self.state = self.CONNECTED
         self.ping_counter = 0
         logger_protocol.debug("Connected.")
 
-    def _on_disconnect(self, cli, pkt: protocol_encoder.Disconnect):
+    def _on_disconnect(self, cli: Any, pkt: protocol_encoder.Disconnect) -> None:
         del cli, pkt
         self.state = self.IDLE
         logger_protocol.debug("Disconnected.")
 
-    def _on_ping(self, cli, pkt: protocol_encoder.Ping):
+    def _on_ping(self, cli: Any, pkt: protocol_encoder.Ping) -> None:
         if self.server:
             self.send(pkt)
         else:
             # TODO: Calculate round-trip time
             pass
 
-    def log_stats(self):
+    def log_stats(self) -> None:
         logger_protocol.info("Recv: {}B, {}F (disc.), {}F, {}P, {}P ({:.02f}%); "
                              "Sent: {}P, {}P ({:.02f}%), {}F, {}F (disc.), {}B;".format(
                                 self.recv_thread.received_bytes,
