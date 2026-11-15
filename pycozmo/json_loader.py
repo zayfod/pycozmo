@@ -6,9 +6,10 @@ JSON reading functions for files containing non-standard comments
 
 import json
 import os
+from typing import Any
 
 
-def load_json_file(filename: str) -> dict:
+def load_json_file(filename: str) -> Any:
     with open(filename, 'r') as f:
         filtered_json = ''
         for line in f.readlines():
@@ -36,7 +37,8 @@ def get_json_files(resource_dir: str, base_names: list[str]) -> list[str]:
     return file_addr
 
 
-def find_file(directory: str, name: str) -> str:
+def find_file(directory: str, name: str) -> str | None:
     for root, _, files in os.walk(directory):
         if name in files:
             return os.path.join(root, name)
+    return None

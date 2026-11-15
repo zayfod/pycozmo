@@ -40,7 +40,7 @@ with pycozmo.connect(enable_procedural_face=False) as cli:
             # Convert to binary image.
             im = im.convert('1')
             # Mirror the image.
-            im = im.transpose(Image.FLIP_LEFT_RIGHT)
+            im = im.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
             # Construct a 128x32 image that the robot can display.
             im2 = Image.new("1", (128, 32))
             im2.paste(im, (30, 7))

@@ -6,7 +6,7 @@ See assets/cozmo_resources/sound/SoundbanksInfo.xml
 
 """
 
-from typing import Any, TextIO
+from typing import TextIO
 import xml.etree.ElementTree as et  # noqa
 
 from . import exception
@@ -31,7 +31,7 @@ class EventInfo:
         "object_path",
     ]
 
-    def __init__(self, soundbank_id: int, event_id: int, name: str, object_path: str):
+    def __init__(self, soundbank_id: int, event_id: int, name: str, object_path: str) -> None:
         self.soundbank_id = int(soundbank_id)
         self.id = int(event_id)
         self.name = str(name)
@@ -50,7 +50,8 @@ class FileInfo:
         "prefetch_size",
     ]
 
-    def __init__(self, soundbank_id: int, file_id: int, name: str, path: str, embedded: bool, prefetch_size: int):
+    def __init__(self, soundbank_id: int, file_id: int, name: str, path: str, embedded: bool,
+                 prefetch_size: int) -> None:
         self.soundbank_id = int(soundbank_id)
         self.id = int(file_id)
         self.name = str(name)
@@ -58,7 +59,9 @@ class FileInfo:
         self.embedded = bool(embedded)
         self.prefetch_size = int(prefetch_size)
 
-    def __eq__(self, other: "FileInfo") -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, FileInfo):
+            return NotImplemented
         res = True
         res = res and self.soundbank_id == other.soundbank_id
         res = res and self.id == other.id
@@ -80,7 +83,7 @@ class SoundBankInfo:
         "object_path",
     ]
 
-    def __init__(self, soundbank_id: int, name: str, path: str, language: str, object_path: str):
+    def __init__(self, soundbank_id: int, name: str, path: str, language: str, object_path: str) -> None:
         self.id = int(soundbank_id)
         self.name = str(name)
         self.path = str(path)
@@ -88,7 +91,26 @@ class SoundBankInfo:
         self.object_path = str(object_path)
 
 
-def load_soundbanksinfo(fspec: str | TextIO) -> dict[int, Any]:
+Info = EventInfo | FileInfo | SoundBankInfo
+
+
+def _get_attr(node: et.Element, name: str) -> str:
+    """ Return the value of a required XML attribute. """
+    value = node.get(name)
+    if value is None:
+        raise exception.AudioKineticFormatError("Missing attribute '{}' in <{}>.".format(name, node.tag))
+    return value
+
+
+def _get_text(node: et.Element, path: str) -> str:
+    """ Return the text of a required XML child element. """
+    child = node.find(path)
+    if child is None or child.text is None:
+        raise exception.AudioKineticFormatError("Missing element '{}' in <{}>.".format(path, node.tag))
+    return child.text
+
+
+def load_soundbanksinfo(fspec: str | TextIO) -> dict[int, Info]:
     """ Load SoundbanksInfo.xml and return a dictionary of parsed Info objects. """
 
     try:
@@ -98,48 +120,47 @@ def load_soundbanksinfo(fspec: str | TextIO) -> dict[int, Any]:
     root = tree.getroot()
 
     # Load StreamedFiles.
-    streamed_files = {}
-    for file in root.findall("./StreamedFiles/File"):
-        file_id = int(file.get("Id"))
+    streamed_files: dict[int, dict[str, str]] = {}
+    for streamed_file_node in root.findall("./StreamedFiles/File"):
+        file_id = int(_get_attr(streamed_file_node, "Id"))
         assert file_id not in streamed_files
         streamed_files[file_id] = {
-            "id": file_id,
-            "language": file.get("Language"),
-            "name": file.find("ShortName").text,
-            "path": file.find("Path").text,
+            "language": streamed_file_node.get("Language", ""),
+            "name": _get_text(streamed_file_node, "ShortName"),
+            "path": _get_text(streamed_file_node, "Path"),
         }
 
     # Load SoundBanks
-    objects = {}
+    objects: dict[int, Info] = {}
     for soundbank_node in root.findall("./SoundBanks/SoundBank"):
         # Create SoundBankInfo object.
-        soundbank_id = int(soundbank_node.get("Id"))
-        language = soundbank_node.get("Language")
+        soundbank_id = int(_get_attr(soundbank_node, "Id"))
+        language = soundbank_node.get("Language", "")
         soundbank = SoundBankInfo(
             soundbank_id,
-            soundbank_node.find("ShortName").text,
-            soundbank_node.find("Path").text,
+            _get_text(soundbank_node, "ShortName"),
+            _get_text(soundbank_node, "Path"),
             language,
-            soundbank_node.find("ObjectPath").text)
+            _get_text(soundbank_node, "ObjectPath"))
         assert soundbank_id not in objects
         objects[soundbank_id] = soundbank
 
         # Create EventInfo objects.
         events = soundbank_node.findall("./IncludedEvents/Event")
         for event_node in events:
-            event_id = int(event_node.get("Id"))
+            event_id = int(_get_attr(event_node, "Id"))
             event = EventInfo(
                 soundbank_id,
                 event_id,
-                event_node.get("Name"),
-                event_node.get("ObjectPath"))
+                _get_attr(event_node, "Name"),
+                _get_attr(event_node, "ObjectPath"))
             assert event_id not in objects
             objects[event_id] = event
 
         # Create FileInfo objects for streamed files.
         files = soundbank_node.findall("./ReferencedStreamedFiles/File")
         for file_node in files:
-            file_id = int(file_node.get("Id"))
+            file_id = int(_get_attr(file_node, "Id"))
             streamed_file = streamed_files[file_id]
             # The file and SoundBank languages may differ.
             # assert streamed_file["language"] == language
@@ -156,16 +177,16 @@ def load_soundbanksinfo(fspec: str | TextIO) -> dict[int, Any]:
         # Create FileInfo objects for embedded files.
         files = soundbank_node.findall("./IncludedMemoryFiles/File")
         for file_node in files:
-            file_id = int(file_node.get("Id"))
+            file_id = int(_get_attr(file_node, "Id"))
             # The file and SoundBank languages may differ.
             # assert file_node.get("Language") == language
             prefetch_size_node = file_node.find("PrefetchSize")
-            prefetch_size = int(prefetch_size_node.text) if prefetch_size_node is not None else -1
+            prefetch_size = int(_get_text(file_node, "PrefetchSize")) if prefetch_size_node is not None else -1
             file = FileInfo(
                 soundbank_id,
                 file_id,
-                file_node.find("ShortName").text,
-                file_node.find("Path").text,
+                _get_text(file_node, "ShortName"),
+                _get_text(file_node, "Path"),
                 True,
                 prefetch_size)
             # assert file_id not in objects

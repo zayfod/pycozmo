@@ -33,7 +33,7 @@ from collections import Counter
 import pycozmo
 
 
-def do_info(args) -> None:
+def do_info(args: argparse.Namespace) -> None:
     ifspec = args.input
 
     try:
@@ -49,7 +49,7 @@ def do_info(args) -> None:
             print("\t{}: {}".format(k, v))
 
 
-def do_json(args) -> None:
+def do_json(args: argparse.Namespace) -> None:
     ifspec = args.input
     ofspec = args.output
     if not ofspec:
@@ -68,7 +68,7 @@ def do_json(args) -> None:
         sys.exit(1)
 
 
-def do_bin(args) -> None:
+def do_bin(args: argparse.Namespace) -> None:
     ifspec = args.input
     ofspec = args.output
     if not ofspec:
@@ -96,7 +96,7 @@ def write_procedural_face(keyframe: pycozmo.anim_encoder.AnimProceduralFace, fsp
         sys.exit(1)
 
 
-def do_images(args) -> None:
+def do_images(args: argparse.Namespace) -> None:
     ifspec = args.input
     prefix = args.prefix
     if not prefix:

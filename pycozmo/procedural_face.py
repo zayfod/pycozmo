@@ -35,7 +35,7 @@ DEFAULT_EYE_HEIGHT = 40
 X_FACTOR = 0.55
 Y_FACTOR = 0.25
 
-RESAMPLE = Image.NEAREST
+RESAMPLE = Image.Resampling.NEAREST
 
 
 class ProceduralBase:
@@ -275,63 +275,63 @@ class ProceduralEye(ProceduralBase):
     def upper_outer_radius_y(self, value: float) -> None:
         self.params[self.offset + 12] = value
 
-    def _render_inner_rect(self, draw: ImageDraw.ImageDraw, y1: int, x2: int, y2: int) -> None:
+    def _render_inner_rect(self, draw: ImageDraw.ImageDraw, y1: float, x2: float, y2: float) -> None:
         x3 = x2 - int(self.corner_radius * max(self.upper_inner_radius_x, self.lower_inner_radius_x))
         y3 = y1 + int(self.corner_radius * self.upper_inner_radius_y)
         x4 = x2
         y4 = y2 - int(self.corner_radius * self.lower_inner_radius_y)
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_upper_rect(self, draw: ImageDraw.ImageDraw, x1: int, y1: int, x2: int) -> None:
+    def _render_upper_rect(self, draw: ImageDraw.ImageDraw, x1: float, y1: float, x2: float) -> None:
         x3 = x1 + int(self.corner_radius * self.upper_outer_radius_x)
         y3 = y1
         x4 = x2 - int(self.corner_radius * self.upper_inner_radius_x)
         y4 = y1 + int(self.corner_radius * max(self.upper_outer_radius_y, self.upper_inner_radius_y))
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_outer_rect(self, draw: ImageDraw.ImageDraw, x1: int, y1: int, y2: int) -> None:
+    def _render_outer_rect(self, draw: ImageDraw.ImageDraw, x1: float, y1: float, y2: float) -> None:
         x3 = x1
         y3 = y1 + int(self.corner_radius * self.upper_outer_radius_y)
         x4 = x1 + int(self.corner_radius * max(self.upper_outer_radius_x, self.lower_outer_radius_x))
         y4 = y2 - int(self.corner_radius * self.lower_outer_radius_y)
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_lower_rect(self, draw: ImageDraw.ImageDraw, x1: int, x2: int, y2: int) -> None:
+    def _render_lower_rect(self, draw: ImageDraw.ImageDraw, x1: float, x2: float, y2: float) -> None:
         x3 = x1 + int(self.corner_radius * self.lower_outer_radius_x)
         y3 = y2 - int(self.corner_radius * max(self.lower_outer_radius_y, self.lower_inner_radius_y))
         x4 = x2 - int(self.corner_radius * self.lower_inner_radius_x)
         y4 = y2
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_center_rect(self, draw: ImageDraw.ImageDraw, x1: int, y1: int, x2: int, y2: int) -> None:
+    def _render_center_rect(self, draw: ImageDraw.ImageDraw, x1: float, y1: float, x2: float, y2: float) -> None:
         x3 = x1 + int(self.corner_radius * max(self.upper_outer_radius_x, self.lower_outer_radius_x)) - 2
         y3 = y1 + int(self.corner_radius * max(self.upper_outer_radius_y, self.upper_inner_radius_y)) - 1
         x4 = x2 - int(self.corner_radius * max(self.upper_inner_radius_y, self.lower_inner_radius_y)) + 2
         y4 = y2 - int(self.corner_radius * max(self.lower_outer_radius_y, self.lower_inner_radius_y)) + 1
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_lower_inner_pie(self, draw: ImageDraw.ImageDraw, x2: int, y2: int) -> None:
+    def _render_lower_inner_pie(self, draw: ImageDraw.ImageDraw, x2: float, y2: float) -> None:
         x3 = x2 - 2 * int(self.corner_radius * self.lower_inner_radius_x)
         y3 = y2 - 2 * int(self.corner_radius * self.lower_inner_radius_y)
         x4 = x2
         y4 = y2
         draw.pieslice(((x3, y3), (x4, y4)), 0, 90, fill=1)
 
-    def _render_upper_inner_pie(self, draw: ImageDraw.ImageDraw, y1: int, x2: int) -> None:
+    def _render_upper_inner_pie(self, draw: ImageDraw.ImageDraw, y1: float, x2: float) -> None:
         x3 = x2 - 2 * int(self.corner_radius * self.upper_inner_radius_x)
         y3 = y1
         x4 = x2
         y4 = y1 + 2 * int(self.corner_radius * self.upper_inner_radius_y)
         draw.pieslice(((x3, y3), (x4, y4)), 270, 360, fill=1)
 
-    def _render_upper_outer_pie(self, draw: ImageDraw.ImageDraw, x1: int, y1: int) -> None:
+    def _render_upper_outer_pie(self, draw: ImageDraw.ImageDraw, x1: float, y1: float) -> None:
         x3 = x1
         y3 = y1
         x4 = x1 + 2 * int(self.corner_radius * self.upper_outer_radius_x)
         y4 = y1 + 2 * int(self.corner_radius * self.upper_outer_radius_y)
         draw.pieslice(((x3, y3), (x4, y4)), 180, 270, fill=1)
 
-    def _render_lower_outer_pie(self, draw: ImageDraw.ImageDraw, x1: int, y2: int) -> None:
+    def _render_lower_outer_pie(self, draw: ImageDraw.ImageDraw, x1: float, y2: float) -> None:
         x3 = x1
         y3 = y2 - 2 * int(self.corner_radius * self.lower_outer_radius_y)
         x4 = x1 + 2 * int(self.corner_radius * self.lower_outer_radius_x)
@@ -371,13 +371,12 @@ class ProceduralEye(ProceduralBase):
             eye = eye.resize(scale, resample=RESAMPLE)
         except ValueError:
             # Scale factors can be extremely small and Pillow cannot handle resize() with both scale factors of 0.
-            eye = None
+            return
 
         # Translate and compose
-        if eye:
-            location = (int((im.size[0] - eye.size[0]) / 2 + self.center_x * X_FACTOR + self.x_offset),
-                        int((im.size[1] - eye.size[1]) / 2 + self.center_y * Y_FACTOR))
-            im.paste(eye, location, eye)
+        location = (int((im.size[0] - eye.size[0]) / 2 + self.center_x * X_FACTOR + self.x_offset),
+                    int((im.size[1] - eye.size[1]) / 2 + self.center_y * Y_FACTOR))
+        im.paste(eye, location, eye)
 
 
 class ProceduralFace(ProceduralBase):
@@ -484,13 +483,12 @@ class ProceduralFace(ProceduralBase):
             face = face.resize(scale, resample=RESAMPLE)
         except ValueError:
             # Scale factors can be extremely small and Pillow cannot handle resize() with both scale factors of 0.
-            face = None
+            return im
 
         # Translate and compose
-        if face:
-            location = (int((im.size[0] - face.size[0]) / 2 + self.center_x * X_FACTOR),
-                        int((im.size[1] - face.size[1]) / 2 + self.center_y * Y_FACTOR))
-            im.paste(face, location)
+        location = (int((im.size[0] - face.size[0]) / 2 + self.center_x * X_FACTOR),
+                    int((im.size[1] - face.size[1]) / 2 + self.center_y * Y_FACTOR))
+        im.paste(face, location)
 
         return im
 

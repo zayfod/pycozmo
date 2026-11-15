@@ -5,56 +5,56 @@ import time
 import pycozmo
 
 
-def on_robot_state(cli, pkt: pycozmo.protocol_encoder.RobotState):
+def on_robot_state(conn: pycozmo.conn.Connection, pkt: pycozmo.protocol_encoder.RobotState) -> None:
     print("Battery level: {:.01f} V".format(pkt.battery_voltage))
 
 
-def on_robot_poked(cli, pkt: pycozmo.protocol_encoder.RobotPoked):
+def on_robot_poked(conn: pycozmo.conn.Connection, pkt: pycozmo.protocol_encoder.RobotPoked) -> None:
     print("Robot poked.")
 
 
-def on_robot_falling_started(cli, pkt: pycozmo.protocol_encoder.FallingStarted):
+def on_robot_falling_started(conn: pycozmo.conn.Connection, pkt: pycozmo.protocol_encoder.FallingStarted) -> None:
     print("Started falling.")
 
 
-def on_robot_falling_stopped(cli, pkt: pycozmo.protocol_encoder.FallingStopped):
+def on_robot_falling_stopped(conn: pycozmo.conn.Connection, pkt: pycozmo.protocol_encoder.FallingStopped) -> None:
     print("Falling stopped after {} ms. Impact intensity {:.01f}.".format(pkt.duration_ms, pkt.impact_intensity))
 
 
-def on_button_pressed(cli, pkt: pycozmo.protocol_encoder.ButtonPressed):
+def on_button_pressed(conn: pycozmo.conn.Connection, pkt: pycozmo.protocol_encoder.ButtonPressed) -> None:
     if pkt.pressed:
         print("Button pressed.")
     else:
         print("Button released.")
 
 
-def on_robot_picked_up(cli, state: bool):
+def on_robot_picked_up(cli: pycozmo.Client, state: bool) -> None:
     if state:
         print("Picked up.")
     else:
         print("Put down.")
 
 
-def on_robot_charging(cli, state: bool):
+def on_robot_charging(cli: pycozmo.Client, state: bool) -> None:
     if state:
         print("Started charging.")
     else:
         print("Stopped charging.")
 
 
-def on_cliff_detected(cli, state: bool):
+def on_cliff_detected(cli: pycozmo.Client, state: bool) -> None:
     if state:
         print("Cliff detected.")
 
 
-def on_robot_wheels_moving(cli, state: bool):
+def on_robot_wheels_moving(cli: pycozmo.Client, state: bool) -> None:
     if state:
         print("Started moving.")
     else:
         print("Stopped moving.")
 
 
-def on_robot_orientation_change(cli, orientation: pycozmo.robot.RobotOrientation):
+def on_robot_orientation_change(cli: pycozmo.Client, orientation: pycozmo.robot.RobotOrientation) -> None:
     if orientation == pycozmo.robot.RobotOrientation.ON_THREADS:
         print("On threads.")
     elif orientation == pycozmo.robot.RobotOrientation.ON_BACK:

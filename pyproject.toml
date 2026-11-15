@@ -16,7 +16,7 @@ requires-python = ">=3.11"
 dependencies = [
     "dpkt",
     "numpy",
-    "Pillow>=6.0.0",
+    "Pillow>=9.1",
     "flatbuffers>=2.0",
     "opencv-python>=4.0.0",
 ]

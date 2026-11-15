@@ -56,8 +56,13 @@ class TestConnection(unittest.TestCase):
     def test_send_30(self):
         COUNT = 30
         counts = []
-        self.s.add_handler(pycozmo.protocol_encoder.SetRobotVolume,
-                           lambda cli, pkt: (counts.append(pkt.level), (pkt.level < COUNT - 2) or self.s_e.set()))
+
+        def on_set_robot_volume(cli, pkt):
+            counts.append(pkt.level)
+            if pkt.level >= COUNT - 2:
+                self.s_e.set()
+
+        self.s.add_handler(pycozmo.protocol_encoder.SetRobotVolume, on_set_robot_volume)
         self.start()
         self.connect()
         for i in range(COUNT):

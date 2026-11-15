@@ -6,9 +6,13 @@ import argparse
 import logging
 import time
 import threading
-from fcntl import ioctl
 from struct import unpack
 from select import select
+
+if sys.platform != "linux":
+    sys.exit("ERROR: This application can only run on Linux with evdev installed. Do 'pip install --user evdev'.")
+
+import fcntl
 
 try:
     # noinspection PyPackageRequirements
@@ -44,7 +48,7 @@ class XboxController(object):
         # Read device identity and capabilities
         buf = b"\0" * 8
         try:
-            res = ioctl(f, cls.EVIOCGID, buf)
+            res = fcntl.ioctl(f, cls.EVIOCGID, buf)
             bus, vendor, product, version = unpack("hhhh", res)
         except IOError as e:
             logging.error("Failed to read device IDs. {}".format(e))
@@ -83,7 +87,7 @@ class InputThread(object):
 
     def __init__(self, controller, handler):
         self._stop = False
-        self._thread = None
+        self._thread: threading.Thread | None = None
         self._controller = controller
         self._handler = handler
 
@@ -96,7 +100,8 @@ class InputThread(object):
     def stop(self):
         logging.debug("Input thread stopping...")
         self._stop = True
-        self._thread.join()
+        if self._thread:
+            self._thread.join()
         logging.debug("Input thread joined.")
 
     def run(self):
@@ -191,7 +196,7 @@ class RCApp(object):
         self.cli.drive_wheels(lwheel_speed=lw, rwheel_speed=rw)
 
     @staticmethod
-    def get_motor_thrust(r: float, theta: float):
+    def get_motor_thrust(r: float, theta: float) -> tuple[float, float]:
         """
         Convert throttle and steering angle to left and right motor thrust.
 

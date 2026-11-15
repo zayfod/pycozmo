@@ -8,15 +8,12 @@ Cozmo resource manager.
 import sys
 import os
 import urllib.request
-import ssl
 import zipfile
 import argparse
 import pathlib
 import shutil
 
 import pycozmo
-
-ssl._create_default_https_context = ssl._create_unverified_context  # noqa
 
 
 OBB_URL = "https://media.githubusercontent.com/media/cristobalraya/cozmo-archive/" \

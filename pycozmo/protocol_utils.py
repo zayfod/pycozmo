@@ -5,6 +5,7 @@ Cozmo protocol encoding helper classes and functions.
 """
 
 import struct
+from typing import Any
 
 
 __all__ = [
@@ -85,6 +86,7 @@ def validate_farray(name, value, length, element_validation):
         raise ValueError(("{name} must be a sequence of length {expected_length}. "
                           "Got a sequence of length {value_length}.").format(
             name=name, expected_length=length, value_length=len(value)))
+    res: Any
     if isinstance(value, (bytes, bytearray)):
         # Do not validate byte arrays.
         res = value
@@ -103,6 +105,7 @@ def validate_varray(name, value, maximum_length, element_validation):
         raise ValueError(("{name} must be a sequence with length less than or equal to {maximum_length}. "
                           "Got a sequence of length {value_length}.").format(
             name=name, maximum_length=maximum_length, value_length=len(value)))
+    res: Any
     if isinstance(value, (bytes, bytearray)):
         # Do not validate byte arrays.
         res = value
@@ -190,6 +193,7 @@ class BinaryReader(object):
 
     def read_farray(self, fmt, length):
         """ Reads in a fixed-length array of the given format and length. """
+        result: Any
         if fmt == "B" and length > 1:
             if self._index + length > len(self._buffer):
                 raise IndexError('Buffer not large enough to read serialized message. Received {0} bytes.'.format(

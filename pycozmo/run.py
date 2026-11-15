@@ -7,7 +7,9 @@ Helper functions for running PyCozmo applications.
 import sys
 import os
 import logging
+from collections.abc import Iterator
 from contextlib import contextmanager
+from typing import TextIO
 
 from .logger import logger, logger_protocol, logger_robot, logger_reaction, logger_behavior, logger_animation
 from . import client
@@ -21,18 +23,18 @@ __all__ = [
 
 
 def setup_basic_logging(
-        log_level: str | None = None,
-        protocol_log_level: str | None = None,
-        robot_log_level: str | None = None,
-        target=sys.stderr) -> None:
+        log_level: int | str | None = None,
+        protocol_log_level: int | str | None = None,
+        robot_log_level: int | str | None = None,
+        target: TextIO = sys.stderr) -> None:
 
     if log_level is None:
-        log_level = os.environ.get('PYCOZMO_LOG_LEVEL', logging.INFO)
+        log_level = os.environ.get('PYCOZMO_LOG_LEVEL') or logging.INFO
     if protocol_log_level is None:
-        protocol_log_level = os.environ.get('PYCOZMO_PROTOCOL_LOG_LEVEL', logging.INFO)
+        protocol_log_level = os.environ.get('PYCOZMO_PROTOCOL_LOG_LEVEL') or logging.INFO
     if robot_log_level is None:
         # Keeping the default to WARNING due to "AnimationController.IsReadyToPlay.BufferStarved" messages.
-        robot_log_level = os.environ.get('PYCOZMO_ROBOT_LOG_LEVEL', logging.WARNING)
+        robot_log_level = os.environ.get('PYCOZMO_ROBOT_LOG_LEVEL') or logging.WARNING
     handler = logging.StreamHandler(stream=target)
     formatter = logging.Formatter(
         fmt="%(asctime)s.%(msecs)03d %(name)-20s %(levelname)-8s %(message)s",
@@ -54,13 +56,13 @@ def setup_basic_logging(
 
 @contextmanager
 def connect(
-        log_level: str | None = None,
-        protocol_log_level: str | None = None,
-        protocol_log_messages: list | None = None,
-        robot_log_level: str | None = None,
+        log_level: int | str | None = None,
+        protocol_log_level: int | str | None = None,
+        protocol_log_messages: list[str] | None = None,
+        robot_log_level: int | str | None = None,
         auto_initialize: bool = True,
         enable_animations: bool = True,
-        enable_procedural_face: bool = True) -> client.Client:
+        enable_procedural_face: bool = True) -> Iterator[client.Client]:
 
     setup_basic_logging(log_level=log_level, protocol_log_level=protocol_log_level, robot_log_level=robot_log_level)
 

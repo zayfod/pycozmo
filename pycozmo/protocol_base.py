@@ -157,7 +157,7 @@ class UnknownCommand(UnknownPacket):
 
     def __repr__(self):
         return "{type}({id:02x}, {data})".format(
-            id=self.id, type=type(self).__name__, data=hex_dump(data=self._data))
+            id=self.id or 0, type=type(self).__name__, data=hex_dump(data=self._data))
 
 
 class UnknownEvent(UnknownPacket):
@@ -177,4 +177,4 @@ class UnknownEvent(UnknownPacket):
 
     def __repr__(self):
         return "{type}({id:02x}, {data})".format(
-            id=self.id, type=type(self).__name__, data=hex_dump(data=self._data))
+            id=self.id or 0, type=type(self).__name__, data=hex_dump(data=self._data))

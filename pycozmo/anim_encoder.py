@@ -8,9 +8,9 @@ Animation data structures are declared in FlatBuffers format in files/cozmo/cozm
 
 """
 
-from typing import TextIO, BinaryIO
+from typing import Any, Self, TextIO, BinaryIO
 from collections.abc import Iterable
-from abc import ABC
+from abc import ABC, abstractmethod
 import os
 import json
 import glob
@@ -51,28 +51,32 @@ __all__ = [
 class AnimBase(ABC):
     """ Animation element base class. """
 
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def to_dict(self) -> dict:
-        pass
-
-    @classmethod
-    def from_dict(cls, data):
-        pass
-
-    def to_fb(self, builder: flatbuffers.Builder):
-        pass
+    @abstractmethod
+    def to_dict(self) -> Any:
+        """ Convert to a JSON-compatible representation. """
 
     @classmethod
-    def from_fb(cls, buf):
-        pass
+    @abstractmethod
+    def from_dict(cls, data: Any) -> Self:
+        """ Create from a JSON-compatible representation. """
+
+    @abstractmethod
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
+        """ Serialize to FlatBuffers and return the offset of the serialized object. """
+
+    @classmethod
+    @abstractmethod
+    def from_fb(cls, buf: Any) -> Self:
+        """ Create from a FlatBuffers object. """
 
 
 class AnimKeyframe(AnimBase, ABC):
     """ Animation keyframe base class. """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
 
@@ -85,7 +89,7 @@ class AnimClip(AnimBase):
         self.keyframes = list(keyframes)
 
     def to_dict(self) -> dict:
-        data = {
+        data: dict[str, Any] = {
             "Name": self.name,
             "keyframes": {
                 "LiftHeightKeyFrame": [],
@@ -127,8 +131,9 @@ class AnimClip(AnimBase):
         return data
 
     @classmethod
-    def from_dict(cls, data: dict) -> "AnimClip":
-        keyframes = []
+    def from_dict(cls, data: dict[str, Any]) -> "AnimClip":
+        keyframes: list[AnimKeyframe] = []
+        keyframe: AnimKeyframe
         for keyframe_data in data["keyframes"].get("LiftHeightKeyFrame", []):
             keyframe = AnimLiftHeight.from_dict(keyframe_data)
             keyframes.append(keyframe)
@@ -162,7 +167,7 @@ class AnimClip(AnimBase):
         clip = cls(name=str(data["Name"]), keyframes=keyframes)
         return clip
 
-    def to_fb(self, builder: flatbuffers.Builder):
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
 
         head_angle_arr = []
         lift_height_arr = []
@@ -262,20 +267,21 @@ class AnimClip(AnimBase):
         CozmoAnim.Keyframes.KeyframesAddProceduralFaceKeyFrame(builder, procedural_face_vector)
         CozmoAnim.Keyframes.KeyframesAddRobotAudioKeyFrame(builder, robot_audio_vector)
         CozmoAnim.Keyframes.KeyframesAddEventKeyFrame(builder, event_vector)
-        kfs = CozmoAnim.Keyframes.KeyframesEnd(builder)
+        kfs: int = CozmoAnim.Keyframes.KeyframesEnd(builder)
 
         name_str = builder.CreateString(self.name)
 
         CozmoAnim.AnimClip.AnimClipStart(builder)
         CozmoAnim.AnimClip.AnimClipAddName(builder, name_str)
         CozmoAnim.AnimClip.AnimClipAddKeyframes(builder, kfs)
-        fbclip = CozmoAnim.AnimClip.AnimClipEnd(builder)
+        fbclip: int = CozmoAnim.AnimClip.AnimClipEnd(builder)
 
         return fbclip
 
     @classmethod
     def from_fb(cls, fbclip: CozmoAnim.AnimClip.AnimClip) -> "AnimClip":
-        keyframes = []
+        keyframes: list[AnimKeyframe] = []
+        keyframe: AnimKeyframe
         fbkfs = fbclip.Keyframes()
 
         for i in range(fbkfs.HeadAngleKeyFrameLength()):
@@ -340,7 +346,7 @@ class AnimClips(AnimBase):
         self.clips = list(clips)
 
     def to_dict(self) -> dict:
-        data = {
+        data: dict[str, Any] = {
             "clips": [],
         }
         for clip in self.clips:
@@ -348,7 +354,7 @@ class AnimClips(AnimBase):
         return data
 
     @classmethod
-    def from_dict(cls, data: dict) -> "AnimClips":
+    def from_dict(cls, data: dict[str, Any]) -> "AnimClips":
         clip_list = []
         for clip_dict in data["clips"]:
             clip = AnimClip.from_dict(clip_dict)
@@ -356,7 +362,7 @@ class AnimClips(AnimBase):
         clips = cls(clips=clip_list)
         return clips
 
-    def to_fb(self, builder: flatbuffers.Builder):
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
         clips_arr = []
         for clip in self.clips:
             fbclip = clip.to_fb(builder)
@@ -369,7 +375,7 @@ class AnimClips(AnimBase):
 
         CozmoAnim.AnimClips.AnimClipsStart(builder)
         CozmoAnim.AnimClips.AnimClipsAddClips(builder, clips_vector)
-        fbclips = CozmoAnim.AnimClips.AnimClipsEnd(builder)
+        fbclips: int = CozmoAnim.AnimClips.AnimClipsEnd(builder)
 
         return fbclips
 
@@ -401,14 +407,14 @@ class AnimClips(AnimBase):
         with open(fspec) as f:
             return cls.from_json_stream(f)
 
-    def to_fb_stream(self, f: BinaryIO):
+    def to_fb_stream(self, f: BinaryIO) -> None:
         builder = flatbuffers.Builder(1024)
         fbclips = self.to_fb(builder)
         builder.Finish(fbclips)
         buf = builder.Output()
         f.write(buf)
 
-    def to_fb_file(self, fspec: str):
+    def to_fb_file(self, fspec: str) -> None:
         with open(fspec, "wb") as f:
             self.to_fb_stream(f)
 
@@ -432,7 +438,7 @@ class AnimHeadAngle(AnimKeyframe):
                  trigger_time_ms: int = 0,
                  duration_ms: int = 0,
                  angle_deg: int = 0,
-                 variability_deg: int = 0):
+                 variability_deg: int = 0) -> None:
         super().__init__()
         self.trigger_time_ms = int(trigger_time_ms)  # uint32
         self.duration_ms = int(duration_ms)  # uint32
@@ -448,7 +454,7 @@ class AnimHeadAngle(AnimKeyframe):
         }
 
     @classmethod
-    def from_dict(cls, data) -> "AnimHeadAngle":
+    def from_dict(cls, data: dict[str, Any]) -> "AnimHeadAngle":
         return cls(
             trigger_time_ms=data.get("triggerTime_ms", 0),
             duration_ms=data.get("durationTime_ms", 0),
@@ -456,13 +462,13 @@ class AnimHeadAngle(AnimKeyframe):
             variability_deg=data.get("angleVariability_deg", 0)
         )
 
-    def to_fb(self, builder: flatbuffers.Builder):
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
         CozmoAnim.HeadAngle.HeadAngleStart(builder)
         CozmoAnim.HeadAngle.HeadAngleAddTriggerTimeMs(builder, self.trigger_time_ms)
         CozmoAnim.HeadAngle.HeadAngleAddDurationTimeMs(builder, self.duration_ms)
         CozmoAnim.HeadAngle.HeadAngleAddAngleDeg(builder, self.angle_deg)
         CozmoAnim.HeadAngle.HeadAngleAddAngleVariabilityDeg(builder, self.variability_deg)
-        fbkf = CozmoAnim.HeadAngle.HeadAngleEnd(builder)
+        fbkf: int = CozmoAnim.HeadAngle.HeadAngleEnd(builder)
         return fbkf
 
     @classmethod
@@ -482,7 +488,7 @@ class AnimLiftHeight(AnimKeyframe):
                  trigger_time_ms: int = 0,
                  duration_ms: int = 0,
                  height_mm: int = 0,
-                 variability_mm: int = 0):
+                 variability_mm: int = 0) -> None:
         super().__init__()
         self.trigger_time_ms = int(trigger_time_ms)  # uint32
         self.duration_ms = int(duration_ms)  # uint32
@@ -498,21 +504,21 @@ class AnimLiftHeight(AnimKeyframe):
         }
 
     @classmethod
-    def from_dict(cls, data) -> "AnimLiftHeight":
+    def from_dict(cls, data: dict[str, Any]) -> "AnimLiftHeight":
         return cls(
             trigger_time_ms=data.get("triggerTime_ms", 0),
             duration_ms=data.get("durationTime_ms", 0),
             height_mm=data.get("height_mm", 0),
-            variability_mm=data.get("heightVariability_mm"),
+            variability_mm=data.get("heightVariability_mm", 0),
         )
 
-    def to_fb(self, builder: flatbuffers.Builder):
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
         CozmoAnim.LiftHeight.LiftHeightStart(builder)
         CozmoAnim.LiftHeight.LiftHeightAddTriggerTimeMs(builder, self.trigger_time_ms)
         CozmoAnim.LiftHeight.LiftHeightAddDurationTimeMs(builder, self.duration_ms)
         CozmoAnim.LiftHeight.LiftHeightAddHeightMm(builder, self.height_mm)
         CozmoAnim.LiftHeight.LiftHeightAddHeightVariabilityMm(builder, self.variability_mm)
-        fbkf = CozmoAnim.LiftHeight.LiftHeightEnd(builder)
+        fbkf: int = CozmoAnim.LiftHeight.LiftHeightEnd(builder)
         return fbkf
 
     @classmethod
@@ -529,7 +535,7 @@ class AnimRecordHeading(AnimKeyframe):
     """ Record heading keyframe class. """
 
     def __init__(self,
-                 trigger_time_ms: int = 0):
+                 trigger_time_ms: int = 0) -> None:
         super().__init__()
         self.trigger_time_ms = int(trigger_time_ms)  # uint32
 
@@ -539,15 +545,15 @@ class AnimRecordHeading(AnimKeyframe):
         }
 
     @classmethod
-    def from_dict(cls, data) -> "AnimRecordHeading":
+    def from_dict(cls, data: dict[str, Any]) -> "AnimRecordHeading":
         return cls(
             trigger_time_ms=data.get("triggerTime_ms", 0),
         )
 
-    def to_fb(self, builder: flatbuffers.Builder):
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
         CozmoAnim.RecordHeading.RecordHeadingStart(builder)
         CozmoAnim.RecordHeading.RecordHeadingAddTriggerTimeMs(builder, self.trigger_time_ms)
-        fbkf = CozmoAnim.RecordHeading.RecordHeadingEnd(builder)
+        fbkf: int = CozmoAnim.RecordHeading.RecordHeadingEnd(builder)
         return fbkf
 
     @classmethod
@@ -569,7 +575,7 @@ class AnimTurnToRecordedHeading(AnimKeyframe):
                  decel_deg_per_sec_2: int = 1000,
                  tolerance_deg: int = 2,
                  num_half_revs: int = 0,
-                 use_shortest_dir: bool = False):
+                 use_shortest_dir: bool = False) -> None:
         super().__init__()
         self.trigger_time_ms = int(trigger_time_ms)  # uint32
         self.duration_ms = int(duration_ms)  # uint32
@@ -595,7 +601,7 @@ class AnimTurnToRecordedHeading(AnimKeyframe):
         }
 
     @classmethod
-    def from_dict(cls, data) -> "AnimTurnToRecordedHeading":
+    def from_dict(cls, data: dict[str, Any]) -> "AnimTurnToRecordedHeading":
         return cls(
             trigger_time_ms=data.get("triggerTime_ms", 0),
             duration_ms=data.get("durationTime_ms", 0),
@@ -608,7 +614,7 @@ class AnimTurnToRecordedHeading(AnimKeyframe):
             use_shortest_dir=data.get("useShortestDir", False),
         )
 
-    def to_fb(self, builder: flatbuffers.Builder):
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
         CozmoAnim.TurnToRecordedHeading.TurnToRecordedHeadingStart(builder)
         CozmoAnim.TurnToRecordedHeading.TurnToRecordedHeadingAddTriggerTimeMs(builder, self.trigger_time_ms)
         CozmoAnim.TurnToRecordedHeading.TurnToRecordedHeadingAddDurationTimeMs(builder, self.duration_ms)
@@ -619,7 +625,7 @@ class AnimTurnToRecordedHeading(AnimKeyframe):
         CozmoAnim.TurnToRecordedHeading.TurnToRecordedHeadingAddToleranceDeg(builder, self.tolerance_deg)
         CozmoAnim.TurnToRecordedHeading.TurnToRecordedHeadingAddNumHalfRevs(builder, self.num_half_revs)
         CozmoAnim.TurnToRecordedHeading.TurnToRecordedHeadingAddUseShortestDir(builder, self.use_shortest_dir)
-        fbkf = CozmoAnim.TurnToRecordedHeading.TurnToRecordedHeadingEnd(builder)
+        fbkf: int = CozmoAnim.TurnToRecordedHeading.TurnToRecordedHeadingEnd(builder)
         return fbkf
 
     @classmethod
@@ -644,10 +650,11 @@ class AnimBodyMotion(AnimKeyframe):
                  trigger_time_ms: int = 0,
                  duration_ms: int = 0,
                  radius_mm: float | str = "STRAIGHT",
-                 speed: int = 0):
+                 speed: int = 0) -> None:
         super().__init__()
         self.trigger_time_ms = int(trigger_time_ms)  # uint32
         self.duration_ms = int(duration_ms)  # uint32
+        self.radius_mm: float | str
         try:
             self.radius_mm = float(radius_mm)
         except ValueError:
@@ -663,7 +670,7 @@ class AnimBodyMotion(AnimKeyframe):
         }
 
     @classmethod
-    def from_dict(cls, data) -> "AnimBodyMotion":
+    def from_dict(cls, data: dict[str, Any]) -> "AnimBodyMotion":
         return cls(
             trigger_time_ms=data.get("triggerTime_ms", 0),
             duration_ms=data.get("durationTime_ms", 0),
@@ -671,14 +678,14 @@ class AnimBodyMotion(AnimKeyframe):
             speed=data.get("speed", 0),
         )
 
-    def to_fb(self, builder: flatbuffers.Builder):
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
         radius_mm_str = builder.CreateString(str(self.radius_mm))
         CozmoAnim.BodyMotion.BodyMotionStart(builder)
         CozmoAnim.BodyMotion.BodyMotionAddTriggerTimeMs(builder, self.trigger_time_ms)
         CozmoAnim.BodyMotion.BodyMotionAddDurationTimeMs(builder, self.duration_ms)
         CozmoAnim.BodyMotion.BodyMotionAddRadiusMm(builder, radius_mm_str)
         CozmoAnim.BodyMotion.BodyMotionAddSpeed(builder, self.speed)
-        fbkf = CozmoAnim.BodyMotion.BodyMotionEnd(builder)
+        fbkf: int = CozmoAnim.BodyMotion.BodyMotionEnd(builder)
         return fbkf
 
     @classmethod
@@ -694,7 +701,7 @@ class AnimBodyMotion(AnimKeyframe):
 class AnimLight(object):
     """ Light color class. """
 
-    def __init__(self, red: int = 0, green: int = 0, blue: int = 0, ir: int = 0):
+    def __init__(self, red: int = 0, green: int = 0, blue: int = 0, ir: int = 0) -> None:
         self.red = int(red)
         self.green = int(green)
         self.blue = int(blue)
@@ -709,7 +716,7 @@ class AnimLight(object):
         ]
 
     @classmethod
-    def from_dict(cls, data) -> "AnimLight":
+    def from_dict(cls, data: list[int]) -> "AnimLight":
         return cls(
             red=data[0],
             green=data[1],
@@ -750,7 +757,7 @@ class AnimBackpackLights(AnimKeyframe):
         }
 
     @classmethod
-    def from_dict(cls, data) -> "AnimBackpackLights":
+    def from_dict(cls, data: dict[str, Any]) -> "AnimBackpackLights":
         return cls(
             trigger_time_ms=data.get("triggerTime_ms", 0),
             duration_ms=data.get("durationTime_ms", 0),
@@ -761,7 +768,7 @@ class AnimBackpackLights(AnimKeyframe):
             right=AnimLight.from_dict(data.get("Right", [0, 0, 0, 0])),
         )
 
-    def to_fb(self, builder: flatbuffers.Builder):
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
 
         led_vectors = []
         for led in (self.left, self.front, self.middle, self.back, self.right):
@@ -780,7 +787,7 @@ class AnimBackpackLights(AnimKeyframe):
         CozmoAnim.BackpackLights.BackpackLightsAddMiddle(builder, led_vectors[2])
         CozmoAnim.BackpackLights.BackpackLightsAddBack(builder, led_vectors[3])
         CozmoAnim.BackpackLights.BackpackLightsAddRight(builder, led_vectors[4])
-        fbkf = CozmoAnim.BackpackLights.BackpackLightsEnd(builder)
+        fbkf: int = CozmoAnim.BackpackLights.BackpackLightsEnd(builder)
 
         return fbkf
 
@@ -807,7 +814,7 @@ class AnimFaceAnimation(AnimKeyframe):
 
     def __init__(self,
                  trigger_time_ms: int = 0,
-                 anim_name: str = ""):
+                 anim_name: str = "") -> None:
         super().__init__()
         self.trigger_time_ms = int(trigger_time_ms)  # uint32
         self.anim_name = str(anim_name)
@@ -819,18 +826,18 @@ class AnimFaceAnimation(AnimKeyframe):
         }
 
     @classmethod
-    def from_dict(cls, data) -> "AnimFaceAnimation":
+    def from_dict(cls, data: dict[str, Any]) -> "AnimFaceAnimation":
         return cls(
             trigger_time_ms=data.get("triggerTime_ms", 0),
             anim_name=data.get("animName", ""),
         )
 
-    def to_fb(self, builder: flatbuffers.Builder):
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
         anim_name_str = builder.CreateString(self.anim_name)
         CozmoAnim.FaceAnimation.FaceAnimationStart(builder)
         CozmoAnim.FaceAnimation.FaceAnimationAddTriggerTimeMs(builder, self.trigger_time_ms)
         CozmoAnim.FaceAnimation.FaceAnimationAddAnimName(builder, anim_name_str)
-        fbkf = CozmoAnim.FaceAnimation.FaceAnimationEnd(builder)
+        fbkf: int = CozmoAnim.FaceAnimation.FaceAnimationEnd(builder)
         return fbkf
 
     @classmethod
@@ -878,7 +885,7 @@ class AnimProceduralFace(AnimKeyframe):
         }
 
     @classmethod
-    def from_dict(cls, data) -> "AnimProceduralFace":
+    def from_dict(cls, data: dict[str, Any]) -> "AnimProceduralFace":
         return cls(
             trigger_time_ms=data.get("triggerTime_ms", 0),
             angle=data.get("faceAngle", 0.0),
@@ -890,7 +897,7 @@ class AnimProceduralFace(AnimKeyframe):
             right_eye=data.get("rightEye", ()),
         )
 
-    def to_fb(self, builder: flatbuffers.Builder):
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
 
         eye_vectors = []
         for eye in (self.left_eye, self.right_eye):
@@ -908,7 +915,7 @@ class AnimProceduralFace(AnimKeyframe):
         CozmoAnim.ProceduralFace.ProceduralFaceAddFaceScaleY(builder, self.scale_y)
         CozmoAnim.ProceduralFace.ProceduralFaceAddLeftEye(builder, eye_vectors[0])
         CozmoAnim.ProceduralFace.ProceduralFaceAddRightEye(builder, eye_vectors[1])
-        fbkf = CozmoAnim.ProceduralFace.ProceduralFaceEnd(builder)
+        fbkf: int = CozmoAnim.ProceduralFace.ProceduralFaceEnd(builder)
 
         return fbkf
 
@@ -956,7 +963,7 @@ class AnimRobotAudio(AnimKeyframe):
         }
 
     @classmethod
-    def from_dict(cls, data) -> "AnimRobotAudio":
+    def from_dict(cls, data: dict[str, Any]) -> "AnimRobotAudio":
         return cls(
             trigger_time_ms=data.get("triggerTime_ms", 0),
             audio_event_ids=data.get("audioEventId", ()),
@@ -965,7 +972,7 @@ class AnimRobotAudio(AnimKeyframe):
             has_alts=data.get("hasAlts", True),
         )
 
-    def to_fb(self, builder: flatbuffers.Builder):
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
         CozmoAnim.RobotAudio.RobotAudioStartAudioEventIdVector(builder, len(self.audio_event_ids))
         for i in reversed(range(len(self.audio_event_ids))):
             builder.PrependInt64(self.audio_event_ids[i])
@@ -982,7 +989,7 @@ class AnimRobotAudio(AnimKeyframe):
         CozmoAnim.RobotAudio.RobotAudioAddVolume(builder, self.volume)
         CozmoAnim.RobotAudio.RobotAudioAddProbability(builder, probability_vector)
         CozmoAnim.RobotAudio.RobotAudioAddHasAlts(builder, self.has_alts)
-        fbkf = CozmoAnim.RobotAudio.RobotAudioEnd(builder)
+        fbkf: int = CozmoAnim.RobotAudio.RobotAudioEnd(builder)
 
         return fbkf
 
@@ -1008,7 +1015,7 @@ class AnimEvent(AnimKeyframe):
 
     def __init__(self,
                  trigger_time_ms: int = 0,
-                 event_id: str = ""):
+                 event_id: str = "") -> None:
         super().__init__()
         self.trigger_time_ms = int(trigger_time_ms)  # uint32
         self.event_id = str(event_id)
@@ -1020,18 +1027,18 @@ class AnimEvent(AnimKeyframe):
         }
 
     @classmethod
-    def from_dict(cls, data) -> "AnimEvent":
+    def from_dict(cls, data: dict[str, Any]) -> "AnimEvent":
         return cls(
             trigger_time_ms=data.get("triggerTime_ms", 0),
             event_id=data.get("event_id", ""),
         )
 
-    def to_fb(self, builder: flatbuffers.Builder):
+    def to_fb(self, builder: flatbuffers.Builder) -> int:
         event_id_str = builder.CreateString(self.event_id)
         CozmoAnim.Event.EventStart(builder)
         CozmoAnim.Event.EventAddTriggerTimeMs(builder, self.trigger_time_ms)
         CozmoAnim.Event.EventAddEventId(builder, event_id_str)
-        fbkf = CozmoAnim.Event.EventEnd(builder)
+        fbkf: int = CozmoAnim.Event.EventEnd(builder)
         return fbkf
 
     @classmethod
@@ -1057,7 +1064,7 @@ class ClipMetadata(object):
                  has_face_animation_track: bool,
                  has_procedural_face_track: bool,
                  has_robot_audio_track: bool,
-                 has_event_track: bool):
+                 has_event_track: bool) -> None:
         self.fspec = str(fspec)
         self.index = int(index)
         self.name = str(name)

@@ -5,6 +5,7 @@ Event declaration and dispatching.
 """
 
 from collections.abc import Callable
+from typing import Any
 import collections
 import threading
 
@@ -235,7 +236,7 @@ class Dispatcher(object):
         for child in self.dispatch_children:
             child.dispatch(event, *args, **kwargs)
 
-    def wait_for(self, evt, timeout: float | None = None) -> None:
+    def wait_for(self, evt: Any, timeout: float | None = None) -> None:
         e = threading.Event()
         self.add_handler(evt, lambda *args: e.set(), one_shot=True)
         if not e.wait(timeout):

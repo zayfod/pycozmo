@@ -1,6 +1,20 @@
 Revision History
 ================
 
+Unreleased
+----------
+- Fixed all mypy findings and made mypy checks required in CI. Modernized type hints for Python 3.11+.
+- Fixed animation controller status change handlers failing on every animation status change, which aborted
+    processing of the rest of the robot state update.
+- Fixed AnimLiftHeight.from_dict() failing when the height variability is not specified.
+- Fixed the default name of unnamed lights.Color objects.
+- Fixed the maximum number of random completions of activity objectives and StrictPriority behavior choosers failing
+    before a reset.
+- Animation group members with null head angle limits no longer fail to load.
+- Malformed SoundbanksInfo.xml files now raise AudioKineticFormatError.
+- pycozmo_resources.py no longer disables TLS certificate verification for downloads.
+- Pillow 9.1 or newer is now required.
+
 v0.9.0 (Nov 15, 2026)
 ---------------------
 - Dropped support for Python 3.6 - 3.10 and added support for Python 3.11 - 3.15.

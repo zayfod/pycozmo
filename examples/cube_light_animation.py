@@ -18,7 +18,8 @@ with pycozmo.connect() as cli:
     print("Cube with S/N 0x{:08x} available.".format(cube_factory_id))
 
     print("Connecting to cube...")
-    pkt = pycozmo.protocol_encoder.ObjectConnect(factory_id=cube_factory_id, connect=True)
+    pkt: pycozmo.protocol_encoder.Packet = pycozmo.protocol_encoder.ObjectConnect(
+        factory_id=cube_factory_id, connect=True)
     cli.conn.send(pkt)
     cli.conn.wait_for(pycozmo.protocol_encoder.ObjectConnectionState)
     cube_id = list(cli.connected_objects.keys())[0]
