@@ -10,11 +10,11 @@ import pycozmo
 
 class ReplayApp(object):
 
-    def __init__(self, log_messages: list | None = None, replay_messages: list | None = None):
+    def __init__(self, log_messages: list[str] | None = None, replay_messages: list[str] | None = None) -> None:
         self.log_messages = log_messages
         self.frame_count = 0
-        self.pkts = []
-        self.first_ts = None
+        self.pkts: list[tuple[float, pycozmo.protocol_base.Packet]] = []
+        self.first_ts: float | None = None
         self.packet_id_filter = pycozmo.filter.Filter()
         if replay_messages:
             for i in replay_messages:
@@ -66,6 +66,8 @@ class ReplayApp(object):
         cli.connect()
         cli.wait_for_robot()
 
+        # Set when packets were loaded.
+        first_ts = self.first_ts or 0.0
         try:
             for i, v in enumerate(self.pkts):
                 # if i < 1113:
@@ -74,7 +76,7 @@ class ReplayApp(object):
                 if self.packet_id_filter.filter(pkt.id):
                     continue
                 input()
-                print("{}, time={:.06f}".format(i, ts - self.first_ts))
+                print("{}, time={:.06f}".format(i, ts - first_ts))
                 cli.conn.send(pkt)
         except KeyboardInterrupt:
             pass
@@ -85,8 +87,8 @@ class ReplayApp(object):
 
 def main():
     fspec = sys.argv[1]
-    log_messages = []   # "objects", "audio", "state"]
-    replay_messages = []    # "lights", "objects"]
+    log_messages: list[str] = []   # "objects", "audio", "state"]
+    replay_messages: list[str] = []    # "lights", "objects"]
 
     app = ReplayApp(log_messages=log_messages, replay_messages=replay_messages)
     app.replay(fspec)
