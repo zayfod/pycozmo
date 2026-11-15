@@ -34,16 +34,3 @@ Releases
 
 Unreleased changes are the latest commits on the master branch. Releases are tags on the master branch and are
 listed in [CHANGES.md](CHANGES.md).
-
-To make a release:
-
-1. Update `__version__` in `pycozmo/__init__.py` and move the "Unreleased" entries in `CHANGES.md` under a new
-    version heading. Merge these changes to master through a pull request.
-2. Tag the release commit on master with the version number and push the tag:
-    ```
-    git tag -a 0.9.0 -m "PyCozmo 0.9.0"
-    git push origin 0.9.0
-    ```
-3. The [Release workflow](.github/workflows/release.yml) builds the package, publishes it to
-    [PyPI](https://pypi.org/project/pycozmo/), and creates a GitHub release.
-    [Read the Docs](https://pycozmo.readthedocs.io/) builds the documentation for the new tag.
