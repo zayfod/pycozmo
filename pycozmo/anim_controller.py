@@ -4,7 +4,7 @@ Animation controller for audio, image, and animation playback.
 
 """
 
-from typing import Any, Optional
+from typing import Any
 from collections.abc import Iterable
 from threading import Thread, Lock
 from collections import deque
@@ -45,9 +45,9 @@ class AnimationQueue:
 
     def put_anim_frame(
             self,
-            audio_pkt: Optional[protocol_encoder.OutputAudio],
-            image_pkt: Optional[protocol_encoder.DisplayImage],
-            pkts: Optional[Iterable[protocol_encoder.Packet]]) -> None:
+            audio_pkt: protocol_encoder.OutputAudio | None,
+            image_pkt: protocol_encoder.DisplayImage | None,
+            pkts: Iterable[protocol_encoder.Packet] | None) -> None:
         with self.lock:
             self.audio_queue.append(audio_pkt)
             self.image_queue.append(image_pkt)
@@ -202,9 +202,9 @@ class AnimationController:
 
     def play_anim_frame(
             self,
-            audio_pkt: Optional[protocol_encoder.OutputAudio],
-            image_pkt: Optional[protocol_encoder.DisplayImage],
-            pkts: Optional[Iterable[protocol_encoder.Packet]]) -> None:
+            audio_pkt: protocol_encoder.OutputAudio | None,
+            image_pkt: protocol_encoder.DisplayImage | None,
+            pkts: Iterable[protocol_encoder.Packet] | None) -> None:
         self.queue.put_anim_frame(audio_pkt, image_pkt, pkts)
 
     def cancel_anim(self):

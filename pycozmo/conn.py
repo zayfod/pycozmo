@@ -9,7 +9,7 @@ import socket
 import time
 from queue import Queue, Empty
 from threading import Thread, Lock
-from typing import Optional, Any
+from typing import Any
 
 from .logger import logger, logger_protocol
 from .frame import Frame
@@ -47,7 +47,7 @@ class SendThread(Thread):
 
     def __init__(self,
                  sock: socket.socket,
-                 receiver_address: Optional[tuple[str, int]]) -> None:
+                 receiver_address: tuple[str, int] | None) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         self.sock = sock
         self.lock = Lock()
@@ -206,7 +206,7 @@ class ReceiveThread(Thread):
     def __init__(self,
                  sock: socket.socket,
                  send_thread: SendThread,
-                 sender_address: Optional[tuple[str, int]],
+                 sender_address: tuple[str, int] | None,
                  delivery_handler,
                  buffer_size: int = 2048) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
@@ -350,8 +350,8 @@ class Connection(Thread, event.Dispatcher):
     STATS_INTERVAL = 60.0
 
     def __init__(self,
-                 robot_addr: Optional[tuple[str, int]] = None,
-                 protocol_log_messages: Optional[list] = None,
+                 robot_addr: tuple[str, int] | None = None,
+                 protocol_log_messages: list | None = None,
                  server: bool = False) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         # Thread is an old-style class and does not propagate initialization.

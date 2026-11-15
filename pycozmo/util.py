@@ -4,7 +4,6 @@ Utility classes and functions.
 
 """
 
-from typing import Optional
 import os
 import pathlib
 import math
@@ -48,7 +47,7 @@ class Angle:
 
     __slots__ = '_radians'
 
-    def __init__(self, radians: Optional[float] = None, degrees: Optional[float] = None):
+    def __init__(self, radians: float | None = None, degrees: float | None = None):
         if radians is None and degrees is None:
             raise ValueError("Expected either the degrees or radians keyword argument")
         if radians and degrees:
@@ -138,7 +137,7 @@ class Distance:
 
     __slots__ = '_mm'
 
-    def __init__(self, mm: Optional[float] = None, inches: Optional[float] = None):
+    def __init__(self, mm: float | None = None, inches: float | None = None):
         if mm is None and inches is None:
             raise ValueError("Expected either the mm or inches keyword argument")
         if mm and inches:
@@ -524,11 +523,11 @@ class Quaternion:
     __slots__ = ('_q0', '_q1', '_q2', '_q3')
 
     def __init__(self,
-                 q0: Optional[float] = None,
-                 q1: Optional[float] = None,
-                 q2: Optional[float] = None,
-                 q3: Optional[float] = None,
-                 angle_z: Optional[Angle] = None):
+                 q0: float | None = None,
+                 q1: float | None = None,
+                 q2: float | None = None,
+                 q3: float | None = None,
+                 angle_z: Angle | None = None):
 
         is_quaternion = (q0 is not None) and (q1 is not None) and (q2 is not None) and (q3 is not None)
 
@@ -686,9 +685,9 @@ class Pose:
 
     def __init__(self,
                  x: float, y: float, z: float,
-                 q0: Optional[float] = None, q1: Optional[float] = None,
-                 q2: Optional[float] = None, q3: Optional[float] = None,
-                 angle_z: Optional[Angle] = None, origin_id: int = -1, is_accurate: bool = True):
+                 q0: float | None = None, q1: float | None = None,
+                 q2: float | None = None, q3: float | None = None,
+                 angle_z: Angle | None = None, origin_id: int = -1, is_accurate: bool = True):
         self._position = Vector3(x, y, z)
         self._rotation = Quaternion(q0, q1, q2, q3, angle_z)
         self._origin_id = origin_id

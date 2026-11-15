@@ -4,7 +4,6 @@ Cozmo image run-length encoding and decoding.
 
 """
 
-from typing import Optional
 import sys
 from io import StringIO
 
@@ -178,9 +177,9 @@ class ImageEncoder(object):
         self.x = 0
         self.y = 0
 
-    def _encode_seq(self, color: int, cnt: int) -> Optional[int]:
+    def _encode_seq(self, color: int, cnt: int) -> int | None:
         """ Encode a sequence of pixels with the same color. """
-        cmd: Optional[int] = None
+        cmd: int | None = None
         if color:
             # Draw
             if cnt <= 15:

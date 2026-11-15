@@ -5,7 +5,7 @@ Cozmo protocol sliding window implementation.
 """
 
 import math
-from typing import Optional, Any
+from typing import Any
 
 from . import exception
 
@@ -20,7 +20,7 @@ __all__ = [
 class BaseWindow(object):
     """ Base communication window class. """
 
-    def __init__(self, seq_bits: int, size: Optional[int] = None, max_seq: Optional[int] = None) -> None:
+    def __init__(self, seq_bits: int, size: int | None = None, max_seq: int | None = None) -> None:
         """ Crate a window by specifying either sequence number bits or size of the window. """
         if size is None:
             if seq_bits < 1:
@@ -59,7 +59,7 @@ class ReceiveWindow(BaseWindow):
     Packets are extracted from the window in the expected order using the get() method.
     """
 
-    def __init__(self, seq_bits: int, size: Optional[int] = None, max_seq: Optional[int] = None) -> None:
+    def __init__(self, seq_bits: int, size: int | None = None, max_seq: int | None = None) -> None:
         """ Crate a window by specifying either sequence number bits or size of the window. """
         super().__init__(seq_bits, size, max_seq)
         # Last used sequence number (0, max_seq-1).
@@ -115,7 +115,7 @@ class SendWindow(BaseWindow):
     Packets are removed from the window when they are acknowledged with the acknowledge() method.
     """
 
-    def __init__(self, seq_bits: int, size: Optional[int] = None, max_seq: Optional[int] = None) -> None:
+    def __init__(self, seq_bits: int, size: int | None = None, max_seq: int | None = None) -> None:
         """ Crate a window by specifying either sequence number bits or size of the window. """
         super().__init__(seq_bits, size, max_seq)
         self.next_seq = 0

@@ -7,8 +7,6 @@ https://git.brl.ac.uk/ca2-chambers/expressive-eyes
 
 """
 
-from typing import Optional
-
 from pycozmo.procedural_face import ProceduralFace, DEFAULT_WIDTH, DEFAULT_HEIGHT
 
 
@@ -44,7 +42,7 @@ __all__ = [
 class Neutral(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -60,7 +58,7 @@ class Neutral(ProceduralFace):
 class Anger(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -74,7 +72,7 @@ class Anger(ProceduralFace):
 class Sadness(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -88,7 +86,7 @@ class Sadness(ProceduralFace):
 class Happiness(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -106,7 +104,7 @@ class Happiness(ProceduralFace):
 class Surprise(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -120,7 +118,7 @@ class Surprise(ProceduralFace):
 class Disgust(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -137,7 +135,7 @@ class Disgust(ProceduralFace):
 class Fear(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -157,7 +155,7 @@ class Fear(ProceduralFace):
 class Pleading(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -171,7 +169,7 @@ class Pleading(ProceduralFace):
 class Vulnerability(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -189,7 +187,7 @@ class Vulnerability(ProceduralFace):
 class Despair(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -203,7 +201,7 @@ class Despair(ProceduralFace):
 class Guilt(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -219,7 +217,7 @@ class Guilt(ProceduralFace):
 class Disappointment(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -235,7 +233,7 @@ class Disappointment(ProceduralFace):
 class Embarrassment(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -255,7 +253,7 @@ class Embarrassment(ProceduralFace):
 class Horror(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -269,7 +267,7 @@ class Horror(ProceduralFace):
 class Skepticism(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -283,7 +281,7 @@ class Skepticism(ProceduralFace):
 class Annoyance(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -303,7 +301,7 @@ class Fury(ProceduralFace):
     """ aka "enragement". """
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -319,7 +317,7 @@ class Fury(ProceduralFace):
 class Suspicion(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -335,7 +333,7 @@ class Suspicion(ProceduralFace):
 class Rejection(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -351,7 +349,7 @@ class Rejection(ProceduralFace):
 class Boredom(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -363,7 +361,7 @@ class Boredom(ProceduralFace):
 class Tiredness(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -379,7 +377,7 @@ class Tiredness(ProceduralFace):
 class Asleep(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -397,7 +395,7 @@ class Asleep(ProceduralFace):
 class Confusion(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -414,7 +412,7 @@ class Confusion(ProceduralFace):
 class Amazement(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):
@@ -426,7 +424,7 @@ class Amazement(ProceduralFace):
 class Excitement(ProceduralFace):
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):

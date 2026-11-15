@@ -8,7 +8,7 @@ Animation data structures are declared in FlatBuffers format in files/cozmo/cozm
 
 """
 
-from typing import Union, TextIO, BinaryIO
+from typing import TextIO, BinaryIO
 from collections.abc import Iterable
 from abc import ABC
 import os
@@ -643,7 +643,7 @@ class AnimBodyMotion(AnimKeyframe):
     def __init__(self,
                  trigger_time_ms: int = 0,
                  duration_ms: int = 0,
-                 radius_mm: Union[float, str] = "STRAIGHT",
+                 radius_mm: float | str = "STRAIGHT",
                  speed: int = 0):
         super().__init__()
         self.trigger_time_ms = int(trigger_time_ms)  # uint32

@@ -5,7 +5,6 @@ Cozmo procedural face rendering.
 """
 
 from functools import lru_cache
-from typing import Optional
 from collections.abc import Generator
 import random
 
@@ -388,7 +387,7 @@ class ProceduralFace(ProceduralBase):
     )
 
     def __init__(self,
-                 params: Optional[list[float]] = None,
+                 params: list[float] | None = None,
                  width: int = DEFAULT_WIDTH,
                  height: int = DEFAULT_HEIGHT
                  ):

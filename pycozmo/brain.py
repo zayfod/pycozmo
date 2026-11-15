@@ -4,7 +4,6 @@ Brain class - high level behavior and emotion engine.
 
 """
 
-from typing import Optional
 from threading import Thread
 from queue import Queue, Empty
 import time
@@ -64,7 +63,7 @@ class Brain:
         # Current activity
         self.activity = self.activities["Freeplay"]
         # Current behavior
-        self.behavior: Optional[behavior.Behavior] = None
+        self.behavior: behavior.Behavior | None = None
 
     def start(self):
         # Connect to robot

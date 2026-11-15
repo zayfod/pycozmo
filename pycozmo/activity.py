@@ -6,7 +6,6 @@ Activity representation and reading.
 
 import os
 import time
-from typing import Optional
 
 import numpy as np
 
@@ -122,8 +121,8 @@ class Objective:
                  behavior_id: str,
                  ignore_if_locked: str,
                  probability_to_require_objective: float,
-                 random_completions_needed_min: Optional[int] = 0,
-                 random_completions_needed_max: Optional[int] = 0) -> None:
+                 random_completions_needed_min: int | None = 0,
+                 random_completions_needed_max: int | None = 0) -> None:
         self.objective = str(objective)
         self.behavior_id = str(behavior_id)
         self.ignore_if_locked = str(ignore_if_locked)
@@ -288,13 +287,13 @@ class SparkedActivity(Activity):
                  reps: int,
                  behavior_objective: str,
                  soft_spark_trigger: str,
-                 behavior_chooser: Optional[BehaviorChooser] = None,
-                 sub_activity_delegate: Optional[Activity] = None,
-                 spark_success_trigger: Optional[str] = None,
-                 spark_fail_trigger: Optional[str] = None,
-                 drive_start_trigger: Optional[str] = None,
-                 drive_loop_trigger: Optional[str] = None,
-                 drive_stop_trigger: Optional[str] = None,
+                 behavior_chooser: BehaviorChooser | None = None,
+                 sub_activity_delegate: Activity | None = None,
+                 spark_success_trigger: str | None = None,
+                 spark_fail_trigger: str | None = None,
+                 drive_start_trigger: str | None = None,
+                 drive_loop_trigger: str | None = None,
+                 drive_stop_trigger: str | None = None,
                  *args, **kwargs) -> None:
         self.require_spark = str(require_spark)
         self.min_time = float(min_time_secs)
@@ -351,8 +350,8 @@ class PyramidActivity(Activity):
     def __init__(self,
                  setup_chooser: BehaviorChooser,
                  build_chooser: BehaviorChooser,
-                 interlude_chooser: Optional[BehaviorChooser] = None,
-                 needs_action_id: Optional[str] = None,
+                 interlude_chooser: BehaviorChooser | None = None,
+                 needs_action_id: str | None = None,
                  *args, **kwargs):
         self.setup_chooser = setup_chooser
         self.build_chooser = build_chooser

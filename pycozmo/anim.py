@@ -8,7 +8,6 @@ import math
 import os
 import time
 from collections import defaultdict
-from typing import Optional
 from collections.abc import Iterable
 
 from PIL import Image
@@ -38,7 +37,7 @@ __all__ = [
 class PreprocessedClip(object):
     """ Preprocessed animation clip that can be played back. """
 
-    def __init__(self, keyframes: Optional[dict[int, list[protocol_encoder.Packet]]] = None):
+    def __init__(self, keyframes: dict[int, list[protocol_encoder.Packet]] | None = None):
         self.keyframes = keyframes or defaultdict(list)
 
     @classmethod
@@ -212,9 +211,9 @@ class AnimationGroupMember:
                  weight: float,
                  cooldown_time: float,
                  mood: str,
-                 use_head_angle: Optional[bool] = False,
-                 head_angle_min: Optional[float] = 0.0,
-                 head_angle_max: Optional[float] = 0.0) -> None:
+                 use_head_angle: bool | None = False,
+                 head_angle_min: float | None = 0.0,
+                 head_angle_max: float | None = 0.0) -> None:
         self.name = str(name)
         self.weight = float(weight)
         self.mood = str(mood)

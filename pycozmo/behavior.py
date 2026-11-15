@@ -6,7 +6,7 @@ Behavior representation and reading.
 
 import os
 import time
-from typing import Optional, Any
+from typing import Any
 
 from . import event
 from . import client
@@ -31,7 +31,7 @@ class ReactionTrigger:
         "should_resume_last",
     ]
 
-    def __init__(self, name: str, behavior_id: str, should_resume_last: Optional[bool] = False):
+    def __init__(self, name: str, behavior_id: str, should_resume_last: bool | None = False):
         self.name = str(name)
         self.behavior_id = str(behavior_id)
         self.should_resume_last = bool(should_resume_last)
