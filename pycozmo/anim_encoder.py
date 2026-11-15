@@ -8,9 +8,9 @@ Animation data structures are declared in FlatBuffers format in files/cozmo/cozm
 
 """
 
-from typing import Any, TextIO, BinaryIO
+from typing import Any, Self, TextIO, BinaryIO
 from collections.abc import Iterable
-from abc import ABC
+from abc import ABC, abstractmethod
 import os
 import json
 import glob
@@ -54,19 +54,23 @@ class AnimBase(ABC):
     def __init__(self) -> None:
         pass
 
+    @abstractmethod
     def to_dict(self) -> Any:
-        raise NotImplementedError
+        """ Convert to a JSON-compatible representation. """
 
     @classmethod
-    def from_dict(cls, data: Any) -> "AnimBase":
-        raise NotImplementedError
+    @abstractmethod
+    def from_dict(cls, data: Any) -> Self:
+        """ Create from a JSON-compatible representation. """
 
+    @abstractmethod
     def to_fb(self, builder: flatbuffers.Builder) -> int:
-        raise NotImplementedError
+        """ Serialize to FlatBuffers and return the offset of the serialized object. """
 
     @classmethod
-    def from_fb(cls, buf: Any) -> "AnimBase":
-        raise NotImplementedError
+    @abstractmethod
+    def from_fb(cls, buf: Any) -> Self:
+        """ Create from a FlatBuffers object. """
 
 
 class AnimKeyframe(AnimBase, ABC):

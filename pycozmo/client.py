@@ -244,7 +244,9 @@ class Client(event.Dispatcher):
             self._partial_invalid = True
             return
 
-        assert self._partial_data is not None
+        if self._partial_data is None:
+            # No image in progress.
+            return
         offset = self._partial_size
         self._partial_data[offset:offset + len(pkt.data)] = np.frombuffer(pkt.data, dtype=np.uint8)
         self._partial_size += len(pkt.data)
@@ -255,8 +257,9 @@ class Client(event.Dispatcher):
             self._reset_partial_state()
 
     def _process_completed_image(self) -> None:
-        assert self._partial_data is not None
-        assert self._partial_image_resolution is not None
+        if self._partial_data is None or self._partial_image_resolution is None:
+            # No image in progress.
+            return
         data = self._partial_data[0:self._partial_size]
 
         # The first byte of the image is whether or not it is in color

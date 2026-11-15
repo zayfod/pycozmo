@@ -59,10 +59,8 @@ class Brain:
         self.reaction_queue: Queue[str] = Queue()
 
         self.stop_flag = False
-        self.reaction_thread: Thread | None = Thread(
-            daemon=True, name="ReactionThread", target=self.reaction_thread_run)
-        self.heartbeat_thread: Thread | None = Thread(
-            daemon=True, name="HeartbeatThread", target=self.heartbeat_thread_run)
+        self.reaction_thread = Thread(daemon=True, name="ReactionThread", target=self.reaction_thread_run)
+        self.heartbeat_thread = Thread(daemon=True, name="HeartbeatThread", target=self.heartbeat_thread_run)
 
         # Current activity
         self.activity = self.activities["Freeplay"]
@@ -71,7 +69,6 @@ class Brain:
 
     def start(self) -> None:
         # Connect to robot
-        assert self.reaction_thread is not None and self.heartbeat_thread is not None
         self.reaction_thread.start()
         self.heartbeat_thread.start()
 
@@ -82,12 +79,10 @@ class Brain:
     def stop(self) -> None:
         # Disconnect from robot
         self.stop_flag = True
-        if self.heartbeat_thread:
+        if self.heartbeat_thread.is_alive():
             self.heartbeat_thread.join()
-            self.heartbeat_thread = None
-        if self.reaction_thread:
+        if self.reaction_thread.is_alive():
             self.reaction_thread.join()
-            self.reaction_thread = None
 
     def on_behavior_done(self, cli: client.Client) -> None:
         if self.behavior:

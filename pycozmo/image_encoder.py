@@ -47,7 +47,8 @@ def str_to_image(sim: str) -> Image.Image:
     s = StringIO(sim)
     im = Image.new("1", (128, 32), color=0)
     px = im.load()
-    assert px is not None
+    if px is None:
+        raise ValueError("Failed to access image pixels.")
     for y in range(32):
         while True:
             line = s.readline().strip()
@@ -171,7 +172,8 @@ class ImageEncoder(object):
         if im.mode != "1":
             raise ValueError("Invalid pixel format. Only binary images are supported.")
         px = im.load()
-        assert px is not None
+        if px is None:
+            raise ValueError("Failed to access image pixels.")
         self.px = px
         self.buffer = bytearray()
         self.last_col = bytearray()

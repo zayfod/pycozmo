@@ -124,12 +124,12 @@ class SendThread(Thread):
     def _send_packets(self, pkts: list[tuple[int, Packet]], last_ack: int) -> None:
         to_frame: list[Packet] = []
         frame_len = 0
-        first_seq: int | None = None
+        first_seq = 0
         seq = 0
         for seq, pkt in pkts:
 
             # First packet in a frame?
-            if first_seq is None:
+            if not to_frame:
                 first_seq = seq
 
             # Add to current frame.
@@ -140,7 +140,6 @@ class SendThread(Thread):
                 to_frame.append(pkt)
             else:
                 # Send current frame.
-                assert first_seq is not None
                 self._send_frame(to_frame, first_seq, seq, last_ack)
                 # Start new frame.
                 to_frame = [pkt]
@@ -149,7 +148,6 @@ class SendThread(Thread):
 
         if len(to_frame):
             # Send current frame.
-            assert first_seq is not None
             self._send_frame(to_frame, first_seq, seq, last_ack)
 
     def _send_ping(self, pkt: Packet) -> None:
