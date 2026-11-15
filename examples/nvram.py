@@ -8,7 +8,7 @@ import pycozmo
 e = Event()
 
 
-def on_nv_storage_op_result(cli: pycozmo.client.Client, pkt: pycozmo.protocol_encoder.NvStorageOpResult):
+def on_nv_storage_op_result(conn: pycozmo.conn.Connection, pkt: pycozmo.protocol_encoder.NvStorageOpResult) -> None:
     print(pkt.result)
     print(pkt.data)
     if pkt.result != pycozmo.protocol_encoder.NvResult.NV_MORE:

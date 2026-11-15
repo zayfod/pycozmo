@@ -16,7 +16,7 @@ with pycozmo.connect() as cli:
     time.sleep(1)
 
     # Load image
-    im = Image.open(os.path.join(os.path.dirname(__file__), "..", "assets", "pycozmo.png"))
+    im: Image.Image = Image.open(os.path.join(os.path.dirname(__file__), "..", "assets", "pycozmo.png"))
     # Convert to binary image.
     im = im.convert('1')
 

@@ -12,13 +12,13 @@ DECEL_MMPS2 = 20.0
 e = Event()
 
 
-def on_path_following_event(cli, pkt: pycozmo.protocol_encoder.PathFollowingEvent):
+def on_path_following_event(conn: pycozmo.conn.Connection, pkt: pycozmo.protocol_encoder.PathFollowingEvent) -> None:
     print(pkt.event_type)
     if pkt.event_type != pycozmo.protocol_encoder.PathEventType.PATH_STARTED:
         e.set()
 
 
-def on_robot_pathing_change(cli, state: bool):
+def on_robot_pathing_change(cli: pycozmo.Client, state: bool) -> None:
     if state:
         print("Started pathing.")
     else:
@@ -30,7 +30,7 @@ with pycozmo.connect() as cli:
     cli.add_handler(pycozmo.protocol_encoder.PathFollowingEvent, on_path_following_event)
     cli.add_handler(pycozmo.event.EvtRobotPathingChange, on_robot_pathing_change)
 
-    pkt = pycozmo.protocol_encoder.AppendPathSegLine(
+    pkt: pycozmo.protocol_encoder.Packet = pycozmo.protocol_encoder.AppendPathSegLine(
         from_x=0.0, from_y=0.0,
         to_x=150.0, to_y=0.0,
         speed_mmps=SPEED_MMPS, accel_mmps2=ACCEL_MMPS2, decel_mmps2=DECEL_MMPS2)

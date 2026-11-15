@@ -5,7 +5,7 @@ import time
 import pycozmo
 
 
-def on_robot_state(cli, pkt: pycozmo.protocol_encoder.RobotState):
+def on_robot_state(conn: pycozmo.conn.Connection, pkt: pycozmo.protocol_encoder.RobotState) -> None:
     if pkt.pose_angle_rad < -0.4:
         state = "LS"
     elif pkt.pose_angle_rad > 0.4:

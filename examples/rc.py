@@ -83,7 +83,7 @@ class InputThread(object):
 
     def __init__(self, controller, handler):
         self._stop = False
-        self._thread = None
+        self._thread: threading.Thread | None = None
         self._controller = controller
         self._handler = handler
 
@@ -96,7 +96,8 @@ class InputThread(object):
     def stop(self):
         logging.debug("Input thread stopping...")
         self._stop = True
-        self._thread.join()
+        if self._thread:
+            self._thread.join()
         logging.debug("Input thread joined.")
 
     def run(self):
@@ -191,7 +192,7 @@ class RCApp(object):
         self.cli.drive_wheels(lwheel_speed=lw, rwheel_speed=rw)
 
     @staticmethod
-    def get_motor_thrust(r: float, theta: float):
+    def get_motor_thrust(r: float, theta: float) -> tuple[float, float]:
         """
         Convert throttle and steering angle to left and right motor thrust.
 
