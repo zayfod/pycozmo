@@ -10,7 +10,7 @@ from typing import Dict, Optional, Any
 
 from . import event
 from . import client
-from . import logger
+from .logger import logger
 from .json_loader import get_json_files, load_json_file
 
 

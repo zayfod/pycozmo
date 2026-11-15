@@ -118,7 +118,7 @@ class ProceduralLid(ProceduralBase):
     def get_black(cls, width, height):
         return Image.new("1", (width, height), color=0)
 
-    def render(self, im: Image) -> None:
+    def render(self, im: Image.Image) -> None:
         # Lid image
         lid = Image.new("1", (self.width * 2, self.height * 2), color=0)
 
@@ -275,70 +275,70 @@ class ProceduralEye(ProceduralBase):
     def upper_outer_radius_y(self, value: float) -> None:
         self.params[self.offset + 12] = value
 
-    def _render_inner_rect(self, draw: ImageDraw, y1: int, x2: int, y2: int) -> None:
+    def _render_inner_rect(self, draw: ImageDraw.ImageDraw, y1: int, x2: int, y2: int) -> None:
         x3 = x2 - int(self.corner_radius * max(self.upper_inner_radius_x, self.lower_inner_radius_x))
         y3 = y1 + int(self.corner_radius * self.upper_inner_radius_y)
         x4 = x2
         y4 = y2 - int(self.corner_radius * self.lower_inner_radius_y)
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_upper_rect(self, draw: ImageDraw, x1: int, y1: int, x2: int) -> None:
+    def _render_upper_rect(self, draw: ImageDraw.ImageDraw, x1: int, y1: int, x2: int) -> None:
         x3 = x1 + int(self.corner_radius * self.upper_outer_radius_x)
         y3 = y1
         x4 = x2 - int(self.corner_radius * self.upper_inner_radius_x)
         y4 = y1 + int(self.corner_radius * max(self.upper_outer_radius_y, self.upper_inner_radius_y))
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_outer_rect(self, draw: ImageDraw, x1: int, y1: int, y2: int) -> None:
+    def _render_outer_rect(self, draw: ImageDraw.ImageDraw, x1: int, y1: int, y2: int) -> None:
         x3 = x1
         y3 = y1 + int(self.corner_radius * self.upper_outer_radius_y)
         x4 = x1 + int(self.corner_radius * max(self.upper_outer_radius_x, self.lower_outer_radius_x))
         y4 = y2 - int(self.corner_radius * self.lower_outer_radius_y)
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_lower_rect(self, draw: ImageDraw, x1: int, x2: int, y2: int) -> None:
+    def _render_lower_rect(self, draw: ImageDraw.ImageDraw, x1: int, x2: int, y2: int) -> None:
         x3 = x1 + int(self.corner_radius * self.lower_outer_radius_x)
         y3 = y2 - int(self.corner_radius * max(self.lower_outer_radius_y, self.lower_inner_radius_y))
         x4 = x2 - int(self.corner_radius * self.lower_inner_radius_x)
         y4 = y2
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_center_rect(self, draw: ImageDraw, x1: int, y1: int, x2: int, y2: int) -> None:
+    def _render_center_rect(self, draw: ImageDraw.ImageDraw, x1: int, y1: int, x2: int, y2: int) -> None:
         x3 = x1 + int(self.corner_radius * max(self.upper_outer_radius_x, self.lower_outer_radius_x)) - 2
         y3 = y1 + int(self.corner_radius * max(self.upper_outer_radius_y, self.upper_inner_radius_y)) - 1
         x4 = x2 - int(self.corner_radius * max(self.upper_inner_radius_y, self.lower_inner_radius_y)) + 2
         y4 = y2 - int(self.corner_radius * max(self.lower_outer_radius_y, self.lower_inner_radius_y)) + 1
         draw.rectangle(((x3, y3), (x4, y4)), fill=1)
 
-    def _render_lower_inner_pie(self, draw: ImageDraw, x2: int, y2: int) -> None:
+    def _render_lower_inner_pie(self, draw: ImageDraw.ImageDraw, x2: int, y2: int) -> None:
         x3 = x2 - 2 * int(self.corner_radius * self.lower_inner_radius_x)
         y3 = y2 - 2 * int(self.corner_radius * self.lower_inner_radius_y)
         x4 = x2
         y4 = y2
         draw.pieslice(((x3, y3), (x4, y4)), 0, 90, fill=1)
 
-    def _render_upper_inner_pie(self, draw: ImageDraw, y1: int, x2: int) -> None:
+    def _render_upper_inner_pie(self, draw: ImageDraw.ImageDraw, y1: int, x2: int) -> None:
         x3 = x2 - 2 * int(self.corner_radius * self.upper_inner_radius_x)
         y3 = y1
         x4 = x2
         y4 = y1 + 2 * int(self.corner_radius * self.upper_inner_radius_y)
         draw.pieslice(((x3, y3), (x4, y4)), 270, 360, fill=1)
 
-    def _render_upper_outer_pie(self, draw: ImageDraw, x1: int, y1: int) -> None:
+    def _render_upper_outer_pie(self, draw: ImageDraw.ImageDraw, x1: int, y1: int) -> None:
         x3 = x1
         y3 = y1
         x4 = x1 + 2 * int(self.corner_radius * self.upper_outer_radius_x)
         y4 = y1 + 2 * int(self.corner_radius * self.upper_outer_radius_y)
         draw.pieslice(((x3, y3), (x4, y4)), 180, 270, fill=1)
 
-    def _render_lower_outer_pie(self, draw: ImageDraw, x1: int, y2: int) -> None:
+    def _render_lower_outer_pie(self, draw: ImageDraw.ImageDraw, x1: int, y2: int) -> None:
         x3 = x1
         y3 = y2 - 2 * int(self.corner_radius * self.lower_outer_radius_y)
         x4 = x1 + 2 * int(self.corner_radius * self.lower_outer_radius_x)
         y4 = y2
         draw.pieslice(((x3, y3), (x4, y4)), 90, 180, fill=1)
 
-    def render(self, im: Image) -> None:
+    def render(self, im: Image.Image) -> None:
         # Eye image
         eye = Image.new("1", (self.width, self.height), color=0)
 
@@ -463,7 +463,7 @@ class ProceduralFace(ProceduralBase):
     def angle(self, value: float) -> None:
         self.params[self.offset + 4] = value
 
-    def render(self) -> Image:
+    def render(self) -> Image.Image:
         # Background image
         im = Image.new("1", (self.width, self.height), color=0)
 

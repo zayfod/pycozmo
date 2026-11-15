@@ -10,7 +10,7 @@ import os
 import logging
 from contextlib import contextmanager
 
-from . import logger, logger_protocol, logger_robot, logger_reaction, logger_behavior, logger_animation
+from .logger import logger, logger_protocol, logger_robot, logger_reaction, logger_behavior, logger_animation
 from . import client
 from . import exception
 

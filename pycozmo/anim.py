@@ -13,7 +13,7 @@ from typing import Dict, Iterable, List, Optional, Tuple
 from PIL import Image
 import numpy as np
 
-from . import logger
+from .logger import logger
 from . import anim_encoder
 from . import image_encoder
 from . import lights
@@ -41,7 +41,7 @@ class PreprocessedClip(object):
         self.keyframes = keyframes or defaultdict(list)
 
     @classmethod
-    def keyframe_to_im(cls, keyframe) -> Image:
+    def keyframe_to_im(cls, keyframe) -> Image.Image:
         params = [keyframe.center_x, keyframe.center_y, keyframe.scale_x, keyframe.scale_y, keyframe.angle] + \
                  keyframe.left_eye + keyframe.right_eye
         face = procedural_face.ProceduralFace(params)
@@ -54,7 +54,7 @@ class PreprocessedClip(object):
 
     @classmethod
     def from_anim_clip(cls, clip: anim_encoder.AnimClip) -> "PreprocessedClip":
-        keyframes = defaultdict(list)   # type: Dict[int, List[protocol_encoder.Packet]]
+        keyframes: Dict[int, List[protocol_encoder.Packet]] = defaultdict(list)
         for keyframe in clip.keyframes:
             if isinstance(keyframe, anim_encoder.AnimHeadAngle):
                 # FIXME: Why can duration be larger than 255?

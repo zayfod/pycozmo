@@ -58,7 +58,7 @@ def wait_for_result(timeout: Optional[float] = None) -> None:
         raise UpdateError("Update failed with error code {}.".format(last_status))
 
 
-def send_chunk(cli: pycozmo.client.Client, f) -> True:
+def send_chunk(cli: pycozmo.client.Client, f) -> bool:
     """ Read and send a chunk. """
 
     global chunk_id

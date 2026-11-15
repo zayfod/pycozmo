@@ -6,11 +6,14 @@ Camera image decoding.
 
 import numpy as np
 
+from . import util
 from . import protocol_encoder
 
 
 __all__ = [
     "RESOLUTIONS",
+
+    "CameraConfig",
 
     "minigray_to_jpeg",
     "minicolor_to_jpeg",
@@ -33,6 +36,39 @@ RESOLUTIONS = {
     protocol_encoder.ImageResolution.QXGA: (2048, 1536),
     protocol_encoder.ImageResolution.QUXGA: (3200, 2400)
 }
+
+
+class CameraConfig:
+    """ Robot camera fixed property representation. """
+
+    def __init__(self,
+                 focal_length_x: float,
+                 focal_length_y: float,
+                 center_x: float,
+                 center_y: float,
+                 fov_x_deg: float,
+                 fov_y_deg: float,
+                 min_exposure_time_ms: int,
+                 max_exposure_time_ms: int,
+                 min_gain: float,
+                 max_gain: float):
+        self.focal_length = util.Vector2(focal_length_x, focal_length_y)
+        self.center = util.Vector2(center_x, center_y)
+        self.fov_x = util.Angle(degrees=fov_x_deg)
+        self.fov_y = util.Angle(degrees=fov_y_deg)
+        self.min_exposure_time_ms = int(min_exposure_time_ms)
+        self.max_exposure_time_ms = int(max_exposure_time_ms)
+        self.min_gain = float(min_gain)
+        self.max_gain = float(max_gain)
+
+    def get_camera_matrix(self) -> np.array:
+        """ Return 3x3 camera matrix in format, suitable for use with OpenCV. """
+        camera_matrix = np.array([
+            [self.focal_length.x, 0.0, self.center.x],
+            [0.0, self.focal_length.y, self.center.y],
+            [0.0, 0.0, 1.0],
+        ])
+        return camera_matrix
 
 
 def minigray_to_jpeg(minigray, width, height):

@@ -8,7 +8,7 @@ __pycache__/
 /dist/
 *.egg-info/
 
-/venv/
+/.venv/
 /.idea/
 
 /docs/source/build/
@@ -16,5 +16,6 @@ __pycache__/
 /docs/source/external/
 
 /.mypy_cache/
+/.pytest_cache/
 
 /examples/*.png

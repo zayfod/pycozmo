@@ -29,7 +29,7 @@ __all__ = [
 ]
 
 
-_struct_cache = dict()  # type: Dict[Tuple[str, int], struct.Struct]
+_struct_cache: Dict[Tuple[str, int], struct.Struct] = dict()
 
 
 def _get_struct(fmt: str, length: int) -> struct.Struct:

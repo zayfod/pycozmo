@@ -2,7 +2,7 @@
 Overview
 ========
 
-https://github.com/zayfod/pycozmo
+[https://github.com/zayfod/pycozmo](https://github.com/zayfod/pycozmo)
 
 `PyCozmo` is a pure-Python communication library, alternative SDK, and application for the
 [Cozmo robot](https://www.digitaldreamlabs.com/pages/cozmo) . It allows controlling a Cozmo robot directly, without
@@ -68,10 +68,11 @@ the low-level UDP communication with Cozmo.
 Requirements
 ------------
 
-- [Python](https://www.python.org/downloads/) 3.6.0 or newer
-- [Pillow](https://github.com/python-pillow/Pillow) 6.0.0 - Python image library
-- [FlatBuffers](https://github.com/google/flatbuffers) - serialization library
+- [Python](https://www.python.org/downloads/) 3.11 or newer
+- [Pillow](https://github.com/python-pillow/Pillow) 6.0.0 or newer - Python image library
+- [FlatBuffers](https://github.com/google/flatbuffers) 2.0 or newer - serialization library
 - [dpkt](https://github.com/kbandla/dpkt) - TCP/IP packet parsing library 
+- [OpenCV](https://opencv.org/) 4.0.0 or newer - computer vision library
 
 
 Installation
@@ -80,7 +81,7 @@ Installation
 Using pip:
 
 ```
-pip install --user pycozmo
+pip install pycozmo
 
 pycozmo_resources.py download
 ```
@@ -90,20 +91,27 @@ From source:
 ```
 git clone https://github.com/zayfod/pycozmo.git
 cd pycozmo
-python setup.py install --user
+pip install .
 
 pycozmo_resources.py download
 ```
 
-From source, for development:
+From source, for development (requires pip 25.1 or newer):
 
 ```
 git clone git@github.com:zayfod/pycozmo.git
 cd pycozmo
-python setup.py develop --user
-pip install --user -r requirements-dev.txt
+pip install -e . --group dev
 
 pycozmo_resources.py download
+```
+
+Running the tests and linters:
+
+```
+flake8
+mypy
+pytest
 ```
 
  

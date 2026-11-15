@@ -9,7 +9,7 @@ from threading import Thread
 from queue import Queue, Empty
 import time
 
-from . import logger, logger_reaction, logger_behavior
+from .logger import logger, logger_reaction, logger_behavior
 from . import client
 from . import event
 from . import emotions
@@ -64,7 +64,7 @@ class Brain:
         # Current activity
         self.activity = self.activities["Freeplay"]
         # Current behavior
-        self.behavior = None    # type: Optional[behavior.Behavior]
+        self.behavior: Optional[behavior.Behavior] = None
 
     def start(self):
         # Connect to robot
@@ -154,13 +154,23 @@ class Brain:
                 continue
 
             try:
+                logger_reaction.info("Processing {}".format(reaction_trigger))
+                self.process_emotion_event(reaction_trigger)
                 self.process_reaction(reaction_trigger)
             except Exception as e:
                 logger.error("Failed to dispatch reaction trigger '{}'. {}".format(reaction_trigger, e))
                 continue
 
+    def process_emotion_event(self, reaction_trigger: str) -> None:
+        """ Process emotion events by applying affectors to emotion types. """
+        emotion_event = self.emotion_events.get(reaction_trigger)
+        if emotion_event:
+            for affector, delta in emotion_event.affectors.items():
+                self.emotion_types[affector].add(delta)
+        else:
+            logger_reaction.warning("Failed to find emotion event for {}.".format(reaction_trigger))
+
     def process_reaction(self, reaction_trigger: str) -> None:
-        logger_reaction.info("Processing {}".format(reaction_trigger))
         reaction = self.reaction_trigger_beahvior_map.get(reaction_trigger)
         if reaction:
             # TODO: Handle should_resume_last.
