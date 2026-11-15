@@ -14,6 +14,8 @@ Unreleased
 - Malformed SoundbanksInfo.xml files now raise AudioKineticFormatError.
 - pycozmo_resources.py no longer disables TLS certificate verification for downloads.
 - Pillow 9.1 or newer is now required.
+- Fixed event handlers not being removed when Dispatcher.del_handler() is given the handler function.
+- Fixed event handlers being skipped when they follow a one-shot handler, e.g. one registered by wait_for().
 
 v0.9.0 (Nov 15, 2026)
 ---------------------
