@@ -57,7 +57,7 @@ class Event(object):
 
 class Handler(object):
     """ Event handler class. """
-    def __init__(self, f: Callable, one_shot: bool):
+    def __init__(self, f: Callable[..., Any], one_shot: bool) -> None:
         self.f = f
         self.one_shot = one_shot
 
@@ -194,42 +194,44 @@ class EvtBehaviorDone(Event):
 class Dispatcher(object):
     """ Event dispatcher class. """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.dispatch_children = []
-        self.dispatch_handlers = collections.defaultdict(list)
+        self.dispatch_children: list[Dispatcher] = []
+        self.dispatch_handlers: collections.defaultdict[Any, list[Handler]] = collections.defaultdict(list)
 
-    def add_child_dispatcher(self, child):
+    def add_child_dispatcher(self, child: "Dispatcher") -> None:
         self.dispatch_children.append(child)
 
-    def del_child_dispatcher(self, child):
+    def del_child_dispatcher(self, child: "Dispatcher") -> None:
         try:
             self.dispatch_children.remove(child)
         except ValueError:
             pass
 
-    def add_handler(self, event, f, one_shot=False):
+    def add_handler(self, event: Any, f: Callable[..., Any], one_shot: bool = False) -> Handler:
         handler = Handler(f, one_shot=one_shot)
         self.dispatch_handlers[event].append(handler)
         return handler
 
-    def del_handler(self, event, handler):
-        for i, _handler in enumerate(self.dispatch_handlers[event]):
-            if _handler == handler:
-                del self.dispatch_handlers[event][i]
+    def del_handler(self, event: Any, handler: Handler | Callable[..., Any]) -> None:
+        """ Remove an event handler, given either the Handler returned by add_handler() or the handler function. """
+        handlers = self.dispatch_handlers[event]
+        for i, _handler in enumerate(handlers):
+            # Bound methods are compared by equality, as each attribute access creates a new object.
+            if _handler is handler or _handler.f == handler:
+                del handlers[i]
                 return
 
-    def del_all_handlers(self):
+    def del_all_handlers(self) -> None:
         self.dispatch_handlers = collections.defaultdict(list)
 
-    def dispatch(self, event, *args, **kwargs):
-        # Dispatch to handlers.
-        handlers = []
-        for i, handler in enumerate(self.dispatch_handlers[event]):
-            if handler.one_shot:
-                # Delete one-shot handlers prior to actual dispatch
-                del self.dispatch_handlers[event][i]
-            handlers.append(handler)
+    def dispatch(self, event: Any, *args: Any, **kwargs: Any) -> None:
+        # Dispatch to the handlers registered at this point. Handlers may add or remove handlers.
+        handlers = list(self.dispatch_handlers[event])
+        if any(handler.one_shot for handler in handlers):
+            # Delete one-shot handlers prior to actual dispatch.
+            self.dispatch_handlers[event] = [handler for handler in self.dispatch_handlers[event]
+                                             if not handler.one_shot]
         for handler in handlers:
             handler.f(*args, **kwargs)
         # Dispatch to child dispatchers.
