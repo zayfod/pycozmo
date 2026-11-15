@@ -71,8 +71,8 @@ autodoc_default_flags = [
     'inherited-members',
 ]
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.6', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
     'PIL': ('https://pillow.readthedocs.io/en/latest/', None),
 }
 

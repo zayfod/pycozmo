@@ -54,6 +54,6 @@ __all__ = [
     "connect",
 ]
 
-if sys.version_info < (3, 6, 0):
-    sys.exit("ERROR: PyCozmo requires Python 3.6.0 or newer.")
+if sys.version_info < (3, 11, 0):
+    sys.exit("ERROR: PyCozmo requires Python 3.11.0 or newer.")
 del sys

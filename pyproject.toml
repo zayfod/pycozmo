@@ -1,0 +1,97 @@
+[build-system]
+requires = ["setuptools>=77.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pycozmo"
+dynamic = ["version"]
+description = "A pure-Python communication library, alternative SDK, and application for the Cozmo robot."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE.md", "NOTICE"]
+authors = [
+    { name = "Kaloyan Tenchov", email = "zayfod@gmail.com" },
+]
+requires-python = ">=3.11"
+dependencies = [
+    "dpkt",
+    "numpy",
+    "Pillow>=6.0.0",
+    "flatbuffers>=2.0",
+    "opencv-python>=4.0.0",
+]
+keywords = ["ddl", "anki", "cozmo", "robot", "robotics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+]
+
+[project.urls]
+Homepage = "https://github.com/zayfod/pycozmo/"
+Documentation = "https://pycozmo.readthedocs.io/"
+Repository = "https://github.com/zayfod/pycozmo.git"
+Issues = "https://github.com/zayfod/pycozmo/issues"
+Changelog = "https://github.com/zayfod/pycozmo/blob/master/CHANGES.md"
+
+[dependency-groups]
+test = ["pytest"]
+lint = ["flake8>=7", "mypy>=1.14"]
+docs = ["Sphinx", "recommonmark"]
+dev = [
+    { include-group = "test" },
+    { include-group = "lint" },
+    { include-group = "docs" },
+]
+
+[tool.setuptools]
+script-files = [
+    "tools/pycozmo_dump.py",
+    "tools/pycozmo_replay.py",
+    "tools/pycozmo_update.py",
+    "tools/pycozmo_resources.py",
+    "tools/pycozmo_app.py",
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "pycozmo.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["pycozmo*"]
+
+[tool.pytest.ini_options]
+testpaths = ["pycozmo"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["pycozmo", "tools", "examples"]
+exclude = ["^pycozmo/CozmoAnim/"]
+warn_unused_configs = true
+#disallow_any_generics = true
+disallow_subclassing_any = true
+#disallow_untyped_calls = true
+#disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+#no_implicit_reexport = true
+
+[[tool.mypy.overrides]]
+# Generated FlatBuffers code, libraries without type hints, and optional dependencies of tools and examples.
+module = ["pycozmo.CozmoAnim.*", "flatbuffers.*", "dpkt.*", "evdev.*", "pcap.*"]
+ignore_missing_imports = true
+follow_imports = "skip"

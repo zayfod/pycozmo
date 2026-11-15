@@ -10,9 +10,9 @@ References:
 
 from typing import BinaryIO, Iterable, Dict, Any
 import struct
-from chunk import Chunk
 
 from . import exception
+from .chunk import Chunk
 from . import soundbanksinfo
 
 
@@ -169,7 +169,7 @@ class SoundBankReader:
 
     def _read_header(self, f: BinaryIO) -> None:
         """ Read Bank Header (BKHD) chunk. """
-        chunk = Chunk(f, bigendian=False, align=False)
+        chunk = Chunk(f)
         if chunk.getname() != b"BKHD":
             raise exception.AudioKineticFormatError("Not an AudioKinetic WWise SoundBank file.")
         self._soundbank.version = self._read_uint32(chunk)
@@ -273,7 +273,7 @@ class SoundBankReader:
         # Read subsequent chunks.
         while True:
             try:
-                chunk = Chunk(f, bigendian=False, align=False)
+                chunk = Chunk(f)
                 chunkname = chunk.getname()
                 if chunkname == b"DIDX":
                     self._read_data_index(chunk)

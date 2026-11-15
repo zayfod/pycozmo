@@ -13,7 +13,7 @@ import struct
 import wave
 import time
 
-from . import logger
+from .logger import logger
 from . import protocol_encoder
 
 

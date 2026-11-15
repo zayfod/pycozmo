@@ -1,6 +1,21 @@
 Revision History
 ================
 
+Unreleased
+----------
+- Dropped support for Python 3.6 - 3.10 and added support for Python 3.11 - 3.15.
+- Replaced setup.py and requirements files with pyproject.toml.
+- Replaced the standard library chunk module, removed in Python 3.13, with a built-in implementation
+    (thanks to Hossam Khader / hossamkhader)
+- Updated FlatBuffers usage to the 2.x API. FlatBuffers 2.0 or newer is now required.
+    (thanks to Hossam Khader / hossamkhader)
+- Updated flake8 and mypy configuration and fixed lint findings.
+- Added OpenCV as a dependency.
+- Reading of saved cube IDs from robot NV storage. Exposed as Client.saved_objects .
+- Reading of camera calibration from robot NV storage. Exposed as Client.camera_config, with a camera matrix
+    suitable for use with OpenCV.
+- Emotion type value updates and emotion events, applied by the brain on reaction triggers.
+
 v0.8.0 (Nov 12, 2020)
 ---------------------
 - New animation controller that synchronizes animations, audio playback, and image displaying.

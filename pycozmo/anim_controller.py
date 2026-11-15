@@ -8,7 +8,7 @@ from typing import List, Tuple, Any, Optional, Iterable
 from threading import Thread, Lock
 from collections import deque
 
-from . import logger
+from .logger import logger
 from . import protocol_encoder
 from . import util
 from . import robot

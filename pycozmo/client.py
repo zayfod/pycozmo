@@ -13,7 +13,7 @@ import io
 import numpy as np
 from PIL import Image
 
-from . import logger, logger_robot, logger_animation
+from .logger import logger, logger_robot, logger_animation
 from . import protocol_encoder
 from . import protocol_utils
 from . import event
@@ -485,7 +485,7 @@ class Client(event.Dispatcher):
         pkt = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
         self.anim_controller.display_image(pkt)
 
-    def display_image(self, im: Image, duration: Optional[float] = None) -> None:
+    def display_image(self, im: Image.Image, duration: Optional[float] = None) -> None:
         encoder = image_encoder.ImageEncoder(im)
         buf = bytes(encoder.encode())
         pkt = protocol_encoder.DisplayImage(image=buf)

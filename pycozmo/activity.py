@@ -10,7 +10,7 @@ from typing import Dict, List, Optional
 
 import numpy as np
 
-from . import logger
+from .logger import logger
 from .emotions import DecayGraph, Node
 from .json_loader import get_json_files, load_json_file
 

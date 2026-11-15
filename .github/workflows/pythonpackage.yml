@@ -11,21 +11,22 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        python-version: ["3.11", "3.12", "3.13", "3.14", "3.15"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v5
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
+        allow-prereleases: true
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements-dev.txt
+        pip install -e . --group test --group lint
     - name: Lint with flake8
       run: |
         flake8 --version
@@ -35,8 +36,21 @@ jobs:
     - name: Analyze with mypy
       run: |
         mypy --version
-        mypy .
+        mypy
       continue-on-error: true
     - name: Test with pytest
       run: |
-        pytest pycozmo/tests/
+        pytest
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-python@v6
+      with:
+        python-version: "3.x"
+    - name: Build sdist and wheel
+      run: |
+        python -m pip install --upgrade pip build twine
+        python -m build
+        twine check --strict dist/*

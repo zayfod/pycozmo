@@ -83,7 +83,7 @@ class Packet(Struct, ABC):
         self._id = value
 
     def is_oob(self) -> bool:
-        res = self.type.value >= PacketType.EVENT.value     # type: bool
+        res: bool = self.type.value >= PacketType.EVENT.value
         return res
 
     def is_from_robot(self) -> bool:
