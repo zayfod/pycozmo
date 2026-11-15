@@ -6,6 +6,7 @@ Emotion representation and reading.
 
 import os
 import time
+from typing import Any, Self
 
 import numpy as np
 
@@ -104,7 +105,7 @@ class EmotionEvent:
         self.affectors = dict(affectors)
 
     @classmethod
-    def from_json(cls, data: dict):
+    def from_json(cls, data: dict[str, Any]) -> Self:
         affectors = {}
         for affector in data['emotionAffectors']:
             affectors[affector['emotionType']] = affector['value']

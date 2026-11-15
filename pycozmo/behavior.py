@@ -6,7 +6,7 @@ Behavior representation and reading.
 
 import os
 import time
-from typing import Any
+from typing import Any, Self
 
 from . import event
 from . import client
@@ -31,13 +31,13 @@ class ReactionTrigger:
         "should_resume_last",
     ]
 
-    def __init__(self, name: str, behavior_id: str, should_resume_last: bool | None = False):
+    def __init__(self, name: str, behavior_id: str, should_resume_last: bool | None = False) -> None:
         self.name = str(name)
         self.behavior_id = str(behavior_id)
         self.should_resume_last = bool(should_resume_last)
 
     @classmethod
-    def from_json(cls, data: dict):
+    def from_json(cls, data: dict[str, Any]) -> Self:
         return cls(name=data['reactionTrigger'],
                    behavior_id=data['behaviorID'],
                    should_resume_last=data.get('genericStrategyParams', {}).get('shouldResumeLast'))
@@ -52,7 +52,7 @@ class Behavior(event.Dispatcher):
         self.conf = conf
 
     def get_id(self) -> str:
-        return self.conf["behaviorID"]
+        return str(self.conf["behaviorID"])
 
     def activate(self) -> None:
         logger.warning("Behavior '{}' not implemented.".format(self.get_id()))
