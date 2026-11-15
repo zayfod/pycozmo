@@ -96,6 +96,8 @@ class AnimationController:
         self.num_frames_played = -1
         self.playing_audio = False
         self.playing_animation = False
+        # Whether an image, displayed with display_image(), is shown. Procedural face is paused while it is.
+        self.image_displayed = False
         self.last_image_pkt = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
         self.face_generator = iter(procedural_face.ProceduralFaceGenerator())
         self.animations_enabled = False
@@ -161,51 +163,60 @@ class AnimationController:
         pkt: protocol_encoder.Packet = protocol_encoder.EnableAnimationState()
         self.cli.conn.send(pkt)
 
-        num_frames = 0
-
         timer = util.FPSTimer(robot.FRAME_RATE)
         while not self.stop_flag:
-
-            audio_pkt, image_pkt, pkts = self.queue.get()
-
-            if self.animations_enabled:
-                audio_out: protocol_encoder.Packet
-                if audio_pkt:
-                    audio_out = audio_pkt
-                    if not self.playing_audio:
-                        self.playing_audio = True
-                else:
-                    audio_out = protocol_encoder.OutputSilence()
-                    if self.playing_audio:
-                        self.playing_audio = False
-                        self.cli.conn.post_event(event.EvtAudioCompleted, self.cli)
-                self.cli.conn.send(audio_out)
-
-                if not image_pkt and self.procedural_face_enabled and not self.playing_animation:
-                    image_pkt = self._get_face_image()
-
-                if image_pkt:
-                    self.cli.conn.send(image_pkt)
-                    self.last_image_pkt = image_pkt
-                else:
-                    # If not refreshed, the robot stops displaying an image after 30 s.
-                    self.cli.conn.send(self.last_image_pkt)
-
-                if pkts:
-                    for pkt in pkts:
-                        self.cli.conn.send(pkt)
-
-                num_frames += 1
-
+            self._run_frame()
             timer.sleep()
 
         logger.debug("Animation controller stopped...")
+
+    def _run_frame(self) -> None:
+        """ Send the audio, image, and animation packets for a single frame. """
+        audio_pkt, image_pkt, pkts = self.queue.get()
+
+        if not self.animations_enabled:
+            return
+
+        audio_out: protocol_encoder.Packet
+        if audio_pkt:
+            audio_out = audio_pkt
+            if not self.playing_audio:
+                self.playing_audio = True
+        else:
+            audio_out = protocol_encoder.OutputSilence()
+            if self.playing_audio:
+                self.playing_audio = False
+                self.cli.conn.post_event(event.EvtAudioCompleted, self.cli)
+        self.cli.conn.send(audio_out)
+
+        if not image_pkt and self.procedural_face_enabled and not self.playing_animation \
+                and not self.image_displayed:
+            image_pkt = self._get_face_image()
+
+        if image_pkt:
+            self.cli.conn.send(image_pkt)
+            self.last_image_pkt = image_pkt
+        else:
+            # If not refreshed, the robot stops displaying an image after 30 s.
+            self.cli.conn.send(self.last_image_pkt)
+
+        if pkts:
+            for pkt in pkts:
+                self.cli.conn.send(pkt)
 
     def play_audio(self, pkts: list[protocol_encoder.OutputAudio]) -> None:
         self.queue.put_audio(pkts)
 
     def display_image(self, pkt: protocol_encoder.DisplayImage) -> None:
+        """ Display an image until clear_screen() is called or another image is displayed. """
+        # Set before queueing, so that procedural face cannot replace the image in between.
+        self.image_displayed = True
         self.queue.put_image(pkt)
+
+    def clear_screen(self) -> None:
+        """ Clear the screen and resume procedural face, if enabled. """
+        self.queue.put_image(protocol_encoder.DisplayImage(image=b"\x3f\x3f"))
+        self.image_displayed = False
 
     def play_anim_frame(
             self,

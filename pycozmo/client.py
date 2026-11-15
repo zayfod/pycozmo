@@ -493,10 +493,17 @@ class Client(event.Dispatcher):
         self.conn.send(pkt)
 
     def clear_screen(self) -> None:
-        pkt = protocol_encoder.DisplayImage(image=b"\x3f\x3f")
-        self.anim_controller.display_image(pkt)
+        """ Clear the screen and resume procedural face, if enabled. """
+        self.anim_controller.clear_screen()
 
     def display_image(self, im: Image.Image, duration: float | None = None) -> None:
+        """
+        Display a 128x32 binary image on the robot screen.
+
+        Procedural face, if enabled, is paused while the image is shown. If duration is given, the image is shown
+        for duration seconds and the screen is cleared. Otherwise, the image is shown until clear_screen() is called
+        or another image is displayed.
+        """
         encoder = image_encoder.ImageEncoder(im)
         buf = bytes(encoder.encode())
         pkt = protocol_encoder.DisplayImage(image=buf)

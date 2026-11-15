@@ -16,6 +16,8 @@ Unreleased
 - Pillow 9.1 or newer is now required.
 - Fixed event handlers not being removed when Dispatcher.del_handler() is given the handler function.
 - Fixed event handlers being skipped when they follow a one-shot handler, e.g. one registered by wait_for().
+- Fixed images displayed with Client.display_image() being replaced by procedural face on the next frame, which
+    made the duration parameter ineffective (thanks to Aitor Miguel Blanco / gimait)
 
 v0.9.0 (Nov 15, 2026)
 ---------------------
