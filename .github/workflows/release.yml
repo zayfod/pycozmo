@@ -1,7 +1,16 @@
 name: Release
 
-# Publishes a release to PyPI when a version tag (e.g. 0.9.0) is pushed.
+# Publishes a release to PyPI and creates a GitHub release when a version tag (e.g. 0.9.0) is pushed.
 # PyPI authentication uses Trusted Publishing - no API tokens are stored in the repository.
+# Read the Docs builds the documentation for the new tag on its own.
+#
+# To make a release:
+#
+# 1. Update __version__ in pycozmo/__init__.py and move the "Unreleased" entries in CHANGES.md under a new
+#    "vX.Y.Z (date)" heading. Merge these changes to master through a pull request.
+# 2. Tag the release commit on master and push the tag:
+#      git tag -a 0.9.0 -m "PyCozmo 0.9.0"
+#      git push origin 0.9.0
 
 on:
   push:
