@@ -3,7 +3,19 @@ import json
 import io
 import unittest
 
-from pycozmo.anim_encoder import AnimClips
+from pycozmo.anim_encoder import (
+    AnimClips,
+    AnimBackpackLights,
+    AnimBodyMotion,
+    AnimEvent,
+    AnimFaceAnimation,
+    AnimHeadAngle,
+    AnimLiftHeight,
+    AnimProceduralFace,
+    AnimRecordHeading,
+    AnimRobotAudio,
+    AnimTurnToRecordedHeading,
+)
 
 
 class TestClips(unittest.TestCase):
@@ -108,6 +120,7 @@ class TestHeadAngle(unittest.TestCase):
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimHeadAngle)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.duration_ms, 2)
         self.assertEqual(keyframe.angle_deg, 3)
@@ -120,6 +133,7 @@ class TestHeadAngle(unittest.TestCase):
         clips = clips.from_fb_stream(f)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimHeadAngle)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.duration_ms, 2)
         self.assertEqual(keyframe.angle_deg, 3)
@@ -163,6 +177,7 @@ class TestLiftHeight(unittest.TestCase):
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimLiftHeight)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.duration_ms, 2)
         self.assertEqual(keyframe.height_mm, 3)
@@ -175,6 +190,7 @@ class TestLiftHeight(unittest.TestCase):
         clips = clips.from_fb_stream(f)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimLiftHeight)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.duration_ms, 2)
         self.assertEqual(keyframe.height_mm, 3)
@@ -215,6 +231,7 @@ class TestRecordHeading(unittest.TestCase):
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimRecordHeading)
         self.assertEqual(keyframe.trigger_time_ms, 1)
 
         f = io.BytesIO()
@@ -224,6 +241,7 @@ class TestRecordHeading(unittest.TestCase):
         clips = clips.from_fb_stream(f)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimRecordHeading)
         self.assertEqual(keyframe.trigger_time_ms, 1)
 
         data2 = clips.to_dict()
@@ -264,6 +282,7 @@ class TestBodyMotion(unittest.TestCase):
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimBodyMotion)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.duration_ms, 2)
         self.assertEqual(keyframe.radius_mm, 3)
@@ -276,6 +295,7 @@ class TestBodyMotion(unittest.TestCase):
         clips = clips.from_fb_stream(f)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimBodyMotion)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.duration_ms, 2)
         self.assertEqual(keyframe.radius_mm, 3)
@@ -347,6 +367,7 @@ class TestBackpackLights(unittest.TestCase):
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimBackpackLights)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.duration_ms, 2)
         for led in (keyframe.left, keyframe.front, keyframe.middle, keyframe.back, keyframe.right):
@@ -362,6 +383,7 @@ class TestBackpackLights(unittest.TestCase):
         clips = clips.from_fb_stream(f)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimBackpackLights)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.duration_ms, 2)
         for led in (keyframe.left, keyframe.front, keyframe.middle, keyframe.back, keyframe.right):
@@ -413,6 +435,7 @@ class TestTurnToRecordedHeading(unittest.TestCase):
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimTurnToRecordedHeading)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.duration_ms, 2)
         self.assertEqual(keyframe.offset_deg, 3)
@@ -430,6 +453,7 @@ class TestTurnToRecordedHeading(unittest.TestCase):
         clips = clips.from_fb_stream(f)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimTurnToRecordedHeading)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.duration_ms, 2)
         self.assertEqual(keyframe.offset_deg, 3)
@@ -476,6 +500,7 @@ class TestFaceAnimation(unittest.TestCase):
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimFaceAnimation)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.anim_name, "test")
 
@@ -486,6 +511,7 @@ class TestFaceAnimation(unittest.TestCase):
         clips = clips.from_fb_stream(f)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimFaceAnimation)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.anim_name, "test")
 
@@ -571,6 +597,7 @@ class TestProceduralFace(unittest.TestCase):
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimProceduralFace)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.angle, 2.0)
         self.assertEqual(keyframe.center_x, 3.0)
@@ -588,6 +615,7 @@ class TestProceduralFace(unittest.TestCase):
         clips = clips.from_fb_stream(f)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimProceduralFace)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.angle, 2.0)
         self.assertEqual(keyframe.center_x, 3.0)
@@ -641,6 +669,7 @@ class TestRobotAudio(unittest.TestCase):
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimRobotAudio)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.audio_event_ids[0], 2)
         self.assertEqual(keyframe.volume, 3.0)
@@ -654,6 +683,7 @@ class TestRobotAudio(unittest.TestCase):
         clips = clips.from_fb_stream(f)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimRobotAudio)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.audio_event_ids[0], 2)
         self.assertEqual(keyframe.volume, 3.0)
@@ -696,6 +726,7 @@ class TestEvent(unittest.TestCase):
         clips = AnimClips.from_dict(data)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimEvent)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.event_id, "test")
 
@@ -706,6 +737,7 @@ class TestEvent(unittest.TestCase):
         clips = clips.from_fb_stream(f)
         self.assertEqual(len(clips.clips[0].keyframes), 1)
         keyframe = clips.clips[0].keyframes[0]
+        assert isinstance(keyframe, AnimEvent)
         self.assertEqual(keyframe.trigger_time_ms, 1)
         self.assertEqual(keyframe.event_id, "test")
 
