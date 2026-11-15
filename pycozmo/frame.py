@@ -4,7 +4,6 @@ Cozmo protocol frame representation and encoding and decoding.
 
 """
 
-from typing import List
 
 from .logger import logger_protocol
 from .protocol_ast import FrameType, PacketType
@@ -30,7 +29,7 @@ class Frame(object):
         'pkts',
     ]
 
-    def __init__(self, type_id: FrameType, first_seq: int, seq: int, ack: int, pkts: List[Packet]) -> None:
+    def __init__(self, type_id: FrameType, first_seq: int, seq: int, ack: int, pkts: list[Packet]) -> None:
         self.type = type_id
         self.first_seq = first_seq
         self.seq = seq

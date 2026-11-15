@@ -9,7 +9,7 @@ import socket
 import time
 from queue import Queue, Empty
 from threading import Thread, Lock
-from typing import Optional, Tuple, Any
+from typing import Optional, Any
 
 from .logger import logger, logger_protocol
 from .frame import Frame
@@ -47,7 +47,7 @@ class SendThread(Thread):
 
     def __init__(self,
                  sock: socket.socket,
-                 receiver_address: Optional[Tuple[str, int]]) -> None:
+                 receiver_address: Optional[tuple[str, int]]) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
         self.sock = sock
         self.lock = Lock()
@@ -83,7 +83,7 @@ class SendThread(Thread):
             except Exception:
                 pass
 
-    def _collect_messages(self) -> Tuple[list, int]:
+    def _collect_messages(self) -> tuple[list, int]:
         with self.lock:
             last_ack = self.last_ack
             is_full = self.window.is_full()
@@ -206,7 +206,7 @@ class ReceiveThread(Thread):
     def __init__(self,
                  sock: socket.socket,
                  send_thread: SendThread,
-                 sender_address: Optional[Tuple[str, int]],
+                 sender_address: Optional[tuple[str, int]],
                  delivery_handler,
                  buffer_size: int = 2048) -> None:
         super().__init__(daemon=True, name=__class__.__name__)
@@ -350,7 +350,7 @@ class Connection(Thread, event.Dispatcher):
     STATS_INTERVAL = 60.0
 
     def __init__(self,
-                 robot_addr: Optional[Tuple[str, int]] = None,
+                 robot_addr: Optional[tuple[str, int]] = None,
                  protocol_log_messages: Optional[list] = None,
                  server: bool = False) -> None:
         super().__init__(daemon=True, name=__class__.__name__)

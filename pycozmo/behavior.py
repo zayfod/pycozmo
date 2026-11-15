@@ -6,7 +6,7 @@ Behavior representation and reading.
 
 import os
 import time
-from typing import Dict, Optional, Any
+from typing import Optional, Any
 
 from . import event
 from . import client
@@ -37,7 +37,7 @@ class ReactionTrigger:
         self.should_resume_last = bool(should_resume_last)
 
     @classmethod
-    def from_json(cls, data: Dict):
+    def from_json(cls, data: dict):
         return cls(name=data['reactionTrigger'],
                    behavior_id=data['behaviorID'],
                    should_resume_last=data.get('genericStrategyParams', {}).get('shouldResumeLast'))
@@ -128,7 +128,7 @@ def get_behavior_class_from_dict(data):
     return cls
 
 
-def load_behaviors(resource_dir: str, cli: client.Client) -> Dict[str, Behavior]:
+def load_behaviors(resource_dir: str, cli: client.Client) -> dict[str, Behavior]:
 
     start_time = time.perf_counter()
 
@@ -145,7 +145,7 @@ def load_behaviors(resource_dir: str, cli: client.Client) -> Dict[str, Behavior]
     return behaviors
 
 
-def load_reaction_trigger_behavior_map(resource_dir: str) -> Dict[str, ReactionTrigger]:
+def load_reaction_trigger_behavior_map(resource_dir: str) -> dict[str, ReactionTrigger]:
 
     start_time = time.perf_counter()
 

@@ -4,7 +4,6 @@ Cozmo protocol packet encoder code generator.
 
 """
 
-from typing import Tuple
 import os
 from collections import defaultdict
 
@@ -49,7 +48,7 @@ def get_farray_fmt(argument: protocol_declaration.FArrayArgument) -> str:
     return data_fmt
 
 
-def get_varray_fmts(argument: protocol_declaration.VArrayArgument) -> Tuple[str, str]:
+def get_varray_fmts(argument: protocol_declaration.VArrayArgument) -> tuple[str, str]:
     length_fmt = get_fmt_by_type(argument.length_type)
     if not length_fmt:
         raise NotImplementedError("Unexpected varray length type '{}' for '{}'".format(

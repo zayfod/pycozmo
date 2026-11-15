@@ -5,7 +5,7 @@ Cozmo protocol client and high-level API.
 """
 
 from threading import Event
-from typing import Optional, Tuple
+from typing import Optional
 import json
 import time
 import io
@@ -43,7 +43,7 @@ class Client(event.Dispatcher):
     """ Cozmo protocol client and high-level API class. """
 
     def __init__(self,
-                 robot_addr: Optional[Tuple[str, int]] = None,
+                 robot_addr: Optional[tuple[str, int]] = None,
                  protocol_log_messages: Optional[list] = None,
                  auto_initialize: bool = True,
                  enable_animations: bool = True,

@@ -4,7 +4,6 @@ Cozmo protocol encoding helper classes and functions.
 
 """
 
-from typing import Dict, Tuple
 import struct
 
 
@@ -29,7 +28,7 @@ __all__ = [
 ]
 
 
-_struct_cache: Dict[Tuple[str, int], struct.Struct] = dict()
+_struct_cache: dict[tuple[str, int], struct.Struct] = dict()
 
 
 def _get_struct(fmt: str, length: int) -> struct.Struct:

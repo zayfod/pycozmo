@@ -8,7 +8,8 @@ Animation data structures are declared in FlatBuffers format in files/cozmo/cozm
 
 """
 
-from typing import Union, Dict, TextIO, BinaryIO, Iterable
+from typing import Union, TextIO, BinaryIO
+from collections.abc import Iterable
 from abc import ABC
 import os
 import json
@@ -1072,7 +1073,7 @@ class ClipMetadata(object):
         self.has_event_track = bool(has_event_track)
 
 
-def get_clip_metadata(dspec: str) -> Dict[str, ClipMetadata]:
+def get_clip_metadata(dspec: str) -> dict[str, ClipMetadata]:
     """ Retrieve clip metadata from animation FlatBuffers .bin files. """
 
     start_time = time.perf_counter()

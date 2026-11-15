@@ -4,7 +4,8 @@ Event declaration and dispatching.
 
 """
 
-from typing import Callable, Optional
+from typing import Optional
+from collections.abc import Callable
 import collections
 import threading
 

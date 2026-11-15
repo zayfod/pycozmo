@@ -6,7 +6,6 @@ Emotion representation and reading.
 
 import os
 import time
-from typing import Dict, List
 
 import numpy as np
 
@@ -35,7 +34,7 @@ class DecayGraph:
         "nodes_y",
     ]
 
-    def __init__(self, nodes: List[Node]) -> None:
+    def __init__(self, nodes: list[Node]) -> None:
         self.nodes_x = [node.x for node in nodes]
         self.nodes_y = [node.y for node in nodes]
 
@@ -100,19 +99,19 @@ class EmotionEvent:
         "affectors",
     ]
 
-    def __init__(self, name: str, affectors: Dict[str, float]) -> None:
+    def __init__(self, name: str, affectors: dict[str, float]) -> None:
         self.name = str(name)
         self.affectors = dict(affectors)
 
     @classmethod
-    def from_json(cls, data: Dict):
+    def from_json(cls, data: dict):
         affectors = {}
         for affector in data['emotionAffectors']:
             affectors[affector['emotionType']] = affector['value']
         return cls(name=data['name'], affectors=affectors)
 
 
-def load_emotion_types(resource_dir: str) -> Dict[str, EmotionType]:
+def load_emotion_types(resource_dir: str) -> dict[str, EmotionType]:
 
     start_time = time.perf_counter()
 
@@ -142,7 +141,7 @@ def load_emotion_types(resource_dir: str) -> Dict[str, EmotionType]:
     return emotion_types
 
 
-def load_emotion_events(resource_dir: str) -> Dict[str, EmotionEvent]:
+def load_emotion_events(resource_dir: str) -> dict[str, EmotionEvent]:
 
     start_time = time.perf_counter()
 

@@ -6,7 +6,7 @@ Cozmo protocol abstract syntax tree (AST) types.
 
 import enum
 from abc import ABC
-from typing import List, Optional, Union, Tuple, Any
+from typing import Optional, Union, Any
 
 
 __all__ = [
@@ -192,7 +192,7 @@ class Enum(object):
     """ Enumeration. """
 
     def __init__(self, name: str, description: Optional[str] = None,
-                 members: Optional[List[EnumMember]] = None, base: int = 10) -> None:
+                 members: Optional[list[EnumMember]] = None, base: int = 10) -> None:
         self.name = str(name)
         self.description = str(description) if description else None
         self.members = list(members) if members else []
@@ -217,7 +217,7 @@ class Struct(Argument):
     """ Structure. """
 
     def __init__(self, name: Optional[str] = None, description: Optional[str] = None,
-                 arguments: Optional[List[Argument]] = None):
+                 arguments: Optional[list[Argument]] = None):
         super().__init__(name=name, description=description)
         self.arguments = list(arguments) if arguments else []
 
@@ -229,7 +229,7 @@ class FArrayArgument(Argument):
     """ Fixed-length array. """
 
     def __init__(self, name: Optional[str] = None, description: Optional[str] = None,
-                 data_type: Argument = UInt8Argument(), length: int = 0, default: Tuple = ()) -> None:
+                 data_type: Argument = UInt8Argument(), length: int = 0, default: tuple = ()) -> None:
         super().__init__(name, description, tuple(default))
         self.data_type = data_type
         self.length = length
@@ -244,7 +244,7 @@ class VArrayArgument(Argument):
 
     def __init__(self, name: Optional[str] = None, description: Optional[str] = None,
                  data_type: Argument = UInt8Argument(), length_type: Argument = UInt16Argument(),
-                 default: Tuple = ()) -> None:
+                 default: tuple = ()) -> None:
         super().__init__(name, description, tuple(default))
         self.data_type = data_type
         self.length_type = length_type
@@ -272,7 +272,7 @@ class Packet(Struct, ABC):
 
     def __init__(self, packet_type: PacketType, name: str, packet_id: Optional[int] = None,
                  group: Optional[str] = None, description: Optional[str] = None,
-                 arguments: Optional[List[Argument]] = None):
+                 arguments: Optional[list[Argument]] = None):
         super().__init__(name, description, arguments)
         self.type = PacketType(packet_type)
         self.id = packet_id
@@ -297,7 +297,7 @@ class Command(Packet):
     """ Command packet. """
 
     def __init__(self, packet_id: int, name: str, group: Optional[str] = None,  description: Optional[str] = None,
-                 arguments: Optional[List[Argument]] = None):
+                 arguments: Optional[list[Argument]] = None):
         super().__init__(PacketType.COMMAND, name, packet_id=packet_id, group=group, description=description,
                          arguments=arguments)
 
@@ -306,7 +306,7 @@ class Event(Packet):
     """ Event packet. """
 
     def __init__(self, packet_id: int, name: str, group: Optional[str] = None, description: Optional[str] = None,
-                 arguments: Optional[List[Argument]] = None):
+                 arguments: Optional[list[Argument]] = None):
         super().__init__(PacketType.EVENT, name, packet_id=packet_id, group=group, description=description,
                          arguments=arguments)
 
@@ -333,7 +333,7 @@ class Keyframe(Packet):
 class Protocol(object):
     """ Protocol declaration. """
 
-    def __init__(self, enums: List[Enum], structs: List[Struct], packets: List[Packet]):
+    def __init__(self, enums: list[Enum], structs: list[Struct], packets: list[Packet]):
         self.enums = list(enums)
         self.structs = list(structs)
         self.packets = list(packets)
