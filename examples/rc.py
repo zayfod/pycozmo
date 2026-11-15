@@ -6,9 +6,13 @@ import argparse
 import logging
 import time
 import threading
-from fcntl import ioctl
 from struct import unpack
 from select import select
+
+if sys.platform != "linux":
+    sys.exit("ERROR: This application can only run on Linux with evdev installed. Do 'pip install --user evdev'.")
+
+import fcntl
 
 try:
     # noinspection PyPackageRequirements
@@ -44,7 +48,7 @@ class XboxController(object):
         # Read device identity and capabilities
         buf = b"\0" * 8
         try:
-            res = ioctl(f, cls.EVIOCGID, buf)
+            res = fcntl.ioctl(f, cls.EVIOCGID, buf)
             bus, vendor, product, version = unpack("hhhh", res)
         except IOError as e:
             logging.error("Failed to read device IDs. {}".format(e))

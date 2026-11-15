@@ -100,7 +100,7 @@ class BehaviorChooser:
                     probability_distribution.append(float(s) / self.total_score)
 
                 val = np.random.choice(self.behavior_names, p=probability_distribution,
-                                       size=len(np.nonzero(probability_distribution)[0]), replace=False)
+                                       size=np.count_nonzero(probability_distribution), replace=False)
                 return list(val.tolist())
             else:
                 return None

@@ -272,7 +272,7 @@ class Client(event.Dispatcher):
             else:
                 data = camera.minigray_to_jpeg(data, width, height)
 
-        image = Image.open(io.BytesIO(data)).convert('RGB')
+        image = Image.open(io.BytesIO(data.tobytes())).convert('RGB')
 
         # Color images need to be resized to the proper resolution
         if is_color_image:
