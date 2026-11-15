@@ -62,7 +62,7 @@ class TestLoadSoundBank(unittest.TestCase):
         soundbank = reader.load_file(f, "test")
         self.assertEqual(len(soundbank.objs), 1)
         file = soundbank.objs[1]
-        self.assertIsInstance(file, pycozmo.audiokinetic.soundbank.File)
+        assert isinstance(file, pycozmo.audiokinetic.soundbank.File)
         self.assertEqual(file.soundbank_id, soundbank.id)
         self.assertEqual(file.id, 1)
         self.assertEqual(file.offset, 2)
@@ -92,7 +92,7 @@ class TestLoadSoundBank(unittest.TestCase):
         soundbank = reader.load_file(f, "test")
         self.assertEqual(len(soundbank.objs), 1)
         event = soundbank.objs[1]
-        self.assertIsInstance(event, pycozmo.audiokinetic.soundbank.Event)
+        assert isinstance(event, pycozmo.audiokinetic.soundbank.Event)
         self.assertEqual(event.soundbank_id, soundbank.id)
         self.assertEqual(event.id, 1)
         self.assertEqual(event.name, "")
@@ -107,7 +107,7 @@ class TestLoadSoundBank(unittest.TestCase):
         soundbank = reader.load_file(f, "test")
         self.assertEqual(len(soundbank.objs), 1)
         event_action = soundbank.objs[1]
-        self.assertIsInstance(event_action, pycozmo.audiokinetic.soundbank.EventAction)
+        assert isinstance(event_action, pycozmo.audiokinetic.soundbank.EventAction)
         self.assertEqual(event_action.soundbank_id, soundbank.id)
         self.assertEqual(event_action.id, 1)
         self.assertEqual(event_action.scope, 3)
@@ -122,7 +122,7 @@ class TestLoadSoundBank(unittest.TestCase):
         soundbank = reader.load_file(f, "test")
         self.assertEqual(len(soundbank.objs), 1)
         event_action = soundbank.objs[1]
-        self.assertIsInstance(event_action, pycozmo.audiokinetic.soundbank.SFX)
+        assert isinstance(event_action, pycozmo.audiokinetic.soundbank.SFX)
         self.assertEqual(event_action.soundbank_id, soundbank.id)
         self.assertEqual(event_action.id, 1)
         self.assertEqual(event_action.name, "")
