@@ -1,0 +1,71 @@
+name: Release
+
+# Publishes a release to PyPI when a version tag (e.g. 0.9.0) is pushed.
+# PyPI authentication uses Trusted Publishing - no API tokens are stored in the repository.
+
+on:
+  push:
+    tags: ["[0-9]+.[0-9]+.[0-9]+"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-python@v6
+      with:
+        python-version: "3.x"
+    - name: Check that the tag matches the package version
+      run: |
+        version=$(python -c "import re; print(re.search(r'^__version__ = \"(.+)\"', open('pycozmo/__init__.py').read(), re.M).group(1))")
+        if [ "$version" != "$GITHUB_REF_NAME" ]; then
+          echo "Tag $GITHUB_REF_NAME does not match package version $version."
+          exit 1
+        fi
+    - name: Build sdist and wheel
+      run: |
+        python -m pip install --upgrade pip build twine
+        python -m build
+        twine check --strict dist/*
+    - uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/pycozmo/
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist/
+    - uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist/
+    - name: Create GitHub release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        # Use the matching CHANGES.md section as release notes.
+        awk -v tag="v$GITHUB_REF_NAME" '
+          index($0, tag " ") == 1 { found = 1; getline; next }
+          found && /^v[0-9]+\.[0-9]+\.[0-9]+/ { exit }
+          found { print }
+        ' CHANGES.md > notes.md
+        gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
