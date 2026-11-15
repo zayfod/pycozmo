@@ -6,6 +6,7 @@ Cozmo image run-length encoding and decoding.
 
 import sys
 from io import StringIO
+from typing import cast
 
 from PIL import Image
 
@@ -46,6 +47,7 @@ def str_to_image(sim: str) -> Image.Image:
     s = StringIO(sim)
     im = Image.new("1", (128, 32), color=0)
     px = im.load()
+    assert px is not None
     for y in range(32):
         while True:
             line = s.readline().strip()
@@ -60,7 +62,7 @@ def str_to_image(sim: str) -> Image.Image:
 
 class ImageDecoder(object):
 
-    def __init__(self, buffer: bytes):
+    def __init__(self, buffer: bytes | bytearray) -> None:
         self.buffer = buffer
         self.image = bytearray(128 * 32)
         self.x = 0
@@ -152,7 +154,7 @@ class ImageDecoder(object):
                 self.repeat_column_shift = False
             self.last_draw = False
 
-    def decode(self) -> bytes:
+    def decode(self) -> bytearray:
         for i, b in enumerate(self.buffer):
             if self.debug:
                 sys.stdout.write("{}: ".format(i))
@@ -168,7 +170,9 @@ class ImageEncoder(object):
                 im.size[0], im.size[1]))
         if im.mode != "1":
             raise ValueError("Invalid pixel format. Only binary images are supported.")
-        self.px = im.load()
+        px = im.load()
+        assert px is not None
+        self.px = px
         self.buffer = bytearray()
         self.last_col = bytearray()
         self.cur_col = bytearray()
@@ -252,7 +256,8 @@ class ImageEncoder(object):
 
     def encode(self) -> bytearray:
         while self.x < 128 and self.y < 32:
-            color = self.px[self.x, self.y]
+            # Binary images have integer pixel values.
+            color = cast(int, self.px[self.x, self.y])
             self.y += 1
             cnt = self._count_color(color)
             cmd = self._encode_seq(color, cnt)

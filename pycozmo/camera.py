@@ -61,7 +61,7 @@ class CameraConfig:
         self.min_gain = float(min_gain)
         self.max_gain = float(max_gain)
 
-    def get_camera_matrix(self) -> np.array:
+    def get_camera_matrix(self) -> np.ndarray:
         """ Return 3x3 camera matrix in format, suitable for use with OpenCV. """
         camera_matrix = np.array([
             [self.focal_length.x, 0.0, self.center.x],

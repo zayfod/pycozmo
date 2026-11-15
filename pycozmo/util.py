@@ -238,7 +238,7 @@ class Vector2:
         self._x = x
         self._y = y
 
-    def set_to(self, rhs) -> None:
+    def set_to(self, rhs: "Vector2") -> None:
         """
         Copy the x and y components of the given vector.
 
@@ -826,12 +826,12 @@ class Pose:
         return self.is_valid and self._is_accurate
 
 
-def hex_dump(data: bytes) -> str:
+def hex_dump(data: bytes | bytearray) -> str:
     res = ":".join("{:02x}".format(b) for b in data)
     return res
 
 
-def hex_load(data: str) -> bytes:
+def hex_load(data: str) -> bytearray:
     res = bytearray.fromhex(data.replace(":", ""))
     return res
 
@@ -880,11 +880,11 @@ class FPSTimer:
         # Timer period in seconds.
         self._period = 1.0 / int(fps)
         # Start time of the last successfully maintained frame sequence.
-        self._start = None
+        self._start: float | None = None
         # Number of successfully maintained frames.
         self._frames = 1
 
-    def sleep(self):
+    def sleep(self) -> None:
         """ Sleep to maintain the framerate. Should be called at the end of a frame. """
         now = time.perf_counter()
         if not self._start:
