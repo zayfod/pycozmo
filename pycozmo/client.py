@@ -366,7 +366,7 @@ class Client(event.Dispatcher):
         logger_robot.log(robot_debug.get_log_level(pkt.level), msg)
 
     def _on_nv_storage_op_result(self, cli, pkt: protocol_encoder.NvStorageOpResult):
-        print(pkt)
+        logger.debug("NV storage operation result: {}".format(pkt))
         if pkt.op == protocol_encoder.NvOperation.NVOP_READ:
             if pkt.result == protocol_encoder.NvResult.NV_OKAY:
                 if pkt.tag == protocol_encoder.NvEntryTag.NVEntry_CameraCalib and len(pkt.data) == 56:
@@ -383,9 +383,8 @@ class Client(event.Dispatcher):
                 elif pkt.tag == protocol_encoder.NvEntryTag.NVEntry_SavedCubeIDs and len(pkt.data) == 28:
                     values = protocol_utils.BinaryReader(pkt.data).read_farray("L", 7)
                     self.saved_objects = [value for value in values[-3:] if value]
-                    print(self.saved_objects)
-                    for i in self.saved_objects:
-                        print("0x{:08x}".format(i))
+                    logger.debug("Saved cube IDs: {}".format(
+                        ", ".join("0x{:08x}".format(i) for i in self.saved_objects)))
                     # Remove handler.
                     self.del_handler(protocol_encoder.NvStorageOpResult, self._on_nv_storage_op_result)
 
