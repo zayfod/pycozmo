@@ -24,7 +24,7 @@ import pycozmo  # noqa
 
 project = 'PyCozmo'
 # noinspection PyShadowingBuiltins
-copyright = '2019-2020, Kaloyan Tenchov'
+copyright = '2019-2026, Kaloyan Tenchov'
 author = 'Kaloyan Tenchov'
 
 # The full version, including alpha/beta/rc tags
@@ -41,7 +41,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
     'sphinx.ext.intersphinx',
-    'recommonmark',
+    'myst_parser',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -64,12 +64,12 @@ html_static_path = []
 
 
 autosummary_generate = True
-autodoc_default_flags = [
-    'members',
-    'undoc-members',
-    'show-inheritance',
-    'inherited-members',
-]
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'show-inheritance': True,
+    'inherited-members': True,
+}
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://numpy.org/doc/stable/', None),

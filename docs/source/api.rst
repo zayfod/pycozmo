@@ -5,6 +5,7 @@ pycozmo package
     :nosignatures:
     :toctree: generated
 
+    pycozmo.audiokinetic.chunk
     pycozmo.audiokinetic.exception
     pycozmo.audiokinetic.soundbank
     pycozmo.audiokinetic.soundbanksinfo
@@ -27,7 +28,7 @@ pycozmo package
     pycozmo.frame
     pycozmo.image_encoder
     pycozmo.lights
-    pycozmo.logging
+    pycozmo.logger
     pycozmo.object
     pycozmo.procedural_face
     pycozmo.protocol_ast

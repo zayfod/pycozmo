@@ -47,7 +47,7 @@ Changelog = "https://github.com/zayfod/pycozmo/blob/master/CHANGES.md"
 [dependency-groups]
 test = ["pytest"]
 lint = ["flake8>=7", "mypy>=1.14"]
-docs = ["Sphinx", "recommonmark"]
+docs = ["Sphinx", "myst-parser"]
 dev = [
     { include-group = "test" },
     { include-group = "lint" },
