@@ -46,7 +46,7 @@ Hardware Version 7
 - has an on/off button
 - observed with development units
 - observed to have factory firmware v10700
-- observed to report undocumented color "5"
+- observed to report undocumented color "5", identified as `WHITE_v17` by the Cozmo app version 3.6.6
 
 ```
 2020-09-24 20:04:35.823 pycozmo.general      INFO     Firmware version 10700.
