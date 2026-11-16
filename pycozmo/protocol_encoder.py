@@ -29,8 +29,8 @@ class BodyColor(enum.Enum):
     CE_LM_v15 = 3
     # Limited edition, blue.
     LE_BL_v16 = 4
-    # Development unit.
-    DEV = 5
+    # White, HW v1.7.
+    WHITE_v17 = 5
 
 
 class NvEntryTag(enum.Enum):

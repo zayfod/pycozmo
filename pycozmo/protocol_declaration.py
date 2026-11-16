@@ -43,7 +43,7 @@ BODY_COLOR = Enum("BodyColor", members=[
     EnumMember("WHITE_v15", 2, description="White."),
     EnumMember("CE_LM_v15", 3, description="Collectors edition, liquid metal."),
     EnumMember("LE_BL_v16", 4, description="Limited edition, blue."),
-    EnumMember("DEV", 5, description="Development unit."),
+    EnumMember("WHITE_v17", 5, description="White, HW v1.7."),
 ])
 NV_ENTRY_TAG = Enum("NvEntryTag", base=16, members=[
     EnumMember("NVEntry_Invalid", 0xffffffff),

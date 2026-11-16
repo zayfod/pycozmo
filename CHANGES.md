@@ -18,6 +18,7 @@ Unreleased
 - Fixed event handlers being skipped when they follow a one-shot handler, e.g. one registered by wait_for().
 - Fixed images displayed with Client.display_image() being replaced by procedural face on the next frame, which
     made the duration parameter ineffective (thanks to Aitor Miguel Blanco / gimait)
+- Renamed BodyColor.DEV to BodyColor.WHITE_v17. Body color 5 is used by Cozmo HW v1.7.
 
 v0.9.0 (Nov 15, 2026)
 ---------------------
