@@ -1,12 +1,66 @@
 Cozmo Firmware Versions
 =======================
 
-Cozmo firmware images can be found under `com.anki.cozmo/files/cozmo/cozmo_resources/config/engine/firmware` in the
-Cozmo app.
+Cozmo firmware images are distributed as part of the Cozmo app resources, as
+`cozmo_resources/config/engine/firmware/cozmo.safe`. The app keeps some older firmware images in `firmware_<version>`
+and `old_firmware` directories next to it.
+
+On Android, the app resources are distributed in the APK expansion file
+`Android/obb/<package>/main.<version code>.<package>.obb`, a ZIP archive, under `assets/`. The original Anki app
+(`com.anki.cozmo`) extracts them to `com.anki.cozmo/files/cozmo/` on the device. The Digital Dream Labs app package is
+`com.digitaldreamlabs.cozmo2`.
+
+
+App Versions
+------------
+
+Firmware included in Android versions of the Cozmo app:
+
+| App version | Package                      | Version code | Firmware | Other firmware images                     |
+|-------------|------------------------------|--------------|----------|-------------------------------------------|
+| 3.4.0       | `com.anki.cozmo`             | 1204         | 2381     | 1299, 1859, 1889, 2158, 2214              |
+| 3.4.2       | `com.digitaldreamlabs.cozmo2`| 4            | 2381     | 1299, 1859, 1889, 2158, 2214              |
+| 3.4.3       | `com.digitaldreamlabs.cozmo2`| 6            | 2381     | 1299, 1859, 1889, 2158, 2214              |
+| 3.6.6       | `com.digitaldreamlabs.cozmo2`| 11           | 2457     | 1299, 1859, 1889, 2158, 2214, 2444        |
+
+Firmware 2457 changes the engine-to-robot and robot-to-engine message hashes compared to 2381. Comparing the Cozmo
+engine libraries of app versions 3.4.3 and 3.6.6 shows the same robot messages with the same field types. The only
+difference found is a new `BodyColor` value, `WHITE_v17` (5), for Cozmo HW v1.7, which the 3.6.6 release notes
+mention support for.
 
 
 Production Versions
 -------------------
+
+```json
+{
+    "version": 2457,
+    "git-rev": "1f716924703f5a8167e4812ebe0fb16991f23484",
+    "date": "Tue Feb 11 22:06:25 2025",
+    "time": 1739333185,
+    "messageEngineToRobotHash": "fedb4b12f1b5b45456aec1629cd0b8cc",
+    "messageRobotToEngineHash": "5a7211095fc4961407e96b9126658317",
+    "build": "DEVELOPMENT",
+    "wifiSig": "ee53ce9bb618a29420dcc1c0be14f3707aa562d2",
+    "rtipSig": "fbd455486f438f959b229ffe95bf5f326646dab3",
+    "bodySig": "fbb9ffb8e3d2cab28ff1df21529c11a80a7c5269"
+}
+```
+
+```json
+{
+    "version": 2444,
+    "git-rev": "65bb3ca4538cff3ae0ccf6c215403b84b461b3b9",
+    "date": "Tue Apr 16 16:40:17 2019",
+    "time": 1555458017,
+    "messageEngineToRobotHash": "d22a89bf93dd536a917c28565e5359f0",
+    "messageRobotToEngineHash": "ef80cc1a9d2a71461bc57b514a95926f",
+    "build": "DEVELOPMENT",
+    "wifiSig": "8694122d7de45ee085c488274d28b69b7b1f2f44",
+    "rtipSig": "2891c2f25e3afd2c3be6750f40c1f78b2508de88",
+    "bodySig": "32d1903533faf12411dac6ad6d393660ab489d68"
+}
+```
 
 ```json
 {
