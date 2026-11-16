@@ -29,7 +29,9 @@ class BodyColor(enum.Enum):
     CE_LM_v15 = 3
     # Limited edition, blue.
     LE_BL_v16 = 4
-    # Development unit.
+    # White, HW v1.7.
+    WHITE_v17 = 5
+    # Development unit. Alias of WHITE_v17, observed with HW v1.7 development units.
     DEV = 5
 
 
