@@ -12,10 +12,6 @@ class TestBodyColor(unittest.TestCase):
         self.assertEqual(BodyColor(5), BodyColor.WHITE_v17)
         self.assertEqual(BodyColor.WHITE_v17.value, 5)
 
-    def test_dev_alias(self) -> None:
-        # DEV is kept for compatibility and refers to the same member.
-        self.assertIs(BodyColor.DEV, BodyColor.WHITE_v17)
-
     def test_body_info_decoding(self) -> None:
         # BodyInfo: serial number (uint32), body HW version (int32), body color (int32).
         data = struct.pack("<Iii", 0x12345678, 7, 5)

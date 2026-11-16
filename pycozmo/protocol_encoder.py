@@ -31,8 +31,6 @@ class BodyColor(enum.Enum):
     LE_BL_v16 = 4
     # White, HW v1.7.
     WHITE_v17 = 5
-    # Development unit. Alias of WHITE_v17, observed with HW v1.7 development units.
-    DEV = 5
 
 
 class NvEntryTag(enum.Enum):
