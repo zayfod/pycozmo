@@ -19,3 +19,5 @@ __pycache__/
 /.pytest_cache/
 
 /examples/*.png
+
+.pre-commit-config.yaml
